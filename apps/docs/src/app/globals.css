@@ -1,0 +1,82 @@
+@import "tailwindcss";
+
+:root {
+  /* Warm Neutrals - Dark Mode (Default) */
+  --bg-deep: #050505;
+  --bg-base: #0A0A0A;
+  --bg-surface: #121212;
+  --bg-elevated: #1A1A1A;
+  --fg-primary: #F5F2EB;
+  --fg-secondary: #B8B1A6;
+  --fg-muted: #8F887C;
+  --border-subtle: #1F1F1F;
+  --border-clean: #262626;
+
+  /* Gold Accent */
+  --accent: #D4C5A0;
+  --accent-hover: #E6D9B5;
+  --accent-subtle: rgba(212, 197, 160, 0.1);
+
+  /* Easing curves */
+  --ease-fluid: cubic-bezier(0.25, 1, 0.5, 1);
+  --ease-magnetic: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-reveal: cubic-bezier(0.76, 0, 0.24, 1);
+}
+
+.light {
+  /* Warm Cream - Light Mode Overrides */
+  --bg-deep: #F0EDE4;
+  --bg-base: #F5F2EB;
+  --bg-surface: #EDEAE0;
+  --bg-elevated: #E5E1D6;
+  --fg-primary: #1A1A1A;
+  --fg-secondary: #4A453C;
+  --fg-muted: #7A7366;
+  --border-subtle: #DFDACB;
+  --border-clean: #D3CCBA;
+}
+
+@theme {
+  --color-bg-deep: var(--bg-deep);
+  --color-bg-base: var(--bg-base);
+  --color-bg-surface: var(--bg-surface);
+  --color-bg-elevated: var(--bg-elevated);
+  --color-fg-primary: var(--fg-primary);
+  --color-fg-secondary: var(--fg-secondary);
+  --color-fg-muted: var(--fg-muted);
+  --color-border-subtle: var(--border-subtle);
+  --color-border-clean: var(--border-clean);
+  
+  /* Accent Mappings (Warm Gold) */
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-subtle: var(--accent-subtle);
+
+  /* Fallback aliases to prevent breaking references during transition */
+  --color-cobalt: var(--accent);
+  --color-cobalt-hover: var(--accent-hover);
+  --color-cobalt-subtle: var(--accent-subtle);
+
+  /* Swiss Radii System */
+  --radius-none: 0px;
+  --radius-sm: 2px;
+  --radius-md: 4px;
+
+  /* Custom Easing System */
+  --ease-fluid: var(--ease-fluid);
+  --ease-magnetic: var(--ease-magnetic);
+  --ease-reveal: var(--ease-reveal);
+
+  /* Custom Transition utility mappings */
+  --animate-fluid-fade: fade-in 450ms var(--ease-fluid);
+}
+
+body {
+  background-color: var(--bg-base);
+  color: var(--fg-secondary);
+  font-family: 'Satoshi', 'Switzer', 'Geist Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}

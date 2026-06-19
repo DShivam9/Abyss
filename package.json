@@ -1,0 +1,15 @@
+{
+  "name": "absolute-ui-monorepo",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspace=apps/docs",
+    "build": "npm run build --workspace=apps/docs",
+    "start": "npm run start --workspace=apps/docs",
+    "lint": "npm run lint --workspace=apps/docs"
+  }
+}
