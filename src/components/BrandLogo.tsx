@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, Transition } from "framer-motion";
 
 interface BrandLogoProps {
   onClick?: (e: React.MouseEvent<HTMLAnchorElement>) => void;
@@ -9,7 +9,7 @@ interface BrandLogoProps {
 const PATH = "M 4 36 L 16 4 L 24 4 L 36 36 L 26 36 L 23 26 L 17 26 L 14 36 Z M 20 12 L 18 20 L 22 20 Z";
 
 export default function BrandLogo({ onClick }: BrandLogoProps) {
-  const springConfig = { type: "spring", stiffness: 400, damping: 25 };
+  const springConfig: Transition = { type: "spring", stiffness: 400, damping: 25 };
 
   return (
     <a
