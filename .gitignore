@@ -36,3 +36,23 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
+
+# AI and Editor configs
+.codex/
+.cursor/
+.gemini/
+.vscode/
+.zed/
+.mcp.json
+claudedesignskills/
+config/
+
+# Docs and references
+docs/
+references/
+AGENTS.md
+CLAUDE.md
+GEMINI.md
+RULES.md
+original_hero.txt
+
