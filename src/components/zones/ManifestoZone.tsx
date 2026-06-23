@@ -4,7 +4,6 @@ import { useRef } from "react";
 import { useGSAP } from "@gsap/react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { motion } from "framer-motion";
 import Image from "next/image";
 
 export default function ManifestoZone() {
@@ -15,7 +14,6 @@ export default function ManifestoZone() {
   const text3Ref = useRef<HTMLDivElement>(null);
   const portraitRef = useRef<HTMLDivElement>(null);
 
-  // Chrome Visor portrait detail visual
   const concreteImage = "/images/chrome-visor-portrait.jpg";
 
   useGSAP(
@@ -35,113 +33,97 @@ export default function ManifestoZone() {
 
       if (prefersReducedMotion) {
         // Static layout for accessibility
-        gsap.set([t1, t2, t3], { xPercent: 0, color: "#C07860" });
-        gsap.set(portrait, { scale: 1.0 });
+        gsap.set([t1, t2, t3], { xPercent: 0, opacity: 1 });
+        gsap.set(portrait, { scale: 1.0, opacity: 1 });
         return;
       }
 
-      // GSAP color breathing tween
-      gsap.utils.toArray(".breathe-text").forEach((el, i) => {
-        gsap.to(el as HTMLElement, {
-          keyframes: {
-            "0%": { color: "#C07860", opacity: 0.85 },
-            "33%": { color: "#8A9A86", opacity: 0.65 },
-            "66%": { color: "#8A7B6A", opacity: 0.75 },
-            "100%": { color: "#C07860", opacity: 0.85 }
-          },
-          duration: 8,
-          repeat: -1,
-          ease: "none",
-          delay: i * 2.5
-        });
-      });
+      // Initial state
+      gsap.set(t1, { autoAlpha: 0, z: -200, xPercent: -20 });
+      gsap.set(t2, { autoAlpha: 0, z: -300, xPercent: 20 });
+      gsap.set(t3, { autoAlpha: 0, z: -200, xPercent: -20 });
+      gsap.set(portrait, { autoAlpha: 0, scale: 0.9, y: 50 });
 
-      // Layer sandwich timeline: Pins on scroll and scrubs the text elements in opposite directions
       const tl = gsap.timeline({
         scrollTrigger: {
           trigger: container,
           start: "top top",
-          end: "+=100%",
+          end: "+=150%",
           pin: true,
-          scrub: 1, // Smooth scrub delay
-          invalidateOnRefresh: true,
+          scrub: 1,
+          anticipatePin: 1,
         },
       });
 
-      // Clamp-scaled travel range: max 12% to prevent text clipping
-      tl.fromTo(t1, { xPercent: -12 }, { xPercent: 12, ease: "none" }, 0)
-        .fromTo(t2, { xPercent: 12 }, { xPercent: -12, ease: "none" }, 0)
-        .fromTo(t3, { xPercent: -10 }, { xPercent: 10, ease: "none" }, 0)
-        .fromTo(
-          portrait,
-          { scale: 1.0, boxShadow: "0 16px 40px -20px rgba(192, 120, 96, 0.12)" },
-          { scale: 1.04, boxShadow: "0 32px 80px -15px rgba(192, 120, 96, 0.3)" },
-          0
-        );
+      // Enter
+      tl.addLabel("enter")
+        .to(t1, { autoAlpha: 1, z: 0, xPercent: -8, duration: 1, ease: "power2.out" }, "enter")
+        .to(t2, { autoAlpha: 1, z: 0, xPercent: 8, duration: 1, ease: "power2.out" }, "enter+=0.1")
+        .to(t3, { autoAlpha: 1, z: 0, xPercent: -8, duration: 1, ease: "power2.out" }, "enter+=0.2")
+        .to(portrait, { autoAlpha: 1, scale: 1, y: 0, duration: 1.2, ease: "power3.out" }, "enter+=0.3");
+
+      // Active
+      tl.addLabel("active")
+        .to(t1, { xPercent: 8, duration: 3, ease: "none" }, "active")
+        .to(t2, { xPercent: -8, duration: 3, ease: "none" }, "active")
+        .to(t3, { xPercent: 8, duration: 3, ease: "none" }, "active")
+        .to(portrait, { scale: 1.03, duration: 3, ease: "none" }, "active");
+
+      // Exit
+      tl.addLabel("exit")
+        .to([t1, t2, t3], { autoAlpha: 0.2, filter: "blur(4px)", duration: 1, ease: "power2.inOut" }, "exit")
+        .to(portrait, { autoAlpha: 0.6, y: -20, duration: 1, ease: "power2.inOut" }, "exit+=0.2");
+
+      return () => tl.kill();
     },
     { scope: containerRef }
   );
 
   return (
-    <div ref={containerRef} id="manifesto" className="relative w-full h-[120vh] bg-bg-base overflow-hidden">
+    <div ref={containerRef} id="manifesto" className="relative w-full min-h-screen bg-bg-base overflow-hidden" style={{ perspective: "1000px" }}>
       <section
         ref={pinSectionRef}
-        className="w-full h-screen flex flex-col justify-center items-center relative overflow-hidden select-none px-[5vw]"
+        className="w-full h-[100dvh] flex flex-col justify-center items-center relative overflow-hidden select-none px-[5vw]"
       >
 
-        {/* Dynamic Text Stack (Layer 1: Behind the image) */}
-        <div className="absolute inset-0 flex flex-col justify-center gap-8 sm:gap-12 md:gap-16 z-10 w-full overflow-hidden pointer-events-none px-[5vw]">
+        {/* Dynamic Text Stack */}
+        <div className="absolute inset-0 flex flex-col justify-center gap-8 sm:gap-12 md:gap-16 z-10 w-full overflow-hidden pointer-events-none px-[5vw]" style={{ transformStyle: "preserve-3d" }}>
           {/* Row 1 */}
-          <div
-            ref={text1Ref}
-            className="w-full flex justify-center whitespace-nowrap"
-          >
-            <h2 className="font-sans text-[clamp(7vw,10vw,8rem)] font-black uppercase tracking-tighter text-fg-primary leading-none breathe-text" style={{ color: "#C07860" }}>
+          <div ref={text1Ref} className="w-full flex justify-center whitespace-nowrap">
+            <h2 className="font-sans text-[clamp(7vw,10vw,8rem)] font-black uppercase tracking-tighter text-fg-primary leading-none opacity-80">
               STRUCTURE
             </h2>
           </div>
           
           {/* Row 2 */}
-          <div
-            ref={text2Ref}
-            className="w-full flex justify-center whitespace-nowrap"
-          >
-            <h2 className="font-sans text-[clamp(7vw,10vw,8rem)] font-black uppercase tracking-tighter text-fg-primary leading-none breathe-text" style={{ color: "#C07860" }}>
+          <div ref={text2Ref} className="w-full flex justify-center whitespace-nowrap">
+            <h2 className="font-sans text-[clamp(7vw,10vw,8rem)] font-black uppercase tracking-tighter text-fg-primary leading-none opacity-80">
               MOTION
             </h2>
           </div>
 
           {/* Row 3 */}
-          <div
-            ref={text3Ref}
-            className="w-full flex justify-center md:whitespace-nowrap whitespace-normal text-center"
-          >
-            <h2 className="font-sans text-[clamp(7vw,10vw,8rem)] font-black uppercase tracking-tighter text-fg-primary leading-none breathe-text" style={{ color: "#C07860" }}>
+          <div ref={text3Ref} className="w-full flex justify-center md:whitespace-nowrap whitespace-normal text-center">
+            <h2 className="font-sans text-[clamp(7vw,10vw,8rem)] font-black uppercase tracking-tighter text-fg-primary leading-none opacity-80">
               IMMERSION
             </h2>
           </div>
         </div>
 
-        {/* Central Portrait Column (Layer 2: Foreground Image with higher z-index) */}
+        {/* Central Portrait */}
         <div
           ref={portraitRef}
-          className="relative w-[50vw] sm:w-[35vw] md:w-[24vw] aspect-[2/3] z-20 pointer-events-none rounded-2xl overflow-hidden border border-border-clean/50 transition-all duration-300"
+          className="relative w-[50vw] sm:w-[35vw] md:w-[24vw] aspect-[2/3] z-20 pointer-events-none rounded-2xl overflow-hidden border border-border-clean/50 shadow-sm"
         >
-          <motion.div
-            initial={{ opacity: 0, scale: 0.96 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-            className="w-full h-full relative"
-          >
+          <div className="w-full h-full relative">
             <Image
               src={concreteImage}
               alt="Chrome Visor Portrait"
               fill
               sizes="(max-width: 768px) 50vw, 33vw"
-              className="object-cover filter brightness-[0.9] contrast-[1.04]"
+              className="object-cover"
             />
-          </motion.div>
+          </div>
         </div>
 
         {/* Quiet footnote at bottom */}

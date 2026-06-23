@@ -69,7 +69,17 @@ export default function ArrivalZone() {
       gsap.to(arrayContainer, {
         scale: 0.9,
         yPercent: -15,
-        opacity: 0.3,
+        scrollTrigger: {
+          trigger: containerRef.current,
+          start: "top top",
+          end: "bottom top",
+          scrub: true,
+        },
+      });
+
+      // Fade overlay instead of arrayContainer to avoid flattening 3D transform-style
+      gsap.to(".scroll-fade-overlay", {
+        opacity: 0.85,
         scrollTrigger: {
           trigger: containerRef.current,
           start: "top top",
@@ -79,10 +89,7 @@ export default function ArrivalZone() {
       });
 
       // Cursor parallax on the image array
-      let handleMouseMove: (e: MouseEvent) => void;
-      let handleMouseLeave: () => void;
-
-      handleMouseMove = (e: MouseEvent) => {
+      const handleMouseMove = (e: MouseEvent) => {
         const normX = (e.clientX / window.innerWidth - 0.5) * 2;
         const normY = (e.clientY / window.innerHeight - 0.5) * 2;
         
@@ -107,7 +114,7 @@ export default function ArrivalZone() {
         });
       };
 
-      handleMouseLeave = () => {
+      const handleMouseLeave = () => {
         gsap.to(arrayContainer, {
           rotateY: 0,
           rotateX: 0,
@@ -205,6 +212,9 @@ export default function ArrivalZone() {
           );
         })}
       </div>
+
+      {/* Fade Overlay for Parallax Exit */}
+      <div className="scroll-fade-overlay absolute inset-0 w-full h-full bg-bg-base pointer-events-none z-[5]" style={{ opacity: 0 }} />
 
       {/* Layer 3 — Subtle Film Grain Noise Overlay */}
       <svg className="absolute inset-0 w-full h-full opacity-[0.03] z-10 pointer-events-none mix-blend-overlay">

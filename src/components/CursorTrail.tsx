@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import gsap from "gsap";
+import Image from "next/image";
 
 const IMAGES = [
   "/images/editorial-reach.jpg",
@@ -140,7 +141,7 @@ export default function CursorTrail({ activeRef }: { activeRef: React.RefObject<
           className="absolute top-0 left-0 w-[120px] h-[160px] opacity-0 will-change-transform overflow-hidden shadow-2xl border border-white/10"
           style={{ zIndex: MAX_IMAGES - i }}
         >
-          <img src={IMAGES[i % IMAGES.length]} alt="" className="w-full h-full object-cover" />
+          <Image src={IMAGES[i % IMAGES.length]} alt="" fill sizes="120px" className="object-cover" />
         </div>
       ))}
     </div>

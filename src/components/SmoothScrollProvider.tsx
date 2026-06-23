@@ -40,7 +40,7 @@ export default function SmoothScrollProvider({
         touchMultiplier: 1.5,
       });
 
-      setLenis(lenisInstance);
+      queueMicrotask(() => setLenis(lenisInstance));
 
       // Connect Lenis events to GSAP ScrollTrigger
       lenisInstance.on("scroll", () => {
@@ -102,7 +102,6 @@ export default function SmoothScrollProvider({
       if (updateTicker) {
         gsap.ticker.remove(updateTicker);
       }
-      ScrollTrigger.killAll();
     };
   }, []);
 
