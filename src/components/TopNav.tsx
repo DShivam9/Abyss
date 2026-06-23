@@ -84,7 +84,7 @@ export default function TopNav() {
         Task 1.1: Static, Architectural Header
         No magnetism, no scroll-hiding. Purely fixed, precise header.
       */}
-      <nav className="fixed top-0 left-0 right-0 z-[60] flex items-center justify-between px-6 md:px-12 py-8 select-none pointer-events-none">
+      <nav className="fixed top-0 left-0 right-0 z-[60] flex items-center justify-between px-6 md:px-12 py-8 select-none pointer-events-none mix-blend-difference text-white">
         {/* Brand Logo - Fixed Top Left */}
         <BrandLogo onClick={(e) => handleLinkClick("arrival", e)} />
 
@@ -94,12 +94,12 @@ export default function TopNav() {
           className="pointer-events-auto cursor-pointer group flex items-center relative px-4 py-2 -mr-4"
           aria-label={isOpen ? "Close menu" : "Open menu"}
         >
-          <div className="relative font-sans text-[11px] md:text-xs font-bold tracking-[0.25em] uppercase text-fg-primary transition-colors duration-300">
+          <div className="relative font-sans text-[11px] md:text-xs font-bold tracking-[0.25em] uppercase text-current transition-colors duration-300">
             <span className="inline-block transition-transform duration-300 group-hover:-translate-x-1 opacity-40">[</span>
             <span className="mx-2">{isOpen ? "CLOSE" : "MENU"}</span>
             <span className="inline-block transition-transform duration-300 group-hover:translate-x-1 opacity-40">]</span>
             {/* Strike-through line on hover */}
-            <span className="absolute left-0 top-1/2 w-0 h-[1px] bg-fg-primary transition-all duration-500 ease-out group-hover:w-full -translate-y-1/2"></span>
+            <span className="absolute left-0 top-1/2 w-0 h-[1px] bg-current transition-all duration-500 ease-out group-hover:w-full -translate-y-1/2"></span>
           </div>
         </button>
       </nav>

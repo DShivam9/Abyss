@@ -27,6 +27,8 @@ export default function GalleryZone() {
       gsap.set([".scene-02", ".scene-03", ".scene-04"], { autoAlpha: 0 });
       gsap.set(".scale-scene-img", { scale: 1 });
       gsap.set(".scale-scene-text", { autoAlpha: 0, y: 50 });
+      gsap.set(".depth-scene-text", { autoAlpha: 0, y: 50 });
+      gsap.set(".focus-scene-text", { autoAlpha: 0, y: 50 });
       
       gsap.set(".depth-layer-mid", { clipPath: "inset(15% 15% 15% 15%)" });
       gsap.set(".depth-layer-fg", { clipPath: "inset(30% 30% 30% 30%)" });
@@ -61,6 +63,7 @@ export default function GalleryZone() {
       // Phase 2: Depth
       tl.addLabel("s2_start", "s1_end")
         .to(".scene-02", { autoAlpha: 1, duration: 0.5 }, "s2_start")
+        .to(".depth-scene-text", { autoAlpha: 1, y: 0, ease: "power3.out", duration: 1 }, "s2_start+=0.5")
         .to(".depth-layer-mid", { clipPath: "inset(5% 5% 5% 5%)", ease: "power3.inOut", duration: 1.5 }, "s2_start+=0.2")
         .to(".depth-layer-fg", { clipPath: "inset(15% 15% 15% 15%)", ease: "power3.inOut", duration: 1.5 }, "s2_start+=0.2")
         .addLabel("s2_end", "+=0.5")
@@ -69,6 +72,7 @@ export default function GalleryZone() {
       // Phase 3: Focus
       tl.addLabel("s3_start", "s2_end")
         .to(".scene-03", { autoAlpha: 1, duration: 0.5 }, "s3_start")
+        .to(".focus-scene-text", { autoAlpha: 1, y: 0, ease: "power3.out", duration: 1 }, "s3_start+=0.5")
         .to(".focus-scene-container", { "--focus-radius": "35%", ease: "power2.inOut", duration: 1.5 }, "s3_start+=0.2")
         .to(".focus-sharp-image", { scale: 1, ease: "power2.inOut", duration: 1.5 }, "s3_start+=0.2")
         .addLabel("s3_end", "+=0.5")

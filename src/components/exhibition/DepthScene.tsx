@@ -39,7 +39,13 @@ export default function DepthScene() {
       onMouseLeave={handleMouseLeave}
       style={{ perspective: 1500 }}
     >
-      <div className="relative w-[80vw] h-[50vh] md:w-[35vw] md:h-[60vh]">
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
+        <h2 className="depth-scene-text font-cormorant text-[15vw] md:text-[12vw] leading-none text-white mix-blend-difference opacity-20 md:opacity-0 translate-y-0 md:translate-y-8">
+          DIMENSION
+        </h2>
+      </div>
+
+      <div className="relative w-[80vw] h-[50vh] md:w-[35vw] md:h-[60vh] z-20">
         {/* Background Layer (Static/Base) */}
         <motion.div 
           className="depth-layer-bg absolute inset-0 rounded-sm overflow-hidden shadow-2xl"

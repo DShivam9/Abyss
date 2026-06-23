@@ -33,8 +33,14 @@ export default function FocusScene() {
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
     >
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
+        <h2 className="focus-scene-text font-cormorant text-[15vw] md:text-[12vw] leading-none text-white mix-blend-difference opacity-20 md:opacity-0 translate-y-0 md:translate-y-8">
+          CLARITY
+        </h2>
+      </div>
+
       <div 
-        className="relative w-[80vw] h-[50vh] md:w-[45vw] md:h-[75vh] focus-scene-container" 
+        className="relative w-[80vw] h-[50vh] md:w-[45vw] md:h-[75vh] focus-scene-container z-20" 
         style={{ "--focus-radius": "35%" } as React.CSSProperties}
       >
         {/* Out of focus background */}

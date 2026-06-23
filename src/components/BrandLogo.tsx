@@ -27,7 +27,7 @@ export default function BrandLogo({ onClick }: BrandLogoProps) {
         {/* Top Slice */}
         <motion.svg
           viewBox="0 0 40 40"
-          className="absolute inset-0 w-full h-full text-fg-primary"
+          className="absolute inset-0 w-full h-full text-current"
           style={{ clipPath: "polygon(0% 0%, 100% 0%, 100% 35.5%, 0% 50.5%)" }}
           variants={{
             rest: { x: 0, y: 0 },
@@ -40,7 +40,7 @@ export default function BrandLogo({ onClick }: BrandLogoProps) {
         {/* Middle Slice */}
         <motion.svg
           viewBox="0 0 40 40"
-          className="absolute inset-0 w-full h-full text-fg-primary"
+          className="absolute inset-0 w-full h-full text-current"
           style={{ clipPath: "polygon(0% 50%, 100% 35%, 100% 65.5%, 0% 80.5%)" }}
           variants={{
             rest: { x: 0, y: 0 },
@@ -53,7 +53,7 @@ export default function BrandLogo({ onClick }: BrandLogoProps) {
         {/* Bottom Slice */}
         <motion.svg
           viewBox="0 0 40 40"
-          className="absolute inset-0 w-full h-full text-fg-primary"
+          className="absolute inset-0 w-full h-full text-current"
           style={{ clipPath: "polygon(0% 80%, 100% 65%, 100% 100%, 0% 100%)" }}
           variants={{
             rest: { x: 0, y: 0 },
@@ -65,11 +65,11 @@ export default function BrandLogo({ onClick }: BrandLogoProps) {
       </motion.div>
 
       {/* 1px Vertical Divider */}
-      <div className="w-[1px] h-8 bg-fg-muted/20 group-hover:bg-fg-primary/40 transition-colors duration-700 shrink-0 hidden sm:block origin-top"></div>
+      <div className="w-[1px] h-8 bg-current opacity-20 group-hover:opacity-40 transition-all duration-700 shrink-0 hidden sm:block origin-top"></div>
 
       {/* Premium Typography Lockup */}
       <div className="flex flex-col justify-center">
-        <span className="font-sans text-[11px] md:text-xs tracking-[0.3em] uppercase text-fg-primary flex items-center gap-1.5 transition-colors duration-500">
+        <span className="font-sans text-[11px] md:text-xs tracking-[0.3em] uppercase text-current flex items-center gap-1.5 transition-colors duration-500">
           <span className="font-black">ABSOLUTE</span>
           <span className="font-light opacity-60 group-hover:opacity-100 transition-opacity duration-500">UI</span>
         </span>

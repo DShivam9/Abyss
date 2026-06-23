@@ -1,123 +1,111 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import gsap from "gsap";
 import Image from "next/image";
 
 const IMAGES = [
+  "/images/silver-visor-portrait.jpg",
+  "/images/chunky-boots-fashion.jpg",
+  "/images/cosmic-silhouette.jpg",
+  "/images/kneeling-light-beam.jpg",
+  "/images/knight-illumination.jpg",
+  "/images/massive-stairs-light.jpg",
+  "/images/baggy-denim-fashion.jpg",
+  "/images/skateboard-dollar-graphic.jpg",
   "/images/editorial-reach.jpg",
   "/images/avant-garde-fashion.jpg",
   "/images/wet-skin-portrait.jpg",
   "/images/chrome-visor-portrait.jpg",
-  "/images/particle-ascension.jpg",
-  "/images/analogue-light-abstraction.jpg"
 ];
-const MAX_IMAGES = 6;
+
+// Increased max images so we don't recycle them while they are still fading out
+const MAX_IMAGES = 20;
 
 export default function CursorTrail({ activeRef }: { activeRef: React.RefObject<HTMLElement | null> }) {
+  const [mounted, setMounted] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const poolRef = useRef<HTMLDivElement[]>([]);
-  const mousePos = useRef({ x: 0, y: 0 });
-  const points = useRef(Array.from({ length: MAX_IMAGES }).map(() => ({ x: 0, y: 0 })));
-  const isActive = useRef(false);
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  
+  const lastPos = useRef({ x: 0, y: 0 });
+  const currentIndex = useRef(0);
+  const zIndexCounter = useRef(100);
 
   useEffect(() => {
-    // Initial hidden state
-    gsap.set(poolRef.current, { autoAlpha: 0, scale: 0.8 });
+    setMounted(true);
+  }, []);
 
-    let isFirstMove = true;
+  useEffect(() => {
+    if (!mounted) return;
+
+    // Hide all initially
+    gsap.set(poolRef.current, { autoAlpha: 0, scale: 0.5 });
 
     const handleMouseMove = (e: MouseEvent) => {
-      mousePos.current.x = e.clientX;
-      mousePos.current.y = e.clientY;
-
       if (activeRef.current && !activeRef.current.contains(e.target as Node)) {
-        if (isActive.current) {
-          isActive.current = false;
-          isFirstMove = true; // reset so they snap next time
-          gsap.to(poolRef.current, { autoAlpha: 0, scale: 0.8, duration: 0.3, stagger: 0.02, ease: "power2.out", overwrite: "auto" });
-        }
-        return;
+        return; // Don't drop images if outside the active area
       }
 
-      if (!isActive.current) {
-        isActive.current = true;
-        if (isFirstMove) {
-          // Snap all points to initial mouse pos
-          points.current.forEach(pt => {
-            pt.x = mousePos.current.x;
-            pt.y = mousePos.current.y;
-          });
-          isFirstMove = false;
-        }
-        gsap.to(poolRef.current, { autoAlpha: 1, scale: 1, duration: 0.3, stagger: 0.02, ease: "power2.out", overwrite: "auto" });
-      }
+      // Calculate distance from last dropped image
+      const dist = Math.hypot(e.clientX - lastPos.current.x, e.clientY - lastPos.current.y);
+      
+      // If we moved enough distance, drop a new image
+      if (dist > 75) {
+        lastPos.current = { x: e.clientX, y: e.clientY };
+        
+        const el = poolRef.current[currentIndex.current];
+        if (!el) return;
 
-      // Reset the stop timeout
-      if (timeoutRef.current) clearTimeout(timeoutRef.current);
-      timeoutRef.current = setTimeout(() => {
-        if (isActive.current) {
-          isActive.current = false;
-          // Fade out snappier and smoother when mouse stops
-          gsap.to(poolRef.current, { autoAlpha: 0, scale: 0.8, duration: 0.15, stagger: 0.015, ease: "power2.out", overwrite: "auto" });
-        }
-      }, 10);
+        // Bring the new image to the front
+        zIndexCounter.current += 1;
+        
+        // Random rotation for a scattered editorial feel
+        const rotation = Math.random() * 30 - 15;
+
+        // Stop any active animations on this specific image
+        gsap.killTweensOf(el);
+        
+        // Position it exactly where the mouse is
+        gsap.set(el, {
+          x: e.clientX - 60, // center horizontally
+          y: e.clientY - 80, // center vertically
+          zIndex: zIndexCounter.current,
+          rotation: rotation,
+        });
+
+        // Pop in animation
+        gsap.fromTo(el, 
+          { scale: 0.2, autoAlpha: 0 }, 
+          { scale: 1, autoAlpha: 1, duration: 0.4, ease: "back.out(1.5)" }
+        );
+
+        // Automatically fade out and scale down after a short delay
+        gsap.to(el, {
+          scale: 0.4,
+          autoAlpha: 0,
+          duration: 0.5,
+          ease: "power2.inOut",
+          delay: 0.6
+        });
+
+        // Move to the next image in the pool
+        currentIndex.current = (currentIndex.current + 1) % MAX_IMAGES;
+      }
     };
 
     const mediaQuery = window.matchMedia("(min-width: 768px)");
-    
-    let rafId: number;
-    
-    const render = () => {
-      // Unconditionally run physics so the chain keeps settling smoothly even while fading out
-      
-      // Leader follows mouse
-      points.current[0].x = gsap.utils.interpolate(points.current[0].x, mousePos.current.x, 0.15);
-      points.current[0].y = gsap.utils.interpolate(points.current[0].y, mousePos.current.y, 0.15);
-      
-      // Others follow the leader in a chain
-      for (let i = 1; i < MAX_IMAGES; i++) {
-        points.current[i].x = gsap.utils.interpolate(points.current[i].x, points.current[i - 1].x, 0.35);
-        points.current[i].y = gsap.utils.interpolate(points.current[i].y, points.current[i - 1].y, 0.35);
-      }
-      
-      // Apply positions
-      poolRef.current.forEach((el, i) => {
-        if (!el) return;
-        
-        // Add a slight rotation based on horizontal movement difference
-        let dx = 0;
-        if (i === 0) {
-          dx = mousePos.current.x - points.current[0].x;
-        } else {
-          dx = points.current[i-1].x - points.current[i].x;
-        }
-        const rotation = gsap.utils.clamp(-15, 15, dx * 0.1);
-
-        gsap.set(el, {
-          x: points.current[i].x - 60, // center horizontally (120/2)
-          y: points.current[i].y - 80, // center vertically (160/2)
-          rotation: rotation
-        });
-      });
-      
-      rafId = requestAnimationFrame(render);
-    };
 
     if (mediaQuery.matches) {
       window.addEventListener("mousemove", handleMouseMove);
-      rafId = requestAnimationFrame(render);
     }
     
     const listener = (e: MediaQueryListEvent) => {
       if (e.matches) {
         window.addEventListener("mousemove", handleMouseMove);
-        rafId = requestAnimationFrame(render);
       } else {
         window.removeEventListener("mousemove", handleMouseMove);
-        cancelAnimationFrame(rafId);
-        gsap.set(poolRef.current, { autoAlpha: 0 });
+        gsap.set(poolRef.current, { autoAlpha: 0 }); // Hide immediately on mobile
       }
     };
     mediaQuery.addEventListener("change", listener);
@@ -125,13 +113,13 @@ export default function CursorTrail({ activeRef }: { activeRef: React.RefObject<
     return () => {
       window.removeEventListener("mousemove", handleMouseMove);
       mediaQuery.removeEventListener("change", listener);
-      cancelAnimationFrame(rafId);
-      if (timeoutRef.current) clearTimeout(timeoutRef.current);
     };
-  }, [activeRef]);
+  }, [activeRef, mounted]);
 
-  return (
-    <div ref={containerRef} className="fixed inset-0 pointer-events-none z-50 hidden md:block overflow-hidden">
+  if (!mounted) return null;
+
+  return createPortal(
+    <div ref={containerRef} className="fixed inset-0 pointer-events-none z-[9999] hidden md:block overflow-hidden">
       {Array.from({ length: MAX_IMAGES }).map((_, i) => (
         <div
           key={i}
@@ -139,11 +127,11 @@ export default function CursorTrail({ activeRef }: { activeRef: React.RefObject<
             if (el) poolRef.current[i] = el;
           }}
           className="absolute top-0 left-0 w-[120px] h-[160px] opacity-0 will-change-transform overflow-hidden shadow-2xl border border-white/10"
-          style={{ zIndex: MAX_IMAGES - i }}
         >
           <Image src={IMAGES[i % IMAGES.length]} alt="" fill sizes="120px" className="object-cover" />
         </div>
       ))}
-    </div>
+    </div>,
+    document.body
   );
 }
