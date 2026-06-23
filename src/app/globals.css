@@ -1,0 +1,98 @@
+@import url('https://api.fontshare.com/v2/css?f[]=satoshi@300,400,500,700,900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500&display=swap');
+@import "tailwindcss";
+
+@theme {
+  /* Typography */
+  --font-sans: "Satoshi", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-display: "Cormorant Garamond", serif;
+  --font-cormorant: "Cormorant Garamond", serif;
+
+  /* Color System */
+  --color-bg-deep: var(--color-bg-deep);
+  --color-bg-base: var(--color-bg-base);
+  --color-bg-surface: var(--color-bg-surface);
+  --color-bg-elevated: var(--color-bg-elevated);
+  --color-fg-primary: var(--color-fg-primary);
+  --color-fg-secondary: var(--color-fg-secondary);
+  --color-fg-muted: var(--color-fg-muted);
+  --color-border-clean: var(--color-border-clean);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+
+  /* Custom Easing Curves */
+  --ease-smooth: cubic-bezier(0.32, 0.72, 0, 1);
+  --ease-magnetic: cubic-bezier(0.25, 1, 0.5, 1);
+  --ease-reveal: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+:root {
+  --color-bg-deep: #F5F2EB;
+  --color-bg-base: #FDFBF7;
+  --color-bg-surface: #FFFFFF;
+  --color-bg-elevated: #F7F4EC;
+  --color-fg-primary: #1A1714;
+  --color-fg-secondary: #2C2723;
+  --color-fg-muted: #7A7067;
+  --color-border-clean: #EBE6D8;
+
+  --background: var(--color-bg-base);
+  --foreground: var(--color-fg-primary);
+  --accent: #C07860;
+  --accent-hover: #E8A088;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Custom minimal scrollbar to fit editorial aesthetic */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-bg-deep);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-fg-muted);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-fg-secondary);
+}
+
+@layer utilities {
+  .will-change-transform {
+    will-change: transform;
+  }
+  .will-change-opacity {
+    will-change: opacity;
+  }
+  .will-change-transform-opacity {
+    will-change: transform, opacity;
+  }
+  
+  .perspective-1200 {
+    perspective: 1200px;
+  }
+  .preserve-3d {
+    transform-style: preserve-3d;
+  }
+  .backface-hidden {
+    backface-visibility: hidden;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

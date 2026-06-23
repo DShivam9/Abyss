@@ -1,0 +1,3 @@
+[mcp_servers.agentation-mcp-server]
+command = "npx"
+args = [ "-y", "agentation-mcp-server" ]

@@ -1,16 +1,12 @@
-# GEMINI.md
-
-# AbsoluteUI AI Operating System
+# Absolute UI — AI Operating Instructions
 
 ## Purpose
 
-This file defines how AI agents should think, plan, design, and build within the AbsoluteUI codebase.
+This file defines how AI agents should think, plan, design, and build within the Absolute UI codebase.
 
-AbsoluteUI is not a generic UI library.
+Absolute UI is an image-first interactive component library. The images ARE the components — not assets inside containers.
 
-AbsoluteUI is a curated collection of motion-crafted React components designed to create immersive digital experiences.
-
-Every decision should reinforce this vision.
+Right now, the product is the website. The website proves the quality standard, the motion philosophy, and the visual taste before any component ships. Every decision should reinforce this.
 
 ---
 
@@ -18,43 +14,43 @@ Every decision should reinforce this vision.
 
 ## Project Name
 
-AbsoluteUI
+Absolute UI
 
 ---
 
 ## Project Type
 
-Open-source React component library.
+Image-first interactive component library. Currently in Phase 1: website experience.
 
 ---
 
 ## Core Positioning
 
-Beauty-first.
+Image-first. Motion-driven. Immersive. Cinematic.
 
-Motion-driven.
+The website demonstrates capability. It is a statement, not a catalog.
 
-Production-ready.
+---
 
-Curated.
+## Current Phase
+
+Phase 1 — Website Experience.
+
+We are building the website. Not components. Not documentation pages. Not a component catalog.
+
+Components come in Phase 3.
 
 ---
 
 ## Mission
 
-Create components that developers genuinely want to save, share, and use.
-
-Not because they are trendy.
-
-Because they are exceptionally crafted.
+Build image-first interactive experiences at a level nobody else is offering. Prove the standard through the website first.
 
 ---
 
 # Fundamental Principle
 
-Quality over quantity.
-
-A single unforgettable component is worth more than one hundred forgettable components.
+The image is the experience. Every design decision, every animation, every layout choice serves the image.
 
 ---
 
@@ -66,10 +62,10 @@ Never immediately begin implementation.
 
 Before writing code:
 
-* Understand the problem
-* Understand the desired experience
-* Understand constraints
-* Ask questions if information is missing
+- Understand the desired experience
+- Understand the image-first philosophy
+- Understand constraints
+- Ask questions if information is missing
 
 Discussion comes before implementation.
 
@@ -79,10 +75,10 @@ Discussion comes before implementation.
 
 Before creating a solution:
 
-* Analyze existing approaches
-* Identify trade-offs
-* Evaluate alternatives
-* Recommend the strongest approach
+- Analyze existing approaches
+- Identify trade-offs
+- Evaluate alternatives
+- Recommend the strongest approach
 
 Do not default to the first solution.
 
@@ -104,11 +100,12 @@ Do not blindly agree.
 
 If a request introduces:
 
-* Poor UX
-* Poor accessibility
-* Technical debt
-* Visual inconsistency
-* Performance issues
+- Scroll slop (section after section with no narrative purpose)
+- Generic, template-like output
+- Motion that serves no purpose
+- Visual noise that competes with images
+- Performance problems
+- Accessibility issues
 
 Explain the issue and propose a better alternative.
 
@@ -118,136 +115,114 @@ Explain the issue and propose a better alternative.
 
 After completing a task ask:
 
-* Can this be cleaner?
-* Can this be faster?
-* Can this be more beautiful?
-* Can this be more maintainable?
-* Can this be more accessible?
+- Does the image feel more immersive?
+- Does the motion feel more cinematic?
+- Is the narrative flow better?
+- Can this be faster?
+- Can this be more accessible?
 
 Never settle for the first acceptable version.
 
 ---
 
-# Design Philosophy
+## Rule 06 — Process Visual Feedback (Agentation)
 
-AbsoluteUI is:
-
-* Premium
-* Curated
-* Intentional
-* Immersive
-* Memorable
-
-AbsoluteUI is not:
-
-* Generic
-* Trend-driven
-* Corporate
-* Overdesigned
-* Gimmicky
+When the user provides structured visual feedback generated via the Agentation toolbar:
+- Use the CSS selectors, DOM locations, file paths, and coordinates provided in the feedback to locate the exact component and styles in the codebase.
+- Read the user's specific comments attached to each annotation to guide your design adjustments.
+- Prioritize fixing visual inconsistencies, alignment issues, or interactive polish highlighted in their feedback.
 
 ---
 
-# Visual Standards
+# Design Philosophy
 
-Every component should feel:
+The website should feel:
 
-* Crafted
-* Polished
-* Purposeful
+- Clean
+- Minimalistic
+- Immersive
+- Aesthetic
+- Cinematic
 
-Avoid:
+The website should NOT feel:
 
-* Visual clutter
-* Excessive effects
-* Random decoration
+- Generic or template-like
+- Loud or aggressive
+- Trendy or trend-chasing
+- Over-designed with visual noise
+- Like scroll slop
 
-Every visual decision must have purpose.
+Major inspiration: Awwwards-level execution.
+
+---
+
+# Image-First Philosophy
+
+Every component, every section, every interaction centers on the image.
+
+- The image is not background — it is foreground
+- Images react to scroll, cursor, viewport, and interaction
+- Image quality is non-negotiable (high-res, aesthetic, editorial/nature photography)
+- Layouts serve images — not the other way around
+- If an element doesn't enhance the image experience, question its existence
 
 ---
 
 # Motion Philosophy
 
-Motion exists to:
+Motion makes images feel alive. It is the differentiator.
 
-* Guide attention
-* Improve clarity
-* Create delight
-* Enhance immersion
+**Framer Motion and GSAP are non-negotiable.** They are the twin animation engines. Every interaction depends on them.
 
-Motion does not exist simply because animation is possible.
+Motion should feel:
 
----
+- Smooth (60 FPS, no jank)
+- Deliberate (every animation has purpose)
+- Cinematic (directed, not random)
+- Elegant (luxurious deceleration, controlled timing)
 
-# Component Philosophy
+Motion should NEVER feel:
 
-A component should:
-
-* Solve a problem
-* Create an emotional response
-* Improve the user experience
-
-If it only satisfies one of these goals, refine it further.
+- Chaotic or random
+- Bouncy or playful (wrong brand)
+- Excessive or exhausting
+- Absent (static sections are forbidden)
 
 ---
 
-# AbsoluteUI Quality Checklist
+# Narrative Flow
 
-Before approving a component ask:
+The website tells a story. Not section → section → section.
 
-### Visual
+Rules:
 
-* Is it beautiful?
-* Is it memorable?
-* Is it polished?
-
-### Motion
-
-* Is motion meaningful?
-* Is motion smooth?
-* Is motion necessary?
-
-### Technical
-
-* Is it responsive?
-* Is it accessible?
-* Is it performant?
-
-### Product
-
-* Is it reusable?
-* Is it production ready?
-* Is it worthy of AbsoluteUI?
-
-If any answer is "No", continue refining.
+- Every scroll position should reveal something meaningful
+- Use GSAP ScrollTrigger for pinned sections and scroll-driven pacing
+- Use Lenis for global smooth scrolling
+- Transitions between zones feel directed, not arbitrary
+- The website has a cinematic emotional arc: intrigue → belief → demonstration → conviction → closure
+- No scroll slop. Ever.
+- **No waitlist. No playground.** See `docs/SITE_IMPROVEMENT_PLAN.md`.
 
 ---
 
 # Technology Stack
 
-Primary:
+Core:
 
-* Next.js
-* React
-* TypeScript
-* Tailwind CSS
+- React
+- Next.js
+- TypeScript
+- Tailwind CSS
 
-Animation:
+Animation (Non-Negotiable):
 
-* GSAP
-* Framer Motion
+- Framer Motion
+- GSAP (with ScrollTrigger)
+- @gsap/react (useGSAP hook)
+- Lenis
 
-Advanced:
-
-* Rive
-* Motion One
-* Lenis
-
-Future:
-
-* OGL
-* WebGL
-* React Three Fiber
+Project structure: Single clean Next.js directory. No monorepo. No Turborepo.
 
 Use the simplest solution capable of delivering the desired experience.
 
@@ -257,17 +232,19 @@ Use the simplest solution capable of delivering the desired experience.
 
 Target:
 
-* 60 FPS
-* Lighthouse 90+
-* Responsive interactions
+- 60 FPS on all animations
+- Lighthouse 90+
+- Fast initial render
+- Responsive interactions
 
 Avoid:
 
-* Layout thrashing
-* Unnecessary rerenders
-* Heavy dependencies
+- Layout thrashing
+- Unnecessary rerenders
+- Heavy dependencies that don't earn their bundle size
+- Unoptimized image assets
 
-Beauty should not come at the cost of performance.
+Beauty must not compromise performance.
 
 ---
 
@@ -275,40 +252,27 @@ Beauty should not come at the cost of performance.
 
 Required:
 
-* Keyboard navigation
-* Focus states
-* Semantic HTML
-* Screen reader support
+- Keyboard navigation
+- Visible focus states
+- Semantic HTML
+- Screen reader support
+- `prefers-reduced-motion` support
 
-Accessibility is mandatory.
-
-Not optional.
-
----
-
-# Documentation Standards
-
-Every component must include:
-
-* Live Preview
-* Source Code
-* Installation
-* Usage Example
-
-Documentation should prioritize clarity.
+Accessibility is mandatory. Not optional.
 
 ---
 
-# Decision Framework
+# Inspiration Sources
 
-When faced with multiple solutions ask:
+Study these for quality reference. We are not competing with them. We exist in a different category.
 
-1. Which solution creates the best user experience?
-2. Which solution creates the best visual result?
-3. Which solution is most maintainable?
-4. Which solution aligns with AbsoluteUI principles?
+- **Awwwards** — Motion quality, storytelling, presentation. Primary inspiration.
+- **Godly** — Visual quality, typography, curation.
+- **Linear** — Precision, spacing, professionalism.
+- **Apple** — Simplicity, restraint, product quality.
+- **21st.dev** — Component presentation, developer experience, visual polish.
 
-Choose the strongest overall option.
+Learn from them. Do not imitate them. Absolute UI has its own identity.
 
 ---
 
@@ -316,59 +280,90 @@ Choose the strongest overall option.
 
 Never:
 
-* Copy competitors or 21st.dev directly (never create a direct clone)
-* Repackage borrowed open-source components without meaningful improvement
-* Build generic components
-* Ship unfinished work
-* Ignore accessibility
-* Ignore performance
-* Add animations without purpose
-* Add features solely to increase component count
-
-*Note: Borrowing open-source components, patterns, and ideas from 21st.dev is permitted ONLY when licensing permits. You must follow original licenses, attribute where required, and elevate the implementation to fit AbsoluteUI standards.*
-
----
-
-# Inspiration Sources
-
-Study:
-
-* Awwwards
-* Godly
-* Linear
-* Apple
-* Magic UI
-* Aceternity
-* Raycast
-* 21st.dev (focus on component discoverability, presentation systems, developer experience, showcase architecture, preview interactions, visual polish, and quality)
-
-Learn from them.
-
-Do not imitate them.
-
-AbsoluteUI should develop its own identity.
+- Build generic, template-like output
+- Create scroll slop (sections with no narrative purpose)
+- Ship static sections without motion or interaction
+- Add animations without purpose
+- Copy competitors directly
+- Use bouncy spring physics (wrong brand)
+- Ignore accessibility
+- Ignore performance
+- Use glassmorphism, neon glow, or trend-chasing effects
+- Build components before Phase 3
 
 ---
 
-# Success Definition
+# Decision Framework
 
-Success is not measured by:
+When faced with multiple solutions ask:
 
-* Component count
-* Feature count
-* Repository size
+1. Which solution makes the image experience more immersive?
+2. Which solution creates better narrative flow?
+3. Which solution is more cinematic?
+4. Which solution performs better?
+5. Which solution aligns with the image-first philosophy?
 
-Success is measured by:
+Choose the strongest overall option.
 
-* Craftsmanship
-* Consistency
-* Memorability
-* Developer trust
+---
+
+# Documentation Reference
+
+The project documentation lives in `docs/`:
+
+- **`docs/SITE_IMPROVEMENT_PLAN.md`** — **Primary source of truth.** Locked decisions, bug fixes, zone specs, implementation order. Read this first.
+- `docs/DESIGN.md` — Design philosophy, motion system, content voice (light mode only)
+- `docs/WEBSITE.md` — Tech spec, architecture, wireframes, design tokens
+- `docs/PRODUCT.md` — Vision, brand, roadmap
+
+When documents conflict, **`SITE_IMPROVEMENT_PLAN.md` wins.**
+
+---
+
+# Anti-Generic Output (Mandatory)
+
+Gemini and all agents frequently produce template-like output. **This is a failure state.**
+
+## Locked Decisions — Never Violate
+
+- **Light mode only.** No dark backgrounds. No `#0A0A0A`. Use tokens from `docs/DESIGN.md`.
+- **Waitlist removed permanently.** Never add email capture, signup CTAs, or waitlist copy.
+- **Playground zone removed.** Interactivity lives in Gallery exhibitions only.
+- **Two fonts only:** Cormorant Garamond + Satoshi. No other families.
+- **Motion:** Cinematic GSAP/Framer curves. No bouncy springs. No elastic easing.
+
+## Before Submitting Any Code or Design
+
+Run this checklist:
+
+1. Would this pass as an **Awwwards exhibition site**, or does it look like a generic SaaS landing page?
+2. Is every section **image-first** with purposeful motion?
+3. Are colors **warm ivory/light**, not dark charcoal?
+4. Is scroll routed through **Lenis**, not native `scrollIntoView`?
+5. Did I read **`docs/SITE_IMPROVEMENT_PLAN.md`** for the relevant zone spec?
+
+## Generic Patterns to Reject
+
+Do not produce:
+
+- Dark heroes with gradient overlays
+- Card grids with generic hover lift
+- "Join waitlist" or email forms
+- Playground / sandbox / "try it" zones separate from gallery
+- Hamburger menu icons (use editorial "Index" if mobile nav needed)
+- Glassmorphism, neon glow, purple gradients
+- 8+ font families
+- Static sections with no interaction
+- Copy that sounds like marketing template filler ("revolutionary", "next-generation", "elevate your")
+
+## When the User Says Output Is Bad
+
+Stop. Re-read `docs/SITE_IMPROVEMENT_PLAN.md` and the relevant zone spec. Do not repeat the same approach. Do not revert to rejected concepts. Ask one clarifying question only if the spec is genuinely ambiguous.
 
 ---
 
 # Final Principle
 
-Every contribution should make AbsoluteUI feel more curated, more refined, and more memorable than it was before.
+Every contribution should make Absolute UI feel more immersive, more cinematic, and more unforgettable than it was before.
 
 If it does not, reconsider the decision.

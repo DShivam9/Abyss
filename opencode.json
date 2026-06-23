@@ -1,0 +1,14 @@
+{
+  "mcp": {
+    "agentation-mcp-server": {
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        "agentation-mcp-server"
+      ],
+      "enabled": true,
+      "environment": {}
+    }
+  }
+}
