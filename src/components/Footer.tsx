@@ -1,249 +1,202 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
-import { useGSAP } from "@gsap/react";
-import { gsap } from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { useLenis } from "@/components/SmoothScrollProvider";
+import { useRef, useEffect, useState } from "react";
+import Link from "next/link";
+import Image from "next/image";
+import gsap from "gsap";
+import { IMAGES } from "@/lib/images";
 
-function RollingSocialLink({ href, label }: { href: string; label: string }) {
+const FOOTER_IMAGES = IMAGES.footer;
+
+const ArrowIcon = () => (
+  <svg 
+    width="1em" 
+    height="1em" 
+    viewBox="0 0 12 12" 
+    fill="none" 
+    xmlns="http://www.w3.org/2000/svg" 
+    className="ml-2"
+  >
+    <path d="M1 11L11 1M11 1H3M11 1V9" stroke="currentColor" strokeWidth="2"/>
+  </svg>
+);
+
+const RollUpLink = ({ href, children, className = "" }: { href: string; children: React.ReactNode; className?: string }) => {
   return (
-    <a
-      href={href}
-      target="_blank"
-      rel="noopener noreferrer"
-      aria-label={label}
-      className="relative inline-block overflow-hidden py-1 group pointer-events-auto cursor-pointer font-sans text-[11px] font-bold uppercase tracking-[0.2em] text-fg-secondary"
-    >
-      <span className="flex" aria-hidden="true">
-        {label.split("").map((char, i) => (
-          <span
-            key={i}
-            className="inline-block transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] group-hover:-translate-y-full"
-            style={{ transitionDelay: `${i * 0.015}s` }}
-          >
-            {char === " " ? "\u00A0" : char}
-          </span>
-        ))}
+    <Link href={href} className={`group relative overflow-hidden inline-flex ${className}`}>
+      <span className="flex items-center group-hover:-translate-y-[100%] transition-transform duration-500 ease-[cubic-bezier(0.19,1,0.22,1)]">
+        {children}
       </span>
-      <span className="absolute inset-0 flex" aria-hidden="true">
-        {label.split("").map((char, i) => (
-          <span
-            key={i}
-            className="inline-block translate-y-full transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] group-hover:translate-y-0 text-accent"
-            style={{ transitionDelay: `${i * 0.015}s` }}
-          >
-            {char === " " ? "\u00A0" : char}
-          </span>
-        ))}
+      <span className="flex items-center absolute top-0 left-0 translate-y-[100%] group-hover:translate-y-0 transition-transform duration-500 ease-[cubic-bezier(0.19,1,0.22,1)]">
+        {children}
       </span>
-      <span className="absolute bottom-0 left-0 w-full h-[1px] bg-accent origin-left scale-x-0 transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] group-hover:scale-x-100" />
-    </a>
+    </Link>
   );
-}
-
-function BackToTopCompass() {
-  const buttonRef = useRef<HTMLButtonElement>(null);
-  const arrowRef = useRef<HTMLSpanElement>(null);
-  const lenis = useLenis();
-
-  const { contextSafe } = useGSAP({ scope: buttonRef });
-
-  const handleScrollTop = () => {
-    if (lenis) {
-      lenis.scrollTo(0, { duration: 1.4 });
-    } else {
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    }
-  };
-
-  const handleMouseMove = (e: React.MouseEvent<HTMLButtonElement>) => {
-    contextSafe(() => {
-      const btn = buttonRef.current;
-      const arrow = arrowRef.current;
-      if (!btn || !arrow) return;
-
-      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-
-      const { clientX, clientY } = e;
-      const { left, top, width, height } = btn.getBoundingClientRect();
-      const centerX = left + width / 2;
-      const centerY = top + height / 2;
-      const x = clientX - centerX;
-      const y = clientY - centerY;
-
-      const angle = Math.atan2(y, x) * (180 / Math.PI);
-
-      const length = Math.sqrt(x * x + y * y);
-      const maxMove = 8;
-      const factor = length > 0 ? Math.min(maxMove / length, 0.3) : 0;
-
-      gsap.to(btn, {
-        x: x * factor,
-        y: y * factor,
-        duration: 0.3,
-        ease: "power2.out",
-      });
-
-      gsap.to(arrow, {
-        rotation: angle + 90,
-        duration: 0.2,
-        ease: "power1.out",
-      });
-    })();
-  };
-
-  const handleMouseLeave = () => {
-    contextSafe(() => {
-      const btn = buttonRef.current;
-      const arrow = arrowRef.current;
-      if (!btn || !arrow) return;
-
-      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-
-      gsap.to(btn, {
-        x: 0,
-        y: 0,
-        duration: 0.5,
-        ease: "power3.out",
-      });
-
-      gsap.to(arrow, {
-        rotation: 0,
-        duration: 0.5,
-        ease: "power2.out",
-      });
-    })();
-  };
-
-  return (
-    <button
-      ref={buttonRef}
-      onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
-      onClick={handleScrollTop}
-      aria-label="Back to top"
-      className="w-14 h-14 rounded-full border border-border-clean hover:border-accent flex items-center justify-center pointer-events-auto cursor-pointer transition-colors duration-500 group bg-transparent relative"
-    >
-      <span
-        ref={arrowRef}
-        className="inline-block transform origin-center text-fg-primary text-xl font-light transition-colors duration-500 group-hover:text-accent"
-      >
-        ↑
-      </span>
-    </button>
-  );
-}
+};
 
 export default function Footer() {
-  const [time, setTime] = useState("");
-  const footerRef = useRef<HTMLDivElement>(null);
-  const topLineRef = useRef<HTMLDivElement>(null);
-  const contentRef = useRef<HTMLDivElement>(null);
-  const clockRef = useRef<HTMLDivElement>(null);
+  const footerRef = useRef<HTMLElement>(null);
+  const textRef = useRef<HTMLDivElement>(null);
+  const columnsRef = useRef<HTMLDivElement>(null);
+  
+  const [currentImage, setCurrentImage] = useState(0);
 
   useEffect(() => {
-    const updateTime = () => {
-      const options: Intl.DateTimeFormatOptions = {
-        timeZone: "Europe/London",
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit",
-        hour12: false,
-      };
-      setTime(new Intl.DateTimeFormat("en-GB", options).format(new Date()));
-    };
-
-    updateTime();
-    const interval = setInterval(updateTime, 1000);
-    return () => clearInterval(interval);
+    const timer = setInterval(() => {
+      setCurrentImage((prev) => (prev + 1) % FOOTER_IMAGES.length);
+    }, 2500);
+    return () => clearInterval(timer);
   }, []);
 
-  useGSAP(
-    () => {
-      gsap.registerPlugin(ScrollTrigger);
-      
-      const mm = gsap.matchMedia();
-      
-      mm.add("(prefers-reduced-motion: reduce)", () => {
-        gsap.set([topLineRef.current, contentRef.current, clockRef.current], { autoAlpha: 1, clearProps: "all" });
-      });
+  useEffect(() => {
 
-      mm.add("(prefers-reduced-motion: no-preference)", () => {
-        gsap.set(topLineRef.current, { scaleX: 0, transformOrigin: "center center" });
-        gsap.set(contentRef.current, { autoAlpha: 0, y: 30 });
-        gsap.set(clockRef.current, { autoAlpha: 0, y: 10 });
+    
+    const ctx = gsap.context(() => {
+      // Massive text animation
+      if (textRef.current) {
+        const chars = textRef.current.querySelectorAll('.char');
+        gsap.fromTo(chars, 
+          { y: "110%", rotate: 5, transformOrigin: "left top" },
+          { 
+            y: "0%", 
+            rotate: 0,
+            stagger: 0.04, 
+            duration: 1.4, 
+            ease: "expo.out",
+            scrollTrigger: {
+              trigger: textRef.current,
+              start: "top 95%",
+            }
+          }
+        );
+      }
 
-        const tl = gsap.timeline({
-          scrollTrigger: {
-            trigger: footerRef.current,
-            start: "top 85%",
-            toggleActions: "play none none none",
-          },
-        });
+      // Columns stagger animation
+      if (columnsRef.current) {
+        const colLinks = columnsRef.current.querySelectorAll('.col-link');
+        gsap.fromTo(colLinks,
+          { y: 30, opacity: 0 },
+          {
+            y: 0,
+            opacity: 1,
+            stagger: 0.03,
+            duration: 1.2,
+            ease: "expo.out",
+            scrollTrigger: {
+              trigger: columnsRef.current,
+              start: "top 80%",
+            }
+          }
+        );
+      }
 
-        tl.to(topLineRef.current, { scaleX: 1, duration: 1, ease: "power3.inOut" })
-          .to(contentRef.current, { autoAlpha: 1, y: 0, duration: 0.8, ease: "power2.out" }, "-=0.4")
-          .to(clockRef.current, { autoAlpha: 1, y: 0, duration: 0.6, ease: "power2.out" }, "-=0.4");
-          
-        return () => tl.kill();
-      });
-      
-      return () => mm.revert();
-    },
-    { scope: footerRef }
-  );
+    }, footerRef);
+
+    return () => ctx.revert();
+  }, []);
 
   return (
-    <footer
+    <footer 
       ref={footerRef}
-      className="relative w-full bg-bg-deep px-8 md:px-16 lg:px-24 py-16 md:py-24 select-none flex flex-col gap-24 md:gap-32 overflow-hidden z-20"
+      className="bg-white text-black min-h-[90vh] flex flex-col justify-between pt-12 uppercase font-sans tracking-tighter relative z-10 overflow-hidden"
     >
-      <div
-        ref={topLineRef}
-        className="absolute top-0 left-8 right-8 md:left-16 md:right-16 lg:left-24 lg:right-24 h-[1px] bg-border-clean"
-      />
-
-      <div ref={contentRef} className="flex flex-col items-center text-center max-w-7xl mx-auto w-full pt-12 md:pt-0">
-        <h2 className="font-cormorant italic text-4xl md:text-6xl lg:text-7xl text-fg-primary mb-16 md:mb-32">
-          Images should feel alive.
-        </h2>
-
-        <div className="flex flex-col md:flex-row justify-between items-center w-full gap-16 md:gap-8">
-          <div className="flex flex-col items-center md:items-start gap-2">
-            <span className="font-sans text-[11px] font-extrabold tracking-[0.3em] uppercase text-fg-primary">
-              Absolute UI
-            </span>
-            <span className="font-sans text-[9px] tracking-[0.15em] text-fg-muted uppercase leading-relaxed">
-              Image-first. Motion-driven.
-            </span>
-          </div>
-
-          <div className="flex flex-wrap justify-center gap-8 md:gap-12">
-            <RollingSocialLink href="https://github.com/absoluteui/absolute-ui" label="GitHub" />
-            <RollingSocialLink href="https://twitter.com/absoluteui" label="Twitter" />
-            <RollingSocialLink href="https://discord.gg/absoluteui" label="Discord" />
-          </div>
-
-          <div className="flex flex-col items-center md:items-end gap-4">
-            <BackToTopCompass />
-          </div>
+      {/* Scattered Columns */}
+      <div ref={columnsRef} className="grid grid-cols-1 md:grid-cols-3 w-full flex-1 px-4 md:px-8 py-20 relative gap-8">
+        
+        {/* Col 1: Home... (Top aligned) */}
+        <div className="flex flex-col justify-start gap-2 md:gap-4 text-base md:text-xl lg:text-2xl font-black pt-12 md:pl-8">
+          <RollUpLink href="#" className="col-link w-fit">HOME</RollUpLink>
+          <RollUpLink href="#" className="col-link w-fit">PHILOSOPHY</RollUpLink>
+          <RollUpLink href="#" className="col-link w-fit">EXHIBITION</RollUpLink>
+          <RollUpLink href="#" className="col-link w-fit">MANIFESTO</RollUpLink>
         </div>
+
+        {/* Col 2: Components... (Bottom aligned) */}
+        <div className="flex flex-col justify-end pb-12 gap-2 md:gap-4 text-base md:text-xl lg:text-2xl font-black md:pl-12">
+          <RollUpLink href="#" className="col-link w-fit">COMPONENTS</RollUpLink>
+          <RollUpLink href="#" className="col-link w-fit">DOCS</RollUpLink>
+          <RollUpLink href="#" className="col-link w-fit">INSTALL</RollUpLink>
+        </div>
+
+        {/* Col 3: Github */}
+        <div className="flex flex-col justify-start pt-32 gap-2 md:gap-4 text-base md:text-xl lg:text-2xl font-black md:pl-20">
+          <RollUpLink href="#" className="col-link w-fit">
+            GITHUB <ArrowIcon />
+          </RollUpLink>
+        </div>
+
       </div>
 
-      <div ref={clockRef} className="w-full flex flex-col md:flex-row justify-between items-center pt-8 border-t border-border-clean/50 gap-6 md:gap-4 text-center md:text-left font-sans text-[10px] uppercase tracking-[0.18em] text-fg-muted/80 max-w-7xl mx-auto">
-        <div className="flex flex-wrap justify-center md:justify-start items-center gap-3">
-          <span className="text-fg-primary font-semibold">Absolute UI</span>
-          <span>© {new Date().getFullYear()}</span>
-          <span className="text-border-clean font-light hidden md:inline">|</span>
-          <span className="hidden md:inline">MIT License</span>
-        </div>
-        
-        <div className="flex flex-col md:flex-row items-center md:items-end justify-center md:justify-end gap-2 md:text-right min-w-[120px]">
-           <span className="text-accent font-medium tracking-[0.25em]">{time || "00:00:00"}</span>
-           <span className="text-[8px] text-fg-muted/60">LONDON (GMT)</span>
+      {/* Massive Text */}
+      <div className="w-full flex items-end justify-between text-[15vw] leading-[0.78] font-black tracking-tighter px-4 pb-6 overflow-hidden">
+        <div ref={textRef} className="flex w-full items-end justify-between">
+          
+          <div className="relative inline-flex">
+            {/* The Image Slideshow (Bottom Layer) */}
+            <div className="absolute inset-0 z-0">
+              {FOOTER_IMAGES.map((src, i) => (
+                <div 
+                  key={src}
+                  className={`absolute inset-0 w-full h-full transition-opacity duration-300 ${
+                    currentImage === i ? 'opacity-100' : 'opacity-0'
+                  }`}
+                >
+                  <Image
+                    src={src}
+                    alt=""
+                    fill
+                    className="object-cover object-center"
+                    sizes="50vw"
+                    loading="lazy"
+                  />
+                </div>
+              ))}
+            </div>
+
+            {/* The Text Mask (Top Layer via mix-blend-screen) */}
+            <div className="relative z-10 flex bg-white text-black mix-blend-screen pr-[2vw]">
+              {"ABSOLUTE".split("").map((char, i) => (
+                <span key={i} className="inline-block overflow-hidden">
+                  <span className="char inline-block">{char}</span>
+                </span>
+              ))}
+            </div>
+          </div>
+
+          <div className="inline-block overflow-hidden ml-[2vw]">
+            <div className="char relative inline-block">
+              <div className="absolute inset-0 bg-black"></div>
+              
+              <div className="absolute inset-0 z-0 pointer-events-none">
+                {FOOTER_IMAGES.map((src, i) => (
+                  <div 
+                    key={src}
+                    className={`absolute inset-0 w-full h-full transition-opacity duration-300 ${
+                      currentImage === i ? 'opacity-100' : 'opacity-0'
+                    }`}
+                  >
+                    <Image
+                      src={src}
+                      alt=""
+                      fill
+                      className="object-cover object-center"
+                      sizes="50vw"
+                      loading="lazy"
+                    />
+                  </div>
+                ))}
+              </div>
+
+              <div className="relative z-10 bg-black text-white mix-blend-multiply px-[2vw] pt-[2vw] pb-[1vw]">
+                UI
+              </div>
+            </div>
+          </div>
+          
         </div>
       </div>
     </footer>
   );
 }
+
+

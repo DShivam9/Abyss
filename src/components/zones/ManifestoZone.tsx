@@ -3,8 +3,8 @@
 import { useRef } from "react";
 import { useGSAP } from "@gsap/react";
 import { gsap } from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Image from "next/image";
+import { IMAGES } from "@/lib/images";
 
 export default function ManifestoZone() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -14,11 +14,11 @@ export default function ManifestoZone() {
   const text3Ref = useRef<HTMLDivElement>(null);
   const portraitRef = useRef<HTMLDivElement>(null);
 
-  const concreteImage = "/images/chrome-visor-portrait.jpg";
+  const concreteImage = IMAGES.chromeVisorPortrait;
 
   useGSAP(
     () => {
-      gsap.registerPlugin(ScrollTrigger);
+
 
       const container = containerRef.current;
       const pinSection = pinSectionRef.current;

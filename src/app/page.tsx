@@ -8,6 +8,7 @@ import PhilosophyZone from "@/components/zones/PhilosophyZone";
 import GalleryZone from "@/components/zones/GalleryZone";
 import ManifestoZone from "@/components/zones/ManifestoZone";
 import Footer from "@/components/Footer";
+import ZoneErrorBoundary from "@/components/ZoneErrorBoundary";
 
 const sectionColors = {
   arrival: { accent: "#C07860", hover: "#E8A088" },
@@ -18,7 +19,7 @@ const sectionColors = {
 
 export default function Home() {
   useGSAP(() => {
-    gsap.registerPlugin(ScrollTrigger);
+
 
     Object.entries(sectionColors).forEach(([id, colors]) => {
       ScrollTrigger.create({
@@ -42,18 +43,26 @@ export default function Home() {
   }, []);
 
   return (
-    <main className="w-full min-h-screen bg-bg-base overflow-x-hidden">
+    <main id="main-content" className="w-full min-h-screen bg-bg-base overflow-x-hidden">
       {/* Zone 1 — Arrival (Hero) */}
-      <ArrivalZone />
+      <ZoneErrorBoundary zoneName="Arrival">
+        <ArrivalZone />
+      </ZoneErrorBoundary>
 
       {/* Zone 2 — Philosophy (Scroll Pinned Text Scrub) */}
-      <PhilosophyZone />
+      <ZoneErrorBoundary zoneName="Philosophy">
+        <PhilosophyZone />
+      </ZoneErrorBoundary>
 
       {/* Zone 3 — Gallery (Horizontal Exhibition Scroll) */}
-      <GalleryZone />
+      <ZoneErrorBoundary zoneName="Gallery">
+        <GalleryZone />
+      </ZoneErrorBoundary>
 
       {/* Zone 4 — Manifesto (Geometric Statement) */}
-      <ManifestoZone />
+      <ZoneErrorBoundary zoneName="Manifesto">
+        <ManifestoZone />
+      </ZoneErrorBoundary>
 
       {/* Footer */}
       <Footer />

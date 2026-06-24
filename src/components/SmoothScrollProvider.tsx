@@ -4,6 +4,11 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 import Lenis from "lenis";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { useGSAP } from "@gsap/react";
+
+if (typeof window !== "undefined") {
+  gsap.registerPlugin(ScrollTrigger, useGSAP);
+}
 
 const LenisContext = createContext<Lenis | null>(null);
 
@@ -20,8 +25,6 @@ export default function SmoothScrollProvider({
     // Check for prefers-reduced-motion
     const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-    // Register GSAP ScrollTrigger plugin
-    gsap.registerPlugin(ScrollTrigger);
 
     // If user prefers reduced motion, don't initialize Lenis, let native scrolling take over.
     // We still want ScrollTrigger for standard intersection logic if needed, but no smooth scroll hijacking.

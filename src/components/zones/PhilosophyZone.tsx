@@ -3,8 +3,8 @@
 import { useRef } from "react";
 import { useGSAP } from "@gsap/react";
 import { gsap } from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Image from "next/image";
+import { IMAGES } from "@/lib/images";
 import CursorTrail from "../CursorTrail";
 
 export default function PhilosophyZone() {
@@ -28,7 +28,7 @@ export default function PhilosophyZone() {
 
   useGSAP(
     () => {
-      gsap.registerPlugin(ScrollTrigger);
+
       if (!containerRef.current) return;
 
       const words = revealTextRef.current?.querySelectorAll(".word-reveal");
@@ -157,16 +157,14 @@ export default function PhilosophyZone() {
               <p ref={problemParaRef} className="font-sans text-xl text-fg-secondary max-w-sm leading-relaxed">
                 Every interface wraps images in containers. Borders. Cards. Shadows. The image becomes secondary to the frame.
               </p>
-              {/* Clean editorial frame, no dark shadows */}
-              <div ref={act1ImgLeftRef} className="relative w-full aspect-[4/5] rounded-sm overflow-hidden border border-border-clean shadow-sm">
-                <Image src="/images/editorial-reach.jpg" alt="Framed Image 1" fill sizes="33vw" className="object-cover" />
+              <div ref={act1ImgLeftRef} className="relative w-full aspect-[4/5]">
+                <Image src={IMAGES.editorialReach} alt="Framed Image 1" fill sizes="33vw" className="object-cover" />
               </div>
             </div>
             
             <div className="w-1/4 translate-y-12 z-10">
-              {/* Clean editorial frame */}
-              <div ref={act1ImgRightRef} className="relative w-full aspect-[3/4] rounded-sm overflow-hidden border border-border-clean shadow-sm">
-                <Image src="/images/chrome-figure-warm.jpg" alt="Framed Image 2" fill sizes="25vw" className="object-cover" />
+              <div ref={act1ImgRightRef} className="relative w-full aspect-square mt-20 md:mt-32">
+                <Image src={IMAGES.chromeVisorPortrait} alt="Framed Image 2" fill sizes="25vw" className="object-cover" />
               </div>
             </div>
           </div>
@@ -186,19 +184,19 @@ export default function PhilosophyZone() {
           
           {/* Subtle contextual imagery establishing the turn, without glassmorphism/bloat */}
           <div ref={act2ImagesRef} className="absolute inset-0 w-full h-full pointer-events-none flex items-center justify-center gap-12">
-             <div ref={cascade1Ref} className="relative w-[20vw] aspect-[4/5] rounded-sm overflow-hidden opacity-40 mix-blend-multiply rotate-[-2deg] border border-border-clean">
-               <Image src="/images/wet-skin-portrait.jpg" alt="Abstract" fill sizes="20vw" className="object-cover" />
+             <div ref={cascade1Ref} className="parallax-img-1 absolute right-[-10%] top-[20%] w-[40%] md:w-[30%] aspect-[3/4]">
+               <Image src={IMAGES.wetSkinPortrait} alt="Abstract" fill sizes="20vw" className="object-cover" />
              </div>
-             <div ref={cascade2Ref} className="relative w-[25vw] aspect-video rounded-sm overflow-hidden opacity-40 mix-blend-multiply rotate-[3deg] border border-border-clean mt-32">
-               <Image src="/images/chromashift-mannequin.jpg" alt="Abstract" fill sizes="25vw" className="object-cover" />
+             <div ref={cascade2Ref} className="parallax-img-2 absolute left-[10%] bottom-[10%] w-[50%] md:w-[40%] aspect-[4/5]">
+               <Image src={IMAGES.silverVisorPortrait} alt="Abstract" fill sizes="25vw" className="object-cover" />
              </div>
           </div>
         </div>
 
         {/* ACT 3 */}
         <div ref={act3Ref} className="absolute inset-0 w-full h-full z-30 pointer-events-none">
-          <div ref={fullBleedImgRef} className="absolute inset-0 w-full h-full bg-bg-deep">
-             <Image src="/images/analogue-light-abstraction.jpg" alt="Proof Full Bleed" fill sizes="100vw" className="object-cover" />
+          <div ref={fullBleedImgRef} className="proof-bleed-img absolute inset-0 w-full h-full grayscale-[50%] origin-center">
+             <Image src={IMAGES.wetSkinPortrait} alt="Proof Full Bleed" fill sizes="100vw" className="object-cover" />
              {/* Warm light context overlay, NO dark-mode treatment */}
              <div className="absolute inset-0 bg-bg-base/10 mix-blend-overlay" />
           </div>
@@ -220,8 +218,8 @@ export default function PhilosophyZone() {
           <p className="font-sans text-xl text-fg-secondary leading-relaxed pt-12 z-10">
             Every interface wraps images in containers. Borders. Cards. Shadows. The image becomes secondary to the frame.
           </p>
-          <div className="relative w-full aspect-[4/5] rounded-sm overflow-hidden border border-border-clean shadow-sm z-10">
-            <Image src="/images/editorial-reach.jpg" alt="Framed Image 1" fill sizes="100vw" className="object-cover" />
+          <div className="relative w-full aspect-[4/5]">
+            <Image src={IMAGES.editorialReach} alt="Framed Image 1" fill sizes="100vw" className="object-cover" />
           </div>
         </div>
 
@@ -230,14 +228,14 @@ export default function PhilosophyZone() {
           <h2 className="font-sans text-4xl font-light tracking-tight text-fg-primary leading-[1.2]">
             What if the <span className="font-cormorant italic text-accent">image</span> was the <span className="font-cormorant italic text-accent">interface?</span>
           </h2>
-          <div className="relative w-full aspect-square rounded-sm overflow-hidden opacity-60 mix-blend-multiply border border-border-clean">
-             <Image src="/images/wet-skin-portrait.jpg" alt="Abstract" fill sizes="100vw" className="object-cover" />
+          <div className="parallax-img-m absolute left-[10%] bottom-[20%] w-[60%] aspect-[4/5]">
+             <Image src={IMAGES.wetSkinPortrait} alt="Abstract" fill sizes="100vw" className="object-cover" />
           </div>
         </div>
 
         {/* ACT 3 */}
         <div className="relative w-full h-[60vh] rounded-sm overflow-hidden border border-border-clean">
-           <Image src="/images/analogue-light-abstraction.jpg" alt="Proof Full Bleed" fill sizes="100vw" className="object-cover" />
+           <Image src={IMAGES.wetSkinPortrait} alt="Proof Full Bleed" fill sizes="100vw" className="object-cover" />
            <div className="absolute inset-0 flex items-center justify-center mix-blend-color-burn bg-bg-base/5">
              <h2 className="font-cormorant text-[18vw] italic text-fg-primary uppercase tracking-tighter text-center leading-none">
                Absolute UI

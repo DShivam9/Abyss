@@ -6,11 +6,14 @@ import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import BrandLogo from "./BrandLogo";
 
+import { EASE, DURATION } from "@/lib/animation";
+import { IMAGES } from "@/lib/images";
+
 const links = [
-  { id: "arrival", label: "Arrival", num: "01", image: "/images/chrome-visor-portrait.jpg" },
-  { id: "philosophy", label: "Philosophy", num: "02", image: "/images/analogue-light-abstraction.jpg" },
-  { id: "gallery", label: "Exhibition", num: "03", image: "/images/chromashift-mannequin.jpg" },
-  { id: "manifesto", label: "Manifesto", num: "04", image: "/images/avant-garde-fashion.jpg" },
+  { id: "arrival", label: "Arrival", num: "01", image: IMAGES.chromeVisorPortrait },
+  { id: "philosophy", label: "Philosophy", num: "02", image: IMAGES.wetSkinPortrait },
+  { id: "gallery", label: "Exhibition", num: "03", image: IMAGES.silverVisorPortrait },
+  { id: "manifesto", label: "Manifesto", num: "04", image: IMAGES.avantGardeFashion },
   { id: "github", label: "GitHub ↗", href: "https://github.com/absoluteui/absolute-ui", num: "05" }
 ];
 
@@ -111,7 +114,7 @@ export default function TopNav() {
             initial={{ clipPath: "inset(0 0 100% 0)" }}
             animate={{ clipPath: "inset(0 0 0% 0)" }}
             exit={{ clipPath: "inset(0 0 100% 0)" }}
-            transition={{ duration: 1.2, ease: [0.76, 0, 0.24, 1] }}
+            transition={{ duration: DURATION.slow, ease: EASE.wipe }}
             className="fixed inset-0 z-50 bg-bg-base overflow-hidden"
           >
             {/* Split Grid Layout */}
@@ -152,7 +155,7 @@ export default function TopNav() {
                           <motion.div
                             variants={{
                               hidden: { y: "100%" },
-                              visible: { y: "0%", transition: { duration: 0.8, ease: [0.76, 0, 0.24, 1] } }
+                              visible: { y: "0%", transition: { duration: DURATION.medium, ease: EASE.wipe } }
                             }}
                           >
                             <span className={`font-sans text-[10px] md:text-sm font-bold tracking-[0.2em] uppercase mt-4 md:mt-8 transition-colors duration-500 block ${
@@ -166,7 +169,7 @@ export default function TopNav() {
                           <motion.div
                             variants={{
                               hidden: { y: "100%", rotate: 2 },
-                              visible: { y: "0%", rotate: 0, transition: { duration: 1, ease: [0.76, 0, 0.24, 1] } }
+                              visible: { y: "0%", rotate: 0, transition: { duration: 1, ease: EASE.wipe } }
                             }}
                           >
                             <a
@@ -236,7 +239,7 @@ export default function TopNav() {
                       initial={{ clipPath: "inset(100% 0 0 0)" }}
                       animate={{ clipPath: "inset(0% 0 0 0)", zIndex: 10 }}
                       exit={{ clipPath: "inset(0 0 100% 0)", zIndex: 0 }}
-                      transition={{ duration: 0.8, ease: [0.76, 0, 0.24, 1] }}
+                      transition={{ duration: DURATION.medium, ease: EASE.wipe }}
                       className="absolute inset-0 w-full h-full"
                     >
                       <Image 

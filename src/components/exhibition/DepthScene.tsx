@@ -2,6 +2,7 @@
 
 import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import Image from "next/image";
+import { IMAGES } from "@/lib/images";
 
 export default function DepthScene() {
   const x = useMotionValue(0);
@@ -51,7 +52,7 @@ export default function DepthScene() {
           className="depth-layer-bg absolute inset-0 rounded-sm overflow-hidden shadow-2xl"
           style={{ x: bgX, y: bgY }}
         >
-          <Image src="/images/wet-skin-portrait.jpg" alt="Base" fill className="object-cover opacity-50 blur-[2px]" sizes="(max-width: 768px) 80vw, 50vw" />
+          <Image src={IMAGES.wetSkinPortrait} alt="Base" fill className="object-cover opacity-50 blur-[2px]" sizes="(max-width: 768px) 80vw, 50vw" />
         </motion.div>
 
         {/* Midground Layer (Masked middle) */}
@@ -59,7 +60,7 @@ export default function DepthScene() {
           className="depth-layer-mid absolute inset-0 rounded-sm overflow-hidden shadow-2xl [clip-path:inset(5%)] md:[clip-path:none]"
           style={{ x: midX, y: midY }}
         >
-          <Image src="/images/wet-skin-portrait.jpg" alt="Mid" fill className="object-cover" sizes="(max-width: 768px) 80vw, 50vw" />
+          <Image src={IMAGES.wetSkinPortrait} alt="Mid" fill className="object-cover" sizes="(max-width: 768px) 80vw, 50vw" />
         </motion.div>
 
         {/* Foreground Layer (Masked center focus) */}
@@ -67,7 +68,7 @@ export default function DepthScene() {
           className="depth-layer-fg absolute inset-0 rounded-sm overflow-hidden shadow-xl [clip-path:inset(15%)] md:[clip-path:none]"
           style={{ x: fgX, y: fgY }}
         >
-          <Image src="/images/wet-skin-portrait.jpg" alt="Foreground" fill className="object-cover" sizes="(max-width: 768px) 80vw, 50vw" />
+          <Image src={IMAGES.wetSkinPortrait} alt="Foreground" fill className="object-cover" sizes="(max-width: 768px) 80vw, 50vw" />
         </motion.div>
       </div>
     </div>

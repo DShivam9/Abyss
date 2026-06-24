@@ -3,7 +3,6 @@
 import { useRef } from "react";
 import { useGSAP } from "@gsap/react";
 import { gsap } from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 import ScaleScene from "../exhibition/ScaleScene";
 import DepthScene from "../exhibition/DepthScene";
@@ -14,7 +13,7 @@ export default function GalleryZone() {
   const containerRef = useRef<HTMLDivElement>(null);
 
   useGSAP(() => {
-    gsap.registerPlugin(ScrollTrigger);
+
     
     // Only run GSAP timeline on desktop and if reduced motion is false
     const mm = gsap.matchMedia();
@@ -95,7 +94,7 @@ export default function GalleryZone() {
   }, { scope: containerRef });
 
   return (
-    <section ref={containerRef} id="exhibition-zone" className="relative w-full bg-[#050505] text-white">
+    <section ref={containerRef} id="gallery" className="relative w-full bg-[#050505] text-white">
       {/* Desktop/Motion-Enabled: Pinned Container */}
       <div className="desktop-exhibition hidden md:block md:motion-reduce:hidden w-full h-[100dvh] overflow-hidden relative">
         {/* Left Typography/Index */}

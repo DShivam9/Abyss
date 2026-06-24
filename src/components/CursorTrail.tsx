@@ -1,23 +1,25 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import gsap from "gsap";
+import { gsap } from "gsap";
 import Image from "next/image";
+import { IMAGES } from "@/lib/images";
 
-const IMAGES = [
-  "/images/silver-visor-portrait.jpg",
-  "/images/chunky-boots-fashion.jpg",
-  "/images/cosmic-silhouette.jpg",
-  "/images/kneeling-light-beam.jpg",
-  "/images/knight-illumination.jpg",
-  "/images/massive-stairs-light.jpg",
-  "/images/baggy-denim-fashion.jpg",
-  "/images/skateboard-dollar-graphic.jpg",
-  "/images/editorial-reach.jpg",
-  "/images/avant-garde-fashion.jpg",
-  "/images/wet-skin-portrait.jpg",
-  "/images/chrome-visor-portrait.jpg",
+// Expanded to 13 varied images for a longer, richer trail
+const CURSOR_IMAGES = [
+  IMAGES.silverVisorPortrait,
+  IMAGES.chunkyBootsFashion,
+  IMAGES.baggyDenimFashion,
+  IMAGES.chunkyBootsFashion,
+  IMAGES.editorialReach,
+  IMAGES.skateboardDollarGraphic,
+  IMAGES.baggyDenimFashion,
+  IMAGES.skateboardDollarGraphic,
+  IMAGES.editorialReach,
+  IMAGES.avantGardeFashion,
+  IMAGES.wetSkinPortrait,
+  IMAGES.chromeVisorPortrait,
 ];
 
 // Increased max images so we don't recycle them while they are still fading out
@@ -33,6 +35,7 @@ export default function CursorTrail({ activeRef }: { activeRef: React.RefObject<
   const zIndexCounter = useRef(100);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
   }, []);
 
@@ -77,7 +80,7 @@ export default function CursorTrail({ activeRef }: { activeRef: React.RefObject<
         // Pop in animation
         gsap.fromTo(el, 
           { scale: 0.2, autoAlpha: 0 }, 
-          { scale: 1, autoAlpha: 1, duration: 0.4, ease: "back.out(1.5)" }
+          { scale: 1, autoAlpha: 1, duration: 0.4, ease: "expo.out" }
         );
 
         // Automatically fade out and scale down after a short delay
@@ -128,7 +131,7 @@ export default function CursorTrail({ activeRef }: { activeRef: React.RefObject<
           }}
           className="absolute top-0 left-0 w-[120px] h-[160px] opacity-0 will-change-transform overflow-hidden shadow-2xl border border-white/10"
         >
-          <Image src={IMAGES[i % IMAGES.length]} alt="" fill sizes="120px" className="object-cover" />
+          <Image src={CURSOR_IMAGES[i % CURSOR_IMAGES.length]} alt="" fill sizes="120px" className="object-cover" />
         </div>
       ))}
     </div>,

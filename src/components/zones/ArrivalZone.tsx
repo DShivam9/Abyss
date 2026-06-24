@@ -3,17 +3,18 @@
 import { useRef } from "react";
 import { useGSAP } from "@gsap/react";
 import { gsap } from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useLenis } from "@/components/SmoothScrollProvider";
 import { motion } from "framer-motion";
 import Image from "next/image";
+import { EASE } from "@/lib/animation";
+import { IMAGES } from "@/lib/images";
 
 const heroImages = [
-  { src: "/images/avant-garde-fashion.jpg", alt: "Avant Garde Fashion" },
-  { src: "/images/chrome-figure-warm.jpg", alt: "Chrome Figure Warm" },
-  { src: "/images/wet-skin-portrait.jpg", alt: "Wet Skin Portrait" },
-  { src: "/images/chrome-visor-portrait.jpg", alt: "Chrome Visor" },
-  { src: "/images/editorial-reach.jpg", alt: "Editorial Reach" },
+  { src: IMAGES.avantGardeFashion, alt: "Avant Garde Fashion" },
+  { src: IMAGES.chromeVisorPortrait, alt: "Chrome Figure Warm" },
+  { src: IMAGES.wetSkinPortrait, alt: "Wet Skin Portrait" },
+  { src: IMAGES.chromeVisorPortrait, alt: "Chrome Visor" },
+  { src: IMAGES.editorialReach, alt: "Editorial Reach" },
 ];
 
 export default function ArrivalZone() {
@@ -30,7 +31,7 @@ export default function ArrivalZone() {
 
   useGSAP(
     () => {
-      gsap.registerPlugin(ScrollTrigger);
+
 
       const t1 = title1Ref.current;
       const t2 = title2Ref.current;
@@ -191,7 +192,7 @@ export default function ArrivalZone() {
                 z: translateZ,
                 x: translateX
               }}
-              transition={{ duration: 1.0, delay: i * 0.1, ease: [0.16, 1, 0.3, 1] }}
+              transition={{ duration: 1.0, delay: i * 0.1, ease: EASE.reveal }}
               whileHover={{ 
                 scale: 1.05, 
                 z: translateZ + 30, 
@@ -265,7 +266,7 @@ export default function ArrivalZone() {
             className="font-sans text-xs uppercase tracking-[0.2em] px-8 py-3.5 rounded-full bg-white/10 backdrop-blur-md transition-all duration-300 cursor-pointer flex items-center justify-center overflow-hidden group text-white border border-white/20"
             whileHover={{ scale: 1.02, backgroundColor: "rgba(255,255,255,0.2)", borderColor: "rgba(255,255,255,0.5)" }}
             whileTap={{ scale: 0.98 }}
-            transition={{ duration: 0.3, ease: [0.32, 0.72, 0, 1] }}
+            transition={{ duration: 0.3, ease: EASE.smooth }}
           >
             <div className="relative overflow-hidden flex" aria-hidden="true">
               {/* Front Face */}

@@ -1,34 +1,24 @@
 "use client";
 
-import { motion, useMotionValue, useSpring, useMotionTemplate } from "framer-motion";
+import { motion, useTransform, useMotionTemplate } from "framer-motion";
 import Image from "next/image";
-import { useRef } from "react";
+import { IMAGES } from "@/lib/images";
+import { useNormalizedMouse } from "@/hooks/useNormalizedMouse";
 
 export default function FocusScene() {
-  const containerRef = useRef<HTMLDivElement>(null);
+  const { springX, springY, handleMouseMove, handleMouseLeave } = useNormalizedMouse({
+    stiffness: 200,
+    damping: 25,
+    mode: "element",
+  });
 
-  const maskX = useSpring(useMotionValue(50), { stiffness: 200, damping: 25 });
-  const maskY = useSpring(useMotionValue(50), { stiffness: 200, damping: 25 });
-
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (window.innerWidth < 768 || !containerRef.current) return;
-    const rect = containerRef.current.getBoundingClientRect();
-    const normX = (e.clientX - rect.left) / rect.width;
-    const normY = (e.clientY - rect.top) / rect.height;
-    maskX.set(normX * 100);
-    maskY.set(normY * 100);
-  };
-
-  const handleMouseLeave = () => {
-    maskX.set(50);
-    maskY.set(50);
-  };
+  const maskX = useTransform(springX, [-1, 1], [0, 100]);
+  const maskY = useTransform(springY, [-1, 1], [0, 100]);
 
   const maskImage = useMotionTemplate`radial-gradient(circle at ${maskX}% ${maskY}%, black 0%, transparent var(--focus-radius, 25%))`;
 
   return (
     <div 
-      ref={containerRef}
       className="relative md:absolute md:inset-0 w-full h-[60vh] md:h-full flex items-center justify-center pointer-events-auto"
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
@@ -46,7 +36,7 @@ export default function FocusScene() {
         {/* Out of focus background */}
         <div className="absolute inset-0 overflow-hidden rounded-sm">
           <Image 
-            src="/images/chrome-visor-portrait.jpg" 
+            src={IMAGES.chromeVisorPortrait} 
             alt="Out of focus" 
             fill 
             className="object-cover blur-md opacity-40 grayscale" 
@@ -63,7 +53,7 @@ export default function FocusScene() {
           }}
         >
           <Image 
-            src="/images/chrome-visor-portrait.jpg" 
+            src={IMAGES.chromeVisorPortrait} 
             alt="In focus" 
             fill 
             className="object-cover focus-sharp-image scale-110 md:scale-125" 

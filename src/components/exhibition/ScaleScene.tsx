@@ -2,6 +2,7 @@
 
 import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import Image from "next/image";
+import { IMAGES } from "@/lib/images";
 
 export default function ScaleScene() {
   const x = useMotionValue(0);
@@ -50,7 +51,7 @@ export default function ScaleScene() {
           style={{ rotateX, rotateY }}
         >
           <Image 
-            src="/images/avant-garde-fashion.jpg" 
+            src={IMAGES.avantGardeFashion} 
             alt="Scale Scene" 
             fill 
             sizes="(max-width: 768px) 80vw, 50vw"
