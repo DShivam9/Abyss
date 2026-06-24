@@ -10,8 +10,8 @@ import { EASE, DURATION } from "@/lib/animation";
 import { IMAGES } from "@/lib/images";
 
 const links = [
-  { id: "arrival", label: "Arrival", num: "01", image: IMAGES.chromeVisorPortrait },
-  { id: "philosophy", label: "Philosophy", num: "02", image: IMAGES.wetSkinPortrait },
+  { id: "arrival", label: "Arrival", num: "01", image: IMAGES.jacksonYeeWide },
+  { id: "philosophy", label: "Philosophy", num: "02", image: IMAGES.chunkyBootsFashion },
   { id: "gallery", label: "Exhibition", num: "03", image: IMAGES.silverVisorPortrait },
   { id: "manifesto", label: "Manifesto", num: "04", image: IMAGES.avantGardeFashion },
   { id: "github", label: "GitHub ↗", href: "https://github.com/absoluteui/absolute-ui", num: "05" }

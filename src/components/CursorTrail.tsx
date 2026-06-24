@@ -8,18 +8,22 @@ import { IMAGES } from "@/lib/images";
 
 // Expanded to 13 varied images for a longer, richer trail
 const CURSOR_IMAGES = [
-  IMAGES.silverVisorPortrait,
-  IMAGES.chunkyBootsFashion,
-  IMAGES.baggyDenimFashion,
-  IMAGES.chunkyBootsFashion,
-  IMAGES.editorialReach,
-  IMAGES.skateboardDollarGraphic,
-  IMAGES.baggyDenimFashion,
-  IMAGES.skateboardDollarGraphic,
-  IMAGES.editorialReach,
   IMAGES.avantGardeFashion,
-  IMAGES.wetSkinPortrait,
   IMAGES.chromeVisorPortrait,
+  IMAGES.wetSkinPortrait,
+  IMAGES.silverVisorPortrait,
+  IMAGES.editorialReach,
+  IMAGES.chunkyBootsFashion,
+  IMAGES.baggyDenimFashion,
+  IMAGES.skateboardDollarGraphic,
+  IMAGES.jacksonYeeWide,
+  IMAGES.mahmoodWarmPortrait,
+  IMAGES.baggyJeansStrut,
+  IMAGES.greyFleecePose,
+  IMAGES.blackJacketShades,
+  IMAGES.sunsetSilhouetteCollage,
+  IMAGES.fisheyePufferVest,
+  IMAGES.wideAngleHeadphones,
 ];
 
 // Increased max images so we don't recycle them while they are still fading out

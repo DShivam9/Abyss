@@ -7,7 +7,7 @@ export default function AbsoluteScene() {
     <div className="relative md:absolute md:inset-0 w-full h-[60vh] md:h-full flex items-center justify-center pointer-events-none">
       <div className="absolute-scene-wrapper relative w-[80vw] h-[50vh] md:w-[35vw] md:h-[60vh] overflow-hidden rounded-sm md:shadow-2xl">
         <Image 
-          src={IMAGES.avantGardeFashion} 
+          src={IMAGES.baggyDenimFashion} 
           alt="Absolute Full Bleed" 
           fill 
           className="absolute-scene-img object-cover scale-100 md:scale-110" 

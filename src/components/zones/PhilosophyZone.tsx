@@ -164,7 +164,7 @@ export default function PhilosophyZone() {
             
             <div className="w-1/4 translate-y-12 z-10">
               <div ref={act1ImgRightRef} className="relative w-full aspect-square mt-20 md:mt-32">
-                <Image src={IMAGES.chromeVisorPortrait} alt="Framed Image 2" fill sizes="25vw" className="object-cover" />
+                <Image src={IMAGES.blackJacketShades} alt="Framed Image 2" fill sizes="25vw" className="object-cover" />
               </div>
             </div>
           </div>
@@ -185,10 +185,10 @@ export default function PhilosophyZone() {
           {/* Subtle contextual imagery establishing the turn, without glassmorphism/bloat */}
           <div ref={act2ImagesRef} className="absolute inset-0 w-full h-full pointer-events-none flex items-center justify-center gap-12">
              <div ref={cascade1Ref} className="parallax-img-1 absolute right-[-10%] top-[20%] w-[40%] md:w-[30%] aspect-[3/4]">
-               <Image src={IMAGES.wetSkinPortrait} alt="Abstract" fill sizes="20vw" className="object-cover" />
+               <Image src={IMAGES.greyFleecePose} alt="Abstract" fill sizes="20vw" className="object-cover" />
              </div>
              <div ref={cascade2Ref} className="parallax-img-2 absolute left-[10%] bottom-[10%] w-[50%] md:w-[40%] aspect-[4/5]">
-               <Image src={IMAGES.silverVisorPortrait} alt="Abstract" fill sizes="25vw" className="object-cover" />
+               <Image src={IMAGES.wideAngleHeadphones} alt="Abstract" fill sizes="25vw" className="object-cover" />
              </div>
           </div>
         </div>
@@ -196,7 +196,7 @@ export default function PhilosophyZone() {
         {/* ACT 3 */}
         <div ref={act3Ref} className="absolute inset-0 w-full h-full z-30 pointer-events-none">
           <div ref={fullBleedImgRef} className="proof-bleed-img absolute inset-0 w-full h-full grayscale-[50%] origin-center">
-             <Image src={IMAGES.wetSkinPortrait} alt="Proof Full Bleed" fill sizes="100vw" className="object-cover" />
+             <Image src={IMAGES.chunkyBootsFashion} alt="Proof Full Bleed" fill sizes="100vw" className="object-cover" />
              {/* Warm light context overlay, NO dark-mode treatment */}
              <div className="absolute inset-0 bg-bg-base/10 mix-blend-overlay" />
           </div>
@@ -229,13 +229,13 @@ export default function PhilosophyZone() {
             What if the <span className="font-cormorant italic text-accent">image</span> was the <span className="font-cormorant italic text-accent">interface?</span>
           </h2>
           <div className="parallax-img-m absolute left-[10%] bottom-[20%] w-[60%] aspect-[4/5]">
-             <Image src={IMAGES.wetSkinPortrait} alt="Abstract" fill sizes="100vw" className="object-cover" />
+             <Image src={IMAGES.greyFleecePose} alt="Abstract" fill sizes="100vw" className="object-cover" />
           </div>
         </div>
 
         {/* ACT 3 */}
         <div className="relative w-full h-[60vh] rounded-sm overflow-hidden border border-border-clean">
-           <Image src={IMAGES.wetSkinPortrait} alt="Proof Full Bleed" fill sizes="100vw" className="object-cover" />
+           <Image src={IMAGES.chunkyBootsFashion} alt="Proof Full Bleed" fill sizes="100vw" className="object-cover" />
            <div className="absolute inset-0 flex items-center justify-center mix-blend-color-burn bg-bg-base/5">
              <h2 className="font-cormorant text-[18vw] italic text-fg-primary uppercase tracking-tighter text-center leading-none">
                Absolute UI

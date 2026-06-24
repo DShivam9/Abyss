@@ -10,11 +10,11 @@ import { EASE } from "@/lib/animation";
 import { IMAGES } from "@/lib/images";
 
 const heroImages = [
-  { src: IMAGES.avantGardeFashion, alt: "Avant Garde Fashion" },
-  { src: IMAGES.chromeVisorPortrait, alt: "Chrome Figure Warm" },
-  { src: IMAGES.wetSkinPortrait, alt: "Wet Skin Portrait" },
-  { src: IMAGES.chromeVisorPortrait, alt: "Chrome Visor" },
-  { src: IMAGES.editorialReach, alt: "Editorial Reach" },
+  { src: IMAGES.sunsetSilhouetteCollage, alt: "Sunset Silhouette" },
+  { src: IMAGES.jacksonYeeWide, alt: "Jackson Yee" },
+  { src: IMAGES.mahmoodWarmPortrait, alt: "Mahmood Warm Portrait" },
+  { src: IMAGES.baggyJeansStrut, alt: "Baggy Jeans Strut" },
+  { src: IMAGES.fisheyePufferVest, alt: "Fisheye Puffer Vest" },
 ];
 
 export default function ArrivalZone() {

@@ -14,7 +14,7 @@ export default function ManifestoZone() {
   const text3Ref = useRef<HTMLDivElement>(null);
   const portraitRef = useRef<HTMLDivElement>(null);
 
-  const concreteImage = IMAGES.chromeVisorPortrait;
+  const concreteImage = IMAGES.skateboardDollarGraphic;
 
   useGSAP(
     () => {
