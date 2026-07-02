@@ -1,0 +1,15 @@
+[
+  {
+    "name": "infinite-canvas",
+    "type": "registry:component",
+    "title": "Infinite Canvas",
+    "description": "A 2D infinite workspace supporting wheel trackpad swipe panning and drag momentum physics.",
+    "dependencies": [
+      "framer-motion"
+    ],
+    "registryDependencies": [],
+    "files": [
+      "infinite-canvas.tsx"
+    ]
+  }
+]

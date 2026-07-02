@@ -1,0 +1,21 @@
+{
+  "name": "APPARATUS GG",
+  "slug": "apparatus-gg",
+  "pitch": "A 3D elastic membrane vertex pull mapping height protrusions and shadows to cursor coordinates.",
+  "family": "deform",
+  "energy": "dynamic",
+  "triggers": [
+    "hover"
+  ],
+  "tech": [
+    "three.js",
+    "glsl"
+  ],
+  "lifecycle": {
+    "idle": "Subtle micro-movement or Rest state",
+    "discovery": "Reaction on initial interaction",
+    "buildUp": "Intensifying reaction on continued movement",
+    "peak": "Max effect expression",
+    "recovery": "Relax back to idle"
+  }
+}

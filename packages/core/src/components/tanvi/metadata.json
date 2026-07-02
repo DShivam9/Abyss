@@ -1,0 +1,25 @@
+{
+  "name": "TANVI TANVI",
+  "slug": "tanvi",
+  "pitch": "A Molten Pour fluid solver simulation. Cursor velocity applies shear stress, liquefying and displacing coordinates via a Navier-Stokes grid feedback solver.",
+  "family": "deform",
+  "energy": "dynamic",
+  "triggers": [
+    "hover",
+    "drag"
+  ],
+  "tech": [
+    "three.js",
+    "glsl",
+    "gpgpu",
+    "navier-stokes-solver",
+    "ping-pong-fbo"
+  ],
+  "lifecycle": {
+    "idle": "Viscous liquid resting, minimal background ambient thermal currents",
+    "discovery": "Cursor enters, applying initial shear forces to the local fluid grid",
+    "buildUp": "Dragging creates turbulent flow lines and vortexes carrying image coordinates",
+    "peak": "Rapid motion liquifies the canvas, spreading paint along velocity vectors",
+    "recovery": "Paint flow slows down under damping friction, re-solidifying into resting state"
+  }
+}

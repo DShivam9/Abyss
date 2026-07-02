@@ -1,0 +1,21 @@
+{
+  "name": "CHROMEPUNK BEAST",
+  "slug": "chromepunk-beast",
+  "pitch": "A specular normal-mapped canvas calculating height profiles and embossing shadows on the fly via Sobel filters.",
+  "family": "lens",
+  "energy": "responsive",
+  "triggers": [
+    "hover"
+  ],
+  "tech": [
+    "three.js",
+    "glsl"
+  ],
+  "lifecycle": {
+    "idle": "Subtle micro-movement or Rest state",
+    "discovery": "Reaction on initial interaction",
+    "buildUp": "Intensifying reaction on continued movement",
+    "peak": "Max effect expression",
+    "recovery": "Relax back to idle"
+  }
+}

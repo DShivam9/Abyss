@@ -1,0 +1,21 @@
+{
+  "name": "RED REFRACT",
+  "slug": "red-refract",
+  "pitch": "An X-ray outline reveal canvas. The cursor acts as a circular focus lens showing high-contrast neon outlines underneath.",
+  "family": "lens",
+  "energy": "responsive",
+  "triggers": [
+    "hover"
+  ],
+  "tech": [
+    "three.js",
+    "glsl"
+  ],
+  "lifecycle": {
+    "idle": "Subtle micro-movement or Rest state",
+    "discovery": "Reaction on initial interaction",
+    "buildUp": "Intensifying reaction on continued movement",
+    "peak": "Max effect expression",
+    "recovery": "Relax back to idle"
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "name": "DIGITAL OVERLAY",
+  "slug": "instagram-overlay",
+  "pitch": "A premium fluid-glass refraction and chromatic dispersion overlay. Hovering projects a dynamic magnifying lens dome with edge spectral splitting; clicking triggers an organic water-ripple wave that refracts the background image.",
+  "family": "illuminate",
+  "energy": "responsive",
+  "triggers": [
+    "hover",
+    "click"
+  ],
+  "tech": [
+    "three.js",
+    "glsl",
+    "glass-refraction",
+    "chromatic-aberration",
+    "wave-propagation"
+  ],
+  "lifecycle": {
+    "idle": "Pristine background image with a soft vignette and subtle atmospheric edge refraction",
+    "discovery": "Hovering introduces a smooth glass dome that follows the cursor, refracting the pixels below it",
+    "buildUp": "Approaching the lens boundary reveals organic chromatic dispersion, splitting RGB channels dynamically",
+    "peak": "Clicking fires a fluid pulse, sending concentric refractive wave ripples across the image plane",
+    "recovery": "Ripples decay exponentially using a damped sine wave formula, restoring the screen to normal focus"
+  }
+}

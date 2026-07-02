@@ -1,0 +1,24 @@
+{
+  "name": "CHAI COLLECTION",
+  "slug": "chai-collection",
+  "pitch": "A multi-faceted triangular crystal prism lens. Drags and shifts to refract coordinate space and disperse light into a colorful chromatic spectrum.",
+  "family": "lens",
+  "energy": "responsive",
+  "triggers": [
+    "hover",
+    "drag"
+  ],
+  "tech": [
+    "three.js",
+    "mesh-physical-material",
+    "3d-refraction",
+    "icosahedron-geometry"
+  ],
+  "lifecycle": {
+    "idle": "Flat image surface with subtle light diffraction on outer boundaries",
+    "discovery": "Cursor enters, interactive prism lens drops onto image with spring bounce",
+    "buildUp": "Dragging or moving lens refracts image coordinates and shears the view",
+    "peak": "Rapid motion splits white light into rich RGB dispersion at facet boundaries",
+    "recovery": "Prism lens scales down and lifts away, returning image to flat rest"
+  }
+}

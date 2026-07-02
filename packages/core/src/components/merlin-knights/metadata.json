@@ -1,0 +1,24 @@
+{
+  "name": "MERLIN KNIGHTS",
+  "slug": "merlin-knights",
+  "pitch": "A Renaissance copperplate engraving sketch. The cursor causes paint to bleed through raw parchment paper fibers, gradually drying back to sepia when resting.",
+  "family": "transform",
+  "energy": "calm",
+  "triggers": [
+    "hover"
+  ],
+  "tech": [
+    "three.js",
+    "glsl",
+    "fbm-noise",
+    "cloth-simulation",
+    "edge-fraying"
+  ],
+  "lifecycle": {
+    "idle": "Hand-engraved sepia cross-hatched sketch resting on raw warm parchment",
+    "discovery": "Cursor enters, wetting the parchment paper and initiating capillary flow",
+    "buildUp": "Original oil colors bleed along irregular paper fiber boundaries",
+    "peak": "Max color wash is exposed with a wet watercolor staining boundary ring",
+    "recovery": "Cursor departs, water stains dry out, and color retracts back into carbon sepia ink lines"
+  }
+}

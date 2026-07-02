@@ -1,0 +1,22 @@
+{
+  "$schema": "https://vessel-ui.dev/schema/registry-item.json",
+  "name": "infinite-canvas",
+  "type": "registry:component",
+  "title": "Infinite Canvas",
+  "description": "A 2D infinite workspace supporting wheel trackpad swipe panning and drag momentum physics.",
+  "dependencies": [
+    "framer-motion"
+  ],
+  "registryDependencies": [],
+  "files": [
+    {
+      "path": "components/vessel/infinite-canvas.tsx",
+      "type": "registry:component",
+      "content": "import React, { useRef, useEffect } from \"react\";\nimport { motion, useMotionValue, useSpring } from \"framer-motion\";\n\nexport interface InfiniteCanvasProps {\n  children?: React.ReactNode;\n  gridColor?: string;\n  gridSize?: number;\n  className?: string;\n  onCoordinatesChange?: (x: number, y: number) => void;\n}\n\nexport const InfiniteCanvas: React.FC<InfiniteCanvasProps> = ({\n  children,\n  gridColor = \"#1f2937\",\n  gridSize = 32,\n  className = \"\",\n  onCoordinatesChange\n}) => {\n  const containerRef = useRef<HTMLDivElement>(null);\n  const boardRef = useRef<HTMLDivElement>(null);\n\n  // Motion values to hold the canvas center coordinates\n  const boardX = useMotionValue(0);\n  const boardY = useMotionValue(0);\n\n  // Smooth springs to interpolate coordinates\n  const springX = useSpring(boardX, { stiffness: 120, damping: 22, mass: 0.8 });\n  const springY = useSpring(boardY, { stiffness: 120, damping: 22, mass: 0.8 });\n\n  // Expose coordinate changes via callback if provided\n  useEffect(() => {\n    if (!onCoordinatesChange) return;\n\n    // Use onChange to subscribe to motion updates\n    const unsubscribeX = boardX.onChange((x) => onCoordinatesChange(x, boardY.get()));\n    const unsubscribeY = boardY.onChange((y) => onCoordinatesChange(boardX.get(), y));\n\n    return () => {\n      unsubscribeX();\n      unsubscribeY();\n    };\n  }, [boardX, boardY, onCoordinatesChange]);\n\n  // Hook mouse-wheel / trackpad two-way scroll panning\n  useEffect(() => {\n    const container = containerRef.current;\n    if (!container) return;\n\n    const handleWheel = (e: WheelEvent) => {\n      // Prevent default page scrolling or backward/forward navigation swipes\n      e.preventDefault();\n\n      // Adjust coordinate target based on delta ticks\n      // Scroll down pushes content up (-delta), scroll right pushes content left (-delta)\n      boardX.set(boardX.get() - e.deltaX);\n      boardY.set(boardY.get() - e.deltaY);\n    };\n\n    container.addEventListener(\"wheel\", handleWheel, { passive: false });\n    return () => {\n      container.removeEventListener(\"wheel\", handleWheel);\n    };\n  }, [boardX, boardY]);\n\n  return (\n    <div\n      ref={containerRef}\n      className={`relative w-full h-full overflow-hidden select-none cursor-grab active:cursor-grabbing bg-[#050505] ${className}`}\n    >\n      {/* Draggable coordinate board */}\n      <motion.div\n        ref={boardRef}\n        drag\n        dragElastic={0.08}\n        dragMomentum={true}\n        dragTransition={{ power: 0.15, timeConstant: 300 }}\n        style={{\n          x: springX,\n          y: springY,\n        }}\n        className=\"absolute w-[4000px] h-[3000px] left-1/2 top-1/2 -ml-[2000px] -mt-[1500px] flex items-center justify-center transform-gpu\"\n      >\n        {/* SVG background grid pattern */}\n        <div \n          style={{\n            backgroundImage: `radial-gradient(circle, ${gridColor} 1px, transparent 1px)`,\n            backgroundSize: `${gridSize}px ${gridSize}px`,\n          }}\n          className=\"absolute inset-0 pointer-events-none opacity-40\" \n        />\n\n        {/* Origin grid lines */}\n        <div className=\"absolute w-[2px] h-full bg-neutral-900/30 left-1/2 -ml-[1px] pointer-events-none\" />\n        <div className=\"absolute h-[2px] w-full bg-neutral-900/30 top-1/2 -mt-[1px] pointer-events-none\" />\n\n        {/* Coordinate space container for absolute-positioned children */}\n        <div className=\"relative w-full h-full\">\n          {children}\n        </div>\n      </motion.div>\n    </div>\n  );\n};\n\nexport default InfiniteCanvas;\n"
+    }
+  ],
+  "tailwind": {
+    "config": {}
+  },
+  "cssVars": {}
+}

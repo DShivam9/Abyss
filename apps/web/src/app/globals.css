@@ -1,0 +1,101 @@
+@import "tailwindcss";
+
+@theme {
+  /* Font families */
+  --font-sans: var(--font-satoshi), system-ui, -apple-system, sans-serif;
+  --font-mono: var(--font-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+  /* Vessel color tokens → Tailwind utilities */
+  --color-vessel-dark: var(--vessel-bg-dark);
+  --color-vessel-base: var(--vessel-bg-base);
+  --color-vessel-paper: var(--vessel-bg-paper);
+  --color-vessel-void: var(--vessel-bg-void);
+  --color-vessel-accent: var(--vessel-accent-current);
+
+  --color-vessel-text-primary: var(--vessel-text-primary);
+  --color-vessel-text-secondary: var(--vessel-text-secondary);
+  --color-vessel-text-muted: var(--vessel-text-muted);
+  --color-vessel-text-light: var(--vessel-text-light);
+  --color-vessel-text-light-secondary: var(--vessel-text-light-secondary);
+
+  --color-vessel-border-hairline: var(--vessel-border-hairline);
+  --color-vessel-border-active: var(--vessel-border-active);
+  --color-vessel-border-dark: var(--vessel-border-dark);
+  --color-vessel-border-dark-active: var(--vessel-border-dark-active);
+}
+
+@layer base {
+  :root {
+    color-scheme: light;
+
+    /* ─── Neutrals ─── */
+    --vessel-bg-dark: #0A0A0A;
+    --vessel-bg-base: #FFFFFF;
+    --vessel-bg-paper: #FAFAF9;
+    --vessel-bg-void: #F2F1EC;
+    --vessel-text-primary: #111113;
+    --vessel-text-secondary: #55555C;
+    --vessel-text-muted: #A6A6AC;
+    --vessel-text-light: #E8E8ED;
+    --vessel-text-light-secondary: #8A8A92;
+    --vessel-border-hairline: rgba(0,0,0,0.08);
+    --vessel-border-active: rgba(0,0,0,0.18);
+    --vessel-border-dark: rgba(255,255,255,0.08);
+    --vessel-border-dark-active: rgba(255,255,255,0.18);
+
+    /* ─── Dynamic Accent (overridden per section) ─── */
+    --vessel-accent-current: #1E4FD6;
+  }
+
+  body {
+    @apply bg-vessel-base text-vessel-text-primary font-sans antialiased;
+    @apply selection:bg-vessel-text-primary selection:text-vessel-base;
+  }
+
+  /* ─── Reduced Motion Fallbacks ─── */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+
+  /* ─── Custom Cursor ─── */
+  body.cursor-active { cursor: none; }
+  body.cursor-active a,
+  body.cursor-active button,
+  body.cursor-active [role="button"],
+  body.cursor-active canvas { cursor: none; }
+
+  /* ─── Lenis Integration ─── */
+  html.lenis, html.lenis body { height: auto; }
+  .lenis.lenis-smooth { scroll-behavior: auto !important; }
+  .lenis.lenis-smooth [data-lenis-prevent] { overscroll-behavior: contain; }
+  .lenis.lenis-stopped { overflow: hidden; }
+  .lenis.lenis-scrolling iframe { pointer-events: none; }
+
+  /* ─── Scrollbar ─── */
+  html { scrollbar-width: thin; scrollbar-color: rgba(120,120,120,0.25) transparent; }
+  ::-webkit-scrollbar { width: 8px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb {
+    background: rgba(120,120,120,0.25);
+    border-radius: 9999px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+  }
+  ::-webkit-scrollbar-thumb:hover { background: rgba(120,120,120,0.4); }
+}
+
+@layer utilities {
+  .noise-bg {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 9998;
+    opacity: 0.025;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+}
