@@ -9,177 +9,350 @@ export interface ComponentDetail {
   desc: string;
   slug: string;
   category: string;
+  subtype: string;
+  tags?: string[];
 }
 
 export const COMPONENT_DETAILS: Record<string, ComponentDetail> = {
   "japparii": {
     id: "01",
-    label: "JAPPARII INTERCEPT",
-    filename: "@japparii instagram.jpg",
+    label: "JAPPARII",
+    filename: "noir/japparii.jpg",
     desc: "A hand-drawn Leonardo sketch paper shader rendering image luminance as dynamic cross-hatching diagonal strokes.",
     slug: "japparii",
-    category: "vector-hatching"
+    category: "noir",
+    subtype: "scrolls"
   },
   "chromepunk-beast": {
     id: "02",
     label: "CHROMEPUNK BEAST",
-    filename: "Chromepunk Beast 🧊 #chromepunk #midjourney #aiart #real #nostalgia.jpg",
+    filename: "dark-styled/chromepunk-beast.jpg",
     desc: "A specular normal-mapped canvas calculating height profiles and embossing shadows on the fly via Sobel filters.",
     slug: "chromepunk-beast",
-    category: "normal-lightfield"
+    category: "dark-styled",
+    subtype: "radar-plates"
   },
   "tanvi": {
     id: "03",
-    label: "TANVI TANVI",
-    filename: "Gianni Gallant on Instagram_ “TANVI @tanvieverywhere”.jpg",
+    label: "TANVI",
+    filename: "premium/tanvi.jpg",
     desc: "A stateful Rayleigh-Bénard thermal convection fluid simulation. The cursor heats the viscous liquid, generating circulating plumes and vortexes that warp coordinates.",
     slug: "tanvi",
-    category: "deform"
+    category: "premium",
+    subtype: "liquid-metal"
   },
   "glitch-streetwear": {
     id: "04",
     label: "GLITCH STREETWEAR",
-    filename: "Glitch Streetwear _ Cyberpunk-Inspired Digital Art.jpg",
+    filename: "dark-styled/glitch-streetwear.jpg",
     desc: "[DISABLED] Static canvas image.",
     slug: "glitch-streetwear",
-    category: "static"
+    category: "dark-styled",
+    subtype: "huds"
   },
   "chai-collection": {
     id: "05",
     label: "CHAI COLLECTION",
-    filename: "Illustration Collection-一些插图集合 - 柴 霖霖.jpg",
+    filename: "asthetic/chai-collection.jpg",
     desc: "A multi-faceted triangular crystal prism lens. Drags and shifts to refract coordinate space and disperse light into a colorful chromatic spectrum.",
     slug: "chai-collection",
-    category: "lens"
+    category: "aesthetic",
+    subtype: "refractors"
   },
   "instagram-overlay": {
     id: "06",
     label: "DIGITAL OVERLAY",
-    filename: "Instagram.jpg",
+    filename: "asthetic/instagram.jpg",
     desc: "A holographic analog scanline CRT screen glitch overlay. Page scroll velocity and clicks trigger electrostatic distortion, scanline shifts, and chromatic separation.",
     slug: "instagram-overlay",
-    category: "illuminate"
+    category: "aesthetic",
+    subtype: "huds"
   },
   "merlin-knights": {
     id: "07",
     label: "MERLIN KNIGHTS",
-    filename: "Merlin Knights _ 4K Ultra.jpg",
+    filename: "medival/merlin-knights.jpg",
     desc: "A Renaissance copperplate engraving sketch. The cursor causes paint to bleed through raw parchment paper fibers, gradually drying back to sepia when resting.",
     slug: "merlin-knights",
-    category: "transform"
+    category: "medieval",
+    subtype: "engravings"
   },
   "red-refract": {
     id: "08",
     label: "RED REFRACT",
-    filename: "Referência Fotografia Vermelha.jpg",
+    filename: "dark-styled/red-refract.jpg",
     desc: "An X-ray outline reveal canvas. The cursor acts as a circular focus lens showing high-contrast neon outlines underneath.",
     slug: "red-refract",
-    category: "border-sweep"
+    category: "dark-styled",
+    subtype: "scanners"
   },
   "acg-fleece": {
     id: "09",
     label: "ACG FLEECE",
-    filename: "Supreme Nike ACG Fleece Pullover.jpg",
+    filename: "dark-styled/acg-fleece.jpg",
     desc: "A global physical bas-relief shader that embosses the image contours in 3D, casting shadows and specular glints dynamically from a cursor-controlled studio light.",
     slug: "acg-fleece",
-    category: "tactical-radar"
+    category: "dark-styled",
+    subtype: "radar-plates"
   },
   "apparatus-dee": {
     id: "10",
-    label: "APPARATUS DEE",
-    filename: "dee.jpg",
+    label: "DEE",
+    filename: "premium/dee.jpg",
     desc: "A molten chrome & liquid mercury flow shader. Warps coordinates in viscous waves and shifts anisotropic studio reflections. Best used with high-contrast, metallic, chrome, or reflective images to maximize the liquid-metal sheen.",
     slug: "apparatus-dee",
-    category: "chrome-flow"
+    category: "premium",
+    subtype: "liquid-metal"
   },
   "core-shell-a": {
     id: "11",
     label: "CORE SHELL A",
-    filename: "download (1).jpg",
+    filename: "dark-styled/download (1).jpg",
     desc: "A retro magnifying glass lens pixelating the image coordinates underneath.",
     slug: "core-shell-a",
-    category: "pixelate-magnifier"
+    category: "dark-styled",
+    subtype: "scanners"
   },
   "core-shell-b": {
     id: "12",
     label: "CORE SHELL B",
-    filename: "download (2).jpg",
+    filename: "dark-styled/download (2).jpg",
     desc: "Physical expanding water wave ripples generated dynamically by mouse clicks on the canvas.",
     slug: "core-shell-b",
-    category: "wave-ripple"
+    category: "dark-styled",
+    subtype: "scanners"
   },
   "kinetic-portal": {
     id: "13",
     label: "KINETIC PORTAL",
-    filename: "download (3).jpg",
+    filename: "dark-styled/download (3).jpg",
     desc: "An infrared thermal heat vision spectrum shader mapped dynamically around the cursor.",
     slug: "kinetic-portal",
-    category: "thermic-heatmap"
+    category: "dark-styled",
+    subtype: "scanners"
   },
   "apparatus-faf": {
     id: "14",
-    label: "APPARATUS FAF",
-    filename: "faf.jpg",
-    desc: "A retro halftone dot print shader converting image luminance into CMYK dots.",
+    label: "FAF",
+    filename: "medival/faf.jpg",
+    desc: "An alchemical gilding transmutation shader that preserves a high-fidelity medieval egg-tempera portrait in its pristine, full-color idle state, while dynamically crystallizing a wave of embossed gold leaf across the knight's armor and crown on hover.",
     slug: "apparatus-faf",
-    category: "halftone-print"
+    category: "medieval",
+    subtype: "banners",
+    tags: ["Alchemical Gilding", "3D Embossed Normal Map", "GPU Wave Simulation"]
   },
   "apparatus-gg": {
     id: "15",
-    label: "APPARATUS GG",
-    filename: "gg.jpg",
+    label: "GG",
+    filename: "asthetic/gg.jpg",
     desc: "A 3D elastic membrane vertex pull mapping height protrusions and shadows to cursor coordinates.",
     slug: "apparatus-gg",
-    category: "membrane-pull"
+    category: "aesthetic",
+    subtype: "canvases"
   },
   "apparatus-hh": {
     id: "16",
-    label: "APPARATUS HH",
-    filename: "hh.jpg",
+    label: "HH",
+    filename: "dark-styled/hh.jpg",
     desc: "A 3D refractive water droplet glass bubble double-inverting details underneath with real drop shadows.",
     slug: "apparatus-hh",
-    category: "water-droplet"
+    category: "dark-styled",
+    subtype: "refractors"
   },
   "apparatus-kl": {
     id: "17",
-    label: "APPARATUS KL",
-    filename: "kl.jpg",
+    label: "KL",
+    filename: "asthetic/kl.jpg",
     desc: "A physical oil-on-canvas simulation modeling high-viscosity lacquer paint. Cursor movement plows a physical displacement trench through the impasto texture, pushing detailed paint ridges to the sides of the stroke. Features velocity-aligned directional paint smudging, canvas micro-weave bump mapping, a deforming reactive border frame, and premium studio light specular highlights.",
     slug: "apparatus-kl",
-    category: "paint-smudge"
+    category: "aesthetic",
+    subtype: "canvases"
   },
   "chromium-queen": {
     id: "18",
     label: "CHROMIUM QUEEN",
-    filename: "🔷 Chromium Queen — Rise of Singularity 🔷__#digitalart #futuristicart #chromeaesthetic #cyberpunkvibes #aiartcommunity #scifiillustration #techwearstyle #neofuturism #digitalfashion #singularityrising #femalewarri.jpg",
+    filename: "premium/chromium-queen.jpg",
     desc: "An anisotropic liquid silk and satin fabric simulation. Mouse movement creates organic folds, waves, and drapes directly in the fabric of the portrait. Features micro-refraction along fabric ridges, chromatic dispersion along wave boundaries, and realistic specular sheen highlights resembling luxurious satin.",
     slug: "chromium-queen",
-    category: "silk-satin"
+    category: "premium",
+    subtype: "silk-drapes"
+  },
+  "apparatus-fblf": {
+    id: "19",
+    label: "FBLF",
+    filename: "brutalist/fblf.jpg",
+    desc: "A 3D medieval knight silhouette displaying interactive depth light reflection.",
+    slug: "apparatus-fblf",
+    category: "brutalist",
+    subtype: "drapes"
+  },
+  "apparatus-fjvfba": {
+    id: "20",
+    label: "COPPER PATINA",
+    filename: "medival/fjvfba.jpg",
+    desc: "An interactive medieval copperplate engraving shader. Renders a gleaming copperplate print with rich specular reflection and dark carbon grooves when idle. Hovering causes a rich blue-green verdigris patina to bloom and crawl along the engraved outlines.",
+    slug: "apparatus-fjvfba",
+    category: "medieval",
+    subtype: "drapes",
+    tags: ["Copperplate Etching", "Verdigris Patina", "Chemical Oxidation"]
+  },
+  "apparatus-ialfa": {
+    id: "21",
+    label: "IALFA",
+    filename: "medival/i  alfa.jpg",
+    desc: "A holy knight rendered as a bas-relief stone carving that casts long, ray-marched shadows in response to a raking torchlight cursor.",
+    slug: "apparatus-ialfa",
+    category: "medieval",
+    subtype: "drapes",
+    tags: ["Stone Relief", "Dynamic Shadows", "Raking Torchlight"]
+  },
+  "apparatus-ll": {
+    id: "22",
+    label: "LL",
+    filename: "brutalist/ll.jpg",
+    desc: "A demonic knight steel armor reflection shader responding to light coordinates.",
+    slug: "apparatus-ll",
+    category: "brutalist",
+    subtype: "drapes"
+  },
+  "deepwood-glimmer": {
+    id: "23",
+    label: "DEEPWOOD GLIMMER",
+    filename: "medival/deepwood-glimmer.jpg",
+    desc: "A heavy velvet tapestry forest with volumetric light glimmers.",
+    slug: "deepwood-glimmer",
+    category: "medieval",
+    subtype: "drapes"
+  },
+  "stippled-dark": {
+    id: "24",
+    label: "STIPPLED DARK",
+    filename: "asthetic/stippled-dark.jpg",
+    desc: "A hand-stippled dark gothic ink shader creating micro-stipple shading under pointer.",
+    slug: "stippled-dark",
+    category: "aesthetic",
+    subtype: "drapes"
+  },
+  "apparatus-dajd": {
+    id: "25",
+    label: "DAJD",
+    filename: "asthetic/dajd.jpg",
+    desc: "A custom light-scattering refraction shader.",
+    slug: "apparatus-dajd",
+    category: "aesthetic",
+    subtype: "drapes"
+  },
+  "apparatus-jjjj": {
+    id: "26",
+    label: "JJJJ",
+    filename: "asthetic/jjjj.jpg",
+    desc: "A stippled ink drawing with dynamic density based on cursor motion.",
+    slug: "apparatus-jjjj",
+    category: "aesthetic",
+    subtype: "drapes"
+  },
+  "apparatus-hoqnl": {
+    id: "27",
+    label: "HOQNL",
+    filename: "brutalist/hoqnl.jpg",
+    desc: "A raw steel relief displacement shader.",
+    slug: "apparatus-hoqnl",
+    category: "brutalist",
+    subtype: "drapes"
+  },
+  "apparatus-ljbfaf": {
+    id: "28",
+    label: "LJBFAF",
+    filename: "brutalist/ljbfaf.jpg",
+    desc: "A chrome metal reflection shader.",
+    slug: "apparatus-ljbfaf",
+    category: "brutalist",
+    subtype: "drapes"
+  },
+  "apparatus-underscore": {
+    id: "29",
+    label: "UNDERSCORE",
+    filename: "brutalist/_.jpg",
+    desc: "A brutalist distressed steel layout shader.",
+    slug: "apparatus-underscore",
+    category: "brutalist",
+    subtype: "drapes"
+  },
+  "apparatus-hdhd": {
+    id: "30",
+    label: "HDHD",
+    filename: "medival/hdhd.jpg",
+    desc: "A medieval tapestry layout shader.",
+    slug: "apparatus-hdhd",
+    category: "medieval",
+    subtype: "drapes"
+  },
+  "apparatus-stshsh": {
+    id: "31",
+    label: "STSHSH",
+    filename: "noir/stshsh.jpg",
+    desc: "A noir shadows dynamic light shader.",
+    slug: "apparatus-stshsh",
+    category: "noir",
+    subtype: "drapes"
+  },
+  "apparatus-merged-v3": {
+    id: "32",
+    label: "MERGED V3",
+    filename: "noir/merged-v3.jpg",
+    desc: "A classical stone bust shader reflecting soft studio lights.",
+    slug: "apparatus-merged-v3",
+    category: "noir",
+    subtype: "drapes"
+  },
+  "apparatus-ldhad": {
+    id: "33",
+    label: "LDHAD",
+    filename: "ldhad.jpg",
+    desc: "A high-fidelity refraction layout shader.",
+    slug: "apparatus-ldhad",
+    category: "aesthetic",
+    subtype: "drapes"
   }
 };
 
 // Dynamic imports mapping slug to component inside packages/core
 export const COMPONENT_IMPORTS: Record<string, React.ComponentType<VesselComponentProps>> = {
-  "japparii": dynamic(() => import("@vessel-ui/core").then((mod) => mod.Japparii), { ssr: false }),
-  "chromepunk-beast": dynamic(() => import("@vessel-ui/core").then((mod) => mod.ChromepunkBeast), { ssr: false }),
-  "tanvi": dynamic(() => import("@vessel-ui/core").then((mod) => mod.Tanvi), { ssr: false }),
-  "glitch-streetwear": dynamic(() => import("@vessel-ui/core").then((mod) => mod.GlitchStreetwear), { ssr: false }),
-  "chai-collection": dynamic(() => import("@vessel-ui/core").then((mod) => mod.ChaiCollection), { ssr: false }),
+  "japparii": dynamic(() => import("../../../../packages/core/src/components/japparii"), { ssr: false }),
+  "chromepunk-beast": dynamic(() => import("../../../../packages/core/src/components/chromepunk-beast"), { ssr: false }),
+  "tanvi": dynamic(() => import("../../../../packages/core/src/components/tanvi"), { ssr: false }),
+  "glitch-streetwear": dynamic(() => import("../../../../packages/core/src/components/glitch-streetwear"), { ssr: false }),
+  "chai-collection": dynamic(() => import("../../../../packages/core/src/components/chai-collection"), { ssr: false }),
   
-  "instagram-overlay": dynamic(() => import("@vessel-ui/core").then((mod) => mod.InstagramOverlay), { ssr: false }),
-  "merlin-knights": dynamic(() => import("@vessel-ui/core").then((mod) => mod.MerlinKnights), { ssr: false }),
+  "instagram-overlay": dynamic(() => import("../../../../packages/core/src/components/instagram-overlay"), { ssr: false }),
+  "merlin-knights": dynamic(() => import("../../../../packages/core/src/components/merlin-knights"), { ssr: false }),
   
-  "red-refract": dynamic(() => import("@vessel-ui/core").then((mod) => mod.RedRefract), { ssr: false }),
-  "acg-fleece": dynamic(() => import("@vessel-ui/core").then((mod) => mod.AcgFleece), { ssr: false }),
-  "apparatus-dee": dynamic(() => import("@vessel-ui/core").then((mod) => mod.ChromeFlow), { ssr: false }),
-  "core-shell-a": dynamic(() => import("@vessel-ui/core").then((mod) => mod.CoreShellA), { ssr: false }),
-  "core-shell-b": dynamic(() => import("@vessel-ui/core").then((mod) => mod.WaveRipple), { ssr: false }),
-  "kinetic-portal": dynamic(() => import("@vessel-ui/core").then((mod) => mod.KineticPortal), { ssr: false }),
-  "apparatus-faf": dynamic(() => import("@vessel-ui/core").then((mod) => mod.ApparatusFaf), { ssr: false }),
-  "apparatus-gg": dynamic(() => import("@vessel-ui/core").then((mod) => mod.ApparatusGg), { ssr: false }),
-  "apparatus-hh": dynamic(() => import("@vessel-ui/core").then((mod) => mod.ApparatusHh), { ssr: false }),
-  "apparatus-kl": dynamic(() => import("@vessel-ui/core").then((mod) => mod.ApparatusKl), { ssr: false }),
-  "chromium-queen": dynamic(() => import("@vessel-ui/core").then((mod) => mod.ChromiumQueen), { ssr: false }),
+  "red-refract": dynamic(() => import("../../../../packages/core/src/components/red-refract"), { ssr: false }),
+  "acg-fleece": dynamic(() => import("../../../../packages/core/src/components/acg-fleece"), { ssr: false }),
+  "apparatus-dee": dynamic(() => import("../../../../packages/core/src/components/apparatus-dee"), { ssr: false }),
+  "core-shell-a": dynamic(() => import("../../../../packages/core/src/components/core-shell-a"), { ssr: false }),
+  "core-shell-b": dynamic(() => import("../../../../packages/core/src/components/core-shell-b"), { ssr: false }),
+  "kinetic-portal": dynamic(() => import("../../../../packages/core/src/components/kinetic-portal"), { ssr: false }),
+  "apparatus-faf": dynamic(() => import("../../../../packages/core/src/components/apparatus-faf"), { ssr: false }),
+  "apparatus-gg": dynamic(() => import("../../../../packages/core/src/components/apparatus-gg"), { ssr: false }),
+  "apparatus-hh": dynamic(() => import("../../../../packages/core/src/components/apparatus-hh"), { ssr: false }),
+  "apparatus-kl": dynamic(() => import("../../../../packages/core/src/components/apparatus-kl"), { ssr: false }),
+  "chromium-queen": dynamic(() => import("../../../../packages/core/src/components/chromium-queen"), { ssr: false }),
+  "apparatus-fblf": dynamic(() => import("../../../../packages/core/src/components/merlin-knights"), { ssr: false }),
+  "apparatus-fjvfba": dynamic(() => import("../../../../packages/core/src/components/apparatus-fjvfba"), { ssr: false }),
+  "apparatus-ialfa": dynamic(() => import("../../../../packages/core/src/components/apparatus-ialfa"), { ssr: false }),
+  "apparatus-ll": dynamic(() => import("../../../../packages/core/src/components/merlin-knights"), { ssr: false }),
+  "deepwood-glimmer": dynamic(() => import("../../../../packages/core/src/components/deepwood-glimmer"), { ssr: false }),
+  "stippled-dark": dynamic(() => import("../../../../packages/core/src/components/merlin-knights"), { ssr: false }),
+  "apparatus-dajd": dynamic(() => import("../../../../packages/core/src/components/merlin-knights"), { ssr: false }),
+  "apparatus-jjjj": dynamic(() => import("../../../../packages/core/src/components/merlin-knights"), { ssr: false }),
+  "apparatus-hoqnl": dynamic(() => import("../../../../packages/core/src/components/merlin-knights"), { ssr: false }),
+  "apparatus-ljbfaf": dynamic(() => import("../../../../packages/core/src/components/merlin-knights"), { ssr: false }),
+  "apparatus-underscore": dynamic(() => import("../../../../packages/core/src/components/merlin-knights"), { ssr: false }),
+  "apparatus-hdhd": dynamic(() => import("../../../../packages/core/src/components/static-image"), { ssr: false }),
+  "apparatus-stshsh": dynamic(() => import("../../../../packages/core/src/components/merlin-knights"), { ssr: false }),
+  "apparatus-merged-v3": dynamic(() => import("../../../../packages/core/src/components/merlin-knights"), { ssr: false }),
+  "apparatus-ldhad": dynamic(() => import("../../../../packages/core/src/components/merlin-knights"), { ssr: false }),
 };
 
 export function getComponent(slug: string) {

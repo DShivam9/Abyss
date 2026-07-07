@@ -1,8 +1,8 @@
 {
   "name": "APPARATUS GG",
   "slug": "apparatus-gg",
-  "pitch": "A 3D elastic membrane vertex pull mapping height protrusions and shadows to cursor coordinates.",
-  "family": "deform",
+  "pitch": "A 3D kinetic dot matrix where thousands of cylinder pins scale, tilt, and shade in response to the cursor.",
+  "family": "aesthetic",
   "energy": "dynamic",
   "triggers": [
     "hover"

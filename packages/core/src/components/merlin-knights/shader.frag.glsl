@@ -13,6 +13,7 @@ varying vec2 vUv;
 varying vec3 vNormal;
 varying vec3 vViewPosition;
 varying vec3 vWorldPosition;
+varying float vWindDisplacement;  // X-displacement from vertex shader for tassel sway
 
 #define PAPER_COLOR vec3(0.92, 0.89, 0.82)
 #define GOLD_COLOR vec3(0.86, 0.68, 0.22)    // Rich alchemical gold leaf
@@ -63,19 +64,23 @@ void main() {
 
   // --- 2. Tapestry Thread Bump-Mapping (Perturbed Normal) ---
   vec3 N = normalize(vNormal);
-  float threadBumpX = cos(correctedUv.x * 1250.0) * 0.08;
-  float threadBumpY = cos(correctedUv.y * 1250.0) * 0.08;
+  // Threads on fold crests catch more light than threads in valleys
+  float crestBoost = smoothstep(0.0, 1.0, N.z) * 1.4 + 0.6;
+  float threadBumpX = cos(correctedUv.x * 1250.0) * 0.08 * crestBoost;
+  float threadBumpY = cos(correctedUv.y * 1250.0) * 0.08 * crestBoost;
   vec3 perturbedNormal = normalize(N + vec3(threadBumpX, threadBumpY, 0.0));
 
   // --- 3. Global Static Light Source (Simulating Grand Window Light) ---
-  // No cursor PointLight or spotlight mask. Uses a static directional source.
-  vec3 L = normalize(vec3(-0.4, 0.6, 0.8)); // Light coming from top-left front
+  vec3 L = normalize(vec3(-0.4, 0.6, 0.8));
   vec3 V = normalize(vViewPosition);
 
   float ndl = max(dot(perturbedNormal, L), 0.0);
-  vec3 diffuseLight = ndl * vec3(1.1, 1.05, 0.95); // Crisp natural light
+  vec3 diffuseLight = ndl * vec3(1.1, 1.05, 0.95);
   vec3 ambientLight = (perturbedNormal.z * 0.5 + 0.5) * uAmbientColor;
-  vec3 clothLighting = diffuseLight + ambientLight;
+
+  // Fold occlusion: deep valleys between wind folds get less light
+  float foldOcclusion = smoothstep(-0.3, 0.2, N.z);
+  vec3 clothLighting = diffuseLight * foldOcclusion + ambientLight;
 
   // --- 4. Thread Weave & Weathering Stains ---
   float threadX = sin(correctedUv.x * 850.0) * 0.14 + 0.86;
@@ -122,9 +127,10 @@ void main() {
 
   // Render bottom tassels/fringe in gold thread
   if (isFringe) {
-    float tasselStripe = step(0.5, sin(uv.x * 650.0)) * 0.25 + 0.75;
+    // Tassels sway in the wind — angle the stripe pattern by vertex X-displacement
+    float tasselAngle = vWindDisplacement * 6.0;
+    float tasselStripe = step(0.5, sin((uv.x + uv.y * tasselAngle) * 650.0)) * 0.25 + 0.75;
     
-    // Add specular shimmer to fringe tassels too
     float fringeSpec = pow(max(dot(perturbedNormal, H), 0.0), 16.0);
     vec3 goldTassel = (GOLD_COLOR * tasselStripe * clothLighting) + (GOLD_COLOR * fringeSpec * 1.5);
     finalColor = mix(finalColor, goldTassel, 0.95);

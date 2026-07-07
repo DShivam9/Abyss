@@ -2,9 +2,14 @@ import React, { useRef, useEffect, useState } from "react";
 import * as THREE from "three";
 import { VesselComponentProps } from "../../engine/types";
 import displayFrag from "./shader.frag.glsl";
+import displayVert from "./shader.display.vert.glsl";
 import passVert from "./shader.vert.glsl";
 
-// Shader to advect velocity and apply cursor force splats into the FBO ping-pong buffer
+// Simulation pass: advects the velocity field AND integrates a signed height
+// field with spring dynamics, packing both into a single HalfFloat FBO.
+//   rg = velocity (viscous flow, stored biased into [0,1])
+//   b  = height        (signed: +dome / -carved channel)
+//   a  = height velocity dh/dt (drives spring-damped overshoot on recovery)
 const SIMULATION_FRAG = `
 uniform sampler2D uVelocityTexture;
 uniform vec2 uMouse;
@@ -14,28 +19,48 @@ uniform float uTime;
 varying vec2 vUv;
 
 #define DAMPING 0.982
-#define SPLAT_RADIUS 0.08
+#define SPLAT_RADIUS 0.11
+// Height field spring: pulls terrain back toward flat with a slight overshoot.
+// Steady-state height under a resting cursor = forcing / SPRING_K, so keep K low
+// enough that the dome reaches a genuinely visible amplitude (~0.6+).
+#define SPRING_K 4.0
+#define HEIGHT_DAMP 0.90
+#define DT 0.016
 
 void main() {
   vec2 uv = vUv;
-  
-  // 1. Read previous velocity (mapped from [0, 1] back to [-1, 1])
+
+  // --- Velocity field (viscous pour) ---
   vec2 prevVelocity = texture2D(uVelocityTexture, uv).rg - 0.5;
-  
-  // 2. Advect: sample velocity at uv minus velocity displacement
   vec2 advectedUv = uv - prevVelocity * 0.01;
-  vec2 velocity = texture2D(uVelocityTexture, advectedUv).rg - 0.5;
-  
-  // 3. Apply damping (viscous friction decay)
+  vec4 advected = texture2D(uVelocityTexture, advectedUv);
+  vec2 velocity = advected.rg - 0.5;
   velocity *= DAMPING;
-  
-  // 4. Splat: add cursor velocity force within radial proximity
+
+  // Read the (advected) height + its velocity so terrain flows with the fluid.
+  float height = advected.b;
+  float heightVel = advected.a;
+
+  // Cursor proximity: soft radial force field (not a visible disc mask).
   float dist = distance(uv, uMouse);
   float splat = exp(-pow(dist / SPLAT_RADIUS, 2.0));
+
   velocity += uForce * splat * uHover * 0.12;
-  
-  // Map back to [0, 1] for texture storage
-  gl_FragColor = vec4(velocity + 0.5, 0.0, 1.0);
+
+  // --- Height field forcing ---
+  // Hovering still swells a dome; fast motion carves channels (signed by speed).
+  float speed = length(uForce);
+  float dome = splat * uHover * 2.6;                  // raise under a resting cursor
+  float carve = splat * uHover * speed * 30.0;        // sink along fast strokes
+  float forcing = dome - carve;
+
+  // Spring integrator with overshoot: h'' = -k*h + forcing, damped velocity.
+  heightVel += (-SPRING_K * height + forcing) * DT;
+  heightVel *= HEIGHT_DAMP;
+  height += heightVel * DT;
+  height = clamp(height, -1.0, 1.0);
+
+  gl_FragColor = vec4(velocity + 0.5, height, heightVel);
 }
 `;
 
@@ -56,6 +81,18 @@ export const Tanvi: React.FC<VesselComponentProps> = ({
   const force = useRef(new THREE.Vector2(0, 0));
   const isHovered = useRef(0.0);
   const targetHover = useRef(0.0);
+  const prefersReducedMotion = useRef(false);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+    prefersReducedMotion.current = mediaQuery.matches;
+    const listener = (e: MediaQueryListEvent) => {
+      prefersReducedMotion.current = e.matches;
+    };
+    mediaQuery.addEventListener("change", listener);
+    return () => mediaQuery.removeEventListener("change", listener);
+  }, []);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -183,9 +220,17 @@ export const Tanvi: React.FC<VesselComponentProps> = ({
     );
     displayCamera.position.z = 100;
 
-    const displayGeometry = new THREE.PlaneGeometry(1, 1);
+    // Subdivided plane so the height field can physically displace vertices.
+    // 128x128 ~= 16.6k verts: fine on desktop; lower for weaker GPUs if needed.
+    const DISPLAY_SEGMENTS = 128;
+    const displayGeometry = new THREE.PlaneGeometry(
+      1,
+      1,
+      DISPLAY_SEGMENTS,
+      DISPLAY_SEGMENTS
+    );
     const displayMaterial = new THREE.ShaderMaterial({
-      vertexShader: passVert,
+      vertexShader: displayVert,
       fragmentShader: displayFrag,
       uniforms: {
         tMap: { value: null },
@@ -193,8 +238,14 @@ export const Tanvi: React.FC<VesselComponentProps> = ({
         uHover: { value: 0.0 },
         uTime: { value: 0.0 },
         uAspect: { value: width / height },
+        uDisplacementScale: { value: 0.35 },
+        uLightDir: { value: new THREE.Vector3(0.5, 0.7, 0.5).normalize() },
+        uNormalStrength: { value: 12.0 },
+        uSimTexel: { value: new THREE.Vector2(1 / simSize, 1 / simSize) },
       },
       transparent: true,
+      // Enable screen-space derivatives (fwidth) for specular anti-aliasing.
+      extensions: { derivatives: true },
     });
     const displayMesh = new THREE.Mesh(displayGeometry, displayMaterial);
     displayScene.add(displayMesh);
@@ -271,7 +322,8 @@ export const Tanvi: React.FC<VesselComponentProps> = ({
       force.current.subVectors(mouse.current, lastMouse.current);
       lastMouse.current.copy(mouse.current);
 
-      isHovered.current = THREE.MathUtils.lerp(isHovered.current, targetHover.current, 0.07);
+      const activeTargetHover = prefersReducedMotion.current ? 0.0 : targetHover.current;
+      isHovered.current = THREE.MathUtils.lerp(isHovered.current, activeTargetHover, 0.07);
 
       // A. Update Simulation pass
       simMaterial.uniforms.uVelocityTexture.value = readRT.texture;
@@ -323,7 +375,7 @@ export const Tanvi: React.FC<VesselComponentProps> = ({
     <div
       ref={containerRef}
       role="img"
-      aria-label="Interactive Molten Pour fluid dynamics paint canvas"
+      aria-label="Interactive ferrofluid topography canvas that sculpts terrain from cursor motion"
       style={{
         aspectRatio: `${imgDimensions.width} / ${imgDimensions.height}`,
         ...style,

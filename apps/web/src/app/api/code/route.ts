@@ -11,18 +11,35 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Missing slug" }, { status: 400 });
   }
 
-  // Resolve merlin-knights to instagram-overlay (Issue 3 resolution)
-  let resolvedSlug = slug;
-  if (slug === "merlin-knights") {
-    resolvedSlug = "instagram-overlay";
-  }
+  // Resolve placeholder slugs to their actual implementation folders
+  const SLUG_TO_FOLDER: Record<string, string> = {
+    // Medieval placeholders mapping to static-image
+    "apparatus-hdhd": "static-image",
 
-  // Process path relative to the apps/web directory
-  const componentPath = path.join(
-    process.cwd(),
-    "../../packages/core/src/components",
-    resolvedSlug
-  );
+
+
+    // Placeholders mapping to merlin-knights
+    "apparatus-fblf": "merlin-knights",
+    "apparatus-ll": "merlin-knights",
+    "stippled-dark": "merlin-knights",
+    "apparatus-dajd": "merlin-knights",
+    "apparatus-jjjj": "merlin-knights",
+    "apparatus-hoqnl": "merlin-knights",
+    "apparatus-ljbfaf": "merlin-knights",
+    "apparatus-underscore": "merlin-knights",
+    "apparatus-stshsh": "merlin-knights",
+    "apparatus-merged-v3": "merlin-knights",
+    "apparatus-ldhad": "merlin-knights",
+  };
+
+  const resolvedSlug = SLUG_TO_FOLDER[slug] || slug;
+
+  // Resolve packages/core path depending on whether process.cwd() is the monorepo root or apps/web
+  const baseCorePath = fs.existsSync(path.join(process.cwd(), "packages/core"))
+    ? path.join(process.cwd(), "packages/core")
+    : path.resolve(process.cwd(), "../../packages/core");
+
+  const componentPath = path.join(baseCorePath, "src/components", resolvedSlug);
 
   try {
     if (type === "tsx") {
@@ -39,6 +56,11 @@ export async function GET(req: NextRequest) {
       const fragPath = path.join(componentPath, "shader.frag.glsl");
       
       if (!fs.existsSync(vertPath) || !fs.existsSync(fragPath)) {
+        if (resolvedSlug === "static-image") {
+          return new NextResponse("// Static image component - no custom shaders required.", {
+            headers: { "Content-Type": "text/plain" },
+          });
+        }
         return NextResponse.json({ error: "Shader files not found" }, { status: 404 });
       }
       

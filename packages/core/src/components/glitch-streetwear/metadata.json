@@ -2,7 +2,7 @@
   "name": "GLITCH STREETWEAR",
   "slug": "glitch-streetwear",
   "pitch": "A brutalist ASCII pixel character matrix rendering image details as dynamic monospace glyph text elements.",
-  "family": "lens",
+  "family": "dark-styled",
   "energy": "responsive",
   "triggers": [
     "hover"

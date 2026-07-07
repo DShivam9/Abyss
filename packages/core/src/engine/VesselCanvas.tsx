@@ -9,6 +9,7 @@ export interface VesselCanvasProps extends VesselComponentProps {
   fragmentShader: string;
   uniforms?: Record<string, any>;
   subdivisions?: { x: number; y: number };
+  customGeometry?: THREE.BufferGeometry;
   onClickCanvas?: (uv: THREE.Vector2, clock: THREE.Clock) => void;
   onAnimate?: (material: THREE.ShaderMaterial, clock: THREE.Clock) => void;
   ariaLabel?: string;
@@ -20,6 +21,7 @@ export const VesselCanvas: React.FC<VesselCanvasProps> = ({
   fragmentShader,
   uniforms = {},
   subdivisions = { x: 1, y: 1 },
+  customGeometry,
   className = "",
   style,
   onLifecycleChange,
@@ -66,7 +68,6 @@ export const VesselCanvas: React.FC<VesselCanvasProps> = ({
 
     const handleMouseLeave = () => {
       targetHover.current = 0.0;
-      targetMouse.current.set(0.5, 0.5);
       if (onLifecycleChange) onLifecycleChange("recovery");
     };
 
@@ -168,8 +169,13 @@ export const VesselCanvas: React.FC<VesselCanvasProps> = ({
 
     const textureLoader = new THREE.TextureLoader();
 
-    let planeGeometry: THREE.BufferGeometry = new THREE.PlaneGeometry(1, 1, subdivisions.x, subdivisions.y);
-    planeGeometry = planeGeometry.toNonIndexed();
+    let planeGeometry: THREE.BufferGeometry;
+    if (customGeometry) {
+      planeGeometry = customGeometry;
+    } else {
+      planeGeometry = new THREE.PlaneGeometry(1, 1, subdivisions.x, subdivisions.y);
+      planeGeometry = planeGeometry.toNonIndexed();
+    }
 
     // Explicitly merge user-provided uniforms with standard engine uniforms
     const materialUniforms: Record<string, THREE.IUniform> = {
@@ -327,7 +333,7 @@ export const VesselCanvas: React.FC<VesselCanvasProps> = ({
       renderer.dispose();
       if (loadedTexture) loadedTexture.dispose();
     };
-  }, [vertexShader, fragmentShader, subdivisions.x, subdivisions.y, imageSrc]);
+  }, [vertexShader, fragmentShader, subdivisions.x, subdivisions.y, customGeometry, imageSrc]);
 
   return (
     <div

@@ -2,7 +2,7 @@
   "name": "CORE SHELL B",
   "slug": "core-shell-b",
   "pitch": "Physical expanding water wave ripples generated dynamically by mouse clicks on the canvas.",
-  "family": "explode",
+  "family": "dark-styled",
   "energy": "cinematic",
   "triggers": [
     "click",

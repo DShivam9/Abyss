@@ -2,7 +2,7 @@
   "name": "APPARATUS KL",
   "slug": "apparatus-kl",
   "pitch": "A physical oil-on-canvas simulation modeling high-viscosity lacquer paint. Cursor movement plows a physical displacement trench through the impasto texture, pushing detailed paint ridges to the sides of the stroke. Features velocity-aligned directional paint smudging, canvas micro-weave bump mapping, a deforming reactive border frame, and premium studio light specular highlights.",
-  "family": "deform",
+  "family": "aesthetic",
   "energy": "dynamic",
   "triggers": [
     "drag",

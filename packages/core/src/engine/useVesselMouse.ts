@@ -47,7 +47,6 @@ export function useVesselMouse(containerRef: React.RefObject<HTMLElement | null>
       stateRef.current.isHovering = false;
       entryTime.current = null;
       stateRef.current.hoverDuration = 0;
-      targetMouse.current.set(0.5, 0.5);
     };
 
     container.addEventListener("mousemove", handleMouseMove);

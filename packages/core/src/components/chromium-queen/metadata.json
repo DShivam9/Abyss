@@ -2,7 +2,7 @@
   "name": "CHROMIUM QUEEN",
   "slug": "chromium-queen",
   "pitch": "An anisotropic liquid silk and satin fabric simulation. Mouse movement creates organic folds, waves, and drapes directly in the fabric of the portrait. Features micro-refraction along fabric ridges, chromatic dispersion along wave boundaries, and realistic specular sheen highlights resembling luxurious satin.",
-  "family": "transform",
+  "family": "premium",
   "energy": "responsive",
   "triggers": [
     "hover"

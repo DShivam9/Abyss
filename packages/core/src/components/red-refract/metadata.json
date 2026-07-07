@@ -2,7 +2,7 @@
   "name": "RED REFRACT",
   "slug": "red-refract",
   "pitch": "An X-ray outline reveal canvas. The cursor acts as a circular focus lens showing high-contrast neon outlines underneath.",
-  "family": "lens",
+  "family": "dark-styled",
   "energy": "responsive",
   "triggers": [
     "hover"

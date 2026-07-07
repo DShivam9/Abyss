@@ -1,0 +1,30 @@
+{
+  "name": "IALFA",
+  "slug": "apparatus-ialfa",
+  "pitch": "Interactive medieval bas-relief stone carving. Renders as a sandstone portrait with ambient-lit carved relief when idle. Hovering introduces a raking torchlight that follows the cursor, casting real-time ray-marched self-shadows across the carved features and revealing mineral veins in the stone. Moving the cursor fast generates velocity-driven stone dust particles.",
+  "family": "medieval",
+  "energy": "responsive",
+  "triggers": [
+    "hover",
+    "click",
+    "velocity"
+  ],
+  "tech": [
+    "three.js",
+    "glsl",
+    "sobel-height-normals",
+    "ray-marched-self-shadows",
+    "cursor-reactive-torchlight",
+    "flame-jitter",
+    "velocity-dust-particles",
+    "screen-space-ao",
+    "vertex-displacement"
+  ],
+  "lifecycle": {
+    "idle": "Soft ambient-lit sandstone bas-relief with carved portrait details, mineral veins, and screen-space ambient occlusion in recesses",
+    "discovery": "Cursor enters, raking torchlight begins to sweep across carved features revealing dramatic depth through ray-marched shadows",
+    "buildUp": "Torch follows cursor, long self-cast shadows stretch across grooves and recesses, stone specular sheen emerges on polished surfaces",
+    "peak": "Full raking torchlight with flickering flame jitter, deep self-shadowed relief, velocity-driven stone dust particles swirling from carved edges",
+    "recovery": "Torch withdraws, shadows soften, stone settles back to ambient-lit relief state with gentle dust settling"
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "name": "DEEPWOOD GLIMMER",
+  "slug": "deepwood-glimmer",
+  "pitch": "A heavy velvet tapestry forest with volumetric light glimmers.",
+  "family": "medieval",
+  "energy": "calm",
+  "triggers": [],
+  "tech": [
+    "static-image"
+  ],
+  "lifecycle": {
+    "idle": "Static representation of the medieval tapestry"
+  }
+}

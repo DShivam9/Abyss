@@ -2,7 +2,7 @@
   "name": "CORE SHELL A",
   "slug": "core-shell-a",
   "pitch": "A retro magnifying glass lens pixelating the image coordinates underneath.",
-  "family": "lens",
+  "family": "dark-styled",
   "energy": "responsive",
   "triggers": [
     "hover"

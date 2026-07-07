@@ -1,13 +1,14 @@
 import React from "react";
 
 export type VesselFamily =
-  | "illuminate"
-  | "deform"
-  | "transform"
-  | "lens"
-  | "explode"
-  | "flow"
-  | "layout";
+  | "medieval"
+  | "dark-styled"
+  | "premium"
+  | "aesthetic"
+  | "brutalist"
+  | "psychedelic"
+  | "analog-tech"
+  | "naturalist";
 
 export type VesselEnergy =
   | "silent"

@@ -2,7 +2,7 @@
   "name": "KINETIC PORTAL",
   "slug": "kinetic-portal",
   "pitch": "An infrared thermal heat vision spectrum shader mapped dynamically around the cursor.",
-  "family": "lens",
+  "family": "dark-styled",
   "energy": "responsive",
   "triggers": [
     "hover"

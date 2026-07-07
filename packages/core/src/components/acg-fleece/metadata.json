@@ -2,7 +2,7 @@
   "name": "ACG FLEECE",
   "slug": "acg-fleece",
   "pitch": "A global physical bas-relief shader that embosses the image contours in 3D, casting shadows and specular glints dynamically from a cursor-controlled studio light.",
-  "family": "lens",
+  "family": "dark-styled",
   "energy": "responsive",
   "triggers": [
     "hover"

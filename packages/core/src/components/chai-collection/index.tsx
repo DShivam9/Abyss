@@ -1,296 +1,138 @@
-import React, { useRef, useEffect, useState } from "react";
-import * as THREE from "three";
+import React from "react";
+import { VesselCanvas } from "../../engine/VesselCanvas";
 import { VesselComponentProps } from "../../engine/types";
 
-export const ChaiCollection: React.FC<VesselComponentProps> = ({
-  imageSrc,
-  className = "",
-  style,
-  onLifecycleChange,
-}) => {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [imgDimensions, setImgDimensions] = useState({ width: 500, height: 500 });
+// Custom Exploded 3D Glass Panels shaders
+const vert = `
+  varying vec2 vUv;
+  void main() {
+    vUv = uv;
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+  }
+`;
 
-  // Interaction vectors
-  const targetRotation = useRef(new THREE.Vector2(0, 0));
-  const currentRotation = useRef(new THREE.Vector2(0, 0));
-  const lastMousePos = useRef(new THREE.Vector2(0, 0));
-  const isDragging = useRef(false);
-  const isHovered = useRef(0.0);
-  const targetHover = useRef(0.0);
+const frag = `
+  uniform sampler2D tMap;
+  uniform float uHover;
+  uniform float uAspect;
+  uniform float uTime;
+  uniform vec2 uMouse;
+  varying vec2 vUv;
 
-  useEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
+  void main() {
+    // 1. Setup clean square grid matching container aspect ratio
+    float gridCount = 6.0;
+    vec2 gridSize = vec2(gridCount * uAspect, gridCount);
+    vec2 gridPos = vUv * gridSize;
+    vec2 cellId = floor(gridPos);
+    vec2 cellUv = fract(gridPos);
 
-    const handleMouseEnter = () => {
-      targetHover.current = 1.0;
-      if (onLifecycleChange) onLifecycleChange("discovery");
-    };
+    // 2. Interactive 3D glass panel tilt calculations
+    vec2 normMouse = uMouse * gridSize;
+    vec2 cellCenter = cellId + 0.5;
+    vec2 toMouse = normMouse - cellCenter;
+    float d = length(toMouse);
 
-    const handleMouseLeave = () => {
-      targetHover.current = 0.0;
-      if (!isDragging.current) {
-        targetRotation.current.set(0, 0); // Return to front
-      }
-      if (onLifecycleChange) onLifecycleChange("recovery");
-    };
-
-    const handleMouseDown = (e: MouseEvent) => {
-      isDragging.current = true;
-      lastMousePos.current.set(e.clientX, e.clientY);
-      if (onLifecycleChange) onLifecycleChange("buildUp");
-    };
-
-    const handleMouseMove = (e: MouseEvent) => {
-      if (isDragging.current) {
-        const deltaX = e.clientX - lastMousePos.current.x;
-        const deltaY = e.clientY - lastMousePos.current.y;
-        lastMousePos.current.set(e.clientX, e.clientY);
-
-        // Apply torque forces directly to target rotation
-        targetRotation.current.x += deltaY * 0.01;
-        targetRotation.current.y += deltaX * 0.01;
-      }
-    };
-
-    const handleMouseUp = () => {
-      isDragging.current = false;
-    };
-
-    container.addEventListener("mouseenter", handleMouseEnter);
-    container.addEventListener("mouseleave", handleMouseLeave);
-    container.addEventListener("mousedown", handleMouseDown);
-    window.addEventListener("mousemove", handleMouseMove);
-    window.addEventListener("mouseup", handleMouseUp);
-
-    // Touch support
-    const handleTouchStart = (e: TouchEvent) => {
-      if (e.touches.length === 0) return;
-      isDragging.current = true;
-      targetHover.current = 1.0;
-      lastMousePos.current.set(e.touches[0].clientX, e.touches[0].clientY);
-      if (onLifecycleChange) onLifecycleChange("discovery");
-    };
-
-    const handleTouchMove = (e: TouchEvent) => {
-      if (isDragging.current && e.touches.length > 0) {
-        const deltaX = e.touches[0].clientX - lastMousePos.current.x;
-        const deltaY = e.touches[0].clientY - lastMousePos.current.y;
-        lastMousePos.current.set(e.touches[0].clientX, e.touches[0].clientY);
-
-        targetRotation.current.x += deltaY * 0.01;
-        targetRotation.current.y += deltaX * 0.01;
-      }
-    };
-
-    container.addEventListener("touchstart", handleTouchStart, { passive: true });
-    container.addEventListener("touchmove", handleTouchMove, { passive: true });
-    container.addEventListener("touchend", handleMouseUp);
-
-    return () => {
-      container.removeEventListener("mouseenter", handleMouseEnter);
-      container.removeEventListener("mouseleave", handleMouseLeave);
-      container.removeEventListener("mousedown", handleMouseDown);
-      window.removeEventListener("mousemove", handleMouseMove);
-      window.removeEventListener("mouseup", handleMouseUp);
-
-      container.removeEventListener("touchstart", handleTouchStart);
-      container.removeEventListener("touchmove", handleTouchMove);
-      container.removeEventListener("touchend", handleMouseUp);
-    };
-  }, [onLifecycleChange]);
-
-  useEffect(() => {
-    const container = containerRef.current;
-    const canvas = canvasRef.current;
-    if (!container || !canvas) return;
-
-    let width = container.clientWidth;
-    let height = container.clientHeight;
-
-    // 1. Scene, Camera, Renderer setup
-    const scene = new THREE.Scene();
+    // Gaussian tilt strength with decay based on distance to cursor
+    float tiltStrength = exp(-pow(d / 2.0, 2.0)) * uHover;
     
-    // Perspective camera gives realistic depth to the crystal geometry
-    const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 100);
-    camera.position.z = 7;
-
-    const renderer = new THREE.WebGLRenderer({
-      canvas,
-      antialias: true,
-      alpha: true,
-      premultipliedAlpha: false,
-    });
-    renderer.setSize(width, height);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.0;
-
-    // 2. Setup Lighting for transmission reflections
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
-    scene.add(ambientLight);
-
-    const keyLight = new THREE.DirectionalLight(0xffffff, 1.5);
-    keyLight.position.set(5, 5, 5);
-    scene.add(keyLight);
-
-    const rimLight = new THREE.DirectionalLight(0xaaccff, 1.2);
-    rimLight.position.set(-5, -3, -2);
-    scene.add(rimLight);
-
-    // 3. Create background quad to display image
-    const bgGeometry = new THREE.PlaneGeometry(1, 1);
-    const bgMaterial = new THREE.MeshBasicMaterial({
-      transparent: true,
-      depthWrite: false,
-    });
-    const bgMesh = new THREE.Mesh(bgGeometry, bgMaterial);
-    // Position slightly behind the crystal
-    bgMesh.position.z = -1.5;
-    scene.add(bgMesh);
-
-    // 4. Create Refractive 3D Triangle Prism Crystal
-    // An Icosahedron with detail 0 has 20 triangular faces
-    const crystalGeometry = new THREE.IcosahedronGeometry(1.2, 0);
+    // Wave propagation for organic spring bounce oscillations
+    float wave = sin(uTime * 6.0 - d * 1.5);
+    float activeTilt = tiltStrength * (1.0 + 0.35 * wave);
     
-    // Premium physical material simulates refractive glass / diamond
-    const crystalMaterial = new THREE.MeshPhysicalMaterial({
-      color: 0xffffff,
-      metalness: 0.0,
-      roughness: 0.02,
-      ior: 2.42, // Diamond-like refractive index
-      transmission: 1.0, // Fully glass transmissive
-      thickness: 1.6, // Refractive optical thickness
-      clearcoat: 1.0,
-      clearcoatRoughness: 0.02,
-      specularIntensity: 1.0,
-      transparent: true,
-    });
+    vec2 tiltDir = vec2(0.0);
+    if (d > 0.001) {
+      tiltDir = normalize(toMouse) * activeTilt;
+    }
 
-    const crystalMesh = new THREE.Mesh(crystalGeometry, crystalMaterial);
-    scene.add(crystalMesh);
+    // 3. 3D Perspective Projection of Cell coordinates
+    vec2 localPos = cellUv - 0.5;
+    
+    // Distort coordinates along convergence axis to shrink footprint under tilt
+    float zWarp = 1.0 + dot(localPos, tiltDir) * 0.45;
+    vec2 localWarped = localPos * zWarp;
+    vec2 finalCellUv = localWarped + 0.5;
 
-    // 5. Load Image Texture
-    const textureLoader = new THREE.TextureLoader();
-    let loadedTexture: THREE.Texture | null = null;
+    // Exploded gap: check if coordinates warp outside local cell bounds
+    bool inside = (finalCellUv.x >= 0.0 && finalCellUv.x <= 1.0 && 
+                   finalCellUv.y >= 0.0 && finalCellUv.y <= 1.0);
 
-    textureLoader.load(imageSrc, (texture) => {
-      loadedTexture = texture;
-      bgMaterial.map = texture;
-      bgMaterial.needsUpdate = true;
+    // 4. Refraction & Chromatic Aberration near edges
+    vec2 refractDisp = -tiltDir * 0.055;
+    
+    // Compute local R, G, B coordinates inside the cell
+    vec2 localR = finalCellUv + refractDisp * 1.15;
+    vec2 localG = finalCellUv + refractDisp;
+    vec2 localB = finalCellUv + refractDisp * 0.85;
 
-      const imgW = texture.image.width;
-      const imgH = texture.image.height;
-      setImgDimensions({ width: imgW, height: imgH });
+    // Clamp coordinates to prevent wrap sampling from neighboring tiles
+    localR = clamp(localR, 0.001, 0.999);
+    localG = clamp(localG, 0.001, 0.999);
+    localB = clamp(localB, 0.001, 0.999);
 
-      container.style.aspectRatio = `${imgW} / ${imgH}`;
-      const newW = container.clientWidth;
-      const newH = container.clientHeight;
+    // Reconstruct global UVs for texture sampling
+    vec2 uvR = (cellId + localR) / gridSize;
+    vec2 uvG = (cellId + localG) / gridSize;
+    vec2 uvB = (cellId + localB) / gridSize;
 
-      camera.aspect = newW / newH;
-      camera.updateProjectionMatrix();
-      renderer.setSize(newW, newH);
+    vec3 texColor = vec3(
+      texture2D(tMap, uvR).r,
+      texture2D(tMap, uvG).g,
+      texture2D(tMap, uvB).b
+    );
 
-      // Fit background quad to viewport bounds
-      const fitPlaneToView = () => {
-        const aspect = newW / newH;
-        // Compute frustum height at bgMesh depth
-        const dist = camera.position.z - bgMesh.position.z;
-        const vFOV = (camera.fov * Math.PI) / 180;
-        const frustumH = 2 * Math.tan(vFOV / 2) * dist;
-        const frustumW = frustumH * aspect;
+    // 5. Specular highlights and beveled glass borders
+    vec2 borderDist = min(finalCellUv, 1.0 - finalCellUv);
+    float edge = min(borderDist.x, borderDist.y);
+    float edgeShadow = smoothstep(0.0, 0.15, edge);
 
-        // Scale background plane to fill scene frustum
-        bgMesh.scale.set(frustumW, frustumH, 1.0);
-      };
+    // Tilted surface normal
+    vec3 normal = normalize(vec3(-tiltDir * 0.75, 1.0));
 
-      fitPlaneToView();
-    });
+    // Bend normals sharply near borders to simulate glass bevels
+    float bevelWidth = 0.095;
+    if (edge < bevelWidth) {
+      float factor = (bevelWidth - edge) / bevelWidth;
+      vec2 borderDir = normalize(finalCellUv - 0.5);
+      normal = normalize(normal + vec3(borderDir * factor * 1.5, 0.0));
+    }
 
-    const handleResize = () => {
-      const newW = container.clientWidth;
-      const newH = container.clientHeight;
+    // Shading calculations matching glossy glass surfaces
+    vec3 lightDir = normalize(vec3(-0.45, 0.5, 1.25));
+    float diff = max(dot(normal, lightDir), 0.0);
+    float shading = mix(0.78, 1.15, diff);
 
-      camera.aspect = newW / newH;
-      camera.updateProjectionMatrix();
-      renderer.setSize(newW, newH);
+    vec3 viewDir = vec3(0.0, 0.0, 1.0);
+    vec3 halfDir = normalize(lightDir + viewDir);
+    float spec = pow(max(dot(normal, halfDir), 0.0), 38.0);
 
-      const dist = camera.position.z - bgMesh.position.z;
-      const vFOV = (camera.fov * Math.PI) / 180;
-      const frustumH = 2 * Math.tan(vFOV / 2) * dist;
-      const frustumW = frustumH * (newW / newH);
-      bgMesh.scale.set(frustumW, frustumH, 1.0);
-    };
-    window.addEventListener("resize", handleResize);
+    // Combine lit color with specular light and dark boundary shadows
+    vec3 tileColor = texColor * shading * mix(0.4, 1.0, edgeShadow) + vec3(spec * 0.38 * uHover);
 
-    const clock = new THREE.Clock();
-    let animationId: number;
+    // 6. Draw exploded panels or dark background void with soft shadow
+    vec3 finalColor = vec3(0.0);
+    if (inside) {
+      finalColor = tileColor;
+    } else {
+      // Calculate soft shadow cast in the dark gaps between panels
+      float shadowDist = max(max(-finalCellUv.x, finalCellUv.x - 1.0), max(-finalCellUv.y, finalCellUv.y - 1.0));
+      float shadow = smoothstep(0.08, 0.0, shadowDist);
+      finalColor = mix(vec3(0.015), vec3(0.0), shadow * 0.75);
+    }
 
-    const animate = () => {
-      animationId = requestAnimationFrame(animate);
+    gl_FragColor = vec4(finalColor, 1.0);
+  }
+`;
 
-      isHovered.current = THREE.MathUtils.lerp(isHovered.current, targetHover.current, 0.08);
-
-      // Smoothly update crystal rotations with spring torque
-      if (!isDragging.current) {
-        // Slow ambient spin when idle
-        const time = clock.getElapsedTime();
-        targetRotation.current.x = Math.sin(time * 0.4) * 0.25;
-        targetRotation.current.y = time * 0.15;
-      }
-
-      // Dynamic interpolation for springy rotation feel
-      const rx = THREE.MathUtils.lerp(currentRotation.current.x, targetRotation.current.x, 0.08);
-      const ry = THREE.MathUtils.lerp(currentRotation.current.y, targetRotation.current.y, 0.08);
-
-      currentRotation.current.set(rx, ry);
-      crystalMesh.rotation.set(rx, ry, 0);
-
-      // Modulate crystal roughness dynamically based on drag velocity
-      if (isDragging.current) {
-        crystalMaterial.roughness = THREE.MathUtils.lerp(crystalMaterial.roughness, 0.15, 0.1);
-      } else {
-        crystalMaterial.roughness = THREE.MathUtils.lerp(crystalMaterial.roughness, 0.02, 0.1);
-      }
-
-      renderer.render(scene, camera);
-
-      if (onLifecycleChange && isHovered.current > 0.95 && targetHover.current === 1.0) {
-        onLifecycleChange("buildUp");
-      }
-    };
-
-    animate();
-
-    return () => {
-      cancelAnimationFrame(animationId);
-      window.removeEventListener("resize", handleResize);
-
-      // Clean up resources
-      bgGeometry.dispose();
-      bgMaterial.dispose();
-      crystalGeometry.dispose();
-      crystalMaterial.dispose();
-      renderer.dispose();
-      if (loadedTexture) loadedTexture.dispose();
-    };
-  }, [imageSrc, imgDimensions.width, imgDimensions.height, onLifecycleChange]);
-
+export const ChaiCollection: React.FC<VesselComponentProps> = (props) => {
   return (
-    <div
-      ref={containerRef}
-      role="img"
-      aria-label="3D Icosahedron refractive crystal prism lens showcase"
-      style={{
-        aspectRatio: `${imgDimensions.width} / ${imgDimensions.height}`,
-        ...style,
-      }}
-      className={`w-full relative overflow-hidden select-none pointer-events-auto cursor-grab active:cursor-grabbing ${className}`}
-    >
-      <canvas ref={canvasRef} className="absolute inset-0 block w-full h-full" />
-    </div>
+    <VesselCanvas
+      {...props}
+      vertexShader={vert}
+      fragmentShader={frag}
+      className={props.className}
+      ariaLabel="Interactive exploded 3D glass panels visual effect view"
+    />
   );
 };
 

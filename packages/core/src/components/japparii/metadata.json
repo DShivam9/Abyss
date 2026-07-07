@@ -2,7 +2,7 @@
   "name": "JAPPARII INTERCEPT",
   "slug": "japparii",
   "pitch": "A hand-drawn Leonardo sketch paper shader rendering image luminance as dynamic cross-hatching diagonal strokes.",
-  "family": "lens",
+  "family": "noir",
   "energy": "responsive",
   "triggers": [
     "hover"

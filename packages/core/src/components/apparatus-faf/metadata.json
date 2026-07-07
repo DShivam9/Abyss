@@ -1,21 +1,32 @@
 {
-  "name": "APPARATUS FAF",
+  "name": "FAF",
   "slug": "apparatus-faf",
-  "pitch": "A retro halftone dot print shader converting image luminance into CMYK dots.",
-  "family": "lens",
+  "pitch": "Alchemical gold veins and Kintsugi knight shader. The cursor acts as a pressure roller. Hovering and dragging reveals a network of organic gold leaf veins seeping through detailed stress cracks in the cold iron armor. Cursor-reactive light makes the multi-tone gold shimmer with metallic Fresnel rim reflections. The gold veins slowly tarnish and seal up automatically, resetting the relic back to its default painted state.",
+  "family": "medieval",
   "energy": "responsive",
   "triggers": [
-    "hover"
+    "hover",
+    "drag",
+    "click"
   ],
   "tech": [
     "three.js",
-    "glsl"
+    "glsl",
+    "canvas-texture",
+    "sobel-height-normals",
+    "procedural-kintsugi-cracks",
+    "multi-tone-gold-palette",
+    "cursor-reactive-light",
+    "metallic-fresnel",
+    "noise-shimmer",
+    "vertex-displacement",
+    "auto-healing-decay"
   ],
   "lifecycle": {
-    "idle": "Subtle micro-movement or Rest state",
-    "discovery": "Reaction on initial interaction",
-    "buildUp": "Intensifying reaction on continued movement",
-    "peak": "Max effect expression",
-    "recovery": "Relax back to idle"
+    "idle": "Pristine full-color egg-tempera painting with paint brush canvas texture in its default state",
+    "discovery": "Cursor enters, initiating active pressure and revealing faint gold veins seeping through armor lines with cursor-reactive light",
+    "buildUp": "Brushing paints multi-tone gold leaf trails, transmuting plate stress lines into glowing Kintsugi fractures with Fresnel rim flash",
+    "peak": "Gleaming gold veins branching organically along high-contrast armor plate contours, noise-driven shimmer and metallic reflections",
+    "recovery": "Gold leaf slowly tarnishes and fades, sealing the stress cracks and resetting the relic back to the painted state"
   }
 }

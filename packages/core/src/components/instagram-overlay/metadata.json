@@ -1,9 +1,9 @@
 {
   "name": "DIGITAL OVERLAY",
   "slug": "instagram-overlay",
-  "pitch": "A premium fluid-glass refraction and chromatic dispersion overlay. Hovering projects a dynamic magnifying lens dome with edge spectral splitting; clicking triggers an organic water-ripple wave that refracts the background image.",
-  "family": "illuminate",
-  "energy": "responsive",
+  "pitch": "It takes a few hits to break. Each click shakes the pixels around it and leaves them raised; land the hits in quick succession and on the third the image gives way — shattering from the break point, tumbling under gravity, then spiralling back inward as one vortex and dissolving seamlessly back together. Pause between hits and the pixels settle and it stays whole.",
+  "family": "aesthetic",
+  "energy": "cinematic",
   "triggers": [
     "hover",
     "click"
@@ -11,15 +11,14 @@
   "tech": [
     "three.js",
     "glsl",
-    "glass-refraction",
-    "chromatic-aberration",
-    "wave-propagation"
+    "custom-buffergeometry",
+    "particle-physics"
   ],
   "lifecycle": {
-    "idle": "Pristine background image with a soft vignette and subtle atmospheric edge refraction",
-    "discovery": "Hovering introduces a smooth glass dome that follows the cursor, refracting the pixels below it",
-    "buildUp": "Approaching the lens boundary reveals organic chromatic dispersion, splitting RGB channels dynamically",
-    "peak": "Clicking fires a fluid pulse, sending concentric refractive wave ripples across the image plane",
-    "recovery": "Ripples decay exponentially using a damped sine wave formula, restoring the screen to normal focus"
+    "idle": "A slow soft sheen of light sweeps across the surface with a faint breathing — alive but calm",
+    "discovery": "On hover the whole image leans toward the cursor in a gentle 3D parallax and the sheen brightens. Each hit shakes the surrounding pixels and leaves them raised as 3D tiles for ~2s; they settle back if you pause, so the image only breaks under quick successive hits",
+    "buildUp": "The final hit gives way — the image shatters from the break point, tiles blasting outward with motion blur and tumbling under gravity",
+    "peak": "All tiles piled at the bottom, scattered, rotated and desaturated",
+    "recovery": "Tiles spiral inward as one coherent vortex — centre-first, outer tiles trailing as arms — the bevel and glow dissolving away so the picture reforms seamlessly"
   }
 }

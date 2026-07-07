@@ -2,7 +2,7 @@
   "name": "CHROMEPUNK BEAST",
   "slug": "chromepunk-beast",
   "pitch": "A specular normal-mapped canvas calculating height profiles and embossing shadows on the fly via Sobel filters.",
-  "family": "lens",
+  "family": "dark-styled",
   "energy": "responsive",
   "triggers": [
     "hover"

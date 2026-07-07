@@ -2,7 +2,7 @@
   "name": "MERLIN KNIGHTS",
   "slug": "merlin-knights",
   "pitch": "A Renaissance copperplate engraving sketch. The cursor causes paint to bleed through raw parchment paper fibers, gradually drying back to sepia when resting.",
-  "family": "transform",
+  "family": "medieval",
   "energy": "calm",
   "triggers": [
     "hover"

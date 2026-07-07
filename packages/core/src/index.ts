@@ -23,3 +23,9 @@ export * from "./components/instagram-overlay";
 export * from "./components/merlin-knights";
 export * from "./components/red-refract";
 export * from "./components/tanvi";
+export * from "./components/static-image";
+export * from "./components/apparatus-fjvfba";
+export * from "./components/apparatus-ialfa";
+export * from "./components/deepwood-glimmer";
+
+

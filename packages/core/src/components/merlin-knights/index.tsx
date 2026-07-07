@@ -13,10 +13,19 @@ export const MerlinKnights: React.FC<VesselComponentProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [imgDimensions, setImgDimensions] = useState({ width: 500, height: 500 });
+  const [windSpeed, setWindSpeed] = useState(0.8);
 
   // Interaction variables
   const isHovered = useRef(0.0);
   const targetHover = useRef(0.0);
+  const materialRef = useRef<THREE.ShaderMaterial | null>(null);
+
+  // Sync windSpeed state with shader uniform
+  useEffect(() => {
+    if (materialRef.current) {
+      materialRef.current.uniforms.uWindSpeed.value = windSpeed;
+    }
+  }, [windSpeed]);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -94,11 +103,13 @@ export const MerlinKnights: React.FC<VesselComponentProps> = ({
         uTime: { value: 0.0 },
         uAspect: { value: width / height },
         uAmbientColor: { value: new THREE.Vector3(0.25, 0.28, 0.38) }, // Cool room ambient shadow fill
+        uWindSpeed: { value: windSpeed }, // Dynamic wind speed uniform
       },
       transparent: true,
       depthWrite: true,
       depthTest: true,
     });
+    materialRef.current = displayMaterial;
     const displayMesh = new THREE.Mesh(planeGeo, displayMaterial);
     scene.add(displayMesh);
 
@@ -179,6 +190,7 @@ export const MerlinKnights: React.FC<VesselComponentProps> = ({
     return () => {
       cancelAnimationFrame(animationId);
       window.removeEventListener("resize", handleResize);
+      materialRef.current = null;
 
       // Free all WebGL context memories
       displayMesh.geometry.dispose();
@@ -189,17 +201,100 @@ export const MerlinKnights: React.FC<VesselComponentProps> = ({
   }, [imageSrc, imgDimensions.width, imgDimensions.height, onLifecycleChange]);
 
   return (
-    <div
-      ref={containerRef}
-      role="img"
-      aria-label="3D medieval wall banner tapestry painting. Hovering transforms it into an alchemical gold-embroidered tapestry."
-      style={{
-        aspectRatio: `${imgDimensions.width} / ${imgDimensions.height}`,
-        ...style,
-      }}
-      className={`w-full relative overflow-hidden select-none pointer-events-auto cursor-pointer ${className}`}
-    >
-      <canvas ref={canvasRef} className="absolute inset-0 block w-full h-full" />
+    <div className="flex flex-col gap-4 w-full items-center">
+      {/* 3D Canvas Viewport Container */}
+      <div
+        ref={containerRef}
+        role="img"
+        aria-label="3D medieval wall banner tapestry painting. Hovering transforms it into an alchemical gold-embroidered tapestry."
+        style={{
+          aspectRatio: `${imgDimensions.width} / ${imgDimensions.height}`,
+          ...style,
+        }}
+        className={`w-full relative overflow-hidden select-none pointer-events-auto cursor-pointer ${className}`}
+      >
+        <canvas ref={canvasRef} className="absolute inset-0 block w-full h-full" />
+      </div>
+      
+      {/* Dynamic Wind Simulation Control Panel below the image */}
+      <div 
+        className="w-full max-w-[420px] flex flex-col gap-3 font-mono text-[9px] pointer-events-auto border border-neutral-200/50 bg-[#fafaf9] p-3.5 rounded-[4px]"
+        onClick={(e) => e.stopPropagation()}
+        onMouseDown={(e) => e.stopPropagation()}
+        onMouseUp={(e) => e.stopPropagation()}
+        onMouseMove={(e) => e.stopPropagation()}
+        onTouchStart={(e) => e.stopPropagation()}
+        onTouchMove={(e) => e.stopPropagation()}
+        onTouchEnd={(e) => e.stopPropagation()}
+        onPointerDown={(e) => e.stopPropagation()}
+        onPointerUp={(e) => e.stopPropagation()}
+        onPointerMove={(e) => e.stopPropagation()}
+      >
+        <style>{`
+          .wind-slider-control::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 8px;
+            height: 12px;
+            background: #111113;
+            cursor: pointer;
+            border-radius: 0px;
+          }
+          .wind-slider-control::-moz-range-thumb {
+            width: 8px;
+            height: 12px;
+            background: #111113;
+            cursor: pointer;
+            border: none;
+            border-radius: 0px;
+          }
+        `}</style>
+        
+        <div className="flex justify-between items-center tracking-wider text-neutral-500 uppercase text-[8px] font-bold">
+          <span>Wind Simulation</span>
+          <span className="text-[#111113] font-bold">{windSpeed.toFixed(1)} m/s</span>
+        </div>
+        
+        {/* Preset Buttons */}
+        <div className="flex gap-2">
+          {[
+            { label: "Calm", value: 0.3 },
+            { label: "Breeze", value: 0.8 },
+            { label: "Gusty", value: 1.5 },
+            { label: "Storm", value: 2.6 }
+          ].map((preset) => (
+            <button
+              key={preset.label}
+              type="button"
+              onClick={() => setWindSpeed(preset.value)}
+              className={`flex-1 py-1 px-2 border border-neutral-200 uppercase tracking-wider text-[8px] font-semibold transition-all duration-200 rounded-[2px] cursor-pointer ${
+                Math.abs(windSpeed - preset.value) < 0.05
+                  ? "bg-[#111113] text-white border-[#111113]"
+                  : "bg-white text-neutral-500 hover:text-black hover:border-neutral-400"
+              }`}
+            >
+              {preset.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Custom Range Slider */}
+        <div className="flex items-center mt-1">
+          <input
+            type="range"
+            min="0.2"
+            max="3.0"
+            step="0.1"
+            value={windSpeed}
+            onChange={(e) => setWindSpeed(parseFloat(e.target.value))}
+            className="wind-slider-control w-full h-[3px] bg-neutral-200 appearance-none cursor-pointer rounded-none outline-none"
+            style={{
+              WebkitAppearance: "none",
+              background: `linear-gradient(to right, #111113 0%, #111113 ${(windSpeed - 0.2) / 2.8 * 100}%, #e5e5e5 ${(windSpeed - 0.2) / 2.8 * 100}%, #e5e5e5 100%)`
+            }}
+          />
+        </div>
+      </div>
     </div>
   );
 };

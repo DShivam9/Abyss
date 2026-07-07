@@ -1,0 +1,32 @@
+{
+  "name": "FJVFBA",
+  "slug": "apparatus-fjvfba",
+  "pitch": "Interactive Renaissance copperplate engraving. Renders as a beautiful sepia print on textured parchment paper when idle. Hovering transmutes the ink lines into gleaming, reflective bronze V-grooves that catch cursor-reactive light, with metallic Fresnel reflections. Velocity-biased oxidation spreads directional verdigris tarnish with angle-dependent thin-film iridescent fringes and soft colored crystalline sparkles. Grooves tarnish and oxidise back to sepia when resting.",
+  "family": "medieval",
+  "energy": "responsive",
+  "triggers": [
+    "hover",
+    "click",
+    "velocity"
+  ],
+  "tech": [
+    "three.js",
+    "glsl",
+    "sobel-height-normals",
+    "contour-aligned-hatching",
+    "specular-metal-vgrooves",
+    "cursor-reactive-light",
+    "metallic-fresnel",
+    "velocity-directional-oxidation",
+    "thin-film-iridescence",
+    "reactive-chemical-borders",
+    "vertex-displacement"
+  ],
+  "lifecycle": {
+    "idle": "Detailed sepia-on-parchment copperplate engraving with soft multi-tone copper textures and organic grain in its default state",
+    "discovery": "Cursor enters, exposing initial metallic bronze lines along engraving paths with cursor-reactive light",
+    "buildUp": "Transmutation wavefront expands, velocity-biased verdigris oxidation spreads directionally with thin-film iridescent margins",
+    "peak": "Gleaming bronze V-groove cuts catching volumetric cursor highlights, Fresnel rim reflections, colored crystalline sparkles in tarnish channels",
+    "recovery": "Exposed bronze plate tarnishes and oxidizes, fading back to charcoal sepia ink on paper"
+  }
+}
