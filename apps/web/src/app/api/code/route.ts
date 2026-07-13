@@ -13,19 +13,12 @@ export async function GET(req: NextRequest) {
 
   // Resolve placeholder slugs to their actual implementation folders
   const SLUG_TO_FOLDER: Record<string, string> = {
-    // Medieval placeholders mapping to static-image
-    "apparatus-hdhd": "static-image",
-
-
-
     // Placeholders mapping to merlin-knights
     "apparatus-fblf": "merlin-knights",
-    "apparatus-ll": "merlin-knights",
     "stippled-dark": "merlin-knights",
     "apparatus-dajd": "merlin-knights",
     "apparatus-jjjj": "merlin-knights",
     "apparatus-hoqnl": "merlin-knights",
-    "apparatus-ljbfaf": "merlin-knights",
     "apparatus-underscore": "merlin-knights",
     "apparatus-stshsh": "merlin-knights",
     "apparatus-merged-v3": "merlin-knights",
@@ -56,8 +49,8 @@ export async function GET(req: NextRequest) {
       const fragPath = path.join(componentPath, "shader.frag.glsl");
       
       if (!fs.existsSync(vertPath) || !fs.existsSync(fragPath)) {
-        if (resolvedSlug === "static-image") {
-          return new NextResponse("// Static image component - no custom shaders required.", {
+        if (fs.existsSync(componentPath)) {
+          return new NextResponse("// Standard Three.js / GSAP interaction component. No custom GLSL shaders required.", {
             headers: { "Content-Type": "text/plain" },
           });
         }

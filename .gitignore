@@ -11,3 +11,5 @@ docs/
 *.png
 diff.txt
 *.log
+graphify-out/
+

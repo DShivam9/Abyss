@@ -3,7 +3,7 @@ export interface ShowcaseComponent {
   name: string;
   slug: string;
   description: string;
-  category: string;
+  category: "image" | "geometry" | "scroll" | "gallary" | "hybrid" | "transition";
   complexity: "Simple" | "Intermediate" | "Advanced";
   techBadges: string[];
   accentHex: string;
@@ -22,7 +22,7 @@ export const SHOWCASE_COMPONENTS: ShowcaseComponent[] = [
     name: "Liquid Image Mask",
     slug: "liquid-image-mask",
     description: "SVG clip-path morphing with cursor-driven fluid displacement dynamics.",
-    category: "Masking",
+    category: "image",
     complexity: "Advanced",
     techBadges: ["WebGL", "Cursor Reactive", "GSAP"],
     accentHex: "#1E4FD6", // Deep Cobalt
@@ -33,7 +33,7 @@ export const SHOWCASE_COMPONENTS: ShowcaseComponent[] = [
     name: "Perspective Scroll Window",
     slug: "perspective-scroll-window",
     description: "Multi-layered container tilting under scroll-velocity and cursor proximity.",
-    category: "Parallax",
+    category: "scroll",
     complexity: "Intermediate",
     techBadges: ["Framer Motion", "Spring Physics", "Lenis"],
     accentHex: "#C45A3C", // Warm Terracotta
@@ -44,7 +44,7 @@ export const SHOWCASE_COMPONENTS: ShowcaseComponent[] = [
     name: "Refraction Sprite Mesh",
     slug: "refraction-sprite-mesh",
     description: "Image fragment shading with custom chromatic aberration variables.",
-    category: "Shader",
+    category: "image",
     complexity: "Advanced",
     techBadges: ["React Three Fiber", "Custom Shader", "GLSL"],
     accentHex: "#B8892E", // Aged Gold
@@ -55,7 +55,7 @@ export const SHOWCASE_COMPONENTS: ShowcaseComponent[] = [
     name: "Magnetic Image Stack",
     slug: "magnetic-image-stack",
     description: "Scattered list elements assembling under cursor gravity and spring velocity.",
-    category: "Layout",
+    category: "scroll",
     complexity: "Simple",
     techBadges: ["Framer Motion", "Magnetic Interaction"],
     accentHex: "#1A6B42", // Forest Green
@@ -66,7 +66,7 @@ export const SHOWCASE_COMPONENTS: ShowcaseComponent[] = [
     name: "Dynamic SVG Path Morph",
     slug: "dynamic-svg-path-morph",
     description: "Fluid container boundary morphing reacting to scroll triggers.",
-    category: "Boundary",
+    category: "scroll",
     complexity: "Intermediate",
     techBadges: ["GSAP CustomEase", "ScrollTrigger", "SVG"],
     accentHex: "#6B3A93", // Dusty Violet
@@ -77,7 +77,7 @@ export const SHOWCASE_COMPONENTS: ShowcaseComponent[] = [
     name: "Depth Parallax Curtain",
     slug: "depth-parallax-curtain",
     description: "Z-axis image layer splitting following viewport progress.",
-    category: "Depth",
+    category: "scroll",
     complexity: "Advanced",
     techBadges: ["ScrollTrigger", "Perspective Tilt", "GPU Offloaded"],
     accentHex: "#4A5568", // Slate Steel

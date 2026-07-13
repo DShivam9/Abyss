@@ -2,6 +2,10 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   distDir: process.env.NODE_ENV === "production" ? ".next" : ".next-dev",
+  optimizePackageImports: ["framer-motion"],
+  images: {
+    formats: ["image/webp"],
+  },
   webpack: (config) => {
     config.module.rules.push({
       test: /\.glsl$/,

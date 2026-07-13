@@ -28,9 +28,17 @@ export function SmoothScrollProvider({ children }: { children: ReactNode }) {
     gsap.ticker.add(updateTicker);
     gsap.ticker.lagSmoothing(0);
 
+    // Watch for DOM height changes and resize Lenis
+    const resizeObserver = new ResizeObserver(() => {
+      lenis.resize();
+      ScrollTrigger.refresh();
+    });
+    resizeObserver.observe(document.body);
+
     return () => {
       lenis.destroy();
       gsap.ticker.remove(updateTicker);
+      resizeObserver.disconnect();
     };
   }, []);
 

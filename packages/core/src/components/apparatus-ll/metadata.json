@@ -1,0 +1,24 @@
+{
+  "name": "HOLLOW CHROME MASK",
+  "slug": "apparatus-ll",
+  "pitch": "An industrial brushed steel intaglio printing plate. The skull mask is etched into the metal, filled with carbon grease ink. Hovering acts as a high-pressure squeegee, smudging and bleeding the ink horizontally along the brushed grain. Clicking triggers a hydraulic press depth stroke that splatters ink.",
+  "family": "brutalist",
+  "energy": "dynamic",
+  "triggers": [
+    "hover",
+    "click",
+    "idle"
+  ],
+  "tech": [
+    "three.js",
+    "glsl",
+    "vessel-canvas"
+  ],
+  "lifecycle": {
+    "idle": "Brushed steel plate reflecting ambient studio light with anisotropic specular glints across the intact print",
+    "discovery": "Grooves begin to warm up, preparing the ink channels to respond",
+    "buildUp": "Squeegee pressure smudges and bleeds the black grease ink horizontally along the steel grain, leaving fibrous streaks that respond to cursor speed",
+    "peak": "Click triggers a heavy hydraulic press stamp that punches the plate backward in 3D and splatters ink droplets outward",
+    "recovery": "Plate springs back forward and ink channels pull back into the grooves over 1.4 seconds, restoring the clean skull print"
+  }
+}

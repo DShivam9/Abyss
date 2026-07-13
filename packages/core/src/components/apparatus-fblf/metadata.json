@@ -1,0 +1,26 @@
+{
+  "name": "FBLF",
+  "slug": "apparatus-fblf",
+  "pitch": "Interactive Halftone Screen Dissolve. Converts the image into a raw black-and-white dot matrix print on warm cream paper. Hovering initiates a tactile diagonal wipe that sweeps across the canvas, dissolving the halftone grid into the original full-color photograph along an organic, contour-guided border with chromatic aberration.",
+  "family": "brutalist",
+  "energy": "responsive",
+  "triggers": [
+    "hover",
+    "proximity"
+  ],
+  "tech": [
+    "three.js",
+    "glsl",
+    "halftone-rasterizer",
+    "chromatic-aberration",
+    "diagonal-sweep-wipe",
+    "contour-guided-reveal"
+  ],
+  "lifecycle": {
+    "idle": "Detailed black-and-white halftone print on textured cream paper with a double-octave organic breathing scale and tilt",
+    "discovery": "Cursor enters, triggering a sharp, chromatic diagonal wipe starting from the hover coordinate",
+    "buildUp": "Diagonal wipe sweeps across the image, exposing the color photograph on one side of the sweep line",
+    "peak": "Complete photograph visible behind the sweep line, blending cleanly into the print screen on the other side",
+    "recovery": "Diagonal wipe retreats smoothly back to idle state"
+  }
+}

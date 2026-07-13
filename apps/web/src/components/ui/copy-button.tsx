@@ -51,7 +51,7 @@ export function CopyButton({ text }: { text: string }) {
       onClick={handleCopy}
       onMouseEnter={() => setCursorState("hover-link")}
       onMouseLeave={() => setCursorState("default")}
-      className="p-1.5 text-vessel-text-muted hover:text-vessel-text-primary bg-vessel-base border border-vessel-border-hairline rounded-none cursor-none outline-none relative w-7 h-7 flex items-center justify-center transition-colors duration-200"
+      className="p-1.5 text-vessel-text-muted hover:text-vessel-text-primary bg-vessel-base border border-vessel-border-hairline rounded-none cursor-pointer outline-none relative w-7 h-7 flex items-center justify-center transition-colors duration-200"
     >
       <AnimatePresence mode="wait">
         {!copied ? (

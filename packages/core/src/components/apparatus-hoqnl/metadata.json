@@ -1,0 +1,22 @@
+{
+  "name": "APPARATUS HOQNL",
+  "slug": "apparatus-hoqnl",
+  "pitch": "An ASCII framebuffer inspector that renders images as procedural monospaced glyphs, with crosshair-axis glitch disruption on hover and continuous character mutation at idle.",
+  "family": "brutalist",
+  "energy": "dynamic",
+  "triggers": [
+    "hover",
+    "velocity"
+  ],
+  "tech": [
+    "three.js",
+    "glsl"
+  ],
+  "lifecycle": {
+    "idle": "Image rendered as ASCII character grid with slow sine-driven glyph mutation",
+    "discovery": "Crosshair axes emerge at cursor position with terminal-green tinting",
+    "buildUp": "Characters along cursor axes scramble and tear with coordinate disruption",
+    "peak": "Full axis glitch with random character replacement and color bleed",
+    "recovery": "Glitch dissolves as crosshair fades, characters restore luminance mapping"
+  }
+}

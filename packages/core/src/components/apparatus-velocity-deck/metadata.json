@@ -1,0 +1,16 @@
+{
+  "name": "Apparatus Velocity Deck",
+  "slug": "apparatus-velocity-deck",
+  "pitch": "Scroll-pinned image deck that physically stretches, skews, and splits into offset slices in response to scroll velocity.",
+  "family": "layout",
+  "energy": "dynamic",
+  "triggers": ["scroll", "velocity", "hover"],
+  "tech": ["react", "gsap", "lenis"],
+  "lifecycle": {
+    "idle": "Subtle ambient floating",
+    "discovery": "Initial reveal and tilt shift",
+    "buildUp": "Slices skew and offset dynamically",
+    "peak": "Slices split completely and translate vertically/horizontally",
+    "recovery": "Slices settle back to home via spring easing"
+  }
+}
