@@ -3,7 +3,7 @@ import fs from 'fs-extra';
 import path from 'path';
 
 // For local testing or open source repo
-const REGISTRY_URL = 'https://raw.githubusercontent.com/dyash/AbsoluteUI/main/apps/web/public/registry';
+const REGISTRY_URL = 'https://raw.githubusercontent.com/DShivam9/Abyss/main/apps/web/public/registry';
 
 export const addCommand = new Command()
   .command('add')
@@ -12,20 +12,20 @@ export const addCommand = new Command()
   .action(async (components: string[]) => {
     try {
       // 1. Read config
-      const configPath = path.join(process.cwd(), 'vessel.json');
+      const configPath = path.join(process.cwd(), 'abyss.json');
       if (!fs.existsSync(configPath)) {
-        console.error('❌ vessel.json not found. Run `npx vessel-ui init` first.');
+        console.error('❌ abyss.json not found. Run `npx abyss-ui init` first.');
         process.exit(1);
       }
       
       const config = await fs.readJson(configPath);
-      const componentsPath = path.join(process.cwd(), config.componentsPath || 'src/components/vessel');
+      const componentsPath = path.join(process.cwd(), config.componentsPath || 'src/components/abyss');
       
       // Ensure directory exists
       await fs.ensureDir(componentsPath);
 
       if (!components || components.length === 0) {
-        console.error('❌ No components specified. Usage: npx vessel-ui add <component>');
+        console.error('❌ No components specified. Usage: npx abyss-ui add <component>');
         return;
       }
 

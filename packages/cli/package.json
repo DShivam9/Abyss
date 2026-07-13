@@ -1,10 +1,10 @@
 {
   "name": "cli",
   "version": "1.0.0",
-  "description": "Vessel UI CLI tool",
+  "description": "Abyss UI CLI tool",
   "main": "dist/index.js",
   "bin": {
-    "vessel-ui": "dist/index.js"
+    "abyss-ui": "dist/index.js"
   },
   "scripts": {
     "build": "tsup",

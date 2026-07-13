@@ -23,7 +23,7 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Vessel",
+  title: "Abyss",
   description: "An open-source React component library for immersive, physics-driven image interactions.",
 };
 

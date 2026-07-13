@@ -159,7 +159,7 @@ function ComponentsCatalogContent() {
             variants={clipReveal}
             className="font-sans font-black text-6xl xl:text-7xl tracking-tighter text-white uppercase leading-none"
           >
-            VESSEL
+            ABYSS
           </motion.h1>
           <motion.div
             variants={clipReveal}

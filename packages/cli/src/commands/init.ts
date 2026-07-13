@@ -13,7 +13,7 @@ export const initCommand = new Command()
           type: 'text',
           name: 'componentsPath',
           message: 'Where would you like to install components?',
-          initial: 'src/components/vessel'
+          initial: 'src/components/abyss'
         },
         {
           type: 'text',
@@ -28,12 +28,12 @@ export const initCommand = new Command()
         return;
       }
 
-      const configPath = path.join(process.cwd(), 'vessel.json');
+      const configPath = path.join(process.cwd(), 'abyss.json');
       await fs.writeFile(
         configPath,
         JSON.stringify(
           {
-            $schema: 'https://vessel-ui.dev/schema.json',
+            $schema: 'https://abyss-ui.dev/schema.json',
             componentsPath: response.componentsPath,
             utilsPath: response.utilsPath
           },
@@ -43,8 +43,8 @@ export const initCommand = new Command()
         'utf8'
       );
 
-      console.log('\n✅ Initialization complete. vessel.json created.');
-      console.log('You can now start adding components using: npx vessel-ui add <component>');
+      console.log('\n✅ Initialization complete. abyss.json created.');
+      console.log('You can now start adding components using: npx abyss-ui add <component>');
     } catch (error) {
       console.error('Initialization failed:', error);
     }

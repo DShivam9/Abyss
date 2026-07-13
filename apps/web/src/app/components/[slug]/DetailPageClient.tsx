@@ -261,9 +261,9 @@ export function DetailPageClient({ slug }: { slug: string }) {
                       </span>
                       <div className="w-full bg-[#111113]/60 border border-neutral-900 px-4 py-3 rounded-[4px] flex justify-between items-center font-mono text-xs text-white">
                         <span className="select-all tracking-wider text-[11px] text-neutral-300">
-                          npx vessel-ui add {meta.slug}
+                          npx abyss-ui add {meta.slug}
                         </span>
-                        <CopyButton text={`npx vessel-ui add ${meta.slug}`} />
+                        <CopyButton text={`npx abyss-ui add ${meta.slug}`} />
                       </div>
                     </div>
 
@@ -471,9 +471,9 @@ export function DetailPageClient({ slug }: { slug: string }) {
                       </span>
                       <div className="w-full bg-[#111113]/60 border border-neutral-900 p-4 rounded-[4px] flex justify-between items-center font-mono text-xs text-white">
                         <span className="select-all tracking-wider text-[11px] text-neutral-300">
-                          npx vessel-ui add {meta.slug}
+                          npx abyss-ui add {meta.slug}
                         </span>
-                        <CopyButton text={`npx vessel-ui add ${meta.slug}`} />
+                        <CopyButton text={`npx abyss-ui add ${meta.slug}`} />
                       </div>
                     </div>
                   </section>
@@ -577,9 +577,9 @@ export function DetailPageClient({ slug }: { slug: string }) {
                     </span>
                     <div className="w-full bg-[#111113]/60 border border-neutral-900 p-4 rounded-[4px] flex justify-between items-center font-mono text-xs text-white">
                       <span className="select-all tracking-wider text-[11px] text-neutral-300">
-                        npx vessel-ui add {meta.slug}
+                        npx abyss-ui add {meta.slug}
                       </span>
-                      <CopyButton text={`npx vessel-ui add ${meta.slug}`} />
+                      <CopyButton text={`npx abyss-ui add ${meta.slug}`} />
                     </div>
                   </div>
 

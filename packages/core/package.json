@@ -1,7 +1,7 @@
 {
-  "name": "@vessel-ui/core",
+  "name": "@abyss-ui/core",
   "version": "0.1.0",
-  "description": "Core UI components for Vessel UI",
+  "description": "Core UI components for Abyss UI",
   "main": "src/index.ts",
   "scripts": {
     "dev": "tsc --watch",

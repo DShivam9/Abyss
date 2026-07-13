@@ -1,6 +1,6 @@
 import dynamic from "next/dynamic";
 import React from "react";
-import { VesselComponentProps } from "@vessel-ui/core";
+import { VesselComponentProps } from "@abyss-ui/core";
 
 export interface ComponentDetail {
   id: string;
