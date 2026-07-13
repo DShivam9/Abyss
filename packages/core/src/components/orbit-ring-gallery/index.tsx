@@ -290,13 +290,13 @@ const RingGroup = ({
 };
 
 const DEFAULT_ITEMS = [
-  { id: "1", image: "/images/components images/Gallary/cosmos_1110264921.jpeg", title: "Cosmos Alpha", subtitle: "Sailing through the celestial dust of the Orion Arm." },
-  { id: "2", image: "/images/components images/Gallary/cosmos_1309943729.jpeg", title: "Event Horizon", subtitle: "Where time slows down and light fades into the infinite." },
-  { id: "3", image: "/images/components images/Gallary/cosmos_145253936.jpeg", title: "Stellar Nursery", subtitle: "Gases compressing under pressure to spark new solar systems." },
-  { id: "4", image: "/images/components images/Gallary/cosmos_1578342658.jpeg", title: "Nebula Whispers", subtitle: "Cosmic filaments stretching across millions of light years." },
-  { id: "5", image: "/images/components images/Gallary/cosmos_1724531036.jpeg", title: "Solar Winds", subtitle: "Charged streams dancing across planetary atmospheres." },
-  { id: "6", image: "/images/components images/Gallary/cosmos_1948095192.jpeg", title: "Dark Matter", subtitle: "The invisible architecture holding galaxies in structural unison." },
-  { id: "7", image: "/images/components images/Gallary/cosmos_854490082.jpeg", title: "Supernova Core", subtitle: "The violent birth of heavy elements in a dying star's heart." }
+  { id: "1", image: "/images/components%20images/Gallary/cosmos_1110264921.jpeg", title: "Cosmos Alpha", subtitle: "Sailing through the celestial dust of the Orion Arm." },
+  { id: "2", image: "/images/components%20images/Gallary/cosmos_1309943729.jpeg", title: "Event Horizon", subtitle: "Where time slows down and light fades into the infinite." },
+  { id: "3", image: "/images/components%20images/Gallary/cosmos_145253936.jpeg", title: "Stellar Nursery", subtitle: "Gases compressing under pressure to spark new solar systems." },
+  { id: "4", image: "/images/components%20images/Gallary/cosmos_1578342658.jpeg", title: "Nebula Whispers", subtitle: "Cosmic filaments stretching across millions of light years." },
+  { id: "5", image: "/images/components%20images/Gallary/cosmos_1724531036.jpeg", title: "Solar Winds", subtitle: "Charged streams dancing across planetary atmospheres." },
+  { id: "6", image: "/images/components%20images/Gallary/cosmos_1948095192.jpeg", title: "Dark Matter", subtitle: "The invisible architecture holding galaxies in structural unison." },
+  { id: "7", image: "/images/components%20images/Gallary/cosmos_854490082.jpeg", title: "Supernova Core", subtitle: "The violent birth of heavy elements in a dying star's heart." }
 ];
 
 const ScrambledText = ({ text, duration = 12 }: { text: string; duration?: number }) => {

@@ -25,6 +25,9 @@
     "paths": {
       "@/*": [
         "./src/*"
+      ],
+      "@abyss-ui/core": [
+        "../../packages/core/src"
       ]
     },
     "typeRoots": [

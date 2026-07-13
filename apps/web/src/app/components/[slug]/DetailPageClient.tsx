@@ -145,7 +145,7 @@ export function DetailPageClient({ slug }: { slug: string }) {
 
   const getEncodedSrc = (filename: string) => {
     const encodedFilename = filename.replace(/#/g, "%23");
-    return `/images/components images/${encodedFilename}`;
+    return `/images/components%20images/${encodedFilename}`;
   };
 
   const currentImageSrc = uploadedImageSrc || getEncodedSrc(meta.filename);

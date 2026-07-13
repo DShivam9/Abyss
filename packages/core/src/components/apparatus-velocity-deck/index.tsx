@@ -253,14 +253,12 @@ export const ApparatusVelocityDeck: React.FC<ApparatusVelocityDeckProps> = ({
     });
   };
 
-  // Curated premium images to alternate in the deck (spaces encoded to %20)
-  // Ordered so the primary imageSrc sits at index 4 (rendered last in DOM, hence drawn on top)
   const defaultImages = [
-    "/images/components%20images/dark-styled/download%20(2).jpg",
-    "/images/components%20images/dark-styled/glitch-streetwear.jpg",
-    "/images/components%20images/dark-styled/red-refract.jpg",
-    "/images/components%20images/dark-styled/chromepunk-beast.jpg",
-    imageSrc, // Dynamic top image (ACG Fleece)
+    "/images/components%20images/scroll/cosmos_1309660817.jpeg",
+    "/images/components%20images/scroll/cosmos_1859262512.jpeg",
+    "/images/components%20images/scroll/cosmos_2063063057.jpeg",
+    "/images/components%20images/scroll/cosmos_679994644.jpeg",
+    imageSrc, // Dynamic top image (Glowing White Horse)
   ];
 
   return (

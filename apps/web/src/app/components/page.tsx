@@ -58,7 +58,7 @@ function ComponentCard({ item, activeTab, index }: { item: ComponentDetail; acti
 
   const getEncodedSrc = (filename: string) => {
     const encodedFilename = filename.replace(/#/g, "%23");
-    return `/images/components images/${encodedFilename}`;
+    return `/images/components%20images/${encodedFilename}`;
   };
 
   const currentStyles = badgeStyles[item.category] || badgeStyles.image;

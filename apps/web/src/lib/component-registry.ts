@@ -18,7 +18,7 @@ export const COMPONENT_DETAILS: Record<string, ComponentDetail> = {
   "japparii": {
     id: "01",
     label: "JAPPARII",
-    filename: "noir/japparii.jpg",
+    filename: "Image(shader)/japparii.jpg",
     desc: "A hand-drawn Leonardo sketch paper shader rendering image luminance as dynamic cross-hatching diagonal strokes.",
     slug: "japparii",
     category: "image",
@@ -27,7 +27,7 @@ export const COMPONENT_DETAILS: Record<string, ComponentDetail> = {
   "chromepunk-beast": {
     id: "02",
     label: "CHROMEPUNK BEAST",
-    filename: "dark-styled/chromepunk-beast.jpg",
+    filename: "Image(shader)/chromepunk-beast.jpg",
     desc: "A specular normal-mapped canvas calculating height profiles and embossing shadows on the fly via Sobel filters.",
     slug: "chromepunk-beast",
     category: "image",
@@ -36,7 +36,7 @@ export const COMPONENT_DETAILS: Record<string, ComponentDetail> = {
   "tanvi": {
     id: "03",
     label: "TANVI",
-    filename: "premium/tanvi.jpg",
+    filename: "Image(shader)/tanvi.jpg",
     desc: "A stateful Rayleigh-Bénard thermal convection fluid simulation. The cursor heats the viscous liquid, generating circulating plumes and vortexes that warp coordinates.",
     slug: "tanvi",
     category: "image",
@@ -45,7 +45,7 @@ export const COMPONENT_DETAILS: Record<string, ComponentDetail> = {
   "glitch-streetwear": {
     id: "04",
     label: "GLITCH STREETWEAR",
-    filename: "dark-styled/glitch-streetwear.jpg",
+    filename: "Image(shader)/glitch-streetwear.jpg",
     desc: "[DISABLED] Static canvas image.",
     slug: "glitch-streetwear",
     category: "image",
@@ -54,7 +54,7 @@ export const COMPONENT_DETAILS: Record<string, ComponentDetail> = {
   "chai-collection": {
     id: "05",
     label: "CHAI COLLECTION",
-    filename: "asthetic/chai-collection.jpg",
+    filename: "Image(shader)/chai-collection.jpg",
     desc: "A multi-faceted triangular crystal prism lens. Drags and shifts to refract coordinate space and disperse light into a colorful chromatic spectrum.",
     slug: "chai-collection",
     category: "geometry",
@@ -63,7 +63,7 @@ export const COMPONENT_DETAILS: Record<string, ComponentDetail> = {
   "instagram-overlay": {
     id: "06",
     label: "DIGITAL OVERLAY",
-    filename: "asthetic/instagram.jpg",
+    filename: "Image(shader)/instagram.jpg",
     desc: "A holographic analog scanline CRT screen glitch overlay. Page scroll velocity and clicks trigger electrostatic distortion, scanline shifts, and chromatic separation.",
     slug: "instagram-overlay",
     category: "image",
@@ -72,7 +72,7 @@ export const COMPONENT_DETAILS: Record<string, ComponentDetail> = {
   "merlin-knights": {
     id: "07",
     label: "MERLIN KNIGHTS",
-    filename: "medival/merlin-knights.jpg",
+    filename: "Image(shader)/merlin-knights.jpg",
     desc: "A Renaissance copperplate engraving sketch. The cursor causes paint to bleed through raw parchment paper fibers, gradually drying back to sepia when resting.",
     slug: "merlin-knights",
     category: "geometry",
@@ -81,7 +81,7 @@ export const COMPONENT_DETAILS: Record<string, ComponentDetail> = {
   "red-refract": {
     id: "08",
     label: "RED REFRACT",
-    filename: "dark-styled/red-refract.jpg",
+    filename: "Image(shader)/red-refract.jpg",
     desc: "An X-ray outline reveal canvas. The cursor acts as a circular focus lens showing high-contrast neon outlines underneath.",
     slug: "red-refract",
     category: "geometry",
@@ -90,7 +90,7 @@ export const COMPONENT_DETAILS: Record<string, ComponentDetail> = {
   "acg-fleece": {
     id: "09",
     label: "ACG FLEECE",
-    filename: "dark-styled/acg-fleece.jpg",
+    filename: "Image(shader)/acg-fleece.jpg",
     desc: "A global physical bas-relief shader that embosses the image contours in 3D, casting shadows and specular glints dynamically from a cursor-controlled studio light.",
     slug: "acg-fleece",
     category: "image",
@@ -99,7 +99,7 @@ export const COMPONENT_DETAILS: Record<string, ComponentDetail> = {
   "apparatus-dee": {
     id: "10",
     label: "APPARATUS DEE",
-    filename: "premium/dee.jpg",
+    filename: "Image(shader)/dee.jpg",
     desc: "A molten chrome & liquid mercury flow shader. Warps coordinates in viscous waves and shifts anisotropic studio reflections. Best used with high-contrast, metallic, chrome, or reflective images to maximize the liquid-metal sheen.",
     slug: "apparatus-dee",
     category: "image",
@@ -108,7 +108,7 @@ export const COMPONENT_DETAILS: Record<string, ComponentDetail> = {
   "core-shell-a": {
     id: "11",
     label: "CORE SHELL A",
-    filename: "dark-styled/download (1).jpg",
+    filename: "Image(shader)/download (1).jpg",
     desc: "A retro magnifying glass lens pixelating the image coordinates underneath.",
     slug: "core-shell-a",
     category: "geometry",
@@ -117,7 +117,7 @@ export const COMPONENT_DETAILS: Record<string, ComponentDetail> = {
   "core-shell-b": {
     id: "12",
     label: "CORE SHELL B",
-    filename: "dark-styled/download (2).jpg",
+    filename: "Image(shader)/download (2).jpg",
     desc: "Physical expanding water wave ripples generated dynamically by mouse clicks on the canvas.",
     slug: "core-shell-b",
     category: "image",
@@ -126,7 +126,7 @@ export const COMPONENT_DETAILS: Record<string, ComponentDetail> = {
   "kinetic-portal": {
     id: "13",
     label: "KINETIC PORTAL",
-    filename: "dark-styled/download (3).jpg",
+    filename: "Image(shader)/download (3).jpg",
     desc: "An infrared thermal heat vision spectrum shader mapped dynamically around the cursor.",
     slug: "kinetic-portal",
     category: "hybrid",
@@ -135,7 +135,7 @@ export const COMPONENT_DETAILS: Record<string, ComponentDetail> = {
   "apparatus-faf": {
     id: "14",
     label: "APPARATUS FAF",
-    filename: "medival/faf.jpg",
+    filename: "Image(shader)/faf.jpg",
     desc: "An alchemical gilding transmutation shader that preserves a high-fidelity medieval egg-tempera portrait in its pristine, full-color idle state, while dynamically crystallizing a wave of embossed gold leaf across the knight's armor and crown on hover.",
     slug: "apparatus-faf",
     category: "image",
@@ -145,7 +145,7 @@ export const COMPONENT_DETAILS: Record<string, ComponentDetail> = {
   "apparatus-gg": {
     id: "15",
     label: "APPARATUS GG",
-    filename: "asthetic/gg.jpg",
+    filename: "Image(shader)/gg.jpg",
     desc: "A 3D elastic membrane vertex pull mapping height protrusions and shadows to cursor coordinates.",
     slug: "apparatus-gg",
     category: "geometry",
@@ -154,7 +154,7 @@ export const COMPONENT_DETAILS: Record<string, ComponentDetail> = {
   "apparatus-hh": {
     id: "16",
     label: "APPARATUS HH",
-    filename: "dark-styled/hh.jpg",
+    filename: "Image(shader)/hh.jpg",
     desc: "A 3D refractive water droplet glass bubble double-inverting details underneath with real drop shadows.",
     slug: "apparatus-hh",
     category: "geometry",
@@ -163,7 +163,7 @@ export const COMPONENT_DETAILS: Record<string, ComponentDetail> = {
   "apparatus-kl": {
     id: "17",
     label: "APPARATUS KL",
-    filename: "asthetic/kl.jpg",
+    filename: "Image(shader)/kl.jpg",
     desc: "A physical oil-on-canvas simulation modeling high-viscosity lacquer paint. Cursor movement plows a physical displacement trench through the impasto texture, pushing detailed paint ridges to the sides of the stroke. Features velocity-aligned directional paint smudging, canvas micro-weave bump mapping, a deforming reactive border frame, and premium studio light specular highlights.",
     slug: "apparatus-kl",
     category: "geometry",
@@ -172,7 +172,7 @@ export const COMPONENT_DETAILS: Record<string, ComponentDetail> = {
   "chromium-queen": {
     id: "18",
     label: "CHROMIUM QUEEN",
-    filename: "premium/chromium-queen.jpg",
+    filename: "Image(shader)/chromium-queen.jpg",
     desc: "An anisotropic liquid silk and satin fabric simulation. Mouse movement creates organic folds, waves, and drapes directly in the fabric of the portrait. Features micro-refraction along fabric ridges, chromatic dispersion along wave boundaries, and realistic specular sheen highlights resembling luxurious satin.",
     slug: "chromium-queen",
     category: "image",
@@ -181,7 +181,7 @@ export const COMPONENT_DETAILS: Record<string, ComponentDetail> = {
   "apparatus-fblf": {
     id: "19",
     label: "APPARATUS FBLF",
-    filename: "brutalist/fblf.jpg",
+    filename: "Image(shader)/fblf.jpg",
     desc: "A 3D medieval knight silhouette displaying interactive depth light reflection.",
     slug: "apparatus-fblf",
     category: "geometry",
@@ -190,7 +190,7 @@ export const COMPONENT_DETAILS: Record<string, ComponentDetail> = {
   "apparatus-fjvfba": {
     id: "20",
     label: "APPARATUS COPPER PATINA",
-    filename: "medival/fjvfba.jpg",
+    filename: "Image(shader)/fjvfba.jpg",
     desc: "An interactive medieval copperplate engraving shader. Renders a gleaming copperplate print with rich specular reflection and dark carbon grooves when idle. Hovering causes a rich blue-green verdigris patina to bloom and crawl along the engraved outlines.",
     slug: "apparatus-fjvfba",
     category: "image",
@@ -200,7 +200,7 @@ export const COMPONENT_DETAILS: Record<string, ComponentDetail> = {
   "apparatus-ialfa": {
     id: "21",
     label: "APPARATUS IALFA",
-    filename: "medival/i  alfa.jpg",
+    filename: "Image(shader)/i  alfa.jpg",
     desc: "A holy knight rendered as a bas-relief stone carving that casts long, ray-marched shadows in response to a raking torchlight cursor.",
     slug: "apparatus-ialfa",
     category: "hybrid",
@@ -210,7 +210,7 @@ export const COMPONENT_DETAILS: Record<string, ComponentDetail> = {
   "apparatus-ll": {
     id: "22",
     label: "APPARATUS LL",
-    filename: "brutalist/ll.jpg",
+    filename: "Image(shader)/ll.jpg",
     desc: "A demonic knight steel armor reflection shader responding to light coordinates.",
     slug: "apparatus-ll",
     category: "image",
@@ -219,7 +219,7 @@ export const COMPONENT_DETAILS: Record<string, ComponentDetail> = {
   "deepwood-glimmer": {
     id: "23",
     label: "DEEPWOOD GLIMMER",
-    filename: "medival/deepwood-glimmer.jpg",
+    filename: "Image(shader)/deepwood-glimmer.jpg",
     desc: "A heavy velvet tapestry forest with volumetric light glimmers.",
     slug: "deepwood-glimmer",
     category: "image",
@@ -228,7 +228,7 @@ export const COMPONENT_DETAILS: Record<string, ComponentDetail> = {
   "stippled-dark": {
     id: "24",
     label: "STIPPLED DARK",
-    filename: "asthetic/stippled-dark.jpg",
+    filename: "Image(shader)/stippled-dark.jpg",
     desc: "A hand-stippled dark gothic ink shader creating micro-stipple shading under pointer.",
     slug: "stippled-dark",
     category: "yet-to-work-on",
@@ -237,7 +237,7 @@ export const COMPONENT_DETAILS: Record<string, ComponentDetail> = {
   "apparatus-dajd": {
     id: "25",
     label: "APPARATUS DAJD",
-    filename: "asthetic/dajd.jpg",
+    filename: "Image(shader)/dajd.jpg",
     desc: "A custom light-scattering refraction shader.",
     slug: "apparatus-dajd",
     category: "yet-to-work-on",
@@ -246,7 +246,7 @@ export const COMPONENT_DETAILS: Record<string, ComponentDetail> = {
   "apparatus-jjjj": {
     id: "26",
     label: "APPARATUS JJJJ",
-    filename: "asthetic/jjjj.jpg",
+    filename: "Image(shader)/jjjj.jpg",
     desc: "A stippled ink drawing with dynamic density based on cursor motion.",
     slug: "apparatus-jjjj",
     category: "yet-to-work-on",
@@ -255,7 +255,7 @@ export const COMPONENT_DETAILS: Record<string, ComponentDetail> = {
   "apparatus-hoqnl": {
     id: "27",
     label: "APPARATUS HOQNL",
-    filename: "brutalist/hoqnl.jpg",
+    filename: "Image(shader)/hoqnl.jpg",
     desc: "A raw steel relief displacement shader.",
     slug: "apparatus-hoqnl",
     category: "image",
@@ -264,7 +264,7 @@ export const COMPONENT_DETAILS: Record<string, ComponentDetail> = {
   "apparatus-ljbfaf": {
     id: "28",
     label: "APPARATUS LJBFAF",
-    filename: "brutalist/ljbfaf.jpg",
+    filename: "Image(shader)/ljbfaf.jpg",
     desc: "A chrome metal reflection shader.",
     slug: "apparatus-ljbfaf",
     category: "yet-to-work-on",
@@ -273,7 +273,7 @@ export const COMPONENT_DETAILS: Record<string, ComponentDetail> = {
   "apparatus-underscore": {
     id: "29",
     label: "APPARATUS UNDERSCORE",
-    filename: "brutalist/_.jpg",
+    filename: "Image(shader)/_.jpg",
     desc: "A brutalist distressed steel layout shader.",
     slug: "apparatus-underscore",
     category: "yet-to-work-on",
@@ -282,7 +282,7 @@ export const COMPONENT_DETAILS: Record<string, ComponentDetail> = {
   "apparatus-hdhd": {
     id: "30",
     label: "APPARATUS HDHD",
-    filename: "medival/hdhd.jpg",
+    filename: "Image(shader)/hdhd.jpg",
     desc: "A medieval tapestry layout shader.",
     slug: "apparatus-hdhd",
     category: "yet-to-work-on",
@@ -291,7 +291,7 @@ export const COMPONENT_DETAILS: Record<string, ComponentDetail> = {
   "apparatus-stshsh": {
     id: "31",
     label: "APPARATUS IMAGE FOSSIL",
-    filename: "noir/stshsh.jpg",
+    filename: "Image(shader)/stshsh.jpg",
     desc: "Procedural basalt stone slab excavation with branching cracks and falling chips dust particles.",
     slug: "apparatus-stshsh",
     category: "yet-to-work-on",
@@ -300,7 +300,7 @@ export const COMPONENT_DETAILS: Record<string, ComponentDetail> = {
   "apparatus-merged-v3": {
     id: "32",
     label: "APPARATUS MERGED V3",
-    filename: "noir/merged-v3.jpg",
+    filename: "Image(shader)/merged-v3.jpg",
     desc: "A classical stone bust shader reflecting soft studio lights.",
     slug: "apparatus-merged-v3",
     category: "yet-to-work-on",
@@ -309,7 +309,7 @@ export const COMPONENT_DETAILS: Record<string, ComponentDetail> = {
   "apparatus-ldhad": {
     id: "33",
     label: "APPARATUS LDHAD",
-    filename: "ldhad.jpg",
+    filename: "Image(shader)/ldhad.jpg",
     desc: "A high-fidelity refraction layout shader.",
     slug: "apparatus-ldhad",
     category: "yet-to-work-on",
@@ -318,7 +318,7 @@ export const COMPONENT_DETAILS: Record<string, ComponentDetail> = {
   "apparatus-ribbon": {
     id: "34",
     label: "APPARATUS IMAGE ORBIT",
-    filename: "premium/chromium-queen.jpg",
+    filename: "Image(shader)/chromium-queen.jpg",
     desc: "A double-sided 3D photograph card suspended in mid-air that sways, tilts, and sways dynamically following mouse velocity and scroll progress.",
     slug: "apparatus-ribbon",
     category: "yet-to-work-on",
@@ -327,7 +327,7 @@ export const COMPONENT_DETAILS: Record<string, ComponentDetail> = {
   "apparatus-velocity-deck": {
     id: "35",
     label: "APPARATUS VELOCITY DECK",
-    filename: "dark-styled/acg-fleece.jpg",
+    filename: "scroll/Glowing White Horse.jpg",
     desc: "Scroll-pinned image deck that physically stretches, skews, and splits into offset slices in response to scroll velocity.",
     slug: "apparatus-velocity-deck",
     category: "scroll",
