@@ -7,10 +7,10 @@
   "triggers": ["scroll", "velocity", "hover"],
   "tech": ["react", "gsap", "lenis"],
   "lifecycle": {
-    "idle": "Subtle ambient floating",
-    "discovery": "Initial reveal and tilt shift",
-    "buildUp": "Slices skew and offset dynamically",
-    "peak": "Slices split completely and translate vertically/horizontally",
-    "recovery": "Slices settle back to home via spring easing"
+    "idle": "Cards breathe with subtle Y/Z oscillation and micro-rotation drift",
+    "discovery": "Initial reveal with staggered fade-in from depth",
+    "buildUp": "Velocity skew engages, card spacing widens with scroll momentum",
+    "peak": "Cards exit with choreographed unique trajectories",
+    "recovery": "Velocity skew springs back to neutral, breathing resumes"
   }
 }

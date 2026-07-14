@@ -1,0 +1,16 @@
+{
+  "name": "Apparatus Parallax Column",
+  "slug": "apparatus-parallax-column",
+  "pitch": "A split-screen vertical runway where left and right columns travel in opposite directions, revealing unclipped images as they cross the viewport center.",
+  "family": "transition",
+  "energy": "cinematic",
+  "triggers": ["scroll"],
+  "tech": ["react", "gsap"],
+  "lifecycle": {
+    "idle": "Columns are stationary, with centered images fully unclipped and focused",
+    "discovery": "First scroll triggers counter-directional movements in both columns",
+    "buildUp": "Images approach the center band, scaling up and opening their crops",
+    "peak": "Active images align perfectly at the horizontal meridian in full scale",
+    "recovery": "Images leave the center band, shrinking and cropping back to resting state"
+  }
+}

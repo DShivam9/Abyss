@@ -1,0 +1,16 @@
+{
+  "name": "Apparatus Accordion Wall",
+  "slug": "apparatus-accordion-wall",
+  "pitch": "A tactile vertical image accordion that unfolds like a folding screen divider, collapsing neighbor panels while revealing title text and folding shadows.",
+  "family": "layout",
+  "energy": "responsive",
+  "triggers": ["click", "hover"],
+  "tech": ["react", "gsap"],
+  "lifecycle": {
+    "idle": "All panels are equally sized with a moderate shadow overlay.",
+    "discovery": "Entering a panel primes it for expansion and triggers initial lifecycle.",
+    "buildUp": "Panel expands dynamically, shifting sibling panels to compress, and triggers a crease line flash.",
+    "peak": "Selected panel reaches max width (60%), shadow opacity drops to flat-lit, and text content reveals.",
+    "recovery": "Leaving the panel returns all panels back to equal size and moderate fold shadows."
+  }
+}

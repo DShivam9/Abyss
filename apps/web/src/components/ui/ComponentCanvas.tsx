@@ -73,6 +73,18 @@ export function ComponentCanvas({
 
   const handlePointerDown = (e: React.PointerEvent) => {
     if (previewType !== "gallery") return;
+
+    // Ignore drags if the user clicked a button, input, select, or svg inside controls
+    const target = e.target as HTMLElement;
+    if (
+      target.closest("button") || 
+      target.closest("input") || 
+      target.closest("select") ||
+      target.closest("svg")
+    ) {
+      return;
+    }
+
     setIsDragging(true);
     dragStartXRef.current = e.clientX;
     progressAtDragStartRef.current = scrollProgress;

@@ -354,6 +354,28 @@ export const COMPONENT_DETAILS: Record<string, ComponentDetail> = {
     subtype: "blinds",
     tags: ["GSAP", "CSS 3D", "Tactile"],
     previewType: "transition"
+  },
+  "apparatus-accordion-wall": {
+    id: "38",
+    label: "ACCORDION WALL",
+    filename: "scroll/Glowing White Horse.jpg",
+    desc: "A tactile vertical image accordion that unfolds like a folding screen divider, collapsing neighbor panels while revealing title text and folding shadows.",
+    slug: "apparatus-accordion-wall",
+    category: "gallary",
+    subtype: "accordion",
+    tags: ["GSAP", "Flexbox", "Crease Shadows"],
+    previewType: "transition"
+  },
+  "apparatus-parallax-column": {
+    id: "39",
+    label: "PARALLAX COLUMN",
+    filename: "scroll/cosmos_1309660817.jpeg",
+    desc: "A split-screen vertical runway where left and right columns travel in opposite directions, revealing unclipped images as they cross the viewport center.",
+    slug: "apparatus-parallax-column",
+    category: "scroll",
+    subtype: "transition",
+    tags: ["GSAP", "Lenis", "Split Scroll", "Clip Path"],
+    previewType: "gallery"
   }
 };
 
@@ -398,6 +420,8 @@ export const COMPONENT_IMPORTS: Record<string, React.ComponentType<VesselCompone
   "apparatus-velocity-deck": dynamic(() => import("../../../../packages/core/src/components/apparatus-velocity-deck"), { ssr: false }),
   "orbit-ring-gallery": dynamic(() => import("../../../../packages/core/src/components/orbit-ring-gallery"), { ssr: false }),
   "apparatus-venetian-blinds": dynamic(() => import("../../../../packages/core/src/components/apparatus-venetian-blinds"), { ssr: false }),
+  "apparatus-accordion-wall": dynamic(() => import("../../../../packages/core/src/components/apparatus-accordion-wall"), { ssr: false }),
+  "apparatus-parallax-column": dynamic(() => import("../../../../packages/core/src/components/apparatus-parallax-column"), { ssr: false }),
 };
 
 export function getComponent(slug: string) {
