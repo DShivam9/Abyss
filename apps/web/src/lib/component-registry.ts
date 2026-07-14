@@ -343,6 +343,17 @@ export const COMPONENT_DETAILS: Record<string, ComponentDetail> = {
     category: "gallary",
     subtype: "ring",
     tags: ["Three.js", "R3F", "GSAP ScrollTrigger", "Framer Motion"]
+  },
+  "apparatus-venetian-blinds": {
+    id: "37",
+    label: "APPARATUS VENETIAN BLINDS",
+    filename: "scroll/Glowing White Horse.jpg",
+    desc: "A high-fidelity image gallery transition where horizontal slats rotate 180 degrees in a staggered cascade to reveal the next image.",
+    slug: "apparatus-venetian-blinds",
+    category: "transition",
+    subtype: "blinds",
+    tags: ["GSAP", "CSS 3D", "Tactile"],
+    previewType: "transition"
   }
 };
 
@@ -386,6 +397,7 @@ export const COMPONENT_IMPORTS: Record<string, React.ComponentType<VesselCompone
   "apparatus-ribbon": dynamic(() => import("../../../../packages/core/src/components/static-image"), { ssr: false }),
   "apparatus-velocity-deck": dynamic(() => import("../../../../packages/core/src/components/apparatus-velocity-deck"), { ssr: false }),
   "orbit-ring-gallery": dynamic(() => import("../../../../packages/core/src/components/orbit-ring-gallery"), { ssr: false }),
+  "apparatus-venetian-blinds": dynamic(() => import("../../../../packages/core/src/components/apparatus-venetian-blinds"), { ssr: false }),
 };
 
 export function getComponent(slug: string) {

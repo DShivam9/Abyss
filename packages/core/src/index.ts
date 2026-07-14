@@ -29,3 +29,5 @@ export * from "./components/apparatus-ialfa";
 export * from "./components/deepwood-glimmer";
 export * from "./components/apparatus-velocity-deck";
 export * from "./components/orbit-ring-gallery";
+export * from "./components/apparatus-venetian-blinds";
+

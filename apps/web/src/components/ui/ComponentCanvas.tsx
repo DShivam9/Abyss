@@ -9,6 +9,7 @@ interface ComponentCanvasProps {
   Component: React.ComponentType<{
     imageSrc?: string;
     scrollProgress?: number;
+    onScrollProgressChange?: (progress: number) => void;
     isFullscreen?: boolean;
     className?: string;
   }>;
@@ -38,8 +39,8 @@ export function ComponentCanvas({
         const factor = previewType === "gallery" ? 0.0005 : 0.001;
         const next = prev + e.deltaY * factor;
         
-        // Gallery wraps around (circular), Scroll clamps 0 to 1
-        if (previewType === "gallery") {
+        // Gallery and transition wrap around (circular), Scroll clamps 0 to 1
+        if (previewType === "gallery" || previewType === "transition") {
           return next;
         }
         return Math.max(0.0, Math.min(1.0, next));
@@ -124,6 +125,7 @@ export function ComponentCanvas({
         <Component
           imageSrc={imageSrc}
           scrollProgress={scrollProgress}
+          onScrollProgressChange={setScrollProgress}
           isFullscreen={false}
           className="w-full h-full object-cover"
         />

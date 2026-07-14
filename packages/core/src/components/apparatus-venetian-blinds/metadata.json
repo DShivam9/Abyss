@@ -1,0 +1,16 @@
+{
+  "name": "Apparatus Venetian Blinds",
+  "slug": "apparatus-venetian-blinds",
+  "pitch": "A high-fidelity image gallery transition where horizontal slats rotate 180 degrees in a staggered cascade to reveal the next image.",
+  "family": "layout",
+  "energy": "responsive",
+  "triggers": ["click", "hover"],
+  "tech": ["react", "gsap"],
+  "lifecycle": {
+    "idle": "Subtle 3D tilting on mouse movement and breathing opacity fluctuation.",
+    "discovery": "Mouse hover causes the active slats to slightly lean (3D shadow tilt) indicating rotatability.",
+    "buildUp": "Press/click initiates the 180-degree slat flip sequence.",
+    "peak": "Mid-rotation (90 degrees) light streak sweep and vertical split.",
+    "recovery": "Springs settle at 180 degrees (new image fully revealed) with velocity decay."
+  }
+}
