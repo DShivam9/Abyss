@@ -104,6 +104,9 @@ export const ApparatusErosionMap: React.FC<ApparatusErosionMapProps> = ({
   // Refs for delta-corrected smooth interpolation (ref-rate independent)
   const lerpedProgressRef = useRef(0);
   const lastTimeRef = useRef(typeof performance !== "undefined" ? performance.now() : 0);
+  const animFrameIdRef = useRef<number | null>(null);
+  const isAnimatingRef = useRef(false);
+  const wakeUpRef = useRef<() => void>(() => {});
 
   // Deduplicated image list
   const displayImages = React.useMemo(() => {
@@ -156,6 +159,7 @@ export const ApparatusErosionMap: React.FC<ApparatusErosionMapProps> = ({
       curvePower,
       scrollProgress
     };
+    wakeUpRef.current();
   }, [grainScale, octaves, windPattern, windAngle, windStretch, edgeWidth, edgeColor, curvePower, scrollProgress]);
 
   // Lifecycle monitoring
@@ -267,9 +271,7 @@ export const ApparatusErosionMap: React.FC<ApparatusErosionMapProps> = ({
 
     // Mask image data template
     const maskImgData = maskCtx.createImageData(256, 256);
-    const maskData = maskImgData.data;
-
-    let animFrameId: number;
+    const maskData32 = new Uint32Array(maskImgData.data.buffer);
 
     const drawFrame = (timestamp?: number) => {
       const now = timestamp || performance.now();
@@ -281,10 +283,15 @@ export const ApparatusErosionMap: React.FC<ApparatusErosionMapProps> = ({
       if (totalImages < 2) return;
 
       // Delta-corrected smooth interpolation (lerp) - rate independent
-      const dampFactor = 3.5; 
-      const nextProgress = lerpedProgressRef.current + (targetProgress - lerpedProgressRef.current) * (1.0 - Math.exp(-dampFactor * delta));
-      lerpedProgressRef.current = nextProgress;
-      const progress = nextProgress;
+      const diff = targetProgress - lerpedProgressRef.current;
+      if (Math.abs(diff) < 0.0001) {
+        lerpedProgressRef.current = targetProgress;
+        isAnimatingRef.current = false;
+      } else {
+        const dampFactor = 3.5; 
+        lerpedProgressRef.current += diff * (1.0 - Math.exp(-dampFactor * delta));
+      }
+      const progress = lerpedProgressRef.current;
 
       // Scale screen sizes
       const dpr = window.devicePixelRatio || 1;
@@ -368,31 +375,19 @@ export const ApparatusErosionMap: React.FC<ApparatusErosionMapProps> = ({
         ctx.restore();
 
         // Generate threshold dither mask for this localProg
+        const edgeColorVal = (edgeColor.b << 16) | (edgeColor.g << 8) | edgeColor.r;
         for (let i = 0; i < 256 * 256; i++) {
           const noiseVal = noiseData[i];
-          const idx = i * 4;
 
           if (noiseVal < localProg) {
-            // Transparent (eroded, showing Image 0)
-            maskData[idx] = 0;
-            maskData[idx + 1] = 0;
-            maskData[idx + 2] = 0;
-            maskData[idx + 3] = 0;
+            maskData32[i] = 0;
           } else if (edgeWidth > 0 && noiseVal < localProg + edgeWidth) {
-            // Edge boundary color
-            maskData[idx] = edgeColor.r;
-            maskData[idx + 1] = edgeColor.g;
-            maskData[idx + 2] = edgeColor.b;
             const edgeAlpha = Math.floor(
               255 * (1.0 - (noiseVal - localProg) / edgeWidth)
             );
-            maskData[idx + 3] = edgeAlpha;
+            maskData32[i] = (edgeAlpha << 24) | edgeColorVal;
           } else {
-            // Solid mask area (showing the text screen)
-            maskData[idx] = 0;
-            maskData[idx + 1] = 0;
-            maskData[idx + 2] = 0;
-            maskData[idx + 3] = 255;
+            maskData32[i] = 0xFF000000;
           }
         }
 
@@ -473,31 +468,19 @@ export const ApparatusErosionMap: React.FC<ApparatusErosionMapProps> = ({
           drawImageCover(imgNext, ctx);
         }
 
+        const edgeColorVal = (edgeColor.b << 16) | (edgeColor.g << 8) | edgeColor.r;
         for (let i = 0; i < 256 * 256; i++) {
           const noiseVal = noiseData[i];
-          const idx = i * 4;
 
           if (noiseVal < localProg) {
-            // Transparent
-            maskData[idx] = 0;
-            maskData[idx + 1] = 0;
-            maskData[idx + 2] = 0;
-            maskData[idx + 3] = 0;
+            maskData32[i] = 0;
           } else if (edgeWidth > 0 && noiseVal < localProg + edgeWidth) {
-            // Custom edge color
-            maskData[idx] = edgeColor.r;
-            maskData[idx + 1] = edgeColor.g;
-            maskData[idx + 2] = edgeColor.b;
             const edgeAlpha = Math.floor(
               255 * (1.0 - (noiseVal - localProg) / edgeWidth)
             );
-            maskData[idx + 3] = edgeAlpha;
+            maskData32[i] = (edgeAlpha << 24) | edgeColorVal;
           } else {
-            // Solid mask area
-            maskData[idx] = 0;
-            maskData[idx + 1] = 0;
-            maskData[idx + 2] = 0;
-            maskData[idx + 3] = 255;
+            maskData32[i] = 0xFF000000;
           }
         }
 
@@ -517,10 +500,8 @@ export const ApparatusErosionMap: React.FC<ApparatusErosionMapProps> = ({
         if (imgCurrent && imgCurrent.complete) {
           drawImageCover(imgCurrent, bufferCtx);
         }
-        bufferCtx.restore();
 
         // Apply dither mask stretched to card frame ON the buffer canvas
-        bufferCtx.save();
         bufferCtx.globalCompositeOperation = "destination-in";
         bufferCtx.imageSmoothingEnabled = true;
         bufferCtx.drawImage(maskCanvas, dx, dy, drawW, drawH);
@@ -532,13 +513,28 @@ export const ApparatusErosionMap: React.FC<ApparatusErosionMapProps> = ({
         ctx.restore();
       }
 
-      animFrameId = requestAnimationFrame(drawFrame);
+      if (isAnimatingRef.current) {
+        animFrameIdRef.current = requestAnimationFrame(drawFrame);
+      }
     };
 
-    drawFrame();
+    const wakeUp = () => {
+      if (!isAnimatingRef.current) {
+        isAnimatingRef.current = true;
+        lastTimeRef.current = performance.now();
+        animFrameIdRef.current = requestAnimationFrame(drawFrame);
+      }
+    };
+    wakeUpRef.current = wakeUp;
+
+    // Start initial animation
+    wakeUp();
 
     return () => {
-      cancelAnimationFrame(animFrameId);
+      if (animFrameIdRef.current) {
+        cancelAnimationFrame(animFrameIdRef.current);
+      }
+      isAnimatingRef.current = false;
     };
   }, [grainScale, octaves, windPattern, windAngle, windStretch, displayImages]);
 

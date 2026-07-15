@@ -143,7 +143,7 @@ We're building new DOM/GSAP scroll-driven components to balance the shader-heavy
 | Understand agent rules | `.agents/GEMINI.md` |
 | Build a new component | `docs/component-blueprint.md` + `docs/guides/component-creation-guide.md` |
 | Check quality bar | `docs/creative-methodology.md` (8 pillars, laziness test) |
-| Find component ideas | `docs/component-ideas.md` (all ideas in one consolidated file) |
+| Find component ideas | `docs/ideas/` folder — one file per category (see `_index.md`) |
 | Understand website design | `docs/design.md` (colors, type, sections, motion) |
 | Product vision / phases | `docs/pdr.md` |
 | Tech stack / architecture | `docs/tdr.md` |

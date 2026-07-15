@@ -413,6 +413,7 @@ export const COMPONENT_DETAILS: Record<string, ComponentDetail> = {
 };
 
 
+
 // Dynamic imports mapping slug to component inside packages/core
 export const COMPONENT_IMPORTS: Record<string, React.ComponentType<VesselComponentProps>> = {
   "japparii": dynamic(() => import("../../../../packages/core/src/components/japparii"), { ssr: false }),
@@ -458,7 +459,7 @@ export const COMPONENT_IMPORTS: Record<string, React.ComponentType<VesselCompone
   "apparatus-parallax-column": dynamic(() => import("../../../../packages/core/src/components/apparatus-parallax-column"), { ssr: false }),
   "apparatus-layout-morph": dynamic(() => import("../../../../packages/core/src/components/apparatus-layout-morph"), { ssr: false }),
   "apparatus-specimen-box": dynamic(() => import("../../../../packages/core/src/components/apparatus-specimen-box"), { ssr: false }),
-  "apparatus-erosion-map": dynamic(() => import("../../../../packages/core/src/components/apparatus-erosion-map"), { ssr: false }),
+  "apparatus-erosion-map": dynamic(() => import("../../../../packages/core/src/components/apparatus-erosion-map"), { ssr: false })
 };
 
 export function getComponent(slug: string) {
