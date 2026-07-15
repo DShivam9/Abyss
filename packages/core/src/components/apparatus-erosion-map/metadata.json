@@ -1,0 +1,16 @@
+{
+  "name": "Apparatus Erosion Map",
+  "slug": "apparatus-erosion-map",
+  "pitch": "Images erode organically based on a Perlin noise field driven by scroll progress, revealing layers below with textured weathering patterns and active edge glowing.",
+  "family": "aesthetic",
+  "energy": "calm",
+  "triggers": ["scroll"],
+  "tech": ["react", "gsap", "canvas-2d"],
+  "lifecycle": {
+    "idle": "Static state of the current fully-exposed image stratum",
+    "discovery": "Staggered load-in of initial frames with subtle fabric noise overlay fading in",
+    "buildUp": "Progressive scroll initiates Perlin noise threshold dither, eating away pixel columns",
+    "peak": "Complete erosion of the top stratum, revealing the next layer in full clarity",
+    "recovery": "Reverse scroll sweeps and restores the eroded pixels back to their layout place"
+  }
+}

@@ -254,6 +254,32 @@ export function DetailPageClient({ slug }: { slug: string }) {
 
                   {/* CLI & Photo Upload on Pinned Canvas Left Column */}
                   <div className="flex flex-col gap-6 mt-4">
+                    {slug === "apparatus-layout-morph" ? (
+                      <div className="flex flex-col gap-2">
+                        <span className="font-mono text-[8px] font-bold uppercase tracking-[0.2em] text-neutral-500">
+                          Experience stand-alone
+                        </span>
+                        <Link
+                          href="/morph-showcase"
+                          className="w-full bg-[#161618] hover:bg-white border border-neutral-800 hover:border-white text-neutral-300 hover:text-black font-mono font-bold uppercase text-[9px] tracking-[0.2em] py-3 rounded-[3px] flex justify-center items-center transition-all duration-300"
+                        >
+                          OPEN LIVE DEMO
+                        </Link>
+                      </div>
+                    ) : meta.previewType === "scroll" ? (
+                      <div className="flex flex-col gap-2">
+                        <span className="font-mono text-[8px] font-bold uppercase tracking-[0.2em] text-neutral-500">
+                          Experience Runway
+                        </span>
+                        <Link
+                          href={`/showcase/${slug}`}
+                          className="w-full bg-[#161618] hover:bg-white border border-neutral-800 hover:border-white text-neutral-300 hover:text-black font-mono font-bold uppercase text-[9px] tracking-[0.2em] py-3 rounded-[3px] flex justify-center items-center transition-all duration-300"
+                        >
+                          OPEN SCROLL RUNWAY
+                        </Link>
+                      </div>
+                    ) : null}
+
                     {/* CLI Installation */}
                     <div className="flex flex-col gap-2">
                       <span className="font-mono text-[9px] font-bold uppercase tracking-widest text-neutral-500">
@@ -464,6 +490,32 @@ export function DetailPageClient({ slug }: { slug: string }) {
 
                   {/* Right Column: Actions (6/12 cols) */}
                   <section className="lg:col-span-6 flex flex-col gap-3 justify-end">
+                    {slug === "apparatus-layout-morph" ? (
+                      <div className="flex flex-col gap-2 mb-2">
+                        <span className="font-mono text-[8px] font-bold uppercase tracking-[0.2em] text-neutral-500">
+                          Experience stand-alone
+                        </span>
+                        <Link
+                          href="/morph-showcase"
+                          className="w-full bg-[#161618] hover:bg-white border border-neutral-800 hover:border-white text-neutral-300 hover:text-black font-mono font-bold uppercase text-[9px] tracking-[0.2em] py-3 rounded-[3px] flex justify-center items-center transition-all duration-300"
+                        >
+                          OPEN LIVE DEMO
+                        </Link>
+                      </div>
+                    ) : meta.previewType === "scroll" ? (
+                      <div className="flex flex-col gap-2 mb-2">
+                        <span className="font-mono text-[8px] font-bold uppercase tracking-[0.2em] text-neutral-500">
+                          Experience Runway
+                        </span>
+                        <Link
+                          href={`/showcase/${slug}`}
+                          className="w-full bg-[#161618] hover:bg-white border border-neutral-800 hover:border-white text-neutral-300 hover:text-black font-mono font-bold uppercase text-[9px] tracking-[0.2em] py-3 rounded-[3px] flex justify-center items-center transition-all duration-300"
+                        >
+                          OPEN SCROLL RUNWAY
+                        </Link>
+                      </div>
+                    ) : null}
+
                     {/* CLI Installation Block */}
                     <div className="flex flex-col gap-3">
                       <span className="font-mono text-[10px] font-bold uppercase tracking-widest text-neutral-500">
@@ -481,13 +533,34 @@ export function DetailPageClient({ slug }: { slug: string }) {
 
                 {/* Expansive Showcase Workspace Zone */}
                 <div className="w-full">
-                  <ComponentCanvas
-                    slug={slug}
-                    category={meta.category}
-                    previewType={meta.previewType || "shader"}
-                    Component={DynamicComponent}
-                    imageSrc={currentImageSrc}
-                  />
+                  {meta.previewType === "scroll" ? (
+                    <div className="w-full aspect-video rounded-[4px] border border-neutral-900 bg-[#0c0c0d]/60 flex flex-col items-center justify-center p-8 text-center relative overflow-hidden">
+                      <div className="absolute inset-0 bg-noise opacity-[0.02] pointer-events-none" />
+                      <span className="font-mono text-[8px] font-bold text-neutral-500 tracking-[0.2em] uppercase mb-2">
+                        SCROLL RUNWAY COMPONENT
+                      </span>
+                      <h3 className="font-sans font-extrabold text-lg text-white tracking-wider uppercase mb-3">
+                        {meta.label}
+                      </h3>
+                      <p className="max-w-md font-sans text-neutral-500 text-[11px] leading-relaxed mb-8">
+                        {meta.desc || "This component is driven by native viewport scroll gravity. Open the runway to experience the high-fidelity interactive flow."}
+                      </p>
+                      <Link
+                        href={slug === "apparatus-layout-morph" ? "/morph-showcase" : `/showcase/${slug}`}
+                        className="border border-neutral-800 hover:border-white hover:bg-white hover:text-black text-neutral-400 font-mono font-bold uppercase text-[9px] tracking-[0.15em] px-8 py-3 rounded-[3px] transition-all duration-300 flex items-center gap-2"
+                      >
+                        OPEN RUNWAY
+                      </Link>
+                    </div>
+                  ) : (
+                    <ComponentCanvas
+                      slug={slug}
+                      category={meta.category}
+                      previewType={meta.previewType || "shader"}
+                      Component={DynamicComponent}
+                      imageSrc={currentImageSrc}
+                    />
+                  )}
                 </div>
               </div>
             ) : (
@@ -559,13 +632,34 @@ export function DetailPageClient({ slug }: { slug: string }) {
 
                 {/* Column 2: Picture / Component Showcase in the Middle (4/12 cols) */}
                 <section className="lg:col-span-4 flex flex-col items-center justify-center w-full">
-                  <ComponentCanvas
-                    slug={slug}
-                    category={meta.category}
-                    previewType={meta.previewType || "shader"}
-                    Component={DynamicComponent}
-                    imageSrc={currentImageSrc}
-                  />
+                  {meta.previewType === "scroll" ? (
+                    <div className="w-full aspect-square rounded-lg border border-[#dfb15b]/20 bg-[#dfb15b]/[0.02] flex flex-col items-center justify-center p-6 text-center relative overflow-hidden backdrop-blur-md">
+                      <div className="absolute inset-0 bg-noise opacity-[0.02] pointer-events-none" />
+                      <span className="font-mono text-[9px] font-bold text-[#dfb15b] tracking-widest uppercase mb-2">
+                        SCROLL RUNWAY
+                      </span>
+                      <h3 className="font-sans font-black text-sm text-white tracking-tight uppercase mb-2">
+                        {meta.label}
+                      </h3>
+                      <p className="max-w-[200px] font-sans text-neutral-400 text-[10px] leading-relaxed mb-4">
+                        Requires native viewport scroll gravity to transition.
+                      </p>
+                      <Link
+                        href={`/showcase/${slug}`}
+                        className="bg-[#dfb15b] hover:bg-[#c99b4b] text-black font-mono font-bold uppercase text-[9px] tracking-wider px-4 py-2.5 rounded-[4px] flex items-center gap-1 transition-all duration-300 shadow-lg shadow-[#dfb15b]/10"
+                      >
+                        ⚡ OPEN RUNWAY
+                      </Link>
+                    </div>
+                  ) : (
+                    <ComponentCanvas
+                      slug={slug}
+                      category={meta.category}
+                      previewType={meta.previewType || "shader"}
+                      Component={DynamicComponent}
+                      imageSrc={currentImageSrc}
+                    />
+                  )}
                 </section>
 
                 {/* Column 3: CLI and Picture Button on the Right (4/12 cols) */}

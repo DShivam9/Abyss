@@ -464,25 +464,7 @@ export const ApparatusVelocityDeck: React.FC<ApparatusVelocityDeckProps> = ({
       >
         <button
           onClick={() => setDropdownOpen(!dropdownOpen)}
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "8px",
-            backgroundColor: "rgba(13, 13, 15, 0.8)",
-            color: "#ffffff",
-            padding: "6px 14px",
-            border: "1px solid rgba(255, 255, 255, 0.1)",
-            borderRadius: "9999px",
-            backdropFilter: "blur(12px)",
-            boxShadow: "0 4px 12px rgba(0, 0, 0, 0.3)",
-            fontSize: "10px",
-            fontFamily: "monospace",
-            textTransform: "uppercase",
-            letterSpacing: "0.15em",
-            cursor: "pointer",
-            transition: "border-color 0.3s, background-color 0.3s",
-            outline: "none"
-          }}
+          className="abyss-controls-trigger"
         >
           <span>Controls</span>
           <svg 
@@ -503,52 +485,8 @@ export const ApparatusVelocityDeck: React.FC<ApparatusVelocityDeckProps> = ({
 
         {dropdownOpen && (
           <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: "14px",
-              backgroundColor: "rgba(13, 13, 15, 0.9)",
-              padding: "16px 14px",
-              border: "1px solid rgba(255, 255, 255, 0.1)",
-              borderRadius: "12px",
-              backdropFilter: "blur(16px)",
-              boxShadow: "0 20px 40px -15px rgba(0, 0, 0, 0.6)",
-              minWidth: "220px",
-              animation: "fadeIn 0.2s ease-out"
-            }}
+            className="abyss-controls-panel"
           >
-            <style>{`
-              @keyframes fadeIn {
-                from { opacity: 0; transform: translateY(-4px); }
-                to { opacity: 1; transform: translateY(0); }
-              }
-              input[type="range"]::-webkit-slider-thumb {
-                -webkit-appearance: none;
-                appearance: none;
-                width: 10px;
-                height: 10px;
-                border-radius: 50%;
-                background: #34d399;
-                cursor: pointer;
-                transition: transform 0.1s;
-              }
-              input[type="range"]::-webkit-slider-thumb:hover {
-                transform: scale(1.3);
-              }
-              input[type="range"]::-moz-range-thumb {
-                width: 10px;
-                height: 10px;
-                border: none;
-                border-radius: 50%;
-                background: #34d399;
-                cursor: pointer;
-                transition: transform 0.1s;
-              }
-              input[type="range"]::-moz-range-thumb:hover {
-                transform: scale(1.3);
-              }
-            `}</style>
-
             {/* Toggle: Velocity Skew */}
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "16px" }}>
               <span className="text-[9px] font-mono tracking-widest text-white/65 uppercase select-none">
@@ -556,32 +494,12 @@ export const ApparatusVelocityDeck: React.FC<ApparatusVelocityDeckProps> = ({
               </span>
               <button 
                 onClick={() => setSkewEnabled(!skewEnabled)}
-                style={{ 
-                  position: "relative",
-                  width: "28px",
-                  height: "16px",
-                  borderRadius: "9999px",
-                  backgroundColor: skewEnabled ? "rgba(52, 211, 153, 0.2)" : "rgba(255, 255, 255, 0.1)",
-                  display: "flex",
-                  alignItems: "center",
-                  padding: "2px",
-                  cursor: "pointer",
-                  border: "none",
-                  transition: "background-color 0.3s",
-                  outline: "none",
-                  boxSizing: "border-box"
-                }}
+                className={`abyss-toggle-switch ${skewEnabled ? 'abyss-toggle-switch-active' : 'abyss-toggle-switch-inactive'}`}
               >
                 <div 
+                  className="abyss-toggle-knob"
                   style={{
-                    width: "12px",
-                    height: "12px",
-                    borderRadius: "50%",
-                    backgroundColor: "#ffffff",
-                    transition: "transform 0.3s, background-color 0.3s",
-                    transform: skewEnabled ? "translateX(12px)" : "translateX(0px)",
-                    boxShadow: "0 1px 2px rgba(0,0,0,0.3)",
-                    ...(skewEnabled && { backgroundColor: "#34d399" })
+                    transform: skewEnabled ? "translateX(14px)" : "translateX(0px)",
                   }}
                 />
               </button>
@@ -602,11 +520,7 @@ export const ApparatusVelocityDeck: React.FC<ApparatusVelocityDeckProps> = ({
                 value={spreadIntensity}
                 onChange={(e) => setSpreadIntensity(Number(e.target.value))}
                 style={{
-                  width: "100%",
-                  height: "2px",
-                  backgroundColor: "rgba(255,255,255,0.1)",
-                  outline: "none",
-                  WebkitAppearance: "none"
+                  width: "100%"
                 }}
               />
             </div>
@@ -621,18 +535,13 @@ export const ApparatusVelocityDeck: React.FC<ApparatusVelocityDeckProps> = ({
                   <button
                     key={styleOpt}
                     onClick={() => setExitStyle(styleOpt)}
+                    className={`abyss-segment-button ${exitStyle === styleOpt ? "abyss-segment-button-active" : ""}`}
                     style={{
                       flex: 1,
-                      backgroundColor: exitStyle === styleOpt ? "rgba(52, 211, 153, 0.15)" : "transparent",
-                      color: exitStyle === styleOpt ? "#34d399" : "rgba(255, 255, 255, 0.4)",
-                      border: `1px solid ${exitStyle === styleOpt ? "rgba(52, 211, 153, 0.3)" : "rgba(255, 255, 255, 0.05)"}`,
                       borderRadius: "4px",
                       padding: "4px 0",
-                      fontSize: "8px",
-                      fontFamily: "monospace",
-                      textTransform: "uppercase",
                       cursor: "pointer",
-                      transition: "all 0.2s"
+                      textTransform: "uppercase"
                     }}
                   >
                     {styleOpt}
@@ -648,32 +557,12 @@ export const ApparatusVelocityDeck: React.FC<ApparatusVelocityDeckProps> = ({
               </span>
               <button 
                 onClick={() => setBreathingEnabled(!breathingEnabled)}
-                style={{ 
-                  position: "relative",
-                  width: "28px",
-                  height: "16px",
-                  borderRadius: "9999px",
-                  backgroundColor: breathingEnabled ? "rgba(52, 211, 153, 0.2)" : "rgba(255, 255, 255, 0.1)",
-                  display: "flex",
-                  alignItems: "center",
-                  padding: "2px",
-                  cursor: "pointer",
-                  border: "none",
-                  transition: "background-color 0.3s",
-                  outline: "none",
-                  boxSizing: "border-box"
-                }}
+                className={`abyss-toggle-switch ${breathingEnabled ? 'abyss-toggle-switch-active' : 'abyss-toggle-switch-inactive'}`}
               >
                 <div 
+                  className="abyss-toggle-knob"
                   style={{
-                    width: "12px",
-                    height: "12px",
-                    borderRadius: "50%",
-                    backgroundColor: "#ffffff",
-                    transition: "transform 0.3s, background-color 0.3s",
-                    transform: breathingEnabled ? "translateX(12px)" : "translateX(0px)",
-                    boxShadow: "0 1px 2px rgba(0,0,0,0.3)",
-                    ...(breathingEnabled && { backgroundColor: "#34d399" })
+                    transform: breathingEnabled ? "translateX(14px)" : "translateX(0px)",
                   }}
                 />
               </button>
@@ -686,32 +575,12 @@ export const ApparatusVelocityDeck: React.FC<ApparatusVelocityDeckProps> = ({
               </span>
               <button 
                 onClick={() => setHeroVignetteEnabled(!heroVignetteEnabled)}
-                style={{ 
-                  position: "relative",
-                  width: "28px",
-                  height: "16px",
-                  borderRadius: "9999px",
-                  backgroundColor: heroVignetteEnabled ? "rgba(52, 211, 153, 0.2)" : "rgba(255, 255, 255, 0.1)",
-                  display: "flex",
-                  alignItems: "center",
-                  padding: "2px",
-                  cursor: "pointer",
-                  border: "none",
-                  transition: "background-color 0.3s",
-                  outline: "none",
-                  boxSizing: "border-box"
-                }}
+                className={`abyss-toggle-switch ${heroVignetteEnabled ? 'abyss-toggle-switch-active' : 'abyss-toggle-switch-inactive'}`}
               >
                 <div 
+                  className="abyss-toggle-knob"
                   style={{
-                    width: "12px",
-                    height: "12px",
-                    borderRadius: "50%",
-                    backgroundColor: "#ffffff",
-                    transition: "transform 0.3s, background-color 0.3s",
-                    transform: heroVignetteEnabled ? "translateX(12px)" : "translateX(0px)",
-                    boxShadow: "0 1px 2px rgba(0,0,0,0.3)",
-                    ...(heroVignetteEnabled && { backgroundColor: "#34d399" })
+                    transform: heroVignetteEnabled ? "translateX(14px)" : "translateX(0px)",
                   }}
                 />
               </button>

@@ -1,0 +1,14 @@
+{
+  "name": "Apparatus Layout Morph",
+  "slug": "apparatus-layout-morph",
+  "category": "scroll",
+  "subtype": "transition",
+  "tags": [
+    "GSAP",
+    "Layout Reflow",
+    "Interpolation",
+    "3D Rotation"
+  ],
+  "description": "Continuous, scroll-scrubbed layout morphing where cards dynamically interpolate coordinates and aspect ratios between grid, masonry, and strip layouts.",
+  "status": "ready"
+}

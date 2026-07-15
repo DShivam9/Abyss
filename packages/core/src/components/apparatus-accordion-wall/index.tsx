@@ -39,11 +39,11 @@ export const ApparatusAccordionWall: React.FC<ApparatusAccordionWallProps> = ({
   const allImages = React.useMemo(() => {
     if (images.length > 0) return images;
     return [
-      "/images/components images/Transitions/cosmos_1915511961.jpeg",
-      "/images/components images/Transitions/cosmos_1415036495.jpeg",
-      "/images/components images/Transitions/download (1).jpg",
-      "/images/components images/Transitions/download.jpg",
-      "/images/components images/Transitions/◍.jpg",
+      "/images/components%20images/Transitions/ChatGPT%20Image%20Jul%2015%2C%202026%2C%2005_26_02%20PM.png",
+      "/images/components%20images/Transitions/ChatGPT%20Image%20Jul%2015%2C%202026%2C%2005_29_20%20PM.png",
+      "/images/components%20images/Transitions/ChatGPT%20Image%20Jul%2015%2C%202026%2C%2005_37_33%20PM.png",
+      "/images/components%20images/Transitions/ChatGPT%20Image%20Jul%2015%2C%202026%2C%2005_44_29%20PM.png",
+      "/images/components%20images/Transitions/ChatGPT%20Image%20Jul%2015%2C%202026%2C%2005_45_55%20PM.png",
     ];
   }, [images]);
 
@@ -226,6 +226,7 @@ export const ApparatusAccordionWall: React.FC<ApparatusAccordionWallProps> = ({
             e.stopPropagation();
             setDropdownOpen(!dropdownOpen);
           }}
+          className="abyss-controls-trigger"
           style={{
             display: "flex",
             alignItems: "center",
@@ -265,19 +266,7 @@ export const ApparatusAccordionWall: React.FC<ApparatusAccordionWallProps> = ({
 
         {dropdownOpen && (
           <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: "14px",
-              backgroundColor: "rgba(13, 13, 15, 0.9)",
-              padding: "16px 14px",
-              border: "1px solid rgba(255, 255, 255, 0.1)",
-              borderRadius: "12px",
-              backdropFilter: "blur(16px)",
-              boxShadow: "0 20px 40px -15px rgba(0, 0, 0, 0.6)",
-              minWidth: "200px",
-              animation: "fadeIn 0.2s ease-out"
-            }}
+            className="abyss-controls-panel"
           >
             {/* Slider: Panel Count */}
             <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
@@ -285,7 +274,7 @@ export const ApparatusAccordionWall: React.FC<ApparatusAccordionWallProps> = ({
                 <span style={{ fontSize: "9px", fontFamily: "monospace", color: "rgba(255, 255, 255, 0.5)", letterSpacing: "0.08em", textTransform: "uppercase" }}>
                   Panels
                 </span>
-                <span style={{ fontSize: "9px", fontFamily: "monospace", color: "#34d399", fontWeight: "bold" }}>
+                <span style={{ fontSize: "9px", fontFamily: "monospace", color: "rgba(255, 255, 255, 0.7)", fontWeight: "bold" }}>
                   {activePanelCount}
                 </span>
               </div>
@@ -298,12 +287,6 @@ export const ApparatusAccordionWall: React.FC<ApparatusAccordionWallProps> = ({
                 onChange={(e) => setActivePanelCount(parseInt(e.target.value))}
                 style={{
                   width: "100%",
-                  height: "4px",
-                  borderRadius: "2px",
-                  backgroundColor: "rgba(255, 255, 255, 0.1)",
-                  outline: "none",
-                  WebkitAppearance: "none",
-                  cursor: "pointer",
                 }}
               />
             </div>
@@ -314,7 +297,7 @@ export const ApparatusAccordionWall: React.FC<ApparatusAccordionWallProps> = ({
                 <span style={{ fontSize: "9px", fontFamily: "monospace", color: "rgba(255, 255, 255, 0.5)", letterSpacing: "0.08em", textTransform: "uppercase" }}>
                   Speed
                 </span>
-                <span style={{ fontSize: "9px", fontFamily: "monospace", color: "#34d399", fontWeight: "bold" }}>
+                <span style={{ fontSize: "9px", fontFamily: "monospace", color: "rgba(255, 255, 255, 0.7)", fontWeight: "bold" }}>
                   {activeDuration.toFixed(2)}s
                 </span>
               </div>
@@ -327,12 +310,6 @@ export const ApparatusAccordionWall: React.FC<ApparatusAccordionWallProps> = ({
                 onChange={(e) => setActiveDuration(parseFloat(e.target.value))}
                 style={{
                   width: "100%",
-                  height: "4px",
-                  borderRadius: "2px",
-                  backgroundColor: "rgba(255, 255, 255, 0.1)",
-                  outline: "none",
-                  WebkitAppearance: "none",
-                  cursor: "pointer",
                 }}
               />
             </div>
@@ -349,17 +326,11 @@ export const ApparatusAccordionWall: React.FC<ApparatusAccordionWallProps> = ({
                   setActiveInteractiveMode(mode);
                   updateActivePanel(null);
                 }}
+                className="abyss-segment-button"
                 style={{
-                  fontSize: "8px",
-                  fontFamily: "monospace",
-                  border: "1px solid rgba(255, 255, 255, 0.1)",
-                  backgroundColor: "rgba(255, 255, 255, 0.05)",
                   padding: "4px 8px",
                   borderRadius: "4px",
-                  color: "#ffffff",
                   cursor: "pointer",
-                  transition: "background-color 0.2s",
-                  outline: "none",
                   textTransform: "uppercase"
                 }}
               >

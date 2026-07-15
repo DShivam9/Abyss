@@ -1,5 +1,0 @@
-1. showcase : i do no want a single flow of verticle scroll for this section. the images should come in different patterns with different motion. when image reach there main stage tehy should transition to their effect or animation or what ever it has. we need to use images and text with perfect sync in here we need to give ppl the ability to interactive with the componenets and not just scroll away.
-
-2. for the footer i want it to be high asthetic something that goes on a awward winning website. no generic and basic footer. the animations and micro interactions need to be present for sure no compromise on that. the footer should be big and should be something that people remember. while being unique and high asthetic
-
-3. previously we have this philosophy section , it was very very bad. so i am think we need something else. the mission and vision are important so we need to display them. but not in a boring way. we need something that is innovative and engaging. while showing how the motion and animations can be used to convey the message of the company. 

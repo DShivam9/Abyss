@@ -100,11 +100,11 @@ export const ApparatusVenetianBlinds: React.FC<ApparatusVenetianBlindsProps> = (
     // Curated fallback images from Transitions folder
     if (list.length <= 1) {
       const fallbackList = [
-        "/images/components images/Transitions/cosmos_1915511961.jpeg",
-        "/images/components images/Transitions/cosmos_1415036495.jpeg",
-        "/images/components images/Transitions/download (1).jpg",
-        "/images/components images/Transitions/download.jpg",
-        "/images/components images/Transitions/◍.jpg",
+        "/images/components%20images/Transitions/ChatGPT%20Image%20Jul%2015%2C%202026%2C%2005_26_02%20PM.png",
+        "/images/components%20images/Transitions/ChatGPT%20Image%20Jul%2015%2C%202026%2C%2005_29_20%20PM.png",
+        "/images/components%20images/Transitions/ChatGPT%20Image%20Jul%2015%2C%202026%2C%2005_37_33%20PM.png",
+        "/images/components%20images/Transitions/ChatGPT%20Image%20Jul%2015%2C%202026%2C%2005_44_29%20PM.png",
+        "/images/components%20images/Transitions/ChatGPT%20Image%20Jul%2015%2C%202026%2C%2005_45_55%20PM.png",
       ];
       
       if (list.length === 1) {
@@ -415,25 +415,7 @@ export const ApparatusVenetianBlinds: React.FC<ApparatusVenetianBlindsProps> = (
       >
         <button
           onClick={() => setDropdownOpen(!dropdownOpen)}
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "8px",
-            backgroundColor: "rgba(13, 13, 15, 0.8)",
-            color: "#ffffff",
-            padding: "6px 14px",
-            border: "1px solid rgba(255, 255, 255, 0.1)",
-            borderRadius: "9999px",
-            backdropFilter: "blur(12px)",
-            boxShadow: "0 4px 12px rgba(0, 0, 0, 0.3)",
-            fontSize: "10px",
-            fontFamily: "monospace",
-            textTransform: "uppercase",
-            letterSpacing: "0.15em",
-            cursor: "pointer",
-            transition: "border-color 0.3s, background-color 0.3s",
-            outline: "none"
-          }}
+          className="abyss-controls-trigger"
         >
           <span>Controls</span>
           <svg 
@@ -454,52 +436,8 @@ export const ApparatusVenetianBlinds: React.FC<ApparatusVenetianBlindsProps> = (
 
         {dropdownOpen && (
           <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: "14px",
-              backgroundColor: "rgba(13, 13, 15, 0.9)",
-              padding: "16px 14px",
-              border: "1px solid rgba(255, 255, 255, 0.1)",
-              borderRadius: "12px",
-              backdropFilter: "blur(16px)",
-              boxShadow: "0 20px 40px -15px rgba(0, 0, 0, 0.6)",
-              minWidth: "200px",
-              animation: "fadeIn 0.2s ease-out"
-            }}
+            className="abyss-controls-panel"
           >
-            <style>{`
-              @keyframes fadeIn {
-                from { opacity: 0; transform: translateY(-4px); }
-                to { opacity: 1; transform: translateY(0); }
-              }
-              input[type="range"]::-webkit-slider-thumb {
-                -webkit-appearance: none;
-                appearance: none;
-                width: 10px;
-                height: 10px;
-                border-radius: 50%;
-                background: #34d399;
-                cursor: pointer;
-                transition: transform 0.1s;
-              }
-              input[type="range"]::-webkit-slider-thumb:hover {
-                transform: scale(1.3);
-              }
-              input[type="range"]::-moz-range-thumb {
-                width: 10px;
-                height: 10px;
-                border: none;
-                border-radius: 50%;
-                background: #34d399;
-                cursor: pointer;
-                transition: transform 0.1s;
-              }
-              input[type="range"]::-moz-range-thumb:hover {
-                transform: scale(1.3);
-              }
-            `}</style>
-
             {/* Toggle: Inner Parallax */}
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "16px" }}>
               <span className="text-[9px] font-mono tracking-widest text-white/65 uppercase select-none">
@@ -507,32 +445,12 @@ export const ApparatusVenetianBlinds: React.FC<ApparatusVenetianBlindsProps> = (
               </span>
               <button 
                 onClick={() => setParallaxEnabled(!parallaxEnabled)}
-                style={{ 
-                  position: "relative",
-                  width: "28px",
-                  height: "16px",
-                  borderRadius: "9999px",
-                  backgroundColor: parallaxEnabled ? "rgba(52, 211, 153, 0.2)" : "rgba(255, 255, 255, 0.1)",
-                  display: "flex",
-                  alignItems: "center",
-                  padding: "2px",
-                  cursor: "pointer",
-                  border: "none",
-                  transition: "background-color 0.3s",
-                  outline: "none",
-                  boxSizing: "border-box"
-                }}
+                className={`abyss-toggle-switch ${parallaxEnabled ? 'abyss-toggle-switch-active' : 'abyss-toggle-switch-inactive'}`}
               >
                 <div 
+                  className="abyss-toggle-knob"
                   style={{
-                    width: "12px",
-                    height: "12px",
-                    borderRadius: "50%",
-                    backgroundColor: "#ffffff",
-                    transition: "transform 0.3s, background-color 0.3s",
-                    transform: parallaxEnabled ? "translateX(12px)" : "translateX(0px)",
-                    boxShadow: "0 1px 2px rgba(0,0,0,0.3)",
-                    ...(parallaxEnabled && { backgroundColor: "#34d399" })
+                    transform: parallaxEnabled ? "translateX(14px)" : "translateX(0px)",
                   }}
                 />
               </button>
@@ -545,32 +463,12 @@ export const ApparatusVenetianBlinds: React.FC<ApparatusVenetianBlindsProps> = (
               </span>
               <button 
                 onClick={() => setEdgeHighlightEnabled(!edgeHighlightEnabled)}
-                style={{ 
-                  position: "relative",
-                  width: "28px",
-                  height: "16px",
-                  borderRadius: "9999px",
-                  backgroundColor: edgeHighlightEnabled ? "rgba(52, 211, 153, 0.2)" : "rgba(255, 255, 255, 0.1)",
-                  display: "flex",
-                  alignItems: "center",
-                  padding: "2px",
-                  cursor: "pointer",
-                  border: "none",
-                  transition: "background-color 0.3s",
-                  outline: "none",
-                  boxSizing: "border-box"
-                }}
+                className={`abyss-toggle-switch ${edgeHighlightEnabled ? 'abyss-toggle-switch-active' : 'abyss-toggle-switch-inactive'}`}
               >
                 <div 
+                  className="abyss-toggle-knob"
                   style={{
-                    width: "12px",
-                    height: "12px",
-                    borderRadius: "50%",
-                    backgroundColor: "#ffffff",
-                    transition: "transform 0.3s, background-color 0.3s",
-                    transform: edgeHighlightEnabled ? "translateX(12px)" : "translateX(0px)",
-                    boxShadow: "0 1px 2px rgba(0,0,0,0.3)",
-                    ...(edgeHighlightEnabled && { backgroundColor: "#34d399" })
+                    transform: edgeHighlightEnabled ? "translateX(14px)" : "translateX(0px)",
                   }}
                 />
               </button>
@@ -583,32 +481,12 @@ export const ApparatusVenetianBlinds: React.FC<ApparatusVenetianBlindsProps> = (
               </span>
               <button 
                 onClick={() => setBacklightEnabled(!backlightEnabled)}
-                style={{ 
-                  position: "relative",
-                  width: "28px",
-                  height: "16px",
-                  borderRadius: "9999px",
-                  backgroundColor: backlightEnabled ? "rgba(52, 211, 153, 0.2)" : "rgba(255, 255, 255, 0.1)",
-                  display: "flex",
-                  alignItems: "center",
-                  padding: "2px",
-                  cursor: "pointer",
-                  border: "none",
-                  transition: "background-color 0.3s",
-                  outline: "none",
-                  boxSizing: "border-box"
-                }}
+                className={`abyss-toggle-switch ${backlightEnabled ? 'abyss-toggle-switch-active' : 'abyss-toggle-switch-inactive'}`}
               >
                 <div 
+                  className="abyss-toggle-knob"
                   style={{
-                    width: "12px",
-                    height: "12px",
-                    borderRadius: "50%",
-                    backgroundColor: "#ffffff",
-                    transition: "transform 0.3s, background-color 0.3s",
-                    transform: backlightEnabled ? "translateX(12px)" : "translateX(0px)",
-                    boxShadow: "0 1px 2px rgba(0,0,0,0.3)",
-                    ...(backlightEnabled && { backgroundColor: "#34d399" })
+                    transform: backlightEnabled ? "translateX(14px)" : "translateX(0px)",
                   }}
                 />
               </button>
@@ -620,7 +498,7 @@ export const ApparatusVenetianBlinds: React.FC<ApparatusVenetianBlindsProps> = (
                 <span className="text-[9px] font-mono tracking-wider text-white/50 uppercase select-none">
                   Slat Count
                 </span>
-                <span className="text-[9px] font-mono text-[#34d399] font-bold">
+                <span className="text-[9px] font-mono text-white/70 font-bold">
                   {activeSlatCount}
                 </span>
               </div>
@@ -633,12 +511,6 @@ export const ApparatusVenetianBlinds: React.FC<ApparatusVenetianBlindsProps> = (
                 onChange={(e) => setActiveSlatCount(parseInt(e.target.value))}
                 style={{
                   width: "100%",
-                  height: "4px",
-                  borderRadius: "2px",
-                  backgroundColor: "rgba(255, 255, 255, 0.1)",
-                  outline: "none",
-                  WebkitAppearance: "none",
-                  cursor: "pointer",
                 }}
               />
             </div>
@@ -649,7 +521,7 @@ export const ApparatusVenetianBlinds: React.FC<ApparatusVenetianBlindsProps> = (
                 <span className="text-[9px] font-mono tracking-wider text-white/50 uppercase select-none">
                   Speed
                 </span>
-                <span className="text-[9px] font-mono text-[#34d399] font-bold">
+                <span className="text-[9px] font-mono text-white/70 font-bold">
                   {activeDuration.toFixed(1)}s
                 </span>
               </div>
@@ -662,12 +534,6 @@ export const ApparatusVenetianBlinds: React.FC<ApparatusVenetianBlindsProps> = (
                 onChange={(e) => setActiveDuration(parseFloat(e.target.value))}
                 style={{
                   width: "100%",
-                  height: "4px",
-                  borderRadius: "2px",
-                  backgroundColor: "rgba(255, 255, 255, 0.1)",
-                  outline: "none",
-                  WebkitAppearance: "none",
-                  cursor: "pointer",
                 }}
               />
             </div>
@@ -688,17 +554,11 @@ export const ApparatusVenetianBlinds: React.FC<ApparatusVenetianBlindsProps> = (
                   const nextIdx = (directions.indexOf(activeDirection) + 1) % directions.length;
                   setActiveDirection(directions[nextIdx]);
                 }}
+                className="abyss-segment-button"
                 style={{
-                  fontSize: "8px",
-                  fontFamily: "monospace",
-                  border: "1px solid rgba(255, 255, 255, 0.1)",
-                  backgroundColor: "rgba(255, 255, 255, 0.05)",
                   padding: "4px 8px",
                   borderRadius: "4px",
-                  color: "#ffffff",
                   cursor: "pointer",
-                  transition: "background-color 0.2s",
-                  outline: "none",
                   textTransform: "uppercase"
                 }}
               >

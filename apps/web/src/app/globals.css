@@ -228,3 +228,169 @@
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
 }
+
+/* ─── Unified Premium Controls UI ─── */
+@keyframes abyssPanelFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.abyss-controls-trigger {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  background: rgba(15, 15, 20, 0.45) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 9999px !important;
+  padding: 8px 18px !important;
+  backdrop-filter: blur(16px) saturate(120%) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(120%) !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4) !important;
+  color: #a3a3a3 !important;
+  font-size: 10px !important;
+  font-family: var(--font-mono), monospace !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.15em !important;
+  cursor: pointer !important;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  outline: none !important;
+}
+
+.abyss-controls-trigger:hover {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border-color: rgba(255, 255, 255, 0.25) !important;
+  color: #ffffff !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5) !important;
+}
+
+.abyss-controls-trigger:active {
+  transform: translateY(0) !important;
+}
+
+.abyss-controls-panel {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 16px !important;
+  background: rgba(15, 15, 20, 0.45) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 12px !important;
+  padding: 24px !important;
+  width: 320px !important;
+  backdrop-filter: blur(32px) saturate(120%) !important;
+  -webkit-backdrop-filter: blur(32px) saturate(120%) !important;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8) !important;
+  font-family: var(--font-mono), monospace !important;
+  font-size: 10px !important;
+  color: #d4d4d8 !important;
+  letter-spacing: 0.05em !important;
+  animation: abyssPanelFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  transform-origin: top right !important;
+}
+
+/* Slider Track and Thumb Unification */
+.abyss-controls-panel input[type="range"] {
+  width: 100% !important;
+  height: 2px !important;
+  background: rgba(255, 255, 255, 0.15) !important;
+  outline: none !important;
+  -webkit-appearance: none !important;
+  appearance: none !important;
+  margin: 8px 0 !important;
+  cursor: pointer !important;
+}
+
+.abyss-controls-panel input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none !important;
+  appearance: none !important;
+  width: 8px !important;
+  height: 8px !important;
+  border-radius: 50% !important;
+  background: #ffffff !important;
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.5) !important;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.abyss-controls-panel input[type="range"]::-webkit-slider-thumb:hover {
+  transform: scale(1.4) !important;
+}
+
+.abyss-controls-panel input[type="range"]::-moz-range-thumb {
+  width: 8px !important;
+  height: 8px !important;
+  border: none !important;
+  border-radius: 50% !important;
+  background: #ffffff !important;
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.5) !important;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.abyss-controls-panel input[type="range"]::-moz-range-thumb:hover {
+  transform: scale(1.4) !important;
+}
+
+/* Slider Ticks Unification */
+.abyss-slider-tick {
+  background-color: rgba(255, 255, 255, 0.4) !important;
+  width: 1px !important;
+  height: 6px !important;
+}
+
+/* Toggle Switch Unification */
+.abyss-toggle-switch {
+  position: relative !important;
+  width: 32px !important;
+  height: 18px !important;
+  border-radius: 100px !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  padding: 2px !important;
+  cursor: pointer !important;
+  outline: none !important;
+  box-sizing: border-box !important;
+  display: flex !important;
+  align-items: center !important;
+  transition: background-color 0.2s ease, border-color 0.2s ease !important;
+}
+
+.abyss-toggle-switch-active {
+  background-color: rgba(255, 255, 255, 0.2) !important;
+  border-color: rgba(255, 255, 255, 0.4) !important;
+}
+
+.abyss-toggle-switch-inactive {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+.abyss-toggle-knob {
+  width: 12px !important;
+  height: 12px !important;
+  border-radius: 50% !important;
+  background-color: #ffffff !important;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4) !important;
+}
+
+/* Segment Button Group Unification */
+.abyss-segment-button {
+  background-color: transparent !important;
+  color: rgba(255, 255, 255, 0.5) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  font-family: var(--font-mono), monospace !important;
+  font-size: 9px !important;
+  font-weight: 500 !important;
+  letter-spacing: 0.05em !important;
+  transition: all 0.2s ease !important;
+}
+
+.abyss-segment-button-active {
+  background-color: rgba(255, 255, 255, 0.12) !important;
+  color: #ffffff !important;
+  border-color: rgba(255, 255, 255, 0.2) !important;
+}

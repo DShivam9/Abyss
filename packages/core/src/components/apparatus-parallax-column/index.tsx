@@ -202,6 +202,62 @@ export const ApparatusParallaxColumn: React.FC<ApparatusParallaxColumnProps> = (
     }
   }, [scrollProgress]);
 
+  // Direct wheel & touch gesture interceptors for infinite scroll support
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+
+    let touchStartY = 0;
+
+    const handleWheel = (e: WheelEvent) => {
+      // Prevent default browser/page scrolling
+      e.preventDefault();
+      
+      const wheelDelta = e.deltaY * 0.0015;
+      accumulatedProgress.current += wheelDelta;
+      setIsScrolling(true);
+
+      if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
+      scrollTimeoutRef.current = setTimeout(() => {
+        setIsScrolling(false);
+      }, 150);
+    };
+
+    const handleTouchStart = (e: TouchEvent) => {
+      if (e.touches.length > 0) {
+        touchStartY = e.touches[0].clientY;
+      }
+    };
+
+    const handleTouchMove = (e: TouchEvent) => {
+      if (e.touches.length > 0) {
+        const touchY = e.touches[0].clientY;
+        const deltaY = touchStartY - touchY;
+        touchStartY = touchY;
+
+        // Smooth touch velocity scaling
+        const touchDelta = deltaY * 0.005;
+        accumulatedProgress.current += touchDelta;
+        setIsScrolling(true);
+
+        if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
+        scrollTimeoutRef.current = setTimeout(() => {
+          setIsScrolling(false);
+        }, 150);
+      }
+    };
+
+    el.addEventListener("wheel", handleWheel, { passive: false });
+    el.addEventListener("touchstart", handleTouchStart, { passive: true });
+    el.addEventListener("touchmove", handleTouchMove, { passive: true });
+
+    return () => {
+      el.removeEventListener("wheel", handleWheel);
+      el.removeEventListener("touchstart", handleTouchStart);
+      el.removeEventListener("touchmove", handleTouchMove);
+    };
+  }, []);
+
   // Continuous auto drift ticker
   useEffect(() => {
     let animationFrameId: number;
@@ -322,6 +378,7 @@ export const ApparatusParallaxColumn: React.FC<ApparatusParallaxColumnProps> = (
       >
         <button
           onClick={() => setDropdownOpen(!dropdownOpen)}
+          className="abyss-controls-trigger"
           style={{
             display: "flex",
             alignItems: "center",
@@ -361,52 +418,12 @@ export const ApparatusParallaxColumn: React.FC<ApparatusParallaxColumnProps> = (
 
         {dropdownOpen && (
           <div
+            className="abyss-controls-panel"
             style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: "14px",
-              backgroundColor: "rgba(13, 13, 15, 0.9)",
-              padding: "16px 14px",
-              border: "1px solid rgba(255, 255, 255, 0.1)",
-              borderRadius: "12px",
-              backdropFilter: "blur(16px)",
-              boxShadow: "0 20px 40px -15px rgba(0, 0, 0, 0.6)",
-              minWidth: "220px",
-              animation: "fadeIn 0.2s ease-out"
+              maxHeight: "80vh",
+              overflowY: "auto",
             }}
           >
-            <style>{`
-              @keyframes fadeIn {
-                from { opacity: 0; transform: translateY(-4px); }
-                to { opacity: 1; transform: translateY(0); }
-              }
-              input[type="range"]::-webkit-slider-thumb {
-                -webkit-appearance: none;
-                appearance: none;
-                width: 10px;
-                height: 10px;
-                border-radius: 50%;
-                background: #34d399;
-                cursor: pointer;
-                transition: transform 0.1s;
-              }
-              input[type="range"]::-webkit-slider-thumb:hover {
-                transform: scale(1.3);
-              }
-              input[type="range"]::-moz-range-thumb {
-                width: 10px;
-                height: 10px;
-                border: none;
-                border-radius: 50%;
-                background: #34d399;
-                cursor: pointer;
-                transition: transform 0.1s;
-              }
-              input[type="range"]::-moz-range-thumb:hover {
-                transform: scale(1.3);
-              }
-            `}</style>
-
             {/* Slider: Column Split */}
             <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
@@ -417,12 +434,10 @@ export const ApparatusParallaxColumn: React.FC<ApparatusParallaxColumnProps> = (
               </div>
               <div style={{ position: "relative", width: "100%", height: "12px", display: "flex", alignItems: "center" }}>
                 <div 
+                  className="abyss-slider-tick"
                   style={{
                     position: "absolute",
                     left: "50%",
-                    width: "1px",
-                    height: "8px",
-                    backgroundColor: "rgba(52, 211, 153, 0.4)",
                     pointerEvents: "none",
                     transform: "translateX(-50%)",
                     zIndex: 1
@@ -437,10 +452,6 @@ export const ApparatusParallaxColumn: React.FC<ApparatusParallaxColumnProps> = (
                   onChange={(e) => handleSplitRatioChange(Number(e.target.value))}
                   style={{
                     width: "100%",
-                    height: "2px",
-                    backgroundColor: "rgba(255,255,255,0.1)",
-                    outline: "none",
-                    WebkitAppearance: "none",
                     zIndex: 2
                   }}
                 />
@@ -457,12 +468,10 @@ export const ApparatusParallaxColumn: React.FC<ApparatusParallaxColumnProps> = (
               </div>
               <div style={{ position: "relative", width: "100%", height: "12px", display: "flex", alignItems: "center" }}>
                 <div 
+                  className="abyss-slider-tick"
                   style={{
                     position: "absolute",
                     left: `${(1.0 - 0.5) / 1.5 * 100}%`,
-                    width: "1px",
-                    height: "8px",
-                    backgroundColor: "rgba(52, 211, 153, 0.4)",
                     pointerEvents: "none",
                     transform: "translateX(-50%)",
                     zIndex: 1
@@ -478,10 +487,6 @@ export const ApparatusParallaxColumn: React.FC<ApparatusParallaxColumnProps> = (
                   onChange={(e) => handleSpeedFactorChange(Number(e.target.value))}
                   style={{
                     width: "100%",
-                    height: "2px",
-                    backgroundColor: "rgba(255,255,255,0.1)",
-                    outline: "none",
-                    WebkitAppearance: "none",
                     zIndex: 2
                   }}
                 />
@@ -498,12 +503,10 @@ export const ApparatusParallaxColumn: React.FC<ApparatusParallaxColumnProps> = (
               </div>
               <div style={{ position: "relative", width: "100%", height: "12px", display: "flex", alignItems: "center" }}>
                 <div 
+                  className="abyss-slider-tick"
                   style={{
                     position: "absolute",
                     left: `${(4 / 80) * 100}%`,
-                    width: "1px",
-                    height: "8px",
-                    backgroundColor: "rgba(52, 211, 153, 0.4)",
                     pointerEvents: "none",
                     transform: "translateX(-50%)",
                     zIndex: 1
@@ -518,10 +521,6 @@ export const ApparatusParallaxColumn: React.FC<ApparatusParallaxColumnProps> = (
                   onChange={(e) => handleColumnGapChange(Number(e.target.value))}
                   style={{
                     width: "100%",
-                    height: "2px",
-                    backgroundColor: "rgba(255,255,255,0.1)",
-                    outline: "none",
-                    WebkitAppearance: "none",
                     zIndex: 2
                   }}
                 />
@@ -538,12 +537,10 @@ export const ApparatusParallaxColumn: React.FC<ApparatusParallaxColumnProps> = (
               </div>
               <div style={{ position: "relative", width: "100%", height: "12px", display: "flex", alignItems: "center" }}>
                 <div 
+                  className="abyss-slider-tick"
                   style={{
                     position: "absolute",
                     left: "50%",
-                    width: "1px",
-                    height: "8px",
-                    backgroundColor: "rgba(52, 211, 153, 0.4)",
                     pointerEvents: "none",
                     transform: "translateX(-50%)",
                     zIndex: 1
@@ -558,10 +555,6 @@ export const ApparatusParallaxColumn: React.FC<ApparatusParallaxColumnProps> = (
                   onChange={(e) => handleCropAmountChange(Number(e.target.value))}
                   style={{
                     width: "100%",
-                    height: "2px",
-                    backgroundColor: "rgba(255,255,255,0.1)",
-                    outline: "none",
-                    WebkitAppearance: "none",
                     zIndex: 2
                   }}
                 />
@@ -578,12 +571,10 @@ export const ApparatusParallaxColumn: React.FC<ApparatusParallaxColumnProps> = (
               </div>
               <div style={{ position: "relative", width: "100%", height: "12px", display: "flex", alignItems: "center" }}>
                 <div 
+                  className="abyss-slider-tick"
                   style={{
                     position: "absolute",
                     left: "50%",
-                    width: "1px",
-                    height: "8px",
-                    backgroundColor: "rgba(52, 211, 153, 0.4)",
                     pointerEvents: "none",
                     transform: "translateX(-50%)",
                     zIndex: 1
@@ -598,10 +589,6 @@ export const ApparatusParallaxColumn: React.FC<ApparatusParallaxColumnProps> = (
                   onChange={(e) => handleBgScaleChange(Number(e.target.value))}
                   style={{
                     width: "100%",
-                    height: "2px",
-                    backgroundColor: "rgba(255,255,255,0.1)",
-                    outline: "none",
-                    WebkitAppearance: "none",
                     zIndex: 2
                   }}
                 />
@@ -618,12 +605,10 @@ export const ApparatusParallaxColumn: React.FC<ApparatusParallaxColumnProps> = (
               </div>
               <div style={{ position: "relative", width: "100%", height: "12px", display: "flex", alignItems: "center" }}>
                 <div 
+                  className="abyss-slider-tick"
                   style={{
                     position: "absolute",
                     left: `${(4 - 1) / 14 * 100}%`,
-                    width: "1px",
-                    height: "8px",
-                    backgroundColor: "rgba(52, 211, 153, 0.4)",
                     pointerEvents: "none",
                     transform: "translateX(-50%)",
                     zIndex: 1
@@ -638,10 +623,6 @@ export const ApparatusParallaxColumn: React.FC<ApparatusParallaxColumnProps> = (
                   onChange={(e) => handleInertiaChange(Number(e.target.value))}
                   style={{
                     width: "100%",
-                    height: "2px",
-                    backgroundColor: "rgba(255,255,255,0.1)",
-                    outline: "none",
-                    WebkitAppearance: "none",
                     zIndex: 2
                   }}
                 />
@@ -658,12 +639,10 @@ export const ApparatusParallaxColumn: React.FC<ApparatusParallaxColumnProps> = (
               </div>
               <div style={{ position: "relative", width: "100%", height: "12px", display: "flex", alignItems: "center" }}>
                 <div 
+                  className="abyss-slider-tick"
                   style={{
                     position: "absolute",
                     left: "50%",
-                    width: "1px",
-                    height: "8px",
-                    backgroundColor: "rgba(52, 211, 153, 0.4)",
                     pointerEvents: "none",
                     transform: "translateX(-50%)",
                     zIndex: 1
@@ -678,10 +657,6 @@ export const ApparatusParallaxColumn: React.FC<ApparatusParallaxColumnProps> = (
                   onChange={(e) => handleAutoScrollSpeedChange(Number(e.target.value))}
                   style={{
                     width: "100%",
-                    height: "2px",
-                    backgroundColor: "rgba(255,255,255,0.1)",
-                    outline: "none",
-                    WebkitAppearance: "none",
                     zIndex: 2
                   }}
                 />
@@ -698,12 +673,10 @@ export const ApparatusParallaxColumn: React.FC<ApparatusParallaxColumnProps> = (
               </div>
               <div style={{ position: "relative", width: "100%", height: "12px", display: "flex", alignItems: "center" }}>
                 <div 
+                  className="abyss-slider-tick"
                   style={{
                     position: "absolute",
                     left: `${(4 / 120) * 100}%`,
-                    width: "1px",
-                    height: "8px",
-                    backgroundColor: "rgba(52, 211, 153, 0.4)",
                     pointerEvents: "none",
                     transform: "translateX(-50%)",
                     zIndex: 1
@@ -718,10 +691,6 @@ export const ApparatusParallaxColumn: React.FC<ApparatusParallaxColumnProps> = (
                   onChange={(e) => handleImageGapChange(Number(e.target.value))}
                   style={{
                     width: "100%",
-                    height: "2px",
-                    backgroundColor: "rgba(255,255,255,0.1)",
-                    outline: "none",
-                    WebkitAppearance: "none",
                     zIndex: 2
                   }}
                 />

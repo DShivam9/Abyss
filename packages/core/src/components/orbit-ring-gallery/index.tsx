@@ -524,53 +524,8 @@ export const OrbitRingGallery: React.FC<OrbitRingGalleryProps> = ({
         {/* Dropdown Panel Menu */}
         {dropdownOpen && (
           <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: "14px",
-              backgroundColor: "rgba(13, 13, 15, 0.9)",
-              padding: "20px 16px 16px 16px",
-              border: "1px solid rgba(255, 255, 255, 0.1)",
-              borderRadius: "16px",
-              backdropFilter: "blur(16px)",
-              boxShadow: "0 20px 40px -15px rgba(0, 0, 0, 0.6)",
-              minWidth: "240px",
-              animation: "fadeIn 0.2s ease-out"
-            }}
+            className="abyss-controls-panel"
           >
-            {/* Style override for fadeIn and range thumbs */}
-            <style>{`
-              @keyframes fadeIn {
-                from { opacity: 0; transform: translateY(-4px); }
-                to { opacity: 1; transform: translateY(0); }
-              }
-              input[type="range"]::-webkit-slider-thumb {
-                -webkit-appearance: none;
-                appearance: none;
-                width: 10px;
-                height: 10px;
-                border-radius: 50%;
-                background: #34d399;
-                cursor: pointer;
-                transition: transform 0.1s;
-              }
-              input[type="range"]::-webkit-slider-thumb:hover {
-                transform: scale(1.3);
-              }
-              input[type="range"]::-moz-range-thumb {
-                width: 10px;
-                height: 10px;
-                border: none;
-                border-radius: 50%;
-                background: #34d399;
-                cursor: pointer;
-                transition: transform 0.1s;
-              }
-              input[type="range"]::-moz-range-thumb:hover {
-                transform: scale(1.3);
-              }
-            `}</style>
-
             {/* Toggle 1: Kinetic Ripple */}
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "16px" }}>
               <span className="text-[10px] font-mono tracking-widest text-white/65 uppercase select-none">
@@ -578,32 +533,12 @@ export const OrbitRingGallery: React.FC<OrbitRingGalleryProps> = ({
               </span>
               <button 
                 ref={buttonRef}
-                style={{ 
-                  position: "relative",
-                  width: "32px",
-                  height: "18px",
-                  borderRadius: "9999px",
-                  backgroundColor: cascadeEnabled ? "rgba(52, 211, 153, 0.2)" : "rgba(255, 255, 255, 0.1)",
-                  display: "flex",
-                  alignItems: "center",
-                  padding: "2px",
-                  cursor: "pointer",
-                  border: "none",
-                  transition: "background-color 0.3s",
-                  outline: "none",
-                  boxSizing: "border-box"
-                }}
+                className={`abyss-toggle-switch ${cascadeEnabled ? 'abyss-toggle-switch-active' : 'abyss-toggle-switch-inactive'}`}
               >
                 <div 
+                  className="abyss-toggle-knob"
                   style={{
-                    width: "14px",
-                    height: "14px",
-                    borderRadius: "50%",
-                    backgroundColor: "#ffffff",
-                    transition: "transform 0.3s, background-color 0.3s",
                     transform: cascadeEnabled ? "translateX(14px)" : "translateX(0px)",
-                    boxShadow: "0 1px 3px rgba(0,0,0,0.3)",
-                    ...(cascadeEnabled && { backgroundColor: "#34d399" })
                   }}
                 />
               </button>
@@ -616,32 +551,12 @@ export const OrbitRingGallery: React.FC<OrbitRingGalleryProps> = ({
               </span>
               <button 
                 ref={swingButtonRef}
-                style={{ 
-                  position: "relative",
-                  width: "32px",
-                  height: "18px",
-                  borderRadius: "9999px",
-                  backgroundColor: swingEnabled ? "rgba(52, 211, 153, 0.2)" : "rgba(255, 255, 255, 0.1)",
-                  display: "flex",
-                  alignItems: "center",
-                  padding: "2px",
-                  cursor: "pointer",
-                  border: "none",
-                  transition: "background-color 0.3s",
-                  outline: "none",
-                  boxSizing: "border-box"
-                }}
+                className={`abyss-toggle-switch ${swingEnabled ? 'abyss-toggle-switch-active' : 'abyss-toggle-switch-inactive'}`}
               >
                 <div 
+                  className="abyss-toggle-knob"
                   style={{
-                    width: "14px",
-                    height: "14px",
-                    borderRadius: "50%",
-                    backgroundColor: "#ffffff",
-                    transition: "transform 0.3s, background-color 0.3s",
                     transform: swingEnabled ? "translateX(14px)" : "translateX(0px)",
-                    boxShadow: "0 1px 3px rgba(0,0,0,0.3)",
-                    ...(swingEnabled && { backgroundColor: "#34d399" })
                   }}
                 />
               </button>
@@ -656,7 +571,7 @@ export const OrbitRingGallery: React.FC<OrbitRingGalleryProps> = ({
                 <span className="text-[9px] font-mono tracking-wider text-white/50 uppercase select-none">
                   Scroll Speed
                 </span>
-                <span className="text-[9px] font-mono text-[#34d399] font-bold">
+                <span className="text-[9px] font-mono text-white/70 font-bold">
                   {scrollSpeed.toFixed(4)}
                 </span>
               </div>
@@ -669,12 +584,6 @@ export const OrbitRingGallery: React.FC<OrbitRingGalleryProps> = ({
                 defaultValue={scrollSpeed}
                 style={{
                   width: "100%",
-                  height: "4px",
-                  borderRadius: "2px",
-                  backgroundColor: "rgba(255, 255, 255, 0.1)",
-                  outline: "none",
-                  WebkitAppearance: "none",
-                  cursor: "pointer",
                 }}
               />
             </div>
@@ -685,7 +594,7 @@ export const OrbitRingGallery: React.FC<OrbitRingGalleryProps> = ({
                 <span className="text-[9px] font-mono tracking-wider text-white/50 uppercase select-none">
                   Drag Speed
                 </span>
-                <span className="text-[9px] font-mono text-[#34d399] font-bold">
+                <span className="text-[9px] font-mono text-white/70 font-bold">
                   {dragSpeed.toFixed(2)}
                 </span>
               </div>
@@ -698,12 +607,6 @@ export const OrbitRingGallery: React.FC<OrbitRingGalleryProps> = ({
                 defaultValue={dragSpeed}
                 style={{
                   width: "100%",
-                  height: "4px",
-                  borderRadius: "2px",
-                  backgroundColor: "rgba(255, 255, 255, 0.1)",
-                  outline: "none",
-                  WebkitAppearance: "none",
-                  cursor: "pointer",
                 }}
               />
             </div>
@@ -714,7 +617,7 @@ export const OrbitRingGallery: React.FC<OrbitRingGalleryProps> = ({
                 <span className="text-[9px] font-mono tracking-wider text-white/50 uppercase select-none">
                   Snappiness
                 </span>
-                <span className="text-[9px] font-mono text-[#34d399] font-bold">
+                <span className="text-[9px] font-mono text-white/70 font-bold">
                   {damping.toFixed(1)}
                 </span>
               </div>
@@ -727,16 +630,9 @@ export const OrbitRingGallery: React.FC<OrbitRingGalleryProps> = ({
                 defaultValue={damping}
                 style={{
                   width: "100%",
-                  height: "4px",
-                  borderRadius: "2px",
-                  backgroundColor: "rgba(255, 255, 255, 0.1)",
-                  outline: "none",
-                  WebkitAppearance: "none",
-                  cursor: "pointer",
                 }}
               />
             </div>
-
           </div>
         )}
       </div>

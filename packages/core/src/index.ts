@@ -32,6 +32,9 @@ export * from "./components/orbit-ring-gallery";
 export * from "./components/apparatus-venetian-blinds";
 export * from "./components/apparatus-accordion-wall";
 export * from "./components/apparatus-parallax-column";
+export * from "./components/apparatus-layout-morph";
+export * from "./components/apparatus-specimen-box";
+export * from "./components/apparatus-erosion-map";
 
 
 

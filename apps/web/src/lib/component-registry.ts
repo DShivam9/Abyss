@@ -347,7 +347,7 @@ export const COMPONENT_DETAILS: Record<string, ComponentDetail> = {
   "apparatus-venetian-blinds": {
     id: "37",
     label: "APPARATUS VENETIAN BLINDS",
-    filename: "scroll/Glowing White Horse.jpg",
+    filename: "Transitions/ChatGPT Image Jul 15, 2026, 05_54_47 PM.png",
     desc: "A high-fidelity image gallery transition where horizontal slats rotate 180 degrees in a staggered cascade to reveal the next image.",
     slug: "apparatus-venetian-blinds",
     category: "transition",
@@ -358,7 +358,7 @@ export const COMPONENT_DETAILS: Record<string, ComponentDetail> = {
   "apparatus-accordion-wall": {
     id: "38",
     label: "ACCORDION WALL",
-    filename: "scroll/Glowing White Horse.jpg",
+    filename: "Transitions/ChatGPT Image Jul 15, 2026, 05_26_02 PM.png",
     desc: "A tactile vertical image accordion that unfolds like a folding screen divider, collapsing neighbor panels while revealing title text and folding shadows.",
     slug: "apparatus-accordion-wall",
     category: "gallary",
@@ -375,9 +375,43 @@ export const COMPONENT_DETAILS: Record<string, ComponentDetail> = {
     category: "scroll",
     subtype: "transition",
     tags: ["GSAP", "Lenis", "Split Scroll", "Clip Path"],
-    previewType: "gallery"
+    previewType: "scroll"
+  },
+  "apparatus-layout-morph": {
+    id: "41",
+    label: "APPARATUS LAYOUT MORPH",
+    filename: "scroll/cosmos_1225764898.jpeg",
+    desc: "A set of content cards that reflow their entire layout as you scroll — starting in a tight grid, then morphing through intermediate arrangements (masonry → single column → horizontal strip), with each card smoothly animating to its new position and dimensions.",
+    slug: "apparatus-layout-morph",
+    category: "scroll",
+    subtype: "transition",
+    tags: ["GSAP", "Layout Reflow", "Interpolation", "3D Rotation"],
+    previewType: "scroll"
+  },
+  "apparatus-specimen-box": {
+    id: "42",
+    label: "APPARATUS SPECIMEN BOX",
+    filename: "scroll/cosmos_1309660817.jpeg",
+    desc: "Images sit as pinned entomological specimens in a velvet case that tilts with cursor movement; clicking an image slides out the metal pin, lifting the specimen to float at center.",
+    slug: "apparatus-specimen-box",
+    category: "gallary",
+    subtype: "gallery",
+    tags: ["GSAP", "CSS 3D", "Interactive", "Tactile"],
+    previewType: "scroll"
+  },
+  "apparatus-erosion-map": {
+    id: "43",
+    label: "APPARATUS EROSION MAP",
+    filename: "scroll/cosmos_1207399578.jpeg",
+    desc: "Images erode organically based on a Perlin noise field driven by scroll progress, revealing layers below with textured weathering patterns and active edge glowing.",
+    slug: "apparatus-erosion-map",
+    category: "scroll",
+    subtype: "gallery",
+    tags: ["GSAP", "Scroll", "Canvas 2D", "Perlin Noise"],
+    previewType: "scroll"
   }
 };
+
 
 // Dynamic imports mapping slug to component inside packages/core
 export const COMPONENT_IMPORTS: Record<string, React.ComponentType<VesselComponentProps>> = {
@@ -422,6 +456,9 @@ export const COMPONENT_IMPORTS: Record<string, React.ComponentType<VesselCompone
   "apparatus-venetian-blinds": dynamic(() => import("../../../../packages/core/src/components/apparatus-venetian-blinds"), { ssr: false }),
   "apparatus-accordion-wall": dynamic(() => import("../../../../packages/core/src/components/apparatus-accordion-wall"), { ssr: false }),
   "apparatus-parallax-column": dynamic(() => import("../../../../packages/core/src/components/apparatus-parallax-column"), { ssr: false }),
+  "apparatus-layout-morph": dynamic(() => import("../../../../packages/core/src/components/apparatus-layout-morph"), { ssr: false }),
+  "apparatus-specimen-box": dynamic(() => import("../../../../packages/core/src/components/apparatus-specimen-box"), { ssr: false }),
+  "apparatus-erosion-map": dynamic(() => import("../../../../packages/core/src/components/apparatus-erosion-map"), { ssr: false }),
 };
 
 export function getComponent(slug: string) {
