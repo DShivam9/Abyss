@@ -12,4 +12,5 @@ docs/
 diff.txt
 *.log
 graphify-out/
-
+MEMORY.md
+skills-lock.json
