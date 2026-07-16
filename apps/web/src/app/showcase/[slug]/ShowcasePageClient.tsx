@@ -53,7 +53,7 @@ export default function ShowcasePageClient({ slug }: { slug: string }) {
         </Link>
       </nav>
 
-      {isParallaxColumn ? (
+      {isParallaxColumn || slug === "apparatus-dual-wave" ? (
         <div className="w-full h-screen overflow-hidden">
           <DynamicComponent
             isFullscreen={true}
@@ -62,7 +62,7 @@ export default function ShowcasePageClient({ slug }: { slug: string }) {
         </div>
       ) : (
         /* Standard sticky scroll runway wrapper */
-        <div ref={runwayRef} className="relative w-full h-[450vh]">
+        <div ref={runwayRef} className={`relative w-full ${slug === "apparatus-dual-wave" ? "h-[1000vh]" : "h-[450vh]"}`}>
           <div className="sticky top-0 h-screen w-full overflow-hidden">
             <DynamicComponent
               scrollProgress={scrollProgress}

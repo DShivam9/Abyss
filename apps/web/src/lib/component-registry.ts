@@ -409,6 +409,17 @@ export const COMPONENT_DETAILS: Record<string, ComponentDetail> = {
     subtype: "gallery",
     tags: ["GSAP", "Scroll", "Canvas 2D", "Perlin Noise"],
     previewType: "scroll"
+  },
+  "apparatus-dual-wave": {
+    id: "44",
+    label: "APPARATUS DUAL WAVE",
+    filename: "scroll/cosmos_1309660817.jpeg",
+    desc: "Two columns of text names flanking a center image. Names slide horizontally along a sine wave as you scroll, flanking a center image that swaps source to match the active viewport item.",
+    slug: "apparatus-dual-wave",
+    category: "scroll",
+    subtype: "index",
+    tags: ["GSAP", "Scroll", "Sine Wave", "Typography"],
+    previewType: "scroll"
   }
 };
 
@@ -459,7 +470,8 @@ export const COMPONENT_IMPORTS: Record<string, React.ComponentType<VesselCompone
   "apparatus-parallax-column": dynamic(() => import("../../../../packages/core/src/components/apparatus-parallax-column"), { ssr: false }),
   "apparatus-layout-morph": dynamic(() => import("../../../../packages/core/src/components/apparatus-layout-morph"), { ssr: false }),
   "apparatus-specimen-box": dynamic(() => import("../../../../packages/core/src/components/apparatus-specimen-box"), { ssr: false }),
-  "apparatus-erosion-map": dynamic(() => import("../../../../packages/core/src/components/apparatus-erosion-map"), { ssr: false })
+  "apparatus-erosion-map": dynamic(() => import("../../../../packages/core/src/components/apparatus-erosion-map"), { ssr: false }),
+  "apparatus-dual-wave": dynamic(() => import("../../../../packages/core/src/components/apparatus-dual-wave"), { ssr: false })
 };
 
 export function getComponent(slug: string) {

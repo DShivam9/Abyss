@@ -17,6 +17,33 @@ const satoshi = localFont({
   display: "swap",
 });
 
+const editorialNew = localFont({
+  src: [
+    {
+      path: "../../public/fonts/editorial-new-font-family/PPEditorialNew-Ultralight-BF644b21500d0c0.otf",
+      weight: "200",
+      style: "normal",
+    },
+    {
+      path: "../../public/fonts/editorial-new-font-family/PPEditorialNew-UltralightItalic-BF644b214ff1e9b.otf",
+      weight: "200",
+      style: "italic",
+    },
+    {
+      path: "../../public/fonts/editorial-new-font-family/PPEditorialNew-Regular-BF644b214ff145f.otf",
+      weight: "400",
+      style: "normal",
+    },
+    {
+      path: "../../public/fonts/editorial-new-font-family/PPEditorialNew-Italic-BF644b214fb0c0a.otf",
+      weight: "400",
+      style: "italic",
+    },
+  ],
+  variable: "--font-editorial",
+  display: "swap",
+});
+
 const jetbrainsMono = JetBrains_Mono({
   variable: "--font-mono",
   subsets: ["latin"],
@@ -33,7 +60,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={cn("h-full", "antialiased", satoshi.variable, jetbrainsMono.variable, "font-sans", geist.variable)}>
+    <html lang="en" className={cn("h-full", "antialiased", satoshi.variable, jetbrainsMono.variable, "font-sans", geist.variable, editorialNew.variable)}>
       <body className="min-h-full flex flex-col bg-vessel-base text-vessel-text-primary font-sans">
         <div className="noise-bg" />
         <SmoothScrollProvider>

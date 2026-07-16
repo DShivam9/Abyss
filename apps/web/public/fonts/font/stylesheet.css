@@ -1,0 +1,13 @@
+@font-face {
+    font-family: 'HOLISE';
+    src: url('HOLISE-Thin.eot');
+    src: local('HOLISE Thin'), local('HOLISE-Thin'),
+        url('HOLISE-Thin.eot?#iefix') format('embedded-opentype'),
+        url('HOLISE-Thin.woff2') format('woff2'),
+        url('HOLISE-Thin.woff') format('woff'),
+        url('HOLISE-Thin.ttf') format('truetype');
+    font-weight: 100;
+    font-style: normal;
+    font-display: swap;
+}
+
