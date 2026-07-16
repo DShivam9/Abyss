@@ -9,6 +9,8 @@ build/
 .vscode/
 docs/
 *.png
+!apps/web/public/**/*.png
+!packages/core/**/*.png
 diff.txt
 *.log
 graphify-out/
