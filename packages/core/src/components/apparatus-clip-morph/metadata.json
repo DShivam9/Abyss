@@ -1,0 +1,16 @@
+{
+  "name": "Apparatus Clip Morph",
+  "slug": "apparatus-clip-morph",
+  "pitch": "Outgoing image is clipped by a shape. The shape morphs — shrinking inward while simultaneously transforming geometry (circle → diamond → thin vertical line → nothing) to reveal the next image.",
+  "family": "transition",
+  "energy": "cinematic",
+  "triggers": ["click"],
+  "tech": ["react", "gsap"],
+  "lifecycle": {
+    "idle": "Active image is fully visible and unclipped, waiting for interaction",
+    "discovery": "Hovering over the component scales the image slightly, triggering discovery",
+    "buildUp": "Clicking starts the transition, causing the outer edges to contract into a rounded rectangle",
+    "peak": "The clip-path reaches a circle and diamond shape, showcasing maximum geometry morphing at viewport center",
+    "recovery": "The clip collapses to a thin vertical line and disappears, setting the new image as active and returning to idle"
+  }
+}

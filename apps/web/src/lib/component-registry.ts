@@ -420,6 +420,17 @@ export const COMPONENT_DETAILS: Record<string, ComponentDetail> = {
     subtype: "index",
     tags: ["GSAP", "Scroll", "Sine Wave", "Typography"],
     previewType: "scroll"
+  },
+  "apparatus-clip-morph": {
+    id: "45",
+    label: "APPARATUS CLIP MORPH",
+    filename: "Transitions/ChatGPT Image Jul 16, 2026, 06_08_32 PM.png",
+    desc: "Outgoing image is clipped by a shape. The shape morphs — shrinking inward while simultaneously transforming geometry (circle → diamond → thin vertical line → nothing) to reveal the next image.",
+    slug: "apparatus-clip-morph",
+    category: "transition",
+    subtype: "transition",
+    tags: ["GSAP", "Scroll", "Clip Path", "Morph", "Tactile"],
+    previewType: "transition"
   }
 };
 
@@ -471,7 +482,8 @@ export const COMPONENT_IMPORTS: Record<string, React.ComponentType<VesselCompone
   "apparatus-layout-morph": dynamic(() => import("../../../../packages/core/src/components/apparatus-layout-morph"), { ssr: false }),
   "apparatus-specimen-box": dynamic(() => import("../../../../packages/core/src/components/apparatus-specimen-box"), { ssr: false }),
   "apparatus-erosion-map": dynamic(() => import("../../../../packages/core/src/components/apparatus-erosion-map"), { ssr: false }),
-  "apparatus-dual-wave": dynamic(() => import("../../../../packages/core/src/components/apparatus-dual-wave"), { ssr: false })
+  "apparatus-dual-wave": dynamic(() => import("../../../../packages/core/src/components/apparatus-dual-wave"), { ssr: false }),
+  "apparatus-clip-morph": dynamic(() => import("../../../../packages/core/src/components/apparatus-clip-morph"), { ssr: false })
 };
 
 export function getComponent(slug: string) {

@@ -4,8 +4,10 @@ import React, { useRef, useState } from "react";
 import Link from "next/link";
 import { getComponent } from "@/lib/component-registry";
 import { useScroll, useMotionValueEvent } from "framer-motion";
+import { useRouter } from "next/navigation";
 
 export default function ShowcasePageClient({ slug }: { slug: string }) {
+  const router = useRouter();
   const { Component, meta } = getComponent(slug);
 
   const runwayRef = useRef<HTMLDivElement>(null);
@@ -25,10 +27,13 @@ export default function ShowcasePageClient({ slug }: { slug: string }) {
     }
   });
 
-  if (!meta || !Component) {
+  if (!meta || !Component || meta.previewType !== "scroll") {
+    if (typeof window !== "undefined") {
+      router.replace(`/components/${slug}`);
+    }
     return (
       <div className="min-h-screen bg-[#070708] flex items-center justify-center font-mono text-xs text-neutral-500 uppercase tracking-widest">
-        Showcase component not found.
+        Redirecting...
       </div>
     );
   }

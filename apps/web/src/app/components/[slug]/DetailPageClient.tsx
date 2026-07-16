@@ -281,7 +281,7 @@ export function DetailPageClient({ slug }: { slug: string }) {
                     ) : null}
 
                     {/* CLI Installation */}
-                    <div className="flex flex-col gap-2">
+                    <div className="hidden flex-col gap-2">
                       <span className="font-mono text-[9px] font-bold uppercase tracking-widest text-neutral-500">
                         CLI Installation
                       </span>
@@ -517,7 +517,7 @@ export function DetailPageClient({ slug }: { slug: string }) {
                     ) : null}
 
                     {/* CLI Installation Block */}
-                    <div className="flex flex-col gap-3">
+                    <div className="hidden flex-col gap-3">
                       <span className="font-mono text-[10px] font-bold uppercase tracking-widest text-neutral-500">
                         CLI Installation
                       </span>
@@ -665,7 +665,7 @@ export function DetailPageClient({ slug }: { slug: string }) {
                 {/* Column 3: CLI and Picture Button on the Right (4/12 cols) */}
                 <section className="lg:col-span-4 flex flex-col gap-8">
                   {/* CLI Installation Block */}
-                  <div className="flex flex-col gap-3">
+                  <div className="hidden flex-col gap-3">
                     <span className="font-mono text-[10px] font-bold uppercase tracking-widest text-neutral-500">
                       CLI Installation
                     </span>
@@ -729,7 +729,7 @@ export function DetailPageClient({ slug }: { slug: string }) {
             )}
 
             {/* Dynamic Component Code Sheets (Full Width Below) */}
-            <div className="flex flex-col gap-4 w-full border-t border-neutral-900 pt-8 mt-8">
+            <div className="hidden flex-col gap-4 w-full border-t border-neutral-900 pt-8 mt-8">
               <div className="flex justify-between items-center border-b border-neutral-900 pb-2">
                 <span className="font-mono text-[10px] font-bold uppercase tracking-widest text-neutral-500">
                   Source Specification

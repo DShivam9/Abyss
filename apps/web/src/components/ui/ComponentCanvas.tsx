@@ -24,30 +24,66 @@ export function ComponentCanvas({
   const containerRef = useRef<HTMLDivElement>(null);
   const [scrollProgress, setScrollProgress] = useState(0);
 
+  // Smooth LERP scroll-wheel refs
+  const targetProgress = useRef(0);
+  const currentProgress = useRef(0);
 
-  // Wheel tracking for scroll/gallery categories
+  // Sync refs initially
+  useEffect(() => {
+    targetProgress.current = 0;
+    currentProgress.current = 0;
+    setScrollProgress(0);
+  }, [previewType]);
+
+  // LERP interpolation loop (60fps smooth physics scroll)
+  useEffect(() => {
+    if (previewType !== "scroll" && previewType !== "gallery" && previewType !== "transition") return;
+
+    let active = true;
+    const tick = () => {
+      if (!active) return;
+
+      const diff = targetProgress.current - currentProgress.current;
+      // Interpolate when there is meaningful delta to prevent infinite CPU wake lock
+      if (Math.abs(diff) > 0.0001) {
+        currentProgress.current += diff * 0.035; // Eased LERP factor for heavy, smooth scroll physics
+        setScrollProgress(currentProgress.current);
+
+        // Dispatch window scroll event for components listening to scroll position/velocity
+        if (typeof window !== "undefined") {
+          window.dispatchEvent(new Event("scroll"));
+        }
+      }
+
+      requestAnimationFrame(tick);
+    };
+
+    requestAnimationFrame(tick);
+    return () => {
+      active = false;
+    };
+  }, [previewType]);
+
+  // Wheel tracking (input listener)
   useEffect(() => {
     const el = containerRef.current;
     if (!el || (previewType !== "scroll" && previewType !== "gallery" && previewType !== "transition")) return;
 
     const handleWheel = (e: WheelEvent) => {
-      // Only prevent default if we're actively interacting
       e.preventDefault();
       e.stopPropagation();
-      
-      setScrollProgress((prev) => {
-        const factor = previewType === "gallery" ? 0.0005 : 0.001;
-        const next = prev + e.deltaY * factor;
-        
-        // Gallery and transition wrap around (circular), Scroll clamps 0 to 1
-        if (previewType === "gallery" || previewType === "transition") {
-          return next;
-        }
-        return Math.max(0.0, Math.min(1.0, next));
-      });
 
-      // Dispatch fake window scroll event for components like apparatus-underscore
-      // that listen directly to window.scrollY/velocity
+      const factor = previewType === "gallery" ? 0.0001 : 0.00015; // Slower, high-precision scroll resolution
+      let next = targetProgress.current + e.deltaY * factor;
+
+      // Clamp scroll progress in scroll mode
+      if (previewType === "scroll") {
+        next = Math.max(0.0, Math.min(1.0, next));
+      }
+
+      targetProgress.current = next;
+
+      // Update fake scrollY property for components that read scrollY directly
       const fakeScrollY = window.scrollY + e.deltaY;
       try {
         Object.defineProperty(window, "scrollY", {
@@ -55,9 +91,8 @@ export function ComponentCanvas({
           configurable: true,
         });
       } catch {
-        // Safe catch block
+        // Safe catch
       }
-      window.dispatchEvent(new Event("scroll"));
     };
 
     el.addEventListener("wheel", handleWheel, { passive: false });
@@ -87,7 +122,7 @@ export function ComponentCanvas({
 
     setIsDragging(true);
     dragStartXRef.current = e.clientX;
-    progressAtDragStartRef.current = scrollProgress;
+    progressAtDragStartRef.current = targetProgress.current; // Sync with target progress
     containerRef.current?.setPointerCapture(e.pointerId);
   };
 
@@ -97,7 +132,11 @@ export function ComponentCanvas({
     // Normalized displacement
     const width = containerRef.current?.clientWidth || 800;
     const progressDelta = -deltaX / width; // invert drag direction for natural feel
-    setScrollProgress(progressAtDragStartRef.current + progressDelta);
+    
+    const next = progressAtDragStartRef.current + progressDelta;
+    targetProgress.current = next;
+    currentProgress.current = next; // Instant tracking during drag
+    setScrollProgress(next);
   };
 
   const handlePointerUp = (e: React.PointerEvent) => {
@@ -105,8 +144,6 @@ export function ComponentCanvas({
     setIsDragging(false);
     containerRef.current?.releasePointerCapture(e.pointerId);
   };
-
-
 
   if (previewType === "shader") {
     return (
@@ -137,7 +174,11 @@ export function ComponentCanvas({
         <Component
           imageSrc={imageSrc}
           scrollProgress={scrollProgress}
-          onScrollProgressChange={setScrollProgress}
+          onScrollProgressChange={(val) => {
+            targetProgress.current = val;
+            currentProgress.current = val;
+            setScrollProgress(val);
+          }}
           isFullscreen={false}
           className="w-full h-full object-cover"
         />
