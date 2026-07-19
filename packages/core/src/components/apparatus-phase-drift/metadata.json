@@ -1,0 +1,16 @@
+{
+  "name": "Apparatus Phase Drift",
+  "slug": "apparatus-phase-drift",
+  "pitch": "Coordinated scroll-driven horizontal wave undulating images on a traveling sinusoidal path.",
+  "family": "aesthetic",
+  "energy": "calm",
+  "triggers": ["scroll", "velocity"],
+  "tech": ["react", "gsap"],
+  "lifecycle": {
+    "idle": "Images have a very subtle automatic time-based sine drift",
+    "discovery": "Beginning scroll offsets first image from center reference line",
+    "buildUp": "Consecutive images enter the viewport and propagate the wave",
+    "peak": "Scroll velocity swells wave amplitude up to 80px",
+    "recovery": "Scroll stops, wave dampens smoothly back to idle micro-motion"
+  }
+}

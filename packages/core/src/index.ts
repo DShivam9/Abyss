@@ -37,6 +37,10 @@ export * from "./components/apparatus-specimen-box";
 export * from "./components/apparatus-erosion-map";
 export * from "./components/apparatus-dual-wave";
 export * from "./components/apparatus-clip-morph";
+export * from "./components/apparatus-phase-drift";
+export * from "./components/apparatus-depth-swim";
+export * from "./components/apparatus-cylinder-scroll";
+
 
 
 

@@ -45,7 +45,7 @@ export const ApparatusParallaxColumn: React.FC<ApparatusParallaxColumnProps> = (
   const rightColRef = useRef<HTMLDivElement>(null);
   const leftItemRefs = useRef<(HTMLDivElement | null)[]>([]);
   const rightItemRefs = useRef<(HTMLDivElement | null)[]>([]);
-  
+
   // Custom height state determined dynamically
   const [viewportHeight, setViewportHeight] = useState(600);
 
@@ -129,11 +129,11 @@ export const ApparatusParallaxColumn: React.FC<ApparatusParallaxColumnProps> = (
   }, [splitRatio, speedFactor, cropAmount, dividerEnabled, bgScale, inertia, autoScrollSpeed, columnGap, imageGap]);
 
   // Image fallbacks
-  const displayLeft = leftImages && leftImages.length > 0 
-    ? leftImages 
+  const displayLeft = leftImages && leftImages.length > 0
+    ? leftImages
     : [imageSrc || DEFAULT_LEFT_IMAGES[0], ...DEFAULT_LEFT_IMAGES.slice(1)];
-  const displayRight = rightImages && rightImages.length > 0 
-    ? rightImages 
+  const displayRight = rightImages && rightImages.length > 0
+    ? rightImages
     : DEFAULT_RIGHT_IMAGES;
 
   // Duplicate arrays multiple times to create a robust seamless infinite loop rendering layout
@@ -212,7 +212,7 @@ export const ApparatusParallaxColumn: React.FC<ApparatusParallaxColumnProps> = (
     const handleWheel = (e: WheelEvent) => {
       // Prevent default browser/page scrolling
       e.preventDefault();
-      
+
       const wheelDelta = e.deltaY * 0.0015;
       accumulatedProgress.current += wheelDelta;
       setIsScrolling(true);
@@ -288,7 +288,7 @@ export const ApparatusParallaxColumn: React.FC<ApparatusParallaxColumnProps> = (
   // Interpolate accumulated progress to simulate premium inertia / Lenis scroll damping
   useEffect(() => {
     let animationFrameId: number;
-    
+
     const updateProgress = () => {
       setSmoothProgress((prev) => {
         const diff = accumulatedProgress.current - prev;
@@ -297,7 +297,7 @@ export const ApparatusParallaxColumn: React.FC<ApparatusParallaxColumnProps> = (
       });
       animationFrameId = requestAnimationFrame(updateProgress);
     };
-    
+
     animationFrameId = requestAnimationFrame(updateProgress);
     return () => cancelAnimationFrame(animationFrameId);
   }, []);
@@ -305,7 +305,7 @@ export const ApparatusParallaxColumn: React.FC<ApparatusParallaxColumnProps> = (
   // Compute card and item dimensions dynamically based on height and scale
   const cardHeight = viewportHeight * (bgScale / 100) * 0.7;
   const cardWidth = cardHeight * 0.75; // 3:4 portrait card aspect ratio
-  
+
   // Set item container height to card height + user-controlled imageGap
   const itemHeight = cardHeight + imageGap;
 
@@ -400,13 +400,13 @@ export const ApparatusParallaxColumn: React.FC<ApparatusParallaxColumnProps> = (
           }}
         >
           <span>Controls</span>
-          <svg 
-            width="8" 
-            height="8" 
-            viewBox="0 0 8 8" 
-            fill="none" 
-            style={{ 
-              transform: dropdownOpen ? "rotate(180deg)" : "rotate(0deg)", 
+          <svg
+            width="8"
+            height="8"
+            viewBox="0 0 8 8"
+            fill="none"
+            style={{
+              transform: dropdownOpen ? "rotate(180deg)" : "rotate(0deg)",
               transition: "transform 0.3s",
               stroke: "rgba(255, 255, 255, 0.6)",
               strokeWidth: "1.5"
@@ -433,7 +433,7 @@ export const ApparatusParallaxColumn: React.FC<ApparatusParallaxColumnProps> = (
                 <span className="text-[9px] font-mono text-white/50">{splitRatio.toFixed(0)}/{100 - Number(splitRatio.toFixed(0))}</span>
               </div>
               <div style={{ position: "relative", width: "100%", height: "12px", display: "flex", alignItems: "center" }}>
-                <div 
+                <div
                   className="abyss-slider-tick"
                   style={{
                     position: "absolute",
@@ -467,7 +467,7 @@ export const ApparatusParallaxColumn: React.FC<ApparatusParallaxColumnProps> = (
                 <span className="text-[9px] font-mono text-white/50">{speedFactor.toFixed(1)}x</span>
               </div>
               <div style={{ position: "relative", width: "100%", height: "12px", display: "flex", alignItems: "center" }}>
-                <div 
+                <div
                   className="abyss-slider-tick"
                   style={{
                     position: "absolute",
@@ -502,7 +502,7 @@ export const ApparatusParallaxColumn: React.FC<ApparatusParallaxColumnProps> = (
                 <span className="text-[9px] font-mono text-white/50">{columnGap}px</span>
               </div>
               <div style={{ position: "relative", width: "100%", height: "12px", display: "flex", alignItems: "center" }}>
-                <div 
+                <div
                   className="abyss-slider-tick"
                   style={{
                     position: "absolute",
@@ -536,7 +536,7 @@ export const ApparatusParallaxColumn: React.FC<ApparatusParallaxColumnProps> = (
                 <span className="text-[9px] font-mono text-white/50">{cropAmount}%</span>
               </div>
               <div style={{ position: "relative", width: "100%", height: "12px", display: "flex", alignItems: "center" }}>
-                <div 
+                <div
                   className="abyss-slider-tick"
                   style={{
                     position: "absolute",
@@ -570,7 +570,7 @@ export const ApparatusParallaxColumn: React.FC<ApparatusParallaxColumnProps> = (
                 <span className="text-[9px] font-mono text-white/50">{bgScale}%</span>
               </div>
               <div style={{ position: "relative", width: "100%", height: "12px", display: "flex", alignItems: "center" }}>
-                <div 
+                <div
                   className="abyss-slider-tick"
                   style={{
                     position: "absolute",
@@ -604,7 +604,7 @@ export const ApparatusParallaxColumn: React.FC<ApparatusParallaxColumnProps> = (
                 <span className="text-[9px] font-mono text-white/50">{16 - inertia}</span>
               </div>
               <div style={{ position: "relative", width: "100%", height: "12px", display: "flex", alignItems: "center" }}>
-                <div 
+                <div
                   className="abyss-slider-tick"
                   style={{
                     position: "absolute",
@@ -638,7 +638,7 @@ export const ApparatusParallaxColumn: React.FC<ApparatusParallaxColumnProps> = (
                 <span className="text-[9px] font-mono text-white/50">{autoScrollSpeed}</span>
               </div>
               <div style={{ position: "relative", width: "100%", height: "12px", display: "flex", alignItems: "center" }}>
-                <div 
+                <div
                   className="abyss-slider-tick"
                   style={{
                     position: "absolute",
@@ -672,7 +672,7 @@ export const ApparatusParallaxColumn: React.FC<ApparatusParallaxColumnProps> = (
                 <span className="text-[9px] font-mono text-white/50">{imageGap}px</span>
               </div>
               <div style={{ position: "relative", width: "100%", height: "12px", display: "flex", alignItems: "center" }}>
-                <div 
+                <div
                   className="abyss-slider-tick"
                   style={{
                     position: "absolute",

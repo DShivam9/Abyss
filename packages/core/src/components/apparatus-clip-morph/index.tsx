@@ -67,7 +67,6 @@ export const ApparatusClipMorph: React.FC<ApparatusClipMorphProps> = ({
   className = "",
   style,
   scrollProgress,
-  onScrollProgressChange,
   onLifecycleChange
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);

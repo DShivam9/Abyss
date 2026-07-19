@@ -45,6 +45,10 @@ export default function ShowcasePageClient({ slug }: { slug: string }) {
   }>;
 
   const isParallaxColumn = slug === "apparatus-parallax-column";
+  const isVirtualScroll =
+    slug === "apparatus-phase-drift" ||
+    slug === "apparatus-cylinder-scroll" ||
+    slug === "apparatus-depth-swim";
 
   return (
     <main className="w-full min-h-screen bg-[#070708] text-white">
@@ -58,7 +62,7 @@ export default function ShowcasePageClient({ slug }: { slug: string }) {
         </Link>
       </nav>
 
-      {isParallaxColumn || slug === "apparatus-dual-wave" ? (
+      {isParallaxColumn || slug === "apparatus-dual-wave" || isVirtualScroll ? (
         <div className="w-full h-screen overflow-hidden">
           <DynamicComponent
             isFullscreen={true}
@@ -74,14 +78,6 @@ export default function ShowcasePageClient({ slug }: { slug: string }) {
               isFullscreen={true}
               className="w-full h-full object-cover"
             />
-
-            {/* Not-so-thin progress bar on the bottom of the page */}
-            <div className="fixed bottom-0 left-0 w-full h-[5px] bg-neutral-950/60 z-[1000] overflow-hidden">
-              <div
-                className="h-full bg-[#dfb15b] transition-all duration-75"
-                style={{ width: `${scrollProgress * 100}%` }}
-              />
-            </div>
           </div>
         </div>
       )}

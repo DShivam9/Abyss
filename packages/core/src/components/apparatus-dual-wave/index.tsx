@@ -56,8 +56,36 @@ export const ApparatusDualWave: React.FC<ApparatusDualWaveProps> = ({
   const [maxBlur, setMaxBlur] = useState(3.0); // max blur radius for progressive blur
   const [maxRotation, setMaxRotation] = useState(8.0); // max slant rotation angle
   
-  // Animation loop playheads
-  const [smoothOffset, setSmoothOffset] = useState(0);
+  // Animation loop playheads & layout refs
+  const smoothOffsetRef = useRef(0);
+  const [activeImageIdx, setActiveImageIdx] = useState(0);
+  const activeImageIdxRef = useRef(0);
+  const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
+  
+  const dimensionsRef = useRef({ width: 800, height: 600 });
+  const cornerAlignmentRef = useRef(cornerAlignment);
+  const waveRangeRef = useRef(waveRange);
+  const waveSpeedRef = useRef(waveSpeed);
+  const waveNumRef = useRef(waveNum);
+  const spacingRef = useRef(spacing);
+  const curvatureRef = useRef(curvature);
+  const maxBlurRef = useRef(maxBlur);
+  const maxRotationRef = useRef(maxRotation);
+
+  useEffect(() => {
+    dimensionsRef.current = dimensions;
+  }, [dimensions]);
+
+  useEffect(() => {
+    cornerAlignmentRef.current = cornerAlignment;
+    waveRangeRef.current = waveRange;
+    waveSpeedRef.current = waveSpeed;
+    waveNumRef.current = waveNum;
+    spacingRef.current = spacing;
+    curvatureRef.current = curvature;
+    maxBlurRef.current = maxBlur;
+    maxRotationRef.current = maxRotation;
+  }, [cornerAlignment, waveRange, waveSpeed, waveNum, spacing, curvature, maxBlur, maxRotation]);
   
   // Animation frame reference to cancel active transitions
   const presetAnimRef = useRef<number | null>(null);
@@ -242,27 +270,105 @@ export const ApparatusDualWave: React.FC<ApparatusDualWaveProps> = ({
     let lastTime = performance.now();
     
     const tick = (now: number) => {
-      const dt = Math.min(0.1, (now - lastTime) / 1000);
+      const dt = Math.min(0.05, (now - lastTime) / 1000);
       lastTime = now;
       
       if (!isInteractingRef.current) {
-        // Friction decay of momentum
-        // Math.exp(-2.2 * dt) gives a very smooth coasting spin
-        scrollVelocityRef.current *= Math.exp(-2.2 * dt);
-        
+        // Friction decay of momentum (slower decay = heavier glide)
+        scrollVelocityRef.current *= Math.exp(-1.3 * dt);
         if (Math.abs(scrollVelocityRef.current) < 5) {
           scrollVelocityRef.current = 0;
         }
-        
         scrollOffsetRef.current += scrollVelocityRef.current * dt;
       }
       
-      setSmoothOffset((prev) => {
-        const diff = scrollOffsetRef.current - prev;
-        if (Math.abs(diff) < 0.1) return scrollOffsetRef.current;
-        // Fast tracking to stay responsive to coasting
-        return prev + diff * (1 - Math.exp(-6.5 * dt));
-      });
+      // Target scroll chasing interpolation (Lenis Smooth scroll effect with heavy weight)
+      const diff = scrollOffsetRef.current - smoothOffsetRef.current;
+      if (Math.abs(diff) < 0.05) {
+        smoothOffsetRef.current = scrollOffsetRef.current;
+      } else {
+        smoothOffsetRef.current += diff * (1 - Math.pow(1 - 0.04, dt * 60));
+      }
+
+      const H = dimensionsRef.current.height;
+      const W = dimensionsRef.current.width;
+      const computedWaveRange = (170 + (Math.max(170, W / 2 - pinchX - 120) - 170) * cornerAlignmentRef.current) * (waveRangeRef.current / 100);
+
+      let minDistance = Infinity;
+      let closestIndex = 0;
+
+      // Update DOM position styles directly
+      for (let originalIdx = 0; originalIdx < displayItems.length; originalIdx++) {
+        const el = itemRefs.current[originalIdx];
+        if (!el) continue;
+
+        const isLeft = originalIdx % 2 === 0;
+        const k = Math.floor(originalIdx / 2);
+        
+        const totalSpan = (isLeft ? leftColumnItems.length : rightColumnItems.length) * spacingRef.current;
+        let offset = 0;
+        if (isLeft) {
+          offset = k * spacingRef.current - smoothOffsetRef.current;
+        } else {
+          offset = (k + 0.5) * spacingRef.current + smoothOffsetRef.current;
+        }
+
+        const wrappedOffset = (((offset + totalSpan / 2) % totalSpan + totalSpan) % totalSpan) - totalSpan / 2;
+        const y = H / 2 - itemHeight / 2 + wrappedOffset;
+
+        const centerY = H / 2;
+        const itemCenterY = y + itemHeight / 2;
+        const distToCenter = Math.abs(itemCenterY - centerY);
+        const normalizedDist = Math.min(1.0, distToCenter / (H / 2 || 1));
+
+        // Interpolate profile between linear triangle (0.0) and hemisphere circular arc (1.0)
+        const triangleProfile = normalizedDist;
+        const hemisphereProfile = 1.0 - Math.sqrt(Math.max(0, 1.0 - normalizedDist * normalizedDist));
+        const blendedProfile = (1.0 - curvatureRef.current) * triangleProfile + curvatureRef.current * hemisphereProfile;
+
+        const baseHorizontalOffset = pinchX + blendedProfile * computedWaveRange;
+
+        // Keep track of the item closest to center
+        if (distToCenter < minDistance) {
+          minDistance = distToCenter;
+          closestIndex = originalIdx;
+        }
+
+        const angle = (isLeft ? -1 : 1) * (y - H / 2) / (H / 2 || 1) * maxRotationRef.current;
+        const blurAmount = (originalIdx === activeIdxRef.current) ? 0 : normalizedDist * maxBlurRef.current;
+        const opacity = (originalIdx === activeIdxRef.current) ? 1.0 : Math.max(0.08, 0.65 - normalizedDist * 0.85);
+
+        // Mutate styles directly on the DOM node
+        el.style.transform = isLeft
+          ? `translate3d(calc(-100% - ${baseHorizontalOffset}px), ${y}px, 0) rotate(${angle.toFixed(1)}deg)`
+          : `translate3d(${baseHorizontalOffset}px, ${y}px, 0) rotate(${angle.toFixed(1)}deg)`;
+
+        el.style.opacity = String(opacity);
+        el.style.filter = `blur(${blurAmount.toFixed(2)}px)`;
+
+        const textSpan = el.firstElementChild as HTMLElement;
+        if (textSpan) {
+          if (originalIdx === activeIdxRef.current) {
+            textSpan.style.color = "white";
+          } else {
+            textSpan.style.color = "#737373"; // text-neutral-500
+          }
+        }
+      }
+
+      // Update activeIdx state ONLY on item boundaries to trigger center image crossfade
+      if (closestIndex !== activeIdxRef.current) {
+        activeIdxRef.current = closestIndex;
+        setActiveIdx(closestIndex);
+      }
+
+      // Update activeImageIdx state ONLY on image index boundaries to trigger Framer Motion transition
+      const imgCount = displayItems.length;
+      const calculatedImageIdx = (((Math.floor(smoothOffsetRef.current / spacingRef.current) % imgCount) + imgCount) % imgCount);
+      if (calculatedImageIdx !== activeImageIdxRef.current) {
+        activeImageIdxRef.current = calculatedImageIdx;
+        setActiveImageIdx(calculatedImageIdx);
+      }
       
       animationFrameId = requestAnimationFrame(tick);
     };
@@ -279,92 +385,12 @@ export const ApparatusDualWave: React.FC<ApparatusDualWaveProps> = ({
   const rightColumnItems = displayItems.filter((_, idx) => idx % 2 !== 0);
 
   const itemHeight = 36;
-  const H = dimensions.height;
-  
   // Center image bounds to calculate precise inward pinch position
   const imageWidth = isFullscreen ? 240 : 180;
   const imageHeight = isFullscreen ? 320 : 240;
   const gapFromImage = 32; // Horizontal padding at the pinch point
   const pinchX = imageWidth / 2 + gapFromImage; // Base horizontal distance from container center
-  const W = dimensions.width;
 
-  // Dynamic maximum stretch to reach screen corners based on screen width
-  const maxRange = Math.max(170, W / 2 - pinchX - 120); 
-  const baseRange = 170 + (maxRange - 170) * cornerAlignment;
-  const computedWaveRange = baseRange * (waveRange / 100);
-
-  // Left Column Position Calculations (hourglass track)
-  const leftItemsRender = leftColumnItems.map((item, k) => {
-    const originalIdx = k * 2;
-    const totalSpan = leftColumnItems.length * spacing;
-    const offset = k * spacing - smoothOffset;
-    const wrappedOffset = (((offset + totalSpan / 2) % totalSpan + totalSpan) % totalSpan) - totalSpan / 2;
-    const y = H / 2 - itemHeight / 2 + wrappedOffset;
-    
-    const centerY = H / 2;
-    const itemCenterY = y + itemHeight / 2;
-    const distToCenter = Math.abs(itemCenterY - centerY);
-    const normalizedDist = Math.min(1.0, distToCenter / (H / 2 || 1));
-    
-    // Interpolate profile between linear triangle (0.0) and hemisphere circular arc (1.0)
-    const triangleProfile = normalizedDist;
-    const hemisphereProfile = 1.0 - Math.sqrt(Math.max(0, 1.0 - normalizedDist * normalizedDist));
-    const blendedProfile = (1.0 - curvature) * triangleProfile + curvature * hemisphereProfile;
-    
-    // Linear triangle base path
-    const baseHorizontalOffset = pinchX + blendedProfile * computedWaveRange;
-    const xOffsetFromCenter = baseHorizontalOffset;
-
-    return { item, k, originalIdx, xOffsetFromCenter, y, normalizedDist };
-  });
-
-  // Right Column Position Calculations (hourglass track)
-  const rightItemsRender = rightColumnItems.map((item, k) => {
-    const originalIdx = k * 2 + 1;
-    const totalSpan = rightColumnItems.length * spacing;
-    const offset = (k + 0.5) * spacing + smoothOffset;
-    const wrappedOffset = (((offset + totalSpan / 2) % totalSpan + totalSpan) % totalSpan) - totalSpan / 2;
-    const y = H / 2 - itemHeight / 2 + wrappedOffset;
-    
-    const centerY = H / 2;
-    const itemCenterY = y + itemHeight / 2;
-    const distToCenter = Math.abs(itemCenterY - centerY);
-    const normalizedDist = Math.min(1.0, distToCenter / (H / 2 || 1));
-    
-    // Interpolate profile between linear triangle (0.0) and hemisphere circular arc (1.0)
-    const triangleProfile = normalizedDist;
-    const hemisphereProfile = 1.0 - Math.sqrt(Math.max(0, 1.0 - normalizedDist * normalizedDist));
-    const blendedProfile = (1.0 - curvature) * triangleProfile + curvature * hemisphereProfile;
-    
-    const baseHorizontalOffset = pinchX + blendedProfile * computedWaveRange;
-    const xOffsetFromCenter = baseHorizontalOffset;
-
-    return { item, k, originalIdx, xOffsetFromCenter, y, normalizedDist };
-  });
-
-  // Target closest item to screen center
-  useEffect(() => {
-    let minDistance = Infinity;
-    let closestIndex = 0;
-    
-    const allRenders = [...leftItemsRender, ...rightItemsRender];
-    allRenders.forEach((rendered) => {
-      const dist = Math.abs(rendered.y + itemHeight / 2 - H / 2);
-      if (dist < minDistance) {
-        minDistance = dist;
-        closestIndex = rendered.originalIdx;
-      }
-    });
-    
-    if (closestIndex !== activeIdxRef.current) {
-      activeIdxRef.current = closestIndex;
-      setActiveIdx(closestIndex);
-    }
-  }, [leftItemsRender, rightItemsRender, H]);
-
-  // Map smoothOffset (scroll position) sequentially to the image index to prevent rapid flashing
-  const imgCount = displayItems.length;
-  const activeImageIdx = (((Math.floor(smoothOffset / spacing) % imgCount) + imgCount) % imgCount);
   const activeImage = displayItems[activeImageIdx]?.imageSrc || imageSrc || displayItems[0].imageSrc;
 
   return (
@@ -700,26 +726,21 @@ export const ApparatusDualWave: React.FC<ApparatusDualWaveProps> = ({
       <div className="absolute inset-0 w-full h-full pointer-events-none">
         
         {/* LEFT COLUMN (Right-aligned relative to center axis) */}
-        {leftItemsRender.map(({ item, k, originalIdx, xOffsetFromCenter, y, normalizedDist }) => {
+        {leftColumnItems.map((item, k) => {
+          const originalIdx = k * 2;
           const isActive = originalIdx === activeIdx;
-          const opacity = isActive ? 1.0 : Math.max(0.08, 0.65 - normalizedDist * 0.85);
-          const scale = 1.0;
-          
-          const angle = -(y - H / 2) / (H / 2 || 1) * maxRotation;
-          const blurAmount = isActive ? 0 : normalizedDist * maxBlur;
           
           return (
             <div
               key={`${item.id}-${originalIdx}`}
+              ref={(el) => { itemRefs.current[originalIdx] = el; }}
               className="absolute flex items-center justify-end select-none pointer-events-auto cursor-pointer"
               style={{
                 top: 0,
                 left: "50%",
                 height: `${itemHeight}px`,
-                // Right aligned text positioned by translating -100% (width offset) minus the offset from center and rotating
-                transform: `translate3d(calc(-100% - ${xOffsetFromCenter}px), ${y}px, 0) scale(${scale}) rotate(${angle.toFixed(1)}deg)`,
-                opacity: opacity,
-                filter: `blur(${blurAmount.toFixed(2)}px)`,
+                transform: "translate3d(-100%, 0, 0)",
+                opacity: 0.1,
                 willChange: "transform, opacity, filter",
                 transition: "color 0.4s ease, opacity 0.25s ease",
               }}
@@ -760,7 +781,6 @@ export const ApparatusDualWave: React.FC<ApparatusDualWaveProps> = ({
             zIndex: 10,
           }}
         >
-          
           <AnimatePresence mode="popLayout">
             <motion.div
               key={activeImageIdx}
@@ -780,26 +800,21 @@ export const ApparatusDualWave: React.FC<ApparatusDualWaveProps> = ({
         </div>
 
         {/* RIGHT COLUMN (Left-aligned relative to center axis) */}
-        {rightItemsRender.map(({ item, k, originalIdx, xOffsetFromCenter, y, normalizedDist }) => {
+        {rightColumnItems.map((item, k) => {
+          const originalIdx = k * 2 + 1;
           const isActive = originalIdx === activeIdx;
-          const opacity = isActive ? 1.0 : Math.max(0.08, 0.65 - normalizedDist * 0.85);
-          const scale = 1.0;
-          
-          const angle = (y - H / 2) / (H / 2 || 1) * maxRotation;
-          const blurAmount = isActive ? 0 : normalizedDist * maxBlur;
           
           return (
             <div
               key={`${item.id}-${originalIdx}`}
+              ref={(el) => { itemRefs.current[originalIdx] = el; }}
               className="absolute flex items-center justify-start select-none pointer-events-auto cursor-pointer"
               style={{
                 top: 0,
                 left: "50%",
                 height: `${itemHeight}px`,
-                // Left aligned text positioned by translating +offset from center axis and rotating
-                transform: `translate3d(${xOffsetFromCenter}px, ${y}px, 0) scale(${scale}) rotate(${angle.toFixed(1)}deg)`,
-                opacity: opacity,
-                filter: `blur(${blurAmount.toFixed(2)}px)`,
+                transform: "translate3d(0, 0, 0)",
+                opacity: 0.1,
                 willChange: "transform, opacity, filter",
                 transition: "color 0.4s ease, opacity 0.25s ease",
               }}

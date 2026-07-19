@@ -369,7 +369,7 @@ export const COMPONENT_DETAILS: Record<string, ComponentDetail> = {
   "apparatus-parallax-column": {
     id: "39",
     label: "PARALLAX COLUMN",
-    filename: "scroll/cosmos_1309660817.jpeg",
+    filename: "scroll/cosmos_1859262512.jpeg",
     desc: "A split-screen vertical runway where left and right columns travel in opposite directions, revealing unclipped images as they cross the viewport center.",
     slug: "apparatus-parallax-column",
     category: "scroll",
@@ -391,7 +391,7 @@ export const COMPONENT_DETAILS: Record<string, ComponentDetail> = {
   "apparatus-specimen-box": {
     id: "42",
     label: "APPARATUS SPECIMEN BOX",
-    filename: "scroll/cosmos_1309660817.jpeg",
+    filename: "scroll/cosmos_1215932660.jpeg",
     desc: "Images sit as pinned entomological specimens in a velvet case that tilts with cursor movement; clicking an image slides out the metal pin, lifting the specimen to float at center.",
     slug: "apparatus-specimen-box",
     category: "gallary",
@@ -413,7 +413,7 @@ export const COMPONENT_DETAILS: Record<string, ComponentDetail> = {
   "apparatus-dual-wave": {
     id: "44",
     label: "APPARATUS DUAL WAVE",
-    filename: "scroll/cosmos_1309660817.jpeg",
+    filename: "scroll/cosmos_679994644.jpeg",
     desc: "Two columns of text names flanking a center image. Names slide horizontally along a sine wave as you scroll, flanking a center image that swaps source to match the active viewport item.",
     slug: "apparatus-dual-wave",
     category: "scroll",
@@ -431,6 +431,39 @@ export const COMPONENT_DETAILS: Record<string, ComponentDetail> = {
     subtype: "transition",
     tags: ["GSAP", "Scroll", "Clip Path", "Morph", "Tactile"],
     previewType: "transition"
+  },
+  "apparatus-phase-drift": {
+    id: "46",
+    label: "APPARATUS PHASE DRIFT",
+    filename: "scroll/cosmos_1591705408.jpeg",
+    desc: "Coordinated scroll-driven horizontal wave undulating images on a traveling sinusoidal path with velocity-driven amplitude swells.",
+    slug: "apparatus-phase-drift",
+    category: "scroll",
+    subtype: "gallery",
+    tags: ["GSAP", "Scroll", "Sine Wave", "Velocity"],
+    previewType: "scroll"
+  },
+  "apparatus-depth-swim": {
+    id: "47",
+    label: "APPARATUS DEPTH SWIM",
+    filename: "scroll/cosmos_1994819013.jpeg",
+    desc: "Swim forward through a 3D parallax field of suspended images that dynamically scale, blur, and fade in focus.",
+    slug: "apparatus-depth-swim",
+    category: "scroll",
+    subtype: "gallery",
+    tags: ["GSAP", "Scroll", "Parallax", "Depth of Field"],
+    previewType: "scroll"
+  },
+  "apparatus-cylinder-scroll": {
+    id: "48",
+    label: "APPARATUS CYLINDER SCROLL",
+    filename: "scroll/cosmos_1452408749.jpeg",
+    desc: "Infinite bidirectional vertical scroll of cards rotating tangentially along a 3D cylindrical drum surface with a lens focus reveal.",
+    slug: "apparatus-cylinder-scroll",
+    category: "scroll",
+    subtype: "gallery",
+    tags: ["GSAP", "Scroll", "3D Cylinder", "Infinite Scroll", "Depth of Field"],
+    previewType: "scroll"
   }
 };
 
@@ -483,7 +516,10 @@ export const COMPONENT_IMPORTS: Record<string, React.ComponentType<VesselCompone
   "apparatus-specimen-box": dynamic(() => import("../../../../packages/core/src/components/apparatus-specimen-box"), { ssr: false }),
   "apparatus-erosion-map": dynamic(() => import("../../../../packages/core/src/components/apparatus-erosion-map"), { ssr: false }),
   "apparatus-dual-wave": dynamic(() => import("../../../../packages/core/src/components/apparatus-dual-wave"), { ssr: false }),
-  "apparatus-clip-morph": dynamic(() => import("../../../../packages/core/src/components/apparatus-clip-morph"), { ssr: false })
+  "apparatus-clip-morph": dynamic(() => import("../../../../packages/core/src/components/apparatus-clip-morph"), { ssr: false }),
+  "apparatus-phase-drift": dynamic(() => import("../../../../packages/core/src/components/apparatus-phase-drift"), { ssr: false }),
+  "apparatus-depth-swim": dynamic(() => import("../../../../packages/core/src/components/apparatus-depth-swim"), { ssr: false }),
+  "apparatus-cylinder-scroll": dynamic(() => import("../../../../packages/core/src/components/apparatus-cylinder-scroll"), { ssr: false })
 };
 
 export function getComponent(slug: string) {

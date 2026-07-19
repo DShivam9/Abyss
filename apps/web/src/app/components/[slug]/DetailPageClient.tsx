@@ -80,6 +80,9 @@ export function DetailPageClient({ slug }: { slug: string }) {
         if (meta.category === "gallary") {
           return prev + e.deltaY * 0.0005;
         }
+        if (slug === "apparatus-depth-swim") {
+          return prev + e.deltaY * 0.001;
+        }
         return Math.max(0.0, Math.min(1.0, prev + e.deltaY * 0.001));
       });
     };

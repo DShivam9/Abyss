@@ -18,6 +18,8 @@ export function SmoothScrollProvider({ children }: { children: ReactNode }) {
       smoothWheel: true,
     });
 
+    (window as unknown as { lenis: Lenis }).lenis = lenis;
+
     // Update ScrollTrigger on Lenis scroll
     lenis.on("scroll", ScrollTrigger.update);
 
