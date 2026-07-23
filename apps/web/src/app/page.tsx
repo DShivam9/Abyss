@@ -2,7 +2,7 @@ import Link from "next/link";
 
 export default function HomePage() {
   return (
-    <main className="min-h-screen bg-black text-white flex flex-col gap-4 items-center justify-center font-mono uppercase text-[10px] tracking-widest select-none">
+    <main className="min-h-screen bg-black text-white flex flex-col gap-4 items-center justify-center font-mono uppercase text-[10px] tracking-widest">
       <span>Abyss // Blank Stage</span>
       <Link 
         href="/components" 

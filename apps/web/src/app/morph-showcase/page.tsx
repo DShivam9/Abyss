@@ -377,7 +377,7 @@ export default function MorphShowcasePage() {
   }, [cardCount]);
 
   return (
-    <div className="w-full min-h-screen bg-[#070708] text-white relative select-none overflow-hidden">
+    <div className="w-full min-h-screen bg-[#070708] text-white relative overflow-hidden">
       <div ref={containerRef} className="w-screen h-screen relative flex items-center justify-center overflow-hidden">
         
         <div className="w-full h-full relative" style={{ perspective: `${uiPerspective}px`, transformStyle: "preserve-3d" }}>

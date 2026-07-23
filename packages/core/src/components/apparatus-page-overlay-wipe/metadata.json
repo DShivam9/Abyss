@@ -1,0 +1,43 @@
+{
+  "id": "apparatus-page-overlay-wipe",
+  "name": "Apparatus Page Overlay Wipe",
+  "category": "Transitions",
+  "description": "Full-viewport overlay panel slides in to cover the current view, swaps underlying content at peak coverage, then slides out to reveal the next view. Prevents visual co-existence with a physical solid barrier.",
+  "previewType": "scroll",
+  "parameters": [
+    {
+      "name": "coverDuration",
+      "type": "number",
+      "default": 400,
+      "description": "Duration in ms for overlay cover phase"
+    },
+    {
+      "name": "revealDuration",
+      "type": "number",
+      "default": 400,
+      "description": "Duration in ms for overlay reveal phase"
+    },
+    {
+      "name": "wipeDirection",
+      "type": "string",
+      "default": "bottom-to-top",
+      "description": "Direction of overlay motion (bottom-to-top, top-to-bottom, left-to-right, right-to-left)"
+    },
+    {
+      "name": "overlayColor",
+      "type": "string",
+      "default": "#0e0e11",
+      "description": "Solid color for physical barrier overlay panel"
+    },
+    {
+      "name": "showAccentHairline",
+      "type": "boolean",
+      "default": true,
+      "description": "Whether to render a high-precision hairline on leading edge"
+    }
+  ],
+  "lifecycle": {
+    "phases": ["idle", "cover", "swap", "reveal"],
+    "trigger": "Navigation or view swap action"
+  }
+}

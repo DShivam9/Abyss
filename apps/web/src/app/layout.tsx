@@ -60,8 +60,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={cn("h-full", "antialiased", satoshi.variable, jetbrainsMono.variable, "font-sans", geist.variable, editorialNew.variable)}>
-      <body className="min-h-full flex flex-col bg-vessel-base text-vessel-text-primary font-sans">
+    <html lang="en" suppressHydrationWarning className={cn("h-full", "antialiased", satoshi.variable, jetbrainsMono.variable, "font-sans", geist.variable, editorialNew.variable)}>
+      <body suppressHydrationWarning className="min-h-full flex flex-col bg-vessel-base text-vessel-text-primary font-sans">
         <div className="noise-bg" />
         <SmoothScrollProvider>
           <CursorProvider>

@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import gsap from "gsap";
 import { ApparatusClipMorphProps } from "./types";
 
 // Morph keyframe targets centered at (50, 50) using exactly 12 vertices each
@@ -61,43 +62,95 @@ const getClipPathString = (progress: number, shape: "star" | "arch" | "shield" |
   return `polygon(${pts.map(pt => `${pt.x.toFixed(2)}% ${pt.y.toFixed(2)}%`).join(", ")})`;
 };
 
-export const ApparatusClipMorph: React.FC<ApparatusClipMorphProps> = ({
+export const ApparatusClipMorph: React.FC<ApparatusClipMorphProps & {
+  selectedShapeMode?: "cycle" | "star" | "arch" | "shield" | "petal";
+  customRotation?: number;
+  customBleed?: number;
+  customGrain?: number;
+}> = ({
   images,
   imageSrc,
   className = "",
   style,
   scrollProgress,
-  onLifecycleChange
+  onLifecycleChange,
+  selectedShapeMode: propSelectedShapeMode = "cycle",
+  customRotation: propCustomRotation = 30,
+  customBleed: propCustomBleed = 40,
+  customGrain: propCustomGrain = 25,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const hudRef = useRef<HTMLDivElement>(null);
 
-  const imageList = images && images.length > 0 
+  const rawImages = images && images.length > 0 
     ? images 
     : (imageSrc ? [imageSrc, ...DEFAULT_IMAGES.slice(1)] : DEFAULT_IMAGES);
+  const imageList = rawImages.map(url => encodeURI(url));
 
-  const [dropdownOpen, setDropdownOpen] = useState(true);
+  // Motion physics parameters derived from props
+  const customRotation = propCustomRotation;
+  const customBleed = propCustomBleed;
+  const customGrain = propCustomGrain;
+  const selectedShapeMode = propSelectedShapeMode;
 
-  // Motion physics parameter states
-  const [customRotation, setCustomRotation] = useState(30); // 0 to 90 deg twist
-  const [customBleed, setCustomBleed] = useState(40);       // 0% to 100% saturation burn
-  const [customGrain, setCustomGrain] = useState(25);       // 0% to 80% overlay grain opacity
 
-  const [selectedShapeMode, setSelectedShapeMode] = useState<"cycle" | "star" | "arch" | "shield" | "petal">("cycle");
 
-  // Click outside listener for dropdown panel
+  const targetProgressRef = useRef(0);
+  const lerpedProgressRef = useRef(0);
+  const [smoothProgress, setSmoothProgress] = useState(0);
+
+  const effectiveProgress = scrollProgress !== undefined ? scrollProgress : smoothProgress;
+
   useEffect(() => {
-    const clickOutside = (e: MouseEvent) => {
-      if (hudRef.current && !hudRef.current.contains(e.target as Node)) {
-        setDropdownOpen(false);
-      }
-    };
-    window.addEventListener("click", clickOutside);
-    return () => window.removeEventListener("click", clickOutside);
-  }, []);
+    if (scrollProgress !== undefined) return;
+    const el = containerRef.current;
+    if (!el) return;
 
-  // Resolve current active state based on scrollProgress
-  const normalizedProgress = (((scrollProgress || 0) % 1) + 1) % 1;
+    const handleWheel = (e: WheelEvent) => {
+      e.preventDefault();
+      targetProgressRef.current = Math.max(0, targetProgressRef.current + e.deltaY * 0.00025);
+    };
+
+    el.addEventListener("wheel", handleWheel, { passive: false });
+    return () => {
+      el.removeEventListener("wheel", handleWheel);
+    };
+  }, [scrollProgress]);
+
+  // Inertial RAF animation loop for smooth 60fps clip morphing
+  useEffect(() => {
+    if (scrollProgress !== undefined) return;
+    let animId: number;
+
+    const loop = () => {
+      const diff = targetProgressRef.current - lerpedProgressRef.current;
+      if (Math.abs(diff) > 0.0001) {
+        lerpedProgressRef.current += diff * 0.1;
+        setSmoothProgress(lerpedProgressRef.current);
+      } else {
+        lerpedProgressRef.current = targetProgressRef.current;
+        setSmoothProgress(targetProgressRef.current);
+      }
+      animId = requestAnimationFrame(loop);
+    };
+
+    animId = requestAnimationFrame(loop);
+    return () => cancelAnimationFrame(animId);
+  }, [scrollProgress]);
+
+  const handleClick = () => {
+    const segmentCount = imageList.length;
+    const currentSegment = Math.floor(targetProgressRef.current * segmentCount);
+    const targetProgress = (currentSegment + 1) / segmentCount;
+
+    gsap.to(targetProgressRef, {
+      current: targetProgress,
+      duration: 0.9,
+      ease: "power2.inOut",
+    });
+  };
+
+  // Resolve current active state based on effectiveProgress
+  const normalizedProgress = (((effectiveProgress || 0) % 1) + 1) % 1;
   const segmentCount = imageList.length;
   const scaled = normalizedProgress * segmentCount;
   const activeCurrentIndex = Math.max(0, Math.min(Math.floor(scaled), segmentCount - 1));
@@ -131,159 +184,17 @@ export const ApparatusClipMorph: React.FC<ApparatusClipMorphProps> = ({
   // Get clip-path for foreground (active image) with dynamic twist rotation
   const foregroundClipPath = getClipPathString(activeProgress, activeShape, customRotation);
 
-  // Dynamic filling calculations for visual sliders
-  const rotationPct = (customRotation / 90) * 100;
-  const bleedPct = customBleed;
-  const grainPct = (customGrain / 80) * 100;
-
   return (
     <div
       ref={containerRef}
-      className={`w-full h-full relative overflow-hidden bg-[#070709] flex select-none ${className}`}
+      onClick={handleClick}
+      className={`w-full h-full relative overflow-hidden bg-[#070709] flex select-none cursor-pointer ${className}`}
       style={style}
     >
-      {/* Interactive HUD / Controls */}
-      <div
-        ref={hudRef}
-        className="absolute z-50 pointer-events-auto"
-        style={{
-          top: "16px",
-          right: "16px",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "flex-end",
-          gap: "8px"
-        }}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <button
-          onClick={() => setDropdownOpen(!dropdownOpen)}
-          className="abyss-controls-trigger"
-        >
-          <span>Morph Control</span>
-          <svg 
-            width="8" 
-            height="8" 
-            viewBox="0 0 8 8" 
-            fill="none" 
-            style={{ 
-              transform: dropdownOpen ? "rotate(180deg)" : "rotate(0deg)", 
-              transition: "transform 0.3s",
-              stroke: "rgba(255, 255, 255, 0.6)",
-              strokeWidth: "1.5"
-            }}
-          >
-            <path d="M1 2.5L4 5.5L7 2.5" />
-          </svg>
-        </button>
-
-        {dropdownOpen && (
-          <div className="abyss-controls-panel">
-            <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-              {/* Geometry Selector */}
-              <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                <span className="text-[9px] font-mono tracking-widest text-white/65 uppercase select-none">
-                  Morph Geometry
-                </span>
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "4px" }}>
-                  {(["cycle", "star", "arch", "shield", "petal"] as const).map((shape) => (
-                    <button
-                      key={shape}
-                      onClick={() => setSelectedShapeMode(shape)}
-                      style={{
-                        gridColumn: shape === "cycle" ? "span 2" : "auto",
-                        backgroundColor: selectedShapeMode === shape ? "rgba(255, 255, 255, 0.1)" : "rgba(255, 255, 255, 0.02)",
-                        color: selectedShapeMode === shape ? "#ffffff" : "rgba(255, 255, 255, 0.4)",
-                        border: `1px solid ${selectedShapeMode === shape ? "rgba(255, 255, 255, 0.2)" : "rgba(255, 255, 255, 0.05)"}`,
-                        borderRadius: "4px",
-                        fontSize: "9px",
-                        fontFamily: "monospace",
-                        padding: "4px",
-                        textTransform: "uppercase",
-                        cursor: "pointer",
-                        outline: "none"
-                      }}
-                    >
-                      {shape === "petal" ? "ivy leaf" : shape}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div style={{ height: "1px", backgroundColor: "rgba(255,255,255,0.05)", margin: "2px 0" }} />
-
-              {/* Slider 1: Twist Rotation */}
-              <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                  <span className="text-[9px] font-mono tracking-widest text-white/65 uppercase select-none">
-                    Twist Rotation
-                  </span>
-                  <span className="text-[9px] font-mono text-white/50">{customRotation}°</span>
-                </div>
-                <input
-                  type="range"
-                  min="0"
-                  max="90"
-                  step="1"
-                  value={customRotation}
-                  onChange={(e) => setCustomRotation(Number(e.target.value))}
-                  style={{
-                    width: "100%",
-                    background: `linear-gradient(to right, #6ec49a 0%, #6ec49a ${rotationPct}%, rgba(255, 255, 255, 0.08) ${rotationPct}%, rgba(255, 255, 255, 0.08) 100%)`
-                  }}
-                />
-              </div>
-
-              {/* Slider 2: Color Bleed */}
-              <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                  <span className="text-[9px] font-mono tracking-widest text-white/65 uppercase select-none">
-                    Color Bleed
-                  </span>
-                  <span className="text-[9px] font-mono text-white/50">{customBleed}%</span>
-                </div>
-                <input
-                  type="range"
-                  min="0"
-                  max="100"
-                  step="5"
-                  value={customBleed}
-                  onChange={(e) => setCustomBleed(Number(e.target.value))}
-                  style={{
-                    width: "100%",
-                    background: `linear-gradient(to right, #6ec49a 0%, #6ec49a ${bleedPct}%, rgba(255, 255, 255, 0.08) ${bleedPct}%, rgba(255, 255, 255, 0.08) 100%)`
-                  }}
-                />
-              </div>
-
-              {/* Slider 3: Film Grain */}
-              <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                  <span className="text-[9px] font-mono tracking-widest text-white/65 uppercase select-none">
-                    Film Grain
-                  </span>
-                  <span className="text-[9px] font-mono text-white/50">{customGrain}%</span>
-                </div>
-                <input
-                  type="range"
-                  min="0"
-                  max="80"
-                  step="2"
-                  value={customGrain}
-                  onChange={(e) => setCustomGrain(Number(e.target.value))}
-                  style={{
-                    width: "100%",
-                    background: `linear-gradient(to right, #6ec49a 0%, #6ec49a ${grainPct}%, rgba(255, 255, 255, 0.08) ${grainPct}%, rgba(255, 255, 255, 0.08) 100%)`
-                  }}
-                />
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
+      {/* Interactive HUD */}
 
       {/* Main Image Viewport Area (Strictly Scroll Controlled) */}
-      <div className="w-full h-full relative flex items-center justify-center cursor-default">
+      <div className="w-full h-full relative flex items-center justify-center pointer-events-none">
         {/* Layer 1: Background (Incoming Image) with photochemical warm desaturation fade */}
         {showIncoming ? (
           <div

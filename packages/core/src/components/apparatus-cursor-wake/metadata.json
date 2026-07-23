@@ -1,0 +1,16 @@
+{
+  "name": "Apparatus Cursor Wake",
+  "slug": "apparatus-cursor-wake",
+  "pitch": "Images in a structured grid. Moving your cursor leaves a trailing wake of scale, opacity, and saturation that slowly decays over time, tracing exploration history.",
+  "family": "aesthetic",
+  "energy": "responsive",
+  "triggers": ["pointer", "velocity", "hover"],
+  "tech": ["react", "gsap", "framer-motion"],
+  "lifecycle": {
+    "idle": "Images rest in a dim, desaturated, and slightly compressed state.",
+    "discovery": "Pointer enters the grid, activating distance calculations for nearby images.",
+    "buildUp": "Rapid pointer movement leaves a vivid, high-saturation, full-scale wake trail.",
+    "peak": "Active elements under the cursor reach full prominence, maximum opacity, and rich saturation.",
+    "recovery": "Viscosity decay functions slowly fade visited elements back to the dim base state over time."
+  }
+}

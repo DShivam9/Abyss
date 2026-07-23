@@ -58,12 +58,21 @@ const getPathX = (
   }
 };
 
-export const ApparatusPhaseDrift: React.FC<ApparatusPhaseDriftProps> = ({
+export const ApparatusPhaseDrift: React.FC<ApparatusPhaseDriftProps & {
+  pathType?: "sine" | "zigzag" | "wandering" | "spiral";
+  waveAmplitude?: number;
+  driftSpeed?: number;
+  smoothFactor?: number;
+}> = ({
   images,
   amplitude = 150,
   speed = 0.8,
   aspectRatio = "16/9",
   imageWidth = 120, // Default is 120px
+  pathType: propPathType = "sine",
+  waveAmplitude: propWaveAmplitude,
+  driftSpeed: propDriftSpeed,
+  smoothFactor: propSmoothFactor = 0.08,
   className = "",
   style,
   onLifecycleChange
@@ -76,24 +85,20 @@ export const ApparatusPhaseDrift: React.FC<ApparatusPhaseDriftProps> = ({
   // Repeat list 4 times for continuous off-screen coverage
   const repeatedImages = [...imageList, ...imageList, ...imageList, ...imageList];
 
-  // Config States
-  const [dropdownOpen, setDropdownOpen] = useState(true);
-  const [pathType, setPathType] = useState<"sine" | "zigzag" | "wandering" | "spiral">("sine");
-  const [customAmplitude, setCustomAmplitude] = useState(amplitude);
+  // Config derived from props
+  const pathType = propPathType;
+  const customAmplitude = propWaveAmplitude ?? amplitude;
   const customFrequency = 0.5; // Fixed to 0.5 as requested
-  const [customSpeed, setCustomSpeed] = useState(speed);
-  const [customSize, setCustomSize] = useState(imageWidth);
-  const [customGap, setCustomGap] = useState(0); // Spacing gap is 0 by default (contiguous connection)
-  const [smoothFactor, setSmoothFactor] = useState(0.08); // Scroll smoothness level
+  const customSpeed = propDriftSpeed ?? speed;
+  const customSize = imageWidth;
+  const customGap = 0; // Spacing gap is 0 by default (contiguous connection)
+  const smoothFactor = propSmoothFactor;
 
   const scrollOffsetRef = useRef(0);
   const scrollVelocityRef = useRef(0); // ponytail: track velocity for momentum scrolling
   const isScrollingRef = useRef(false);
 
-  // Sync size state on prop load
-  useEffect(() => {
-    setCustomSize(imageWidth);
-  }, [imageWidth]);
+
 
   // Virtual Scroll Mouse/Touch Bindings
   useEffect(() => {
@@ -334,15 +339,7 @@ export const ApparatusPhaseDrift: React.FC<ApparatusPhaseDriftProps> = ({
     }
   };
 
-  useEffect(() => {
-    const clickOutside = (e: MouseEvent) => {
-      if (hudRef.current && !hudRef.current.contains(e.target as Node)) {
-        setDropdownOpen(false);
-      }
-    };
-    window.addEventListener("click", clickOutside);
-    return () => window.removeEventListener("click", clickOutside);
-  }, []);
+
 
   return (
     <div
@@ -350,213 +347,7 @@ export const ApparatusPhaseDrift: React.FC<ApparatusPhaseDriftProps> = ({
       className={`w-full h-full relative overflow-hidden bg-[#070709] select-none ${className}`}
       style={style}
     >
-      {/* Interactive Controls Overlay */}
-      <div
-        ref={hudRef}
-        className="absolute z-50 pointer-events-auto"
-        style={{
-          top: "16px",
-          right: "16px",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "flex-end",
-          gap: "8px"
-        }}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <button
-          onClick={() => setDropdownOpen(!dropdownOpen)}
-          className="abyss-controls-trigger"
-        >
-          <span>Winding Controls</span>
-          <svg
-            width="8"
-            height="8"
-            viewBox="0 0 8 8"
-            fill="none"
-            style={{
-              transform: dropdownOpen ? "rotate(180deg)" : "rotate(0deg)",
-              transition: "transform 0.3s",
-              stroke: "rgba(255, 255, 255, 0.6)",
-              strokeWidth: "1.5"
-            }}
-          >
-            <path d="M1 2.5L4 5.5L7 2.5" />
-          </svg>
-        </button>
 
-        {dropdownOpen && (
-          <div className="abyss-controls-panel">
-            <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-              {/* Path selector */}
-              <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                <span className="text-[9px] font-mono tracking-widest text-white/65 uppercase select-none">
-                  Path Geometry
-                </span>
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "4px" }}>
-                  {(["sine", "zigzag", "wandering", "spiral"] as const).map((pathOpt) => (
-                    <button
-                      key={pathOpt}
-                      onClick={() => setPathType(pathOpt)}
-                      className={`abyss-segment-button ${pathType === pathOpt ? "abyss-segment-button-active" : ""}`}
-                      style={{
-                        borderRadius: "4px",
-                        padding: "6px 0",
-                        cursor: "pointer",
-                        textTransform: "uppercase",
-                        textAlign: "center"
-                      }}
-                    >
-                      {pathOpt === "sine" ? "Sine Wave" :
-                       pathOpt === "zigzag" ? "Zig-Zag" :
-                       pathOpt === "wandering" ? "Wandering" : "Spiral 3D"}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Amplitude slider */}
-              <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                  <span className="text-[9px] font-mono tracking-widest text-white/65 uppercase">
-                    Path Amplitude
-                  </span>
-                  <span className="text-[9px] font-mono text-white/50">{customAmplitude}px</span>
-                </div>
-                <input
-                  type="range"
-                  min="20"
-                  max="250"
-                  step="5"
-                  value={customAmplitude}
-                  onChange={(e) => setCustomAmplitude(Number(e.target.value))}
-                  style={{
-                    background: `linear-gradient(to right, #6ec49a 0%, #6ec49a ${((customAmplitude - 20) / 230) * 100}%, rgba(255, 255, 255, 0.08) ${((customAmplitude - 20) / 230) * 100}%, rgba(255, 255, 255, 0.08) 100%)`
-                  }}
-                />
-              </div>
-
-
-
-              {/* Speed slider */}
-              <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                  <span className="text-[9px] font-mono tracking-widest text-white/65 uppercase">
-                    Drift Speed
-                  </span>
-                  <span className="text-[9px] font-mono text-white/50">{customSpeed}x</span>
-                </div>
-                <input
-                  type="range"
-                  min="0"
-                  max="4"
-                  step="0.2"
-                  value={customSpeed}
-                  onChange={(e) => setCustomSpeed(Number(e.target.value))}
-                  style={{
-                    background: `linear-gradient(to right, #6ec49a 0%, #6ec49a ${(customSpeed / 4) * 100}%, rgba(255, 255, 255, 0.08) ${(customSpeed / 4) * 100}%, rgba(255, 255, 255, 0.08) 100%)`
-                  }}
-                />
-              </div>
-
-              {/* Card Size slider */}
-              <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                  <span className="text-[9px] font-mono tracking-widest text-white/65 uppercase">
-                    Specimen Width
-                  </span>
-                  <span className="text-[9px] font-mono text-white/50">{customSize}px</span>
-                </div>
-                <input
-                  type="range"
-                  min="120"
-                  max="450"
-                  step="10"
-                  value={customSize}
-                  onChange={(e) => setCustomSize(Number(e.target.value))}
-                  style={{
-                    background: `linear-gradient(to right, #6ec49a 0%, #6ec49a ${((customSize - 120) / 330) * 100}%, rgba(255, 255, 255, 0.08) ${((customSize - 120) / 330) * 100}%, rgba(255, 255, 255, 0.08) 100%)`
-                  }}
-                />
-              </div>
-
-              {/* Spacing Gap slider */}
-              <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                  <span className="text-[9px] font-mono tracking-widest text-white/65 uppercase">
-                    Card Spacing
-                  </span>
-                  <span className="text-[9px] font-mono text-white/50">{customGap}px</span>
-                </div>
-                <input
-                  type="range"
-                  min="0"
-                  max="120"
-                  step="2"
-                  value={customGap}
-                  onChange={(e) => setCustomGap(Number(e.target.value))}
-                  style={{
-                    background: `linear-gradient(to right, #6ec49a 0%, #6ec49a ${(customGap / 120) * 100}%, rgba(255, 255, 255, 0.08) ${(customGap / 120) * 100}%, rgba(255, 255, 255, 0.08) 100%)`
-                  }}
-                />
-              </div>
-
-              {/* Scroll Smoothness slider */}
-              <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                  <span className="text-[9px] font-mono tracking-widest text-white/65 uppercase">
-                    Scroll Smoothness
-                  </span>
-                  <span className="text-[9px] font-mono text-white/50">{smoothFactor}</span>
-                </div>
-                <input
-                  type="range"
-                  min="0.01"
-                  max="0.30"
-                  step="0.01"
-                  value={smoothFactor}
-                  onChange={(e) => setSmoothFactor(Number(e.target.value))}
-                  style={{
-                    background: `linear-gradient(to right, #6ec49a 0%, #6ec49a ${((smoothFactor - 0.01) / 0.29) * 100}%, rgba(255, 255, 255, 0.08) ${((smoothFactor - 0.01) / 0.29) * 100}%, rgba(255, 255, 255, 0.08) 100%)`
-                  }}
-                />
-              </div>
-
-              {/* Reset to Defaults info line */}
-              <div style={{
-                borderTop: "1px solid rgba(255, 255, 255, 0.08)",
-                paddingTop: "10px",
-                marginTop: "4px",
-                display: "flex",
-                flexDirection: "column",
-                gap: "6px"
-              }}>
-                <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
-                  <span className="text-[8px] font-mono tracking-wider text-white/40 uppercase">
-                    Default Values:
-                  </span>
-                  <span className="text-[8px] font-mono text-white/50 leading-relaxed">
-                    Amp: 150px | Speed: 0.8x | Width: 120px | Spacing: 0px | Smooth: 0.08 | Freq: 0.5
-                  </span>
-                </div>
-                <button
-                  onClick={() => {
-                    setCustomAmplitude(150);
-                    setCustomSpeed(0.8);
-                    setCustomSize(120);
-                    setCustomGap(0);
-                    setSmoothFactor(0.08);
-                    setPathType("sine");
-                  }}
-                  className="py-1.5 px-3 rounded-md text-[9px] font-mono border border-white/10 bg-white/5 text-[#6ec49a] hover:bg-white/10 hover:text-[#5eb389] transition-all select-none cursor-pointer w-full text-center"
-                >
-                  Reset to Defaults
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
 
       {/* Absolutely positioned cards following winding path */}
       <div className="absolute inset-0 z-10 w-full h-full pointer-events-none">
@@ -566,7 +357,7 @@ export const ApparatusPhaseDrift: React.FC<ApparatusPhaseDriftProps> = ({
             ref={(el) => {
               itemRefs.current[idx] = el;
             }}
-            className="absolute left-1/2 top-0 pointer-events-auto origin-center bg-neutral-900 border-y border-white/5 cursor-crosshair [perspective:1000px] overflow-hidden"
+            className="absolute left-1/2 top-0 pointer-events-auto origin-center bg-neutral-900 cursor-crosshair [perspective:1000px] overflow-hidden"
             style={{
               width: `${customSize}px`,
               aspectRatio: aspectRatio,

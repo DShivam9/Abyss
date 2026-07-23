@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef } from "react";
 import { gsap } from "gsap";
 import { useGSAP } from "@gsap/react";
 import { CustomEase } from "gsap/CustomEase";
@@ -72,10 +72,81 @@ const getDeterministicCoords = (index: number, total: number): { x: number; y: n
   return { x, y, z };
 };
 
-export const ApparatusDepthSwim: React.FC<ApparatusDepthSwimProps> = ({
+const getVariantDefaults = (variant: "tunnel" | "matrix" | "cinematic" | "micro") => {
+  if (variant === "tunnel") {
+    return {
+      smoothFactor: 0.08,
+      depthRange: 1600,
+      scrollSpeed: 140,
+      cursorParallaxPower: 40,
+      maxBlur: 18,
+      cardScale: 1.0,
+      hoverTiltMax: 8,
+      ambientOpacity: 0.35,
+      ambientBlur: 5
+    };
+  }
+  if (variant === "matrix") {
+    return {
+      smoothFactor: 0.10,
+      depthRange: 700,
+      scrollSpeed: 90,
+      cursorParallaxPower: 55,
+      maxBlur: 6,
+      cardScale: 1.05,
+      hoverTiltMax: 14,
+      ambientOpacity: 0.20,
+      ambientBlur: 40
+    };
+  }
+  if (variant === "cinematic") {
+    return {
+      smoothFactor: 0.04,
+      depthRange: 2400,
+      scrollSpeed: 110,
+      cursorParallaxPower: 25,
+      maxBlur: 32,
+      cardScale: 0.85,
+      hoverTiltMax: 8,
+      ambientOpacity: 0.60,
+      ambientBlur: 110
+    };
+  }
+  // micro
+  return {
+    smoothFactor: 0.08,
+    depthRange: 1300,
+    scrollSpeed: 70,
+    cursorParallaxPower: 30,
+    maxBlur: 12,
+    cardScale: 0.65,
+    hoverTiltMax: 6,
+    ambientOpacity: 0.30,
+    ambientBlur: 5
+  };
+};
+
+export const ApparatusDepthSwim: React.FC<ApparatusDepthSwimProps & {
+  selectedVariant?: "tunnel" | "matrix" | "cinematic" | "micro";
+  depthRange?: number;
+  maxBlur?: number;
+  cursorParallaxPower?: number;
+  cardScale?: number;
+  hoverTiltMax?: number;
+  ambientOpacity?: number;
+  ambientBlur?: number;
+}> = ({
   imageSrc,
   images,
   scrollProgress,
+  selectedVariant: propSelectedVariant = "tunnel",
+  depthRange: propDepthRange = 1600,
+  maxBlur: propMaxBlur = 18,
+  cursorParallaxPower: propCursorParallaxPower = 40,
+  cardScale: propCardScale = 1.0,
+  hoverTiltMax: propHoverTiltMax = 15,
+  ambientOpacity: propAmbientOpacity = 0.45,
+  ambientBlur: propAmbientBlur = 75,
   className = "",
   style,
   onLifecycleChange
@@ -85,89 +156,22 @@ export const ApparatusDepthSwim: React.FC<ApparatusDepthSwimProps> = ({
   const innerRefs = useRef<(HTMLDivElement | null)[]>([]);
   const lastStateRef = useRef<"idle" | "discovery" | "buildUp" | "peak" | "recovery">("idle");
 
-  // Config States
-  const [dropdownOpen, setDropdownOpen] = useState(true);
-  const [selectedVariant, setSelectedVariant] = useState<"tunnel" | "matrix" | "cinematic" | "micro">("tunnel");
-  
-  const [smoothFactor, setSmoothFactor] = useState(0.08); // Scroll smoothness level
-  const [depthRange, setDepthRange] = useState(1600); // Default: 1600px Z spread
-  const [scrollSpeed, setScrollSpeed] = useState(140); // Default: 140 scroll parallax pitch
-  const [cursorParallaxPower, setCursorParallaxPower] = useState(40); // Default: 40px shift
-  const [maxBlur, setMaxBlur] = useState(18); // Default: 18px DOF blur
-  const [cardScale, setCardScale] = useState(1.0); // Default: 1.0 (360px)
-  const [hoverTiltMax, setHoverTiltMax] = useState(8); // Default: 8 degrees hover tilt
-  const [ambientOpacity, setAmbientOpacity] = useState(0.35); // Default: 0.35 background opacity
-  const [ambientBlur, setAmbientBlur] = useState(5); // Default: 5px blur
-  const [scrollDirection, setScrollDirection] = useState<"vertical" | "horizontal" | "diagonal" | "creative" | "radial" | "zigzag">("vertical");
+  // Config derived from props
+  const variantDefaults = getVariantDefaults(propSelectedVariant);
+  const smoothFactor = variantDefaults.smoothFactor;
+  const depthRange = propDepthRange;
+  const scrollSpeed = variantDefaults.scrollSpeed;
+  const cursorParallaxPower = propCursorParallaxPower;
+  const maxBlur = propMaxBlur;
+  const cardScale = propCardScale;
+  const hoverTiltMax = propHoverTiltMax;
+  const ambientOpacity = propAmbientOpacity;
+  const ambientBlur = propAmbientBlur;
+  const scrollDirection = "vertical";
 
-  const getVariantDefaults = (variant: "tunnel" | "matrix" | "cinematic" | "micro") => {
-    if (variant === "tunnel") {
-      return {
-        smoothFactor: 0.08,
-        depthRange: 1600,
-        scrollSpeed: 140,
-        cursorParallaxPower: 40,
-        maxBlur: 18,
-        cardScale: 1.0,
-        hoverTiltMax: 8,
-        ambientOpacity: 0.35,
-        ambientBlur: 5
-      };
-    }
-    if (variant === "matrix") {
-      return {
-        smoothFactor: 0.10,
-        depthRange: 700,
-        scrollSpeed: 90,
-        cursorParallaxPower: 55,
-        maxBlur: 6,
-        cardScale: 1.05,
-        hoverTiltMax: 14,
-        ambientOpacity: 0.20,
-        ambientBlur: 40
-      };
-    }
-    if (variant === "cinematic") {
-      return {
-        smoothFactor: 0.04,
-        depthRange: 2400,
-        scrollSpeed: 110,
-        cursorParallaxPower: 25,
-        maxBlur: 32,
-        cardScale: 0.85,
-        hoverTiltMax: 8,
-        ambientOpacity: 0.60,
-        ambientBlur: 110
-      };
-    }
-    // micro
-    return {
-      smoothFactor: 0.08,
-      depthRange: 1300,
-      scrollSpeed: 70,
-      cursorParallaxPower: 30,
-      maxBlur: 12,
-      cardScale: 0.65,
-      hoverTiltMax: 6,
-      ambientOpacity: 0.30,
-      ambientBlur: 5
-    };
-  };
 
-  const applyVariant = (variant: "tunnel" | "matrix" | "cinematic" | "micro") => {
-    setSelectedVariant(variant);
-    const defaults = getVariantDefaults(variant);
-    setSmoothFactor(defaults.smoothFactor);
-    setDepthRange(defaults.depthRange);
-    setScrollSpeed(defaults.scrollSpeed);
-    setCursorParallaxPower(defaults.cursorParallaxPower);
-    setMaxBlur(defaults.maxBlur);
-    setCardScale(defaults.cardScale);
-    setHoverTiltMax(defaults.hoverTiltMax);
-    setAmbientOpacity(defaults.ambientOpacity);
-    setAmbientBlur(defaults.ambientBlur);
-    setScrollDirection("vertical");
-  };
+
+
 
   const scrollOffsetRef = useRef(0);
   const scrollVelocityRef = useRef(0);
@@ -657,7 +661,7 @@ export const ApparatusDepthSwim: React.FC<ApparatusDepthSwimProps> = ({
                 hoveredIndexRef.current = -1;
                 handleMouseLeave(idx);
               }}
-              className="w-full h-full origin-center border border-white/5 bg-neutral-900 overflow-hidden cursor-crosshair [transform-style:preserve-3d]"
+              className="w-full h-full origin-center bg-neutral-900 overflow-hidden cursor-crosshair [transform-style:preserve-3d]"
               style={{
                 willChange: "transform"
               }}
@@ -677,472 +681,6 @@ export const ApparatusDepthSwim: React.FC<ApparatusDepthSwimProps> = ({
         ))}
       </div>
 
-      {/* Global Presets Panel (Virtual control overlay positioned on the right) */}
-      <div
-        className="absolute z-[9999] pointer-events-auto"
-        style={{
-          top: "24px",
-          right: "24px",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "flex-end",
-          gap: "8px",
-          zIndex: 9999
-        }}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <button
-          onClick={() => setDropdownOpen(!dropdownOpen)}
-          className="abyss-controls-trigger"
-        >
-          <span>Depth Controls</span>
-          <svg
-            width="8"
-            height="8"
-            viewBox="0 0 8 8"
-            fill="none"
-            style={{
-              transform: dropdownOpen ? "rotate(180deg)" : "rotate(0deg)",
-              transition: "transform 0.3s",
-              stroke: "rgba(255, 255, 255, 0.6)",
-              strokeWidth: "1.5"
-            }}
-          >
-            <path d="M1 2.5L4 5.5L7 2.5" />
-          </svg>
-        </button>
-
-        {dropdownOpen && (
-          <div className="abyss-controls-panel">
-            {(() => {
-              const defaults = getVariantDefaults(selectedVariant);
-              return (
-                <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-                  {/* Variant Selector */}
-                  <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                    <span className="text-[9px] font-mono tracking-widest text-white/65 uppercase">
-                      Layout Preset Variant
-                    </span>
-                    <select
-                      value={selectedVariant}
-                      onChange={(e) => applyVariant(e.target.value as any)}
-                      style={{
-                        width: "100%",
-                        padding: "6px 8px",
-                        borderRadius: "4px",
-                        border: "1px solid rgba(255, 255, 255, 0.1)",
-                        background: "rgba(255, 255, 255, 0.05)",
-                        color: "rgba(255, 255, 255, 0.8)",
-                        fontFamily: "monospace",
-                        fontSize: "9px",
-                        outline: "none",
-                        cursor: "pointer"
-                      }}
-                    >
-                      <option value="tunnel" style={{ background: "#111" }}>Cosmos Tunnel (Default)</option>
-                      <option value="matrix" style={{ background: "#111" }}>Zero-Gravity Matrix</option>
-                      <option value="cinematic" style={{ background: "#111" }}>Cinematic Focus</option>
-                      <option value="micro" style={{ background: "#111" }}>Micro-Catalog</option>
-                    </select>
-                  </div>
-
-                  {/* Scroll Direction dropdown */}
-                  <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                    <span className="text-[9px] font-mono tracking-widest text-white/65 uppercase">
-                      Scroll Direction
-                    </span>
-                    <select
-                      value={scrollDirection}
-                      onChange={(e) => setScrollDirection(e.target.value as any)}
-                      style={{
-                        width: "100%",
-                        padding: "6px 8px",
-                        borderRadius: "4px",
-                        border: "1px solid rgba(255, 255, 255, 0.1)",
-                        background: "rgba(255, 255, 255, 0.05)",
-                        color: "rgba(255, 255, 255, 0.8)",
-                        fontFamily: "monospace",
-                        fontSize: "9px",
-                        outline: "none",
-                        cursor: "pointer"
-                      }}
-                    >
-                      <option value="vertical" style={{ background: "#111" }}>Vertical (Default)</option>
-                      <option value="horizontal" style={{ background: "#111" }}>Horizontal</option>
-                      <option value="diagonal" style={{ background: "#111" }}>Diagonal</option>
-                      <option value="creative" style={{ background: "#111" }}>Creative (Spiral Vortex)</option>
-                      <option value="radial" style={{ background: "#111" }}>Radial (Big Bang)</option>
-                      <option value="zigzag" style={{ background: "#111" }}>Zig-Zag (Interlaced)</option>
-                    </select>
-                  </div>
-
-                  {/* Smoothness slider */}
-                  <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                      <span className="text-[9px] font-mono tracking-widest text-white/65 uppercase">
-                        Scroll Smoothness
-                      </span>
-                      <span className="text-[9px] font-mono text-white/50">{smoothFactor}</span>
-                    </div>
-                    <div style={{ position: "relative", width: "100%", height: "16px", display: "flex", alignItems: "center" }}>
-                      <input
-                        type="range"
-                        min="0.01"
-                        max="0.30"
-                        step="0.01"
-                        value={smoothFactor}
-                        onChange={(e) => setSmoothFactor(Number(e.target.value))}
-                        style={{
-                          width: "100%",
-                          margin: 0,
-                          background: `linear-gradient(to right, #6ec49a 0%, #6ec49a ${((smoothFactor - 0.01) / 0.29) * 100}%, rgba(255, 255, 255, 0.08) ${((smoothFactor - 0.01) / 0.29) * 100}%, rgba(255, 255, 255, 0.08) 100%)`
-                        }}
-                      />
-                      <div
-                        style={{
-                          position: "absolute",
-                          left: `${((defaults.smoothFactor - 0.01) / 0.29) * 100}%`,
-                          top: "50%",
-                          width: "1.5px",
-                          height: "6px",
-                          backgroundColor: "rgba(255, 255, 255, 0.45)",
-                          pointerEvents: "none",
-                          transform: "translate(-50%, -50%)",
-                          borderRadius: "0.5px"
-                        }}
-                      />
-                    </div>
-                  </div>
-
-                  {/* Depth Intensity slider */}
-                  <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                      <span className="text-[9px] font-mono tracking-widest text-white/65 uppercase">
-                        Depth Intensity
-                      </span>
-                      <span className="text-[9px] font-mono text-white/50">{depthRange}px</span>
-                    </div>
-                    <div style={{ position: "relative", width: "100%", height: "16px", display: "flex", alignItems: "center" }}>
-                      <input
-                        type="range"
-                        min="400"
-                        max="2800"
-                        step="50"
-                        value={depthRange}
-                        onChange={(e) => setDepthRange(Number(e.target.value))}
-                        style={{
-                          width: "100%",
-                          margin: 0,
-                          background: `linear-gradient(to right, #6ec49a 0%, #6ec49a ${((depthRange - 400) / 2400) * 100}%, rgba(255, 255, 255, 0.08) ${((depthRange - 400) / 2400) * 100}%, rgba(255, 255, 255, 0.08) 100%)`
-                        }}
-                      />
-                      <div
-                        style={{
-                          position: "absolute",
-                          left: `${((defaults.depthRange - 400) / 2400) * 100}%`,
-                          top: "50%",
-                          width: "1.5px",
-                          height: "6px",
-                          backgroundColor: "rgba(255, 255, 255, 0.45)",
-                          pointerEvents: "none",
-                          transform: "translate(-50%, -50%)",
-                          borderRadius: "0.5px"
-                        }}
-                      />
-                    </div>
-                  </div>
-
-                  {/* Scroll Speed slider */}
-                  <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                      <span className="text-[9px] font-mono tracking-widest text-white/65 uppercase">
-                        Scroll Parallax Speed
-                      </span>
-                      <span className="text-[9px] font-mono text-white/50">{scrollSpeed}</span>
-                    </div>
-                    <div style={{ position: "relative", width: "100%", height: "16px", display: "flex", alignItems: "center" }}>
-                      <input
-                        type="range"
-                        min="20"
-                        max="300"
-                        step="5"
-                        value={scrollSpeed}
-                        onChange={(e) => setScrollSpeed(Number(e.target.value))}
-                        style={{
-                          width: "100%",
-                          margin: 0,
-                          background: `linear-gradient(to right, #6ec49a 0%, #6ec49a ${((scrollSpeed - 20) / 280) * 100}%, rgba(255, 255, 255, 0.08) ${((scrollSpeed - 20) / 280) * 100}%, rgba(255, 255, 255, 0.08) 100%)`
-                        }}
-                      />
-                      <div
-                        style={{
-                          position: "absolute",
-                          left: `${((defaults.scrollSpeed - 20) / 280) * 100}%`,
-                          top: "50%",
-                          width: "1.5px",
-                          height: "6px",
-                          backgroundColor: "rgba(255, 255, 255, 0.45)",
-                          pointerEvents: "none",
-                          transform: "translate(-50%, -50%)",
-                          borderRadius: "0.5px"
-                        }}
-                      />
-                    </div>
-                  </div>
-
-                  {/* Cursor Parallax Power slider */}
-                  <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                      <span className="text-[9px] font-mono tracking-widest text-white/65 uppercase">
-                        Cursor Parallax
-                      </span>
-                      <span className="text-[9px] font-mono text-white/50">{cursorParallaxPower}px</span>
-                    </div>
-                    <div style={{ position: "relative", width: "100%", height: "16px", display: "flex", alignItems: "center" }}>
-                      <input
-                        type="range"
-                        min="0"
-                        max="120"
-                        step="5"
-                        value={cursorParallaxPower}
-                        onChange={(e) => setCursorParallaxPower(Number(e.target.value))}
-                        style={{
-                          width: "100%",
-                          margin: 0,
-                          background: `linear-gradient(to right, #6ec49a 0%, #6ec49a ${(cursorParallaxPower / 120) * 100}%, rgba(255, 255, 255, 0.08) ${(cursorParallaxPower / 120) * 100}%, rgba(255, 255, 255, 0.08) 100%)`
-                        }}
-                      />
-                      <div
-                        style={{
-                          position: "absolute",
-                          left: `${(defaults.cursorParallaxPower / 120) * 100}%`,
-                          top: "50%",
-                          width: "1.5px",
-                          height: "6px",
-                          backgroundColor: "rgba(255, 255, 255, 0.45)",
-                          pointerEvents: "none",
-                          transform: "translate(-50%, -50%)",
-                          borderRadius: "0.5px"
-                        }}
-                      />
-                    </div>
-                  </div>
-
-                  {/* DOF Blur slider */}
-                  <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                      <span className="text-[9px] font-mono tracking-widest text-white/65 uppercase">
-                        Depth of Field Blur
-                      </span>
-                      <span className="text-[9px] font-mono text-white/50">{maxBlur}px</span>
-                    </div>
-                    <div style={{ position: "relative", width: "100%", height: "16px", display: "flex", alignItems: "center" }}>
-                      <input
-                        type="range"
-                        min="0"
-                        max="40"
-                        step="2"
-                        value={maxBlur}
-                        onChange={(e) => setMaxBlur(Number(e.target.value))}
-                        style={{
-                          width: "100%",
-                          margin: 0,
-                          background: `linear-gradient(to right, #6ec49a 0%, #6ec49a ${(maxBlur / 40) * 100}%, rgba(255, 255, 255, 0.08) ${(maxBlur / 40) * 100}%, rgba(255, 255, 255, 0.08) 100%)`
-                        }}
-                      />
-                      <div
-                        style={{
-                          position: "absolute",
-                          left: `${(defaults.maxBlur / 40) * 100}%`,
-                          top: "50%",
-                          width: "1.5px",
-                          height: "6px",
-                          backgroundColor: "rgba(255, 255, 255, 0.45)",
-                          pointerEvents: "none",
-                          transform: "translate(-50%, -50%)",
-                          borderRadius: "0.5px"
-                        }}
-                      />
-                    </div>
-                  </div>
-
-                  {/* Card Scale slider */}
-                  <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                      <span className="text-[9px] font-mono tracking-widest text-white/65 uppercase">
-                        Card Scale
-                      </span>
-                      <span className="text-[9px] font-mono text-white/50">{cardScale.toFixed(2)}x</span>
-                    </div>
-                    <div style={{ position: "relative", width: "100%", height: "16px", display: "flex", alignItems: "center" }}>
-                      <input
-                        type="range"
-                        min="0.5"
-                        max="1.5"
-                        step="0.05"
-                        value={cardScale}
-                        onChange={(e) => setCardScale(Number(e.target.value))}
-                        style={{
-                          width: "100%",
-                          margin: 0,
-                          background: `linear-gradient(to right, #6ec49a 0%, #6ec49a ${((cardScale - 0.5) / 1.0) * 100}%, rgba(255, 255, 255, 0.08) ${((cardScale - 0.5) / 1.0) * 100}%, rgba(255, 255, 255, 0.08) 100%)`
-                        }}
-                      />
-                      <div
-                        style={{
-                          position: "absolute",
-                          left: `${((defaults.cardScale - 0.5) / 1.0) * 100}%`,
-                          top: "50%",
-                          width: "1.5px",
-                          height: "6px",
-                          backgroundColor: "rgba(255, 255, 255, 0.45)",
-                          pointerEvents: "none",
-                          transform: "translate(-50%, -50%)",
-                          borderRadius: "0.5px"
-                        }}
-                      />
-                    </div>
-                  </div>
-
-                  {/* Hover Tilt Max slider */}
-                  <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                      <span className="text-[9px] font-mono tracking-widest text-white/65 uppercase">
-                        Max Hover Tilt
-                      </span>
-                      <span className="text-[9px] font-mono text-white/50">{hoverTiltMax}°</span>
-                    </div>
-                    <div style={{ position: "relative", width: "100%", height: "16px", display: "flex", alignItems: "center" }}>
-                      <input
-                        type="range"
-                        min="0"
-                        max="30"
-                        step="1"
-                        value={hoverTiltMax}
-                        onChange={(e) => setHoverTiltMax(Number(e.target.value))}
-                        style={{
-                          width: "100%",
-                          margin: 0,
-                          background: `linear-gradient(to right, #6ec49a 0%, #6ec49a ${(hoverTiltMax / 30) * 100}%, rgba(255, 255, 255, 0.08) ${(hoverTiltMax / 30) * 100}%, rgba(255, 255, 255, 0.08) 100%)`
-                        }}
-                      />
-                      <div
-                        style={{
-                          position: "absolute",
-                          left: `${(defaults.hoverTiltMax / 30) * 100}%`,
-                          top: "50%",
-                          width: "1.5px",
-                          height: "6px",
-                          backgroundColor: "rgba(255, 255, 255, 0.45)",
-                          pointerEvents: "none",
-                          transform: "translate(-50%, -50%)",
-                          borderRadius: "0.5px"
-                        }}
-                      />
-                    </div>
-                  </div>
-
-                  {/* Ambient Background Opacity slider */}
-                  <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                      <span className="text-[9px] font-mono tracking-widest text-white/65 uppercase">
-                        Ambient Opacity
-                      </span>
-                      <span className="text-[9px] font-mono text-white/50">{ambientOpacity.toFixed(2)}</span>
-                    </div>
-                    <div style={{ position: "relative", width: "100%", height: "16px", display: "flex", alignItems: "center" }}>
-                      <input
-                        type="range"
-                        min="0.0"
-                        max="0.8"
-                        step="0.05"
-                        value={ambientOpacity}
-                        onChange={(e) => setAmbientOpacity(Number(e.target.value))}
-                        style={{
-                          width: "100%",
-                          margin: 0,
-                          background: `linear-gradient(to right, #6ec49a 0%, #6ec49a ${(ambientOpacity / 0.8) * 100}%, rgba(255, 255, 255, 0.08) ${(ambientOpacity / 0.8) * 100}%, rgba(255, 255, 255, 0.08) 100%)`
-                        }}
-                      />
-                      <div
-                        style={{
-                          position: "absolute",
-                          left: `${(defaults.ambientOpacity / 0.8) * 100}%`,
-                          top: "50%",
-                          width: "1.5px",
-                          height: "6px",
-                          backgroundColor: "rgba(255, 255, 255, 0.45)",
-                          pointerEvents: "none",
-                          transform: "translate(-50%, -50%)",
-                          borderRadius: "0.5px"
-                        }}
-                      />
-                    </div>
-                  </div>
-
-                  {/* Ambient Background Blur slider */}
-                  <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                      <span className="text-[9px] font-mono tracking-widest text-white/65 uppercase">
-                        Ambient Blur
-                      </span>
-                      <span className="text-[9px] font-mono text-white/50">{ambientBlur}px</span>
-                    </div>
-                    <div style={{ position: "relative", width: "100%", height: "16px", display: "flex", alignItems: "center" }}>
-                      <input
-                        type="range"
-                        min="0"
-                        max="150"
-                        step="5"
-                        value={ambientBlur}
-                        onChange={(e) => setAmbientBlur(Number(e.target.value))}
-                        style={{
-                          width: "100%",
-                          margin: 0,
-                          background: `linear-gradient(to right, #6ec49a 0%, #6ec49a ${(ambientBlur / 150) * 100}%, rgba(255, 255, 255, 0.08) ${(ambientBlur / 150) * 100}%, rgba(255, 255, 255, 0.08) 100%)`
-                        }}
-                      />
-                      <div
-                        style={{
-                          position: "absolute",
-                          left: `${(defaults.ambientBlur / 150) * 100}%`,
-                          top: "50%",
-                          width: "1.5px",
-                          height: "6px",
-                          backgroundColor: "rgba(255, 255, 255, 0.45)",
-                          pointerEvents: "none",
-                          transform: "translate(-50%, -50%)",
-                          borderRadius: "0.5px"
-                        }}
-                      />
-                    </div>
-                  </div>
-
-                  {/* Reset to Defaults button */}
-                  <div style={{
-                    borderTop: "1px solid rgba(255, 255, 255, 0.08)",
-                    paddingTop: "10px",
-                    marginTop: "4px",
-                    display: "flex",
-                    justifyContent: "center"
-                  }}>
-                    <button
-                      onClick={() => {
-                        applyVariant("tunnel");
-                        scrollOffsetRef.current = 0;
-                        scrollVelocityRef.current = 0;
-                      }}
-                      className="py-1.5 px-3 rounded-md text-[9px] font-mono border border-white/10 bg-white/5 text-[#6ec49a] hover:bg-white/10 hover:text-[#5eb389] transition-all select-none cursor-pointer w-full text-center"
-                    >
-                      Reset to Defaults
-                    </button>
-                  </div>
-                </div>
-              );
-            })()}
-          </div>
-        )}
-      </div>
     </div>
   );
 };

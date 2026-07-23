@@ -1,787 +1,355 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { getComponent } from "@/lib/component-registry";
-import { motion, useScroll, useMotionValueEvent } from "framer-motion";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { getComponent, COMPONENT_DETAILS } from "@/lib/component-registry";
 import { CopyButton } from "@/components/ui/copy-button";
-import { ComponentCanvas } from "@/components/ui/ComponentCanvas";
-import { fadeSlideUp } from "../../../lib/motion/variants";
+import { motion } from "framer-motion";
+import { ArrowLeft, ArrowRight } from "lucide-react";
 
-const getBadgeStyles = (category: string) => {
-  switch (category) {
-    case "scroll":
-      return "border-[#dfb15b]/20 bg-[#dfb15b]/5 text-[#dfb15b]";
-    case "image":
-      return "border-neutral-800 bg-neutral-900/60 text-white";
-    case "geometry":
-      return "border-[#9c8cb9]/20 bg-[#9c8cb9]/5 text-[#9c8cb9]";
-    case "gallary":
-      return "border-[#c4719d]/20 bg-[#c4719d]/5 text-[#c4719d]";
-    case "hybrid":
-      return "border-[#5b9cdf]/20 bg-[#5b9cdf]/5 text-[#5b9cdf]";
-    case "transition":
-      return "border-neutral-800 bg-neutral-900/30 text-neutral-400";
-    default:
-      return "border-neutral-800 bg-neutral-950 text-neutral-400";
-  }
+const CATEGORY_COLORS: Record<string, string> = {
+  scroll: "#dfb15b",
+  image: "#ffffff",
+  geometry: "#9c8cb9",
+  gallary: "#c4719d",
+  hybrid: "#5b9cdf",
+  transition: "#6ec49a",
+  text: "#e88034",
+  "yet-to-work-on": "#555555",
 };
 
-export function DetailPageClient({ slug }: { slug: string }) {
-  const { Component, meta } = getComponent(slug);
-  const DynamicComponent = Component as React.ComponentType<{
-    imageSrc?: string;
-    imageSrcs?: string[];
-    className?: string;
-    isFullscreen?: boolean;
-    scrollProgress?: number;
-  }>;
-  const [activeTab, setActiveTab] = useState<"tsx" | "glsl">("tsx");
-  const [tsxCode, setTsxCode] = useState("Loading source...");
-  const [glslCode, setGlslCode] = useState("Loading shaders...");
+function StoryViewer({ content }: { content: string }) {
+  if (!content) return null;
 
-  // Image Upload State
-  const [uploadedImageSrc, setUploadedImageSrc] = useState<string | null>(null);
-  const [uploadedFileName, setUploadedFileName] = useState<string | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const renderFormattedText = (text: string) => {
+    const parts = text.split(/(\*\*.*?\*\*|`.*?`)/g);
+    return parts.map((part, i) => {
+      if (part.startsWith("**") && part.endsWith("**")) {
+        return <strong key={i} className="font-semibold text-white">{part.slice(2, -2)}</strong>;
+      }
+      if (part.startsWith("`") && part.endsWith("`")) {
+        return <code key={i} className="px-1.5 py-0.5 rounded bg-neutral-900 border border-neutral-800 font-mono text-xs text-neutral-200">{part.slice(1, -1)}</code>;
+      }
+      return part;
+    });
+  };
 
-  // Full Screen / Immersive State (for scroll-based components)
-  const [isImmersive, setIsImmersive] = useState(false);
+  const lines = content.split("\n");
+  const blocks: React.ReactNode[] = [];
+  let currentList: string[] = [];
 
-  const isScrollComponent = false;
-  const isWideLayout = ["scroll", "gallery", "gallary", "transition"].includes(meta?.category || "");
+  const flushList = (key: string) => {
+    if (currentList.length > 0) {
+      blocks.push(
+        <ul key={key} className="space-y-2.5 my-3 pl-1">
+          {currentList.map((item, idx) => (
+            <li key={idx} className="flex items-start gap-2.5 text-sm text-neutral-300 leading-relaxed font-sans">
+              <span className="w-1.5 h-1.5 rounded-full bg-neutral-400 mt-2 shrink-0" />
+              <span>{renderFormattedText(item)}</span>
+            </li>
+          ))}
+        </ul>
+      );
+      currentList = [];
+    }
+  };
 
-  // Widescreen Trapped Scroll Progress
-  const [scrollProgress, setScrollProgress] = useState(0);
-  const wideWorkspaceRef = useRef<HTMLDivElement>(null);
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  lines.forEach((line, idx) => {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed === "---") {
+      flushList(`list-${idx}`);
+      return;
+    }
 
-  // ponytail: track page scroll progress for scroll components using framer-motion useScroll
-  const { scrollYProgress } = useScroll({
-    target: isScrollComponent ? scrollContainerRef : undefined,
-    offset: ["start start", "end end"],
-  });
-
-  useMotionValueEvent(scrollYProgress, "change", (latest) => {
-    if (isScrollComponent) {
-      setScrollProgress(latest);
-      // Dispatch scroll event for components (like apparatus-underscore) that compute scroll velocity
-      window.dispatchEvent(new Event("scroll"));
+    if (trimmed.startsWith("## ")) {
+      flushList(`list-${idx}`);
+      if (trimmed.includes("(") && trimmed.includes(")")) return;
+      blocks.push(
+        <h2 key={idx} className="text-xl font-bold tracking-tight text-white mt-6 mb-3 font-sans">
+          {trimmed.replace(/^##\s+/, "")}
+        </h2>
+      );
+    } else if (trimmed.startsWith("### ")) {
+      flushList(`list-${idx}`);
+      blocks.push(
+        <h3 key={idx} className="text-base font-bold tracking-tight text-white mt-5 mb-2 font-sans flex items-center gap-2">
+          {trimmed.replace(/^###\s+/, "")}
+        </h3>
+      );
+    } else if (trimmed.startsWith("> ")) {
+      flushList(`list-${idx}`);
+      blocks.push(
+        <blockquote key={idx} className="p-4 my-4 rounded-xl bg-neutral-900/90 border-l-4 border-amber-500 text-sm font-medium text-neutral-200 italic leading-relaxed font-sans shadow-md">
+          {renderFormattedText(trimmed.replace(/^>\s+/, ""))}
+        </blockquote>
+      );
+    } else if (trimmed.startsWith("- ")) {
+      currentList.push(trimmed.replace(/^-+\s+/, ""));
+    } else {
+      flushList(`list-${idx}`);
+      blocks.push(
+        <p key={idx} className="text-sm text-neutral-400 leading-relaxed font-sans my-2">
+          {renderFormattedText(trimmed)}
+        </p>
+      );
     }
   });
 
+  flushList("list-final");
+
+  return <div className="space-y-3">{blocks}</div>;
+}
+
+export function DetailPageClient({ slug }: { slug: string }) {
+  const router = useRouter();
+  const { meta } = getComponent(slug);
+  const [activeTab, setActiveTab] = useState<"tsx" | "glsl">("tsx");
+  const [tsxCode, setTsxCode] = useState("Loading source...");
+  const [glslCode, setGlslCode] = useState("Loading shaders...");
+  const [codeExpanded, setCodeExpanded] = useState(false);
+  const [storyContent, setStoryContent] = useState<string>("");
+
+  const allSlugs = Object.keys(COMPONENT_DETAILS);
+  const currentIndex = allSlugs.indexOf(slug);
+  const prevSlug = currentIndex > 0 ? allSlugs[currentIndex - 1] : null;
+  const nextSlug = currentIndex < allSlugs.length - 1 ? allSlugs[currentIndex + 1] : null;
+
+  const prevComp = prevSlug ? COMPONENT_DETAILS[prevSlug] : null;
+  const nextComp = nextSlug ? COMPONENT_DETAILS[nextSlug] : null;
+
   useEffect(() => {
-    const el = wideWorkspaceRef.current;
-    if (!el || !isWideLayout || isScrollComponent || !meta) return;
+    fetch(`/api/source?slug=${slug}&type=tsx`)
+      .then((res) => res.json())
+      .then((data) => setTsxCode(data.code || "// Source code unavailable"))
+      .catch(() => setTsxCode("// Failed to load source code"));
 
-    const handleWheel = (e: WheelEvent) => {
-      e.preventDefault();
-      setScrollProgress((prev) => {
-        if (meta.category === "gallary") {
-          return prev + e.deltaY * 0.0005;
-        }
-        if (slug === "apparatus-depth-swim") {
-          return prev + e.deltaY * 0.001;
-        }
-        return Math.max(0.0, Math.min(1.0, prev + e.deltaY * 0.001));
-      });
-    };
+    fetch(`/api/source?slug=${slug}&type=glsl`)
+      .then((res) => res.json())
+      .then((data) => setGlslCode(data.code || "// Shaders unavailable"))
+      .catch(() => setGlslCode("// Failed to load shaders"));
 
-    el.addEventListener("wheel", handleWheel, { passive: false });
-    return () => {
-      el.removeEventListener("wheel", handleWheel);
-    };
-  }, [isWideLayout, isScrollComponent, meta]);
-
-  useEffect(() => {
-    if (!slug) return;
-
-    setTsxCode("Loading source...");
-    setGlslCode("Loading shaders...");
-
-    // Fetch tsx
-    fetch(`/api/code?slug=${slug}&type=tsx`)
-      .then((res) => {
-        if (!res.ok) throw new Error();
-        return res.text();
-      })
-      .then((data) => setTsxCode(data))
-      .catch(() => setTsxCode("// Failed to load tsx component source."));
-
-    // Fetch glsl
-    fetch(`/api/code?slug=${slug}&type=glsl`)
-      .then((res) => {
-        if (!res.ok) throw new Error();
-        return res.text();
-      })
-      .then((data) => setGlslCode(data))
-      .catch(() => setGlslCode("// Failed to load shader source."));
+    fetch(`/api/source?slug=${slug}&type=story`)
+      .then((res) => (res.ok ? res.text() : ""))
+      .then((text) => setStoryContent(text))
+      .catch(() => setStoryContent(""));
   }, [slug]);
 
-  // Clean up Object URL on unmount to prevent memory leaks
-  useEffect(() => {
-    return () => {
-      if (uploadedImageSrc && uploadedImageSrc.startsWith("blob:")) {
-        URL.revokeObjectURL(uploadedImageSrc);
-      }
-    };
-  }, [uploadedImageSrc]);
-
-  // Handle ESC key to exit immersive mode
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && isImmersive) {
-        setIsImmersive(false);
-      }
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isImmersive]);
-
-  if (!meta || !Component) {
+  if (!meta) {
     return (
-      <div className="min-h-screen flex items-center justify-center font-sans text-sm text-neutral-500 bg-[#0A0A0A]">
-        Component not found.
+      <div className="flex min-h-screen items-center justify-center bg-[#070708] font-sans text-sm text-neutral-400">
+        Component Not Found
       </div>
     );
   }
 
-  const getEncodedSrc = (filename: string) => {
-    const encodedFilename = filename.replace(/#/g, "%23");
-    return `/images/components%20images/${encodedFilename}`;
-  };
-
-  const currentImageSrc = uploadedImageSrc || getEncodedSrc(meta.filename);
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      if (uploadedImageSrc && uploadedImageSrc.startsWith("blob:")) {
-        URL.revokeObjectURL(uploadedImageSrc);
-      }
-      const url = URL.createObjectURL(file);
-      setUploadedImageSrc(url);
-      setUploadedFileName(file.name);
-    }
-  };
-
-  const handleResetImage = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (uploadedImageSrc && uploadedImageSrc.startsWith("blob:")) {
-      URL.revokeObjectURL(uploadedImageSrc);
-    }
-    setUploadedImageSrc(null);
-    setUploadedFileName(null);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
-  };
+  const categoryColor = CATEGORY_COLORS[meta.category] || "#ffffff";
+  const imageSrc = `/images/components images/${meta.filename}`;
 
   return (
-    <div className="min-h-screen w-full bg-[#0A0A0A] text-white flex flex-col font-sans antialiased pb-24 select-none">
-      {isScrollComponent ? (
-        <>
-          {/* Scroll Runway Section */}
-          <div ref={scrollContainerRef} className="relative w-full h-[250vh]">
-            <div className="sticky top-0 h-screen w-full flex flex-col justify-between py-8">
-              {/* Header Navigation */}
-              <nav className="w-full px-12 flex justify-between items-center bg-transparent shrink-0">
-                <Link
-                  href="/components"
-                  className="font-mono text-xs font-medium text-neutral-400 hover:text-white transition-colors flex items-center gap-1.5"
-                >
-                  ← CATALOG
-                </Link>
-              </nav>
+    <div className="min-h-screen w-full bg-[#070708] font-sans antialiased text-white pb-24">
+      {/* Header Breadcrumb */}
+      <nav className="mx-auto max-w-3xl px-6 pt-10 pb-6">
+        <div className="flex items-center space-x-2 font-sans text-sm text-neutral-400">
+          <Link href="/components" className="hover:text-white transition-colors">
+            Components
+          </Link>
+          <span>/</span>
+          <span className="capitalize" style={{ color: categoryColor }}>
+            {meta.category}
+          </span>
+          <span>/</span>
+          <span className="text-white font-medium">{meta.label}</span>
+        </div>
+      </nav>
 
-              {/* Main Content Area */}
-              <div className="w-full max-w-7xl mx-auto px-12 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center flex-grow">
-                {/* Left Column: Info */}
-                <section className="lg:col-span-5 flex flex-col gap-6">
-                  <div className="flex items-center gap-3">
-                    <span className="font-mono text-[10px] font-bold text-neutral-400 tracking-widest uppercase">
-                      {meta.category}
-                    </span>
-                    <span className="text-neutral-700 font-mono text-[10px]">•</span>
-                    <span className="font-mono text-[10px] text-neutral-400 tracking-wider">
-                      NODE 0{meta.id}
-                    </span>
-                  </div>
-
-                  <motion.h1 
-                    variants={fadeSlideUp}
-                    initial="hidden"
-                    animate="visible"
-                    className="font-sans font-black text-4xl xl:text-5xl tracking-tight leading-none uppercase text-white"
-                  >
-                    {meta.label}
-                  </motion.h1>
-
-                  <motion.p 
-                    variants={fadeSlideUp}
-                    initial="hidden"
-                    animate="visible"
-                    className="font-sans text-neutral-400 text-sm leading-relaxed"
-                  >
-                    {meta.desc}
-                  </motion.p>
-
-                  <motion.div 
-                    variants={fadeSlideUp}
-                    initial="hidden"
-                    animate="visible"
-                    className="flex items-center gap-2 flex-wrap"
-                  >
-                    {meta.tags && Array.isArray(meta.tags) && meta.tags.length > 0 ? (
-                      meta.tags.map((tag) => (
-                        <span
-                          key={tag}
-                          className={`font-mono text-[9px] border px-2 py-0.5 tracking-wide rounded-[2px] uppercase ${getBadgeStyles(
-                            meta.category || ""
-                          )}`}
-                        >
-                          {tag}
-                        </span>
-                      ))
-                    ) : (
-                      <>
-                        <span className="font-mono text-[9px] border border-neutral-800 bg-neutral-950 px-2 py-0.5 text-neutral-400 tracking-wide rounded-[2px] uppercase">
-                          Interactive
-                        </span>
-                        <span className="font-mono text-[9px] border border-neutral-800 bg-neutral-950 px-2 py-0.5 text-neutral-400 tracking-wide rounded-[2px] uppercase">
-                          Three.js
-                        </span>
-                      </>
-                    )}
-                  </motion.div>
-
-                  {/* CLI & Photo Upload on Pinned Canvas Left Column */}
-                  <div className="flex flex-col gap-6 mt-4">
-                    {slug === "apparatus-layout-morph" ? (
-                      <div className="flex flex-col gap-2">
-                        <span className="font-mono text-[8px] font-bold uppercase tracking-[0.2em] text-neutral-500">
-                          Experience stand-alone
-                        </span>
-                        <Link
-                          href="/morph-showcase"
-                          className="w-full bg-[#161618] hover:bg-white border border-neutral-800 hover:border-white text-neutral-300 hover:text-black font-mono font-bold uppercase text-[9px] tracking-[0.2em] py-3 rounded-[3px] flex justify-center items-center transition-all duration-300"
-                        >
-                          OPEN LIVE DEMO
-                        </Link>
-                      </div>
-                    ) : meta.previewType === "scroll" ? (
-                      <div className="flex flex-col gap-2">
-                        <span className="font-mono text-[8px] font-bold uppercase tracking-[0.2em] text-neutral-500">
-                          Experience Runway
-                        </span>
-                        <Link
-                          href={`/showcase/${slug}`}
-                          className="w-full bg-[#161618] hover:bg-white border border-neutral-800 hover:border-white text-neutral-300 hover:text-black font-mono font-bold uppercase text-[9px] tracking-[0.2em] py-3 rounded-[3px] flex justify-center items-center transition-all duration-300"
-                        >
-                          OPEN SCROLL RUNWAY
-                        </Link>
-                      </div>
-                    ) : null}
-
-                    {/* CLI Installation */}
-                    <div className="hidden flex-col gap-2">
-                      <span className="font-mono text-[9px] font-bold uppercase tracking-widest text-neutral-500">
-                        CLI Installation
-                      </span>
-                      <div className="w-full bg-[#111113]/60 border border-neutral-900 px-4 py-3 rounded-[4px] flex justify-between items-center font-mono text-xs text-white">
-                        <span className="select-all tracking-wider text-[11px] text-neutral-300">
-                          npx abyss-ui add {meta.slug}
-                        </span>
-                        <CopyButton text={`npx abyss-ui add ${meta.slug}`} />
-                      </div>
-                    </div>
-
-                    {/* Upload Custom Image */}
-                    <div className="flex flex-col gap-2">
-                      <span className="font-mono text-[9px] font-bold uppercase tracking-widest text-neutral-500">
-                        Test with your own photo
-                      </span>
-                      <input 
-                        type="file" 
-                        ref={fileInputRef} 
-                        onChange={handleFileChange} 
-                        accept="image/*" 
-                        className="hidden" 
-                      />
-                      <div 
-                        onClick={() => fileInputRef.current?.click()}
-                        className="w-full border border-dashed border-neutral-800 hover:border-neutral-700 bg-[#111113]/20 hover:bg-[#111113]/40 px-4 py-3 rounded-[4px] transition-all duration-300 flex items-center justify-between cursor-pointer group"
-                      >
-                        {uploadedFileName ? (
-                          <div className="flex items-center justify-between w-full">
-                            <span className="font-mono text-[10px] text-white truncate max-w-[200px]">
-                              {uploadedFileName}
-                            </span>
-                            <button 
-                              onClick={handleResetImage}
-                              className="font-mono text-[9px] uppercase tracking-wider text-red-500 hover:text-red-400 bg-transparent border-none cursor-pointer"
-                            >
-                              [Reset]
-                            </button>
-                          </div>
-                        ) : (
-                          <>
-                            <span className="font-mono text-[9px] text-neutral-500 uppercase tracking-widest group-hover:text-neutral-300">
-                              Upload image file
-                            </span>
-                            <svg className="w-4 h-4 text-neutral-500 group-hover:text-white transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                            </svg>
-                          </>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </section>
-
-                {/* Right Column: Scroll-Based Component directly on page canvas */}
-                <section className="lg:col-span-7 w-full h-[70vh] flex items-center justify-center relative overflow-hidden select-none">
-                  {DynamicComponent && (
-                    <DynamicComponent
-                      imageSrc={currentImageSrc}
-                      scrollProgress={scrollProgress}
-                      isFullscreen={false}
-                      className="w-full h-full object-cover"
-                    />
-                  )}
-                </section>
-              </div>
-
-              {/* Scroll Progress HUD */}
-              <div className="w-full max-w-7xl mx-auto px-12 flex justify-between items-center font-mono text-[8px] text-neutral-500 uppercase tracking-widest shrink-0">
-                <span className="flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#dfb15b] animate-pulse" />
-                  SCROLL DOWN THE PAGE TO INTERACT
-                </span>
-                <span className="text-[#dfb15b]">{(scrollProgress * 100).toFixed(0)}%</span>
-              </div>
-            </div>
+      {/* Main Single-Column Dossier */}
+      <main className="mx-auto max-w-3xl px-6 flex flex-col space-y-8">
+        {/* Static Preview Image */}
+        <motion.div
+          onClick={() => router.push(`/showcase/${slug}`)}
+          className="group relative max-h-[50vh] w-full cursor-pointer overflow-hidden rounded-[6px] border border-neutral-900 bg-[#0d0d0f] p-2"
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+        >
+          <div className="relative h-[400px] w-full overflow-hidden rounded-[4px]">
+            <Image
+              src={imageSrc}
+              alt={meta.label}
+              fill
+              className="object-contain transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.01]"
+              unoptimized
+            />
           </div>
+        </motion.div>
 
-          {/* Specifications / Source Code area below scroll runway */}
-          <div className="w-full max-w-7xl mx-auto px-12 py-12 flex flex-col gap-4 border-t border-neutral-900/60 mt-12">
-            <div className="flex justify-between items-center border-b border-neutral-900 pb-2">
-              <span className="font-mono text-[10px] font-bold uppercase tracking-widest text-neutral-500">
-                Source Specification
-              </span>
-              <div className="flex gap-4 font-mono text-[10px] tracking-wider">
+        {/* Component Header Info */}
+        <motion.div
+          className="flex flex-col space-y-4"
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.06, ease: [0.16, 1, 0.3, 1] }}
+        >
+          <span
+            className="font-sans text-sm font-medium capitalize tracking-wide"
+            style={{ color: categoryColor }}
+          >
+            {meta.category}
+          </span>
+
+          <h1 className="font-sans text-4xl font-bold tracking-tight text-white md:text-5xl">
+            {meta.label}
+          </h1>
+
+          <p className="font-sans text-base leading-relaxed text-neutral-400 max-w-prose">
+            {meta.desc}
+          </p>
+
+          {/* Tags */}
+          {meta.tags && meta.tags.length > 0 && (
+            <div className="flex flex-wrap gap-2 pt-2">
+              {meta.tags.map((tag) => (
+                <span
+                  key={tag}
+                  className="rounded-full px-3 py-1 font-sans text-xs font-medium"
+                  style={{
+                    color: categoryColor,
+                    backgroundColor: `${categoryColor}15`,
+                    border: `1px solid ${categoryColor}30`,
+                  }}
+                >
+                  {tag}
+                </span>
+              ))}
+            </div>
+          )}
+        </motion.div>
+
+        {/* Primary CTA */}
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.12, ease: [0.16, 1, 0.3, 1] }}
+        >
+          <Link
+            href={`/showcase/${slug}`}
+            className="flex h-[52px] w-full items-center justify-center gap-2 rounded-[6px] border border-neutral-800 bg-[#161618] font-sans text-sm font-semibold text-neutral-200 transition-all duration-300 hover:border-white hover:bg-white hover:text-black shadow-lg group"
+          >
+            <span>Open Showcase</span>
+            <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
+          </Link>
+        </motion.div>
+
+        {/* CLI Installation */}
+        <motion.div
+          className="flex flex-col space-y-2 rounded-[6px] border border-neutral-900 bg-[#111113] p-4"
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.18, ease: [0.16, 1, 0.3, 1] }}
+        >
+          <span className="font-sans text-xs font-medium text-neutral-400">
+            CLI Installation
+          </span>
+          <div className="flex items-center justify-between font-mono text-xs text-white">
+            <span className="select-all text-neutral-300">
+              npx abyss-ui add {meta.slug}
+            </span>
+            <CopyButton text={`npx abyss-ui add ${meta.slug}`} />
+          </div>
+        </motion.div>
+
+        {/* Collapsible Source Code Inspector */}
+        <motion.div
+          className="border-t border-neutral-900 pt-6"
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.24, ease: [0.16, 1, 0.3, 1] }}
+        >
+          <button
+            onClick={() => setCodeExpanded(!codeExpanded)}
+            className="flex w-full items-center justify-between font-sans text-sm font-medium text-neutral-400 hover:text-white transition-colors"
+          >
+            <span>Source Code</span>
+            <span className="text-xs">{codeExpanded ? "▲ Hide" : "▼ Show"}</span>
+          </button>
+
+          {codeExpanded && (
+            <div className="mt-4 flex flex-col space-y-3">
+              <div className="flex space-x-4 border-b border-neutral-900 pb-2">
                 <button
                   onClick={() => setActiveTab("tsx")}
-                  className={`cursor-pointer transition-colors relative pb-2 ${
+                  className={`font-sans text-xs font-medium transition-colors ${
                     activeTab === "tsx" ? "text-white font-bold" : "text-neutral-500 hover:text-white"
                   }`}
                 >
                   Component.tsx
-                  {activeTab === "tsx" && (
-                    <motion.div 
-                      layoutId="activeDetailTab"
-                      className="absolute bottom-0 left-0 right-0 h-[1.5px] bg-white"
-                      transition={{ type: "spring", stiffness: 380, damping: 30 }}
-                    />
-                  )}
                 </button>
                 <button
                   onClick={() => setActiveTab("glsl")}
-                  className={`cursor-pointer transition-colors relative pb-2 ${
+                  className={`font-sans text-xs font-medium transition-colors ${
                     activeTab === "glsl" ? "text-white font-bold" : "text-neutral-500 hover:text-white"
                   }`}
                 >
                   Shaders.glsl
-                  {activeTab === "glsl" && (
-                    <motion.div 
-                      layoutId="activeDetailTab"
-                      className="absolute bottom-0 left-0 right-0 h-[1.5px] bg-white"
-                      transition={{ type: "spring", stiffness: 380, damping: 30 }}
-                    />
-                  )}
                 </button>
               </div>
-            </div>
 
-            <div className="w-full bg-[#111113] rounded-[4px] p-6 overflow-x-auto border border-neutral-900 font-mono text-[10px] leading-relaxed text-neutral-400 select-text max-h-[500px]">
-              <pre className="whitespace-pre">
-                {activeTab === "tsx" ? tsxCode : glslCode}
-              </pre>
-            </div>
-          </div>
-        </>
-      ) : (
-        <>
-          {/* Header Navigation */}
-          <nav className="w-full px-12 py-8 flex justify-between items-center bg-transparent border-b border-neutral-900 shrink-0">
-            <Link
-              href="/components"
-              className="font-mono text-xs font-medium text-neutral-400 hover:text-white transition-colors flex items-center gap-1.5"
-            >
-              ← CATALOG
-            </Link>
-          </nav>
-
-          {/* Main Spec 3-Column Layout */}
-          <main className="w-full max-w-7xl mx-auto px-12 pt-16 flex flex-col gap-16">
-            
-            {isWideLayout ? (
-              /* Widescreen Layout */
-              <div className="flex flex-col gap-12">
-                {/* Top Row: Info Left, Actions Right */}
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
-                  {/* Left Column: Title & Desc (6/12 cols) */}
-                  <section className="lg:col-span-6 flex flex-col gap-5">
-                    <div className="flex items-center gap-3">
-                      <span className="font-mono text-[10px] font-bold text-neutral-400 tracking-widest uppercase">
-                        {meta.category}
-                      </span>
-                      <span className="text-neutral-700 font-mono text-[10px]">•</span>
-                      <span className="font-mono text-[10px] text-neutral-400 tracking-wider">
-                        NODE 0{meta.id}
-                      </span>
-                    </div>
-
-                    <motion.h1 
-                      variants={fadeSlideUp}
-                      initial="hidden"
-                      animate="visible"
-                      className="font-sans font-black text-4xl xl:text-5xl tracking-tight leading-none uppercase text-white"
-                    >
-                      {meta.label}
-                    </motion.h1>
-
-                    <motion.p 
-                      variants={fadeSlideUp}
-                      initial="hidden"
-                      animate="visible"
-                      className="font-sans text-neutral-400 text-sm leading-relaxed"
-                    >
-                      {meta.desc}
-                    </motion.p>
-
-                    {/* Badges */}
-                    <motion.div 
-                      variants={fadeSlideUp}
-                      initial="hidden"
-                      animate="visible"
-                      className="flex items-center gap-2 flex-wrap"
-                    >
-                      {meta.tags && Array.isArray(meta.tags) && meta.tags.length > 0 ? (
-                        meta.tags.map((tag) => (
-                          <span
-                            key={tag}
-                            className={`font-mono text-[9px] border px-2 py-0.5 tracking-wide rounded-[2px] uppercase ${getBadgeStyles(
-                              meta.category || ""
-                            )}`}
-                          >
-                            {tag}
-                          </span>
-                        ))
-                      ) : (
-                        <>
-                          <span className="font-mono text-[9px] border border-neutral-800 bg-neutral-950 px-2 py-0.5 text-neutral-400 tracking-wide rounded-[2px] uppercase">
-                            Interactive
-                          </span>
-                          <span className="font-mono text-[9px] border border-neutral-800 bg-neutral-950 px-2 py-0.5 text-neutral-400 tracking-wide rounded-[2px] uppercase">
-                            Three.js
-                          </span>
-                        </>
-                      )}
-                    </motion.div>
-                  </section>
-
-                  {/* Right Column: Actions (6/12 cols) */}
-                  <section className="lg:col-span-6 flex flex-col gap-3 justify-end">
-                    {slug === "apparatus-layout-morph" ? (
-                      <div className="flex flex-col gap-2 mb-2">
-                        <span className="font-mono text-[8px] font-bold uppercase tracking-[0.2em] text-neutral-500">
-                          Experience stand-alone
-                        </span>
-                        <Link
-                          href="/morph-showcase"
-                          className="w-full bg-[#161618] hover:bg-white border border-neutral-800 hover:border-white text-neutral-300 hover:text-black font-mono font-bold uppercase text-[9px] tracking-[0.2em] py-3 rounded-[3px] flex justify-center items-center transition-all duration-300"
-                        >
-                          OPEN LIVE DEMO
-                        </Link>
-                      </div>
-                    ) : meta.previewType === "scroll" ? (
-                      <div className="flex flex-col gap-2 mb-2">
-                        <span className="font-mono text-[8px] font-bold uppercase tracking-[0.2em] text-neutral-500">
-                          Experience Runway
-                        </span>
-                        <Link
-                          href={`/showcase/${slug}`}
-                          className="w-full bg-[#161618] hover:bg-white border border-neutral-800 hover:border-white text-neutral-300 hover:text-black font-mono font-bold uppercase text-[9px] tracking-[0.2em] py-3 rounded-[3px] flex justify-center items-center transition-all duration-300"
-                        >
-                          OPEN SCROLL RUNWAY
-                        </Link>
-                      </div>
-                    ) : null}
-
-                    {/* CLI Installation Block */}
-                    <div className="hidden flex-col gap-3">
-                      <span className="font-mono text-[10px] font-bold uppercase tracking-widest text-neutral-500">
-                        CLI Installation
-                      </span>
-                      <div className="w-full bg-[#111113]/60 border border-neutral-900 p-4 rounded-[4px] flex justify-between items-center font-mono text-xs text-white">
-                        <span className="select-all tracking-wider text-[11px] text-neutral-300">
-                          npx abyss-ui add {meta.slug}
-                        </span>
-                        <CopyButton text={`npx abyss-ui add ${meta.slug}`} />
-                      </div>
-                    </div>
-                  </section>
-                </div>
-
-                {/* Expansive Showcase Workspace Zone */}
-                <div className="w-full">
-                  {meta.previewType === "scroll" ? (
-                    <div className="w-full aspect-video rounded-[4px] border border-neutral-900 bg-[#0c0c0d]/60 flex flex-col items-center justify-center p-8 text-center relative overflow-hidden">
-                      <div className="absolute inset-0 bg-noise opacity-[0.02] pointer-events-none" />
-                      <span className="font-mono text-[8px] font-bold text-neutral-500 tracking-[0.2em] uppercase mb-2">
-                        SCROLL RUNWAY COMPONENT
-                      </span>
-                      <h3 className="font-sans font-extrabold text-lg text-white tracking-wider uppercase mb-3">
-                        {meta.label}
-                      </h3>
-                      <p className="max-w-md font-sans text-neutral-500 text-[11px] leading-relaxed mb-8">
-                        {meta.desc || "This component is driven by native viewport scroll gravity. Open the runway to experience the high-fidelity interactive flow."}
-                      </p>
-                      <Link
-                        href={slug === "apparatus-layout-morph" ? "/morph-showcase" : `/showcase/${slug}`}
-                        className="border border-neutral-800 hover:border-white hover:bg-white hover:text-black text-neutral-400 font-mono font-bold uppercase text-[9px] tracking-[0.15em] px-8 py-3 rounded-[3px] transition-all duration-300 flex items-center gap-2"
-                      >
-                        OPEN RUNWAY
-                      </Link>
-                    </div>
-                  ) : (
-                    <ComponentCanvas
-                      slug={slug}
-                      category={meta.category}
-                      previewType={meta.previewType || "shader"}
-                      Component={DynamicComponent}
-                      imageSrc={currentImageSrc}
-                    />
-                  )}
-                </div>
-              </div>
-            ) : (
-              /* Standard 3-Column Layout */
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
-                {/* Column 1: Name and Info (4/12 cols) */}
-                <section className="lg:col-span-4 flex flex-col gap-6">
-                  <div className="flex items-center gap-3">
-                    <span className="font-mono text-[10px] font-bold text-neutral-400 tracking-widest uppercase">
-                      {meta.category}
-                    </span>
-                    <span className="text-neutral-700 font-mono text-[10px]">•</span>
-                    <span className="font-mono text-[10px] text-neutral-400 tracking-wider">
-                      NODE 0{meta.id}
-                    </span>
-                  </div>
-
-                  <motion.h1 
-                    variants={fadeSlideUp}
-                    initial="hidden"
-                    animate="visible"
-                    className="font-sans font-black text-4xl xl:text-5xl tracking-tight leading-none uppercase text-white"
-                  >
-                    {meta.label}
-                  </motion.h1>
-
-                  <motion.p 
-                    variants={fadeSlideUp}
-                    initial="hidden"
-                    animate="visible"
-                    className="font-sans text-neutral-400 text-sm leading-relaxed mt-1"
-                  >
-                    {meta.desc}
-                  </motion.p>
-
-                  {/* Accent Badges */}
-                  <motion.div 
-                    variants={fadeSlideUp}
-                    initial="hidden"
-                    animate="visible"
-                    className="flex items-center gap-2 mt-2 flex-wrap"
-                  >
-                    {meta.tags && Array.isArray(meta.tags) && meta.tags.length > 0 ? (
-                      meta.tags.map((tag) => (
-                        <span
-                          key={tag}
-                          className={`font-mono text-[9px] border px-2 py-0.5 tracking-wide rounded-[2px] uppercase ${getBadgeStyles(
-                            meta.category || ""
-                          )}`}
-                        >
-                          {tag}
-                        </span>
-                      ))
-                    ) : (
-                      <>
-                        <span className="font-mono text-[9px] border border-neutral-800 bg-neutral-950 px-2 py-0.5 text-neutral-400 tracking-wide rounded-[2px] uppercase">
-                          Interactive
-                        </span>
-                        <span className="font-mono text-[9px] border border-neutral-800 bg-neutral-950 px-2 py-0.5 text-neutral-400 tracking-wide rounded-[2px] uppercase">
-                          Three.js
-                        </span>
-                        <span className="font-mono text-[9px] border border-neutral-800 bg-neutral-950 px-2 py-0.5 text-neutral-400 tracking-wide rounded-[2px] uppercase">
-                          GLSL Shader
-                        </span>
-                      </>
-                    )}
-                  </motion.div>
-                </section>
-
-                {/* Column 2: Picture / Component Showcase in the Middle (4/12 cols) */}
-                <section className="lg:col-span-4 flex flex-col items-center justify-center w-full">
-                  {meta.previewType === "scroll" ? (
-                    <div className="w-full aspect-square rounded-lg border border-[#dfb15b]/20 bg-[#dfb15b]/[0.02] flex flex-col items-center justify-center p-6 text-center relative overflow-hidden backdrop-blur-md">
-                      <div className="absolute inset-0 bg-noise opacity-[0.02] pointer-events-none" />
-                      <span className="font-mono text-[9px] font-bold text-[#dfb15b] tracking-widest uppercase mb-2">
-                        SCROLL RUNWAY
-                      </span>
-                      <h3 className="font-sans font-black text-sm text-white tracking-tight uppercase mb-2">
-                        {meta.label}
-                      </h3>
-                      <p className="max-w-[200px] font-sans text-neutral-400 text-[10px] leading-relaxed mb-4">
-                        Requires native viewport scroll gravity to transition.
-                      </p>
-                      <Link
-                        href={`/showcase/${slug}`}
-                        className="bg-[#dfb15b] hover:bg-[#c99b4b] text-black font-mono font-bold uppercase text-[9px] tracking-wider px-4 py-2.5 rounded-[4px] flex items-center gap-1 transition-all duration-300 shadow-lg shadow-[#dfb15b]/10"
-                      >
-                        ⚡ OPEN RUNWAY
-                      </Link>
-                    </div>
-                  ) : (
-                    <ComponentCanvas
-                      slug={slug}
-                      category={meta.category}
-                      previewType={meta.previewType || "shader"}
-                      Component={DynamicComponent}
-                      imageSrc={currentImageSrc}
-                    />
-                  )}
-                </section>
-
-                {/* Column 3: CLI and Picture Button on the Right (4/12 cols) */}
-                <section className="lg:col-span-4 flex flex-col gap-8">
-                  {/* CLI Installation Block */}
-                  <div className="hidden flex-col gap-3">
-                    <span className="font-mono text-[10px] font-bold uppercase tracking-widest text-neutral-500">
-                      CLI Installation
-                    </span>
-                    <div className="w-full bg-[#111113]/60 border border-neutral-900 p-4 rounded-[4px] flex justify-between items-center font-mono text-xs text-white">
-                      <span className="select-all tracking-wider text-[11px] text-neutral-300">
-                        npx abyss-ui add {meta.slug}
-                      </span>
-                      <CopyButton text={`npx abyss-ui add ${meta.slug}`} />
-                    </div>
-                  </div>
-
-                  {/* Upload Custom Image Block */}
-                  {["image", "geometry"].includes(meta?.category || "") && (
-                    <div className="flex flex-col gap-3">
-                      <span className="font-mono text-[10px] font-bold uppercase tracking-widest text-neutral-500">
-                        Test with your own photo
-                      </span>
-                      
-                      <input 
-                        type="file" 
-                        ref={fileInputRef} 
-                        onChange={handleFileChange} 
-                        accept="image/*" 
-                        className="hidden" 
-                      />
-
-                      <div 
-                        onClick={() => fileInputRef.current?.click()}
-                        className="w-full border border-dashed border-neutral-800 hover:border-neutral-600 bg-[#111113]/30 hover:bg-[#111113]/60 p-5 rounded-[4px] transition-all duration-300 flex flex-col items-center justify-center gap-2 cursor-pointer group text-center"
-                      >
-                        <svg 
-                          className="w-5 h-5 text-neutral-500 group-hover:text-white transition-colors duration-300" 
-                          fill="none" 
-                          viewBox="0 0 24 24" 
-                          stroke="currentColor"
-                        >
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                        </svg>
-                        {uploadedFileName ? (
-                          <div className="flex flex-col items-center gap-1.5 w-full px-2">
-                            <span className="font-mono text-[10px] text-white truncate max-w-full">
-                              {uploadedFileName}
-                            </span>
-                            <button 
-                              onClick={handleResetImage}
-                              className="font-mono text-[9px] uppercase tracking-wider text-red-500 hover:text-red-400 bg-transparent border-none cursor-pointer mt-1"
-                            >
-                              [Reset Photo]
-                            </button>
-                          </div>
-                        ) : (
-                          <span className="font-mono text-[9px] text-neutral-500 uppercase tracking-widest group-hover:text-neutral-300 transition-colors duration-300">
-                            Click to upload image file
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  )}
-                </section>
-              </div>
-            )}
-
-            {/* Dynamic Component Code Sheets (Full Width Below) */}
-            <div className="hidden flex-col gap-4 w-full border-t border-neutral-900 pt-8 mt-8">
-              <div className="flex justify-between items-center border-b border-neutral-900 pb-2">
-                <span className="font-mono text-[10px] font-bold uppercase tracking-widest text-neutral-500">
-                  Source Specification
-                </span>
-                <div className="flex gap-4 font-mono text-[10px] tracking-wider">
-                  <button
-                    onClick={() => setActiveTab("tsx")}
-                    className={`cursor-pointer transition-colors relative pb-2 ${
-                      activeTab === "tsx" ? "text-white font-bold" : "text-neutral-500 hover:text-white"
-                    }`}
-                  >
-                    Component.tsx
-                    {activeTab === "tsx" && (
-                      <motion.div 
-                        layoutId="activeDetailTab"
-                        className="absolute bottom-0 left-0 right-0 h-[1.5px] bg-white"
-                        transition={{ type: "spring", stiffness: 380, damping: 30 }}
-                      />
-                    )}
-                  </button>
-                  <button
-                    onClick={() => setActiveTab("glsl")}
-                    className={`cursor-pointer transition-colors relative pb-2 ${
-                      activeTab === "glsl" ? "text-white font-bold" : "text-neutral-500 hover:text-white"
-                    }`}
-                  >
-                    Shaders.glsl
-                    {activeTab === "glsl" && (
-                      <motion.div 
-                        layoutId="activeDetailTab"
-                        className="absolute bottom-0 left-0 right-0 h-[1.5px] bg-white"
-                        transition={{ type: "spring", stiffness: 380, damping: 30 }}
-                      />
-                    )}
-                  </button>
-                </div>
-              </div>
-
-              {/* Syntax block for source sheets */}
-              <div className="w-full bg-[#111113] rounded-[4px] p-6 overflow-x-auto border border-neutral-900 font-mono text-[10px] leading-relaxed text-neutral-400 select-text max-h-[500px]">
+              <div className="max-h-[400px] overflow-auto rounded-[4px] border border-neutral-900 bg-[#111113] p-4 font-mono text-xs leading-relaxed text-neutral-400">
                 <pre className="whitespace-pre">
                   {activeTab === "tsx" ? tsxCode : glslCode}
                 </pre>
               </div>
             </div>
+          )}
+        </motion.div>
 
-          </main>
-        </>
-      )}
+        {/* Design & Motion Breakdown Section */}
+        {storyContent && (
+          <motion.div
+            className="my-16 py-10 px-6 sm:px-8 rounded-2xl bg-[#0d0d10] border border-neutral-900 shadow-2xl space-y-6 font-sans"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.28, ease: [0.16, 1, 0.3, 1] }}
+          >
+            <div className="flex items-center gap-2 border-b border-neutral-900 pb-4">
+              <span className="font-sans text-xs font-bold uppercase tracking-widest text-neutral-400">
+                Design & Motion Breakdown
+              </span>
+            </div>
+
+            <StoryViewer content={storyContent} />
+          </motion.div>
+        )}
+
+        {/* Next / Prev Navigation */}
+        <div className="flex items-center justify-between border-t border-neutral-900 pt-8 mt-12 font-sans text-sm text-neutral-400">
+          {prevComp ? (
+            <Link
+              href={`/components/${prevComp.slug}`}
+              className="flex items-center gap-2 hover:text-white transition-colors"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              <span>{prevComp.label}</span>
+            </Link>
+          ) : (
+            <span />
+          )}
+
+          {nextComp ? (
+            <Link
+              href={`/components/${nextComp.slug}`}
+              className="flex items-center gap-2 hover:text-white transition-colors"
+            >
+              <span>{nextComp.label}</span>
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          ) : (
+            <span />
+          )}
+        </div>
+      </main>
     </div>
   );
 }

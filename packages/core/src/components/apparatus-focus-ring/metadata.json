@@ -1,0 +1,16 @@
+{
+  "name": "Apparatus Focus Ring",
+  "slug": "apparatus-focus-ring",
+  "pitch": "Images arranged in a 2D elliptical path. The ring rotates via horizontal dragging, wheel, or arrow keys, bringing the active image to full scale, full opacity, and sharp focus at center stage.",
+  "family": "aesthetic",
+  "energy": "responsive",
+  "triggers": ["drag", "key", "velocity"],
+  "tech": ["react", "gsap", "framer-motion"],
+  "lifecycle": {
+    "idle": "Slow, ambient micro-rotation of the ring (0.1rad/s) when inactive.",
+    "discovery": "First drag or touch input activates coordinate tracking, shifting images off their base angles.",
+    "buildUp": "Active drag, wheel scroll, or keyboard inputs spin the ring with momentum.",
+    "peak": "Active item locks at front center stage with maximum scale, full opacity, and zero blur.",
+    "recovery": "Friction slows rotation velocity down, settling and snapping the closest item into focus."
+  }
+}

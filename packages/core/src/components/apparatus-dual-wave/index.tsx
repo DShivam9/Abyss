@@ -30,9 +30,24 @@ const DEFAULT_ITEMS: DualWaveItem[] = [
   { id: "24", name: "STELLAR FLOW", imageSrc: "/images/components images/scroll/cosmos_1872135509.jpeg" },
 ];
 
-export const ApparatusDualWave: React.FC<ApparatusDualWaveProps> = ({
+export const ApparatusDualWave: React.FC<ApparatusDualWaveProps & {
+  frequency?: number;
+  amplitude?: number;
+  waveNum?: number;
+  spacing?: number;
+  maxBlur?: number;
+  maxRotation?: number;
+  cornerAlignment?: number;
+}> = ({
   items,
   imageSrc,
+  frequency,
+  amplitude,
+  waveNum: propWaveNum,
+  spacing: propSpacing,
+  maxBlur: propMaxBlur,
+  maxRotation: propMaxRotation,
+  cornerAlignment: propCornerAlignment,
   className = "",
   style,
   onLifecycleChange,
@@ -45,16 +60,15 @@ export const ApparatusDualWave: React.FC<ApparatusDualWaveProps> = ({
   const [activeIdx, setActiveIdx] = useState(0);
   const activeIdxRef = useRef(0);
   
-  // Interactive tuning controls (Hourglass / Triangle wave shape parameters)
-  const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [cornerAlignment, setCornerAlignment] = useState(1.0); // 0 = centered, 1 = corner aligned
-  const [waveRange, setWaveRange] = useState(100); // percentage multiplier (50% to 150%)
-  const [waveSpeed, setWaveSpeed] = useState(1.0); // wave cycles multiplier
-  const [waveNum, setWaveNum] = useState(0.45); // phase shift between adjacent items
-  const [spacing, setSpacing] = useState(65); // vertical spacing between items
-  const [curvature, setCurvature] = useState(0.0); // 0 = sharp triangle, 1 = rounded hemisphere
-  const [maxBlur, setMaxBlur] = useState(3.0); // max blur radius for progressive blur
-  const [maxRotation, setMaxRotation] = useState(8.0); // max slant rotation angle
+  // Interactive tuning controls derived from props
+  const cornerAlignment = propCornerAlignment !== undefined ? propCornerAlignment : 1.0;
+  const waveRange = amplitude !== undefined ? (amplitude / 60) * 100 : 100;
+  const waveSpeed = frequency !== undefined ? frequency / 2 : 1.0;
+  const waveNum = propWaveNum !== undefined ? propWaveNum : 0.45;
+  const spacing = propSpacing !== undefined ? propSpacing : 65;
+  const curvature = 0.0;
+  const maxBlur = propMaxBlur !== undefined ? propMaxBlur : 3.0;
+  const maxRotation = propMaxRotation !== undefined ? propMaxRotation : 8.0;
   
   // Animation loop playheads & layout refs
   const smoothOffsetRef = useRef(0);
@@ -90,60 +104,7 @@ export const ApparatusDualWave: React.FC<ApparatusDualWaveProps> = ({
   // Animation frame reference to cancel active transitions
   const presetAnimRef = useRef<number | null>(null);
 
-  // Transition parameters smoothly over time
-  const applyPreset = (target: {
-    cornerAlignment: number;
-    waveRange: number;
-    curvature: number;
-    maxBlur: number;
-    maxRotation: number;
-    waveNum: number;
-    spacing: number;
-    waveSpeed: number;
-  }) => {
-    if (presetAnimRef.current !== null) {
-      cancelAnimationFrame(presetAnimRef.current);
-    }
 
-    const duration = 500; // 500ms subtle ease-out transition
-    const startTime = performance.now();
-    
-    // Capture current values
-    const startValues = {
-      cornerAlignment,
-      waveRange,
-      curvature,
-      maxBlur,
-      maxRotation,
-      waveNum,
-      spacing,
-      waveSpeed,
-    };
-    
-    const step = (now: number) => {
-      const elapsed = now - startTime;
-      const progress = Math.min(1.0, elapsed / duration);
-      // Smooth ease-out cubic
-      const t = 1 - Math.pow(1 - progress, 3);
-      
-      setCornerAlignment(startValues.cornerAlignment + (target.cornerAlignment - startValues.cornerAlignment) * t);
-      setWaveRange(startValues.waveRange + (target.waveRange - startValues.waveRange) * t);
-      setCurvature(startValues.curvature + (target.curvature - startValues.curvature) * t);
-      setMaxBlur(startValues.maxBlur + (target.maxBlur - startValues.maxBlur) * t);
-      setMaxRotation(startValues.maxRotation + (target.maxRotation - startValues.maxRotation) * t);
-      setWaveNum(startValues.waveNum + (target.waveNum - startValues.waveNum) * t);
-      setSpacing(startValues.spacing + (target.spacing - startValues.spacing) * t);
-      setWaveSpeed(startValues.waveSpeed + (target.waveSpeed - startValues.waveSpeed) * t);
-      
-      if (progress < 1.0) {
-        presetAnimRef.current = requestAnimationFrame(step);
-      } else {
-        presetAnimRef.current = null;
-      }
-    };
-    
-    presetAnimRef.current = requestAnimationFrame(step);
-  };
 
   // Cleanup active animation on unmount
   useEffect(() => {
@@ -402,326 +363,6 @@ export const ApparatusDualWave: React.FC<ApparatusDualWaveProps> = ({
         ...style,
       }}
     >
-      {/* ─── CONTROLS PANEL ─── */}
-      <div 
-        className="pointer-events-auto"
-        style={{
-          position: "absolute",
-          top: "24px",
-          right: "24px",
-          zIndex: 100,
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "flex-end",
-          gap: "12px",
-        }}
-      >
-        <button
-          onClick={() => setDropdownOpen(!dropdownOpen)}
-          className="abyss-controls-trigger select-none"
-        >
-          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
-          </svg>
-          {dropdownOpen ? "Close Controls" : "Controls"}
-        </button>
-
-        {dropdownOpen && (
-          <div className="abyss-controls-panel">
-            {/* Presets Action Buttons */}
-            <div style={{ display: "flex", gap: "8px", marginBottom: "12px", width: "100%" }}>
-              <button
-                onClick={() => {
-                  applyPreset({
-                    cornerAlignment: 1.0,
-                    waveRange: 100,
-                    curvature: 0.0,
-                    maxBlur: 3.0,
-                    maxRotation: 8.0,
-                    waveNum: 0.45,
-                    spacing: 65,
-                    waveSpeed: 1.0,
-                  });
-                }}
-                className="flex-1 py-1.5 px-3 rounded-md text-[9px] font-mono border border-white/10 bg-white/5 text-white/60 hover:bg-white/10 hover:text-white transition-all select-none cursor-pointer"
-                style={{ flex: 1 }}
-              >
-                Reset Default
-              </button>
-              <button
-                onClick={() => {
-                  applyPreset({
-                    cornerAlignment: 1.0,
-                    waveRange: 90,
-                    curvature: 0.35,
-                    maxBlur: 6.0,
-                    maxRotation: 12.0,
-                    waveNum: 0.55,
-                    spacing: 75,
-                    waveSpeed: 1.2,
-                  });
-                }}
-                className="flex-1 py-1.5 px-3 rounded-md text-[9px] font-mono border border-white/30 bg-white/15 text-white hover:bg-white/20 transition-all select-none font-bold cursor-pointer"
-                style={{ flex: 1 }}
-              >
-                Best Preset
-              </button>
-            </div>
-
-            {/* Slider: Corner Alignment */}
-            <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                <span className="text-[9px] font-mono tracking-widest text-white/65 uppercase select-none">
-                  Corner Alignment
-                </span>
-                <span className="text-[9px] font-mono text-white/50">
-                  {(cornerAlignment * 100).toFixed(0)}%
-                </span>
-              </div>
-              <div style={{ position: "relative", width: "100%", height: "12px", display: "flex", alignItems: "center" }}>
-                <div 
-                  className="abyss-slider-tick"
-                  style={{
-                    position: "absolute",
-                    left: "100%",
-                    pointerEvents: "none",
-                    transform: "translateX(-50%)",
-                    zIndex: 1
-                  }}
-                  title="Default: 100%"
-                />
-                <input
-                  type="range"
-                  min="0"
-                  max="1"
-                  step="0.05"
-                  value={cornerAlignment}
-                  onChange={(e) => setCornerAlignment(Number(e.target.value))}
-                />
-              </div>
-            </div>
-
-            {/* Slider: Wave Range */}
-            <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                <span className="text-[9px] font-mono tracking-widest text-white/65 uppercase select-none">
-                  Wave Range
-                </span>
-                <span className="text-[9px] font-mono text-white/50">
-                  {waveRange}%
-                </span>
-              </div>
-              <div style={{ position: "relative", width: "100%", height: "12px", display: "flex", alignItems: "center" }}>
-                <div 
-                  className="abyss-slider-tick"
-                  style={{
-                    position: "absolute",
-                    left: "50%",
-                    pointerEvents: "none",
-                    transform: "translateX(-50%)",
-                    zIndex: 1
-                  }}
-                  title="Default: 100%"
-                />
-                <input
-                  type="range"
-                  min="50"
-                  max="150"
-                  step="5"
-                  value={waveRange}
-                  onChange={(e) => setWaveRange(Number(e.target.value))}
-                />
-              </div>
-            </div>
-
-            {/* Slider: Curvature */}
-            <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                <span className="text-[9px] font-mono tracking-widest text-white/65 uppercase select-none">
-                  Curvature
-                </span>
-                <span className="text-[9px] font-mono text-white/50">{(curvature * 100).toFixed(0)}%</span>
-              </div>
-              <div style={{ position: "relative", width: "100%", height: "12px", display: "flex", alignItems: "center" }}>
-                <div 
-                  className="abyss-slider-tick"
-                  style={{
-                    position: "absolute",
-                    left: "0%",
-                    pointerEvents: "none",
-                    transform: "translateX(-50%)",
-                    zIndex: 1
-                  }}
-                  title="Default: 0%"
-                />
-                <input
-                  type="range"
-                  min="0"
-                  max="1"
-                  step="0.05"
-                  value={curvature}
-                  onChange={(e) => setCurvature(Number(e.target.value))}
-                />
-              </div>
-            </div>
-
-            {/* Slider: Progressive Blur */}
-            <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                <span className="text-[9px] font-mono tracking-widest text-white/65 uppercase select-none">
-                  Progressive Blur
-                </span>
-                <span className="text-[9px] font-mono text-white/50">{maxBlur.toFixed(1)}px</span>
-              </div>
-              <div style={{ position: "relative", width: "100%", height: "12px", display: "flex", alignItems: "center" }}>
-                <div 
-                  className="abyss-slider-tick"
-                  style={{
-                    position: "absolute",
-                    left: "25%",
-                    pointerEvents: "none",
-                    transform: "translateX(-50%)",
-                    zIndex: 1
-                  }}
-                  title="Default: 3.0px"
-                />
-                <input
-                  type="range"
-                  min="0"
-                  max="12"
-                  step="0.5"
-                  value={maxBlur}
-                  onChange={(e) => setMaxBlur(Number(e.target.value))}
-                />
-              </div>
-            </div>
-
-            {/* Slider: Max Rotation */}
-            <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                <span className="text-[9px] font-mono tracking-widest text-white/65 uppercase select-none">
-                  Max Rotation
-                </span>
-                <span className="text-[9px] font-mono text-white/50">{maxRotation.toFixed(0)}°</span>
-              </div>
-              <div style={{ position: "relative", width: "100%", height: "12px", display: "flex", alignItems: "center" }}>
-                <div 
-                  className="abyss-slider-tick"
-                  style={{
-                    position: "absolute",
-                    left: "32%",
-                    pointerEvents: "none",
-                    transform: "translateX(-50%)",
-                    zIndex: 1
-                  }}
-                  title="Default: 8°"
-                />
-                <input
-                  type="range"
-                  min="0"
-                  max="25"
-                  step="1"
-                  value={maxRotation}
-                  onChange={(e) => setMaxRotation(Number(e.target.value))}
-                />
-              </div>
-            </div>
-
-            {/* Slider: Wave Spacing */}
-            <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                <span className="text-[9px] font-mono tracking-widest text-white/65 uppercase select-none">
-                  Wave Spacing
-                </span>
-                <span className="text-[9px] font-mono text-white/50">{waveNum.toFixed(2)}</span>
-              </div>
-              <div style={{ position: "relative", width: "100%", height: "12px", display: "flex", alignItems: "center" }}>
-                <div 
-                  className="abyss-slider-tick"
-                  style={{
-                    position: "absolute",
-                    left: "25%",
-                    pointerEvents: "none",
-                    transform: "translateX(-50%)",
-                    zIndex: 1
-                  }}
-                  title="Default: 0.45"
-                />
-                <input
-                  type="range"
-                  min="0.1"
-                  max="1.5"
-                  step="0.05"
-                  value={waveNum}
-                  onChange={(e) => setWaveNum(Number(e.target.value))}
-                />
-              </div>
-            </div>
-
-            {/* Slider: Item Spacing */}
-            <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                <span className="text-[9px] font-mono tracking-widest text-white/65 uppercase select-none">
-                  Item Spacing
-                </span>
-                <span className="text-[9px] font-mono text-white/50">{spacing}px</span>
-              </div>
-              <div style={{ position: "relative", width: "100%", height: "12px", display: "flex", alignItems: "center" }}>
-                <div 
-                  className="abyss-slider-tick"
-                  style={{
-                    position: "absolute",
-                    left: "31.25%",
-                    pointerEvents: "none",
-                    transform: "translateX(-50%)",
-                    zIndex: 1
-                  }}
-                  title="Default: 65px"
-                />
-                <input
-                  type="range"
-                  min="40"
-                  max="120"
-                  value={spacing}
-                  onChange={(e) => setSpacing(Number(e.target.value))}
-                />
-              </div>
-            </div>
-
-            {/* Slider: Wave Speed */}
-            <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                <span className="text-[9px] font-mono tracking-widest text-white/65 uppercase select-none">
-                  Wave Speed
-                </span>
-                <span className="text-[9px] font-mono text-white/50">{waveSpeed.toFixed(1)}x</span>
-              </div>
-              <div style={{ position: "relative", width: "100%", height: "12px", display: "flex", alignItems: "center" }}>
-                <div 
-                  className="abyss-slider-tick"
-                  style={{
-                    position: "absolute",
-                    left: "28.57%",
-                    pointerEvents: "none",
-                    transform: "translateX(-50%)",
-                    zIndex: 1
-                  }}
-                  title="Default: 1.0x"
-                />
-                <input
-                  type="range"
-                  min="0.2"
-                  max="3.0"
-                  step="0.1"
-                  value={waveSpeed}
-                  onChange={(e) => setWaveSpeed(Number(e.target.value))}
-                />
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-
       {/* ─── HOURGLASS / TRIANGLE LAYOUT VIEWPORT ─── */}
       <div className="absolute inset-0 w-full h-full pointer-events-none">
         

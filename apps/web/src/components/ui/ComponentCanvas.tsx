@@ -5,21 +5,18 @@ import React, { useState, useEffect, useRef } from "react";
 interface ComponentCanvasProps {
   slug: string;
   category: string;
-  previewType: "shader" | "scroll" | "gallery" | "transition";
-  Component: React.ComponentType<{
-    imageSrc?: string;
-    scrollProgress?: number;
-    onScrollProgressChange?: (progress: number) => void;
-    isFullscreen?: boolean;
-    className?: string;
-  }>;
+  previewType: "shader" | "scroll" | "gallery" | "transition" | "text";
+  Component: React.ComponentType<any>;
   imageSrc: string;
+  controlValues?: Record<string, number | boolean | string>;
 }
 
 export function ComponentCanvas({
+  slug,
   previewType,
   Component,
   imageSrc,
+  controlValues = {},
 }: ComponentCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [scrollProgress, setScrollProgress] = useState(0);
@@ -73,7 +70,7 @@ export function ComponentCanvas({
       e.preventDefault();
       e.stopPropagation();
 
-      const factor = previewType === "gallery" ? 0.0001 : 0.00015; // Slower, high-precision scroll resolution
+      const factor = previewType === "gallery" ? 0.0001 : slug === "apparatus-erosion-map" ? 0.000025 : 0.00015; // High-precision scroll resolution
       let next = targetProgress.current + e.deltaY * factor;
 
       // Clamp scroll progress in scroll mode
@@ -152,6 +149,19 @@ export function ComponentCanvas({
           imageSrc={imageSrc}
           isFullscreen={false}
           className="w-full h-full object-cover"
+          {...controlValues}
+        />
+      </div>
+    );
+  }
+
+  if (previewType === "text") {
+    return (
+      <div className="w-full aspect-video relative bg-[#070708] border border-neutral-900 overflow-hidden flex items-center justify-center rounded-[6px]">
+        <Component
+          isFullscreen={false}
+          className="w-full h-full"
+          {...controlValues}
         />
       </div>
     );
@@ -174,13 +184,14 @@ export function ComponentCanvas({
         <Component
           imageSrc={imageSrc}
           scrollProgress={scrollProgress}
-          onScrollProgressChange={(val) => {
+          onScrollProgressChange={(val: number) => {
             targetProgress.current = val;
             currentProgress.current = val;
             setScrollProgress(val);
           }}
           isFullscreen={false}
           className="w-full h-full object-cover"
+          {...controlValues}
         />
       </div>
     </div>

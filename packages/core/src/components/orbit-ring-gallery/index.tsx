@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useRef, useEffect, useState } from "react";
 import { Canvas, useFrame, ThreeElements } from "@react-three/fiber";
 import * as THREE from "three";
@@ -27,7 +29,8 @@ const RingItem = ({
 
   useEffect(() => {
     const loader = new THREE.TextureLoader();
-    loader.load(item.image, (tex) => {
+    const cleanUrl = typeof item.image === "string" ? decodeURIComponent(item.image) : item.image;
+    loader.load(cleanUrl, (tex) => {
       tex.colorSpace = THREE.SRGBColorSpace;
       texture.current = tex;
       if (materialRef.current) {
@@ -43,6 +46,7 @@ const RingItem = ({
       <meshBasicMaterial 
         ref={materialRef} 
         transparent={true}
+        opacity={1}
         side={THREE.DoubleSide} 
         color={0xffffff}
       />
@@ -53,6 +57,7 @@ const RingItem = ({
 const RingGroup = ({ 
   items, 
   radius, 
+  tilt = 0.3,
   initialRotation, 
   onActiveIndexChange, 
   cascadeEnabled, 
@@ -175,8 +180,7 @@ const RingGroup = ({
       targetRotationRef.current += autoRotationSpeed * dt;
     }
 
-    // Keep parent group aligned level and flat
-    groupRef.current.rotation.x = 0;
+  groupRef.current.rotation.x = typeof tilt === "number" ? tilt : 0;
     groupRef.current.rotation.z = 0;
     groupRef.current.rotation.y = 0;
 
@@ -226,10 +230,11 @@ const RingGroup = ({
        child.rotation.y = targetRotationY;
 
        // Apply dynamic opacity for non-linear spotlight focus using frame-rate independent damp
-       const mesh = child as any;
-       if (mesh.material) {
-         mesh.material.opacity = damp(mesh.material.opacity, targetOpacity, 4.0, dt);
-       }
+        const mesh = child as any;
+        if (mesh.material) {
+          const currentOp = typeof mesh.material.opacity === "number" && !isNaN(mesh.material.opacity) ? mesh.material.opacity : 1;
+          mesh.material.opacity = damp(currentOp, targetOpacity, 4.0, dt);
+        }
      });
 
     // Camera leaning (roll/pan/zoom) is always active - delta-corrected dampings
@@ -271,7 +276,7 @@ const RingGroup = ({
   });
 
   return (
-    <group>
+    <group position={[0, 0.35, 0]}>
       {/* Cards Group */}
       <group ref={groupRef}>
         {items.map((item: any, i: number) => (
@@ -290,13 +295,13 @@ const RingGroup = ({
 };
 
 const DEFAULT_ITEMS = [
-  { id: "1", image: "/images/components%20images/Gallary/cosmos_1110264921.jpeg", title: "Cosmos Alpha", subtitle: "Sailing through the celestial dust of the Orion Arm." },
-  { id: "2", image: "/images/components%20images/Gallary/cosmos_1309943729.jpeg", title: "Event Horizon", subtitle: "Where time slows down and light fades into the infinite." },
-  { id: "3", image: "/images/components%20images/Gallary/cosmos_145253936.jpeg", title: "Stellar Nursery", subtitle: "Gases compressing under pressure to spark new solar systems." },
-  { id: "4", image: "/images/components%20images/Gallary/cosmos_1578342658.jpeg", title: "Nebula Whispers", subtitle: "Cosmic filaments stretching across millions of light years." },
-  { id: "5", image: "/images/components%20images/Gallary/cosmos_1724531036.jpeg", title: "Solar Winds", subtitle: "Charged streams dancing across planetary atmospheres." },
-  { id: "6", image: "/images/components%20images/Gallary/cosmos_1948095192.jpeg", title: "Dark Matter", subtitle: "The invisible architecture holding galaxies in structural unison." },
-  { id: "7", image: "/images/components%20images/Gallary/cosmos_854490082.jpeg", title: "Supernova Core", subtitle: "The violent birth of heavy elements in a dying star's heart." }
+  { id: "1", image: "/images/components images/Gallary/cosmos_1110264921.jpeg", title: "Cosmos Alpha", subtitle: "Sailing through the celestial dust of the Orion Arm." },
+  { id: "2", image: "/images/components images/Gallary/cosmos_1309943729.jpeg", title: "Event Horizon", subtitle: "Where time slows down and light fades into the infinite." },
+  { id: "3", image: "/images/components images/Gallary/cosmos_145253936.jpeg", title: "Stellar Nursery", subtitle: "Gases compressing under pressure to spark new solar systems." },
+  { id: "4", image: "/images/components images/Gallary/cosmos_1578342658.jpeg", title: "Nebula Whispers", subtitle: "Cosmic filaments stretching across millions of light years." },
+  { id: "5", image: "/images/components images/Gallary/cosmos_1724531036.jpeg", title: "Solar Winds", subtitle: "Charged streams dancing across planetary atmospheres." },
+  { id: "6", image: "/images/components images/Gallary/cosmos_1948095192.jpeg", title: "Dark Matter", subtitle: "The invisible architecture holding galaxies in structural unison." },
+  { id: "7", image: "/images/components images/Gallary/cosmos_854490082.jpeg", title: "Supernova Core", subtitle: "The violent birth of heavy elements in a dying star's heart." }
 ];
 
 const ScrambledText = ({ text, duration = 12 }: { text: string; duration?: number }) => {
@@ -341,308 +346,39 @@ const ScrambledText = ({ text, duration = 12 }: { text: string; duration?: numbe
   return <>{displayText}</>;
 };
 
-export const OrbitRingGallery: React.FC<OrbitRingGalleryProps> = ({
+export const OrbitRingGallery: React.FC<OrbitRingGalleryProps & {
+  tilt?: number;
+  scrollSpeed?: number;
+  dragSpeed?: number;
+  damping?: number;
+  cascadeEnabled?: boolean;
+  swingEnabled?: boolean;
+}> = ({
   items = DEFAULT_ITEMS,
   radius = 3.4,
+  tilt = 0,
   className = "",
   initialRotation = 0,
+  scrollSpeed = 0.0007,
+  dragSpeed = 0.5,
+  damping = 2.8,
+  cascadeEnabled = false,
+  swingEnabled = false,
 }) => {
   const [activeIndex, setActiveIndex] = useState(0);
-  const [cascadeEnabled, setCascadeEnabled] = useState(false);
-  const [swingEnabled, setSwingEnabled] = useState(false);
-  const [dropdownOpen, setDropdownOpen] = useState(false);
-
-  // Velocity, drag, and snappiness speed tuning states
-  const [scrollSpeed, setScrollSpeed] = useState(0.0007);
-  const [dragSpeed, setDragSpeed] = useState(0.5);
-  const [damping, setDamping] = useState(2.8);
-  
-  const togglePanelRef = useRef<HTMLDivElement>(null);
-  const triggerButtonRef = useRef<HTMLButtonElement>(null);
-  const buttonRef = useRef<HTMLButtonElement>(null);
-  const swingButtonRef = useRef<HTMLButtonElement>(null);
-
-  const scrollSliderRef = useRef<HTMLInputElement>(null);
-  const dragSliderRef = useRef<HTMLInputElement>(null);
-  const dampingSliderRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    const panel = togglePanelRef.current;
-    const trigger = triggerButtonRef.current;
-    const rippleBtn = buttonRef.current;
-    const swingBtn = swingButtonRef.current;
-
-    const scrollSlider = scrollSliderRef.current;
-    const dragSlider = dragSliderRef.current;
-    const dampingSlider = dampingSliderRef.current;
-
-    if (!panel) return;
-
-    const stopNativePropagation = (e: Event) => {
-      e.stopPropagation();
-      e.stopImmediatePropagation();
-    };
-
-    panel.addEventListener("pointerdown", stopNativePropagation);
-    panel.addEventListener("pointerup", stopNativePropagation);
-    panel.addEventListener("pointermove", stopNativePropagation);
-    panel.addEventListener("mousedown", stopNativePropagation);
-    panel.addEventListener("mouseup", stopNativePropagation);
-    panel.addEventListener("mousemove", stopNativePropagation);
-
-    const handleTriggerClick = (e: Event) => {
-      e.stopPropagation();
-      e.stopImmediatePropagation();
-      setDropdownOpen(prev => !prev);
-    };
-
-    const handleRippleClick = (e: Event) => {
-      e.stopPropagation();
-      e.stopImmediatePropagation();
-      setCascadeEnabled(prev => !prev);
-    };
-
-    const handleSwingClick = (e: Event) => {
-      e.stopPropagation();
-      e.stopImmediatePropagation();
-      setSwingEnabled(prev => !prev);
-    };
-
-    const handleScrollSpeedInput = (e: Event) => {
-      e.stopPropagation();
-      e.stopImmediatePropagation();
-      setScrollSpeed(parseFloat((e.target as HTMLInputElement).value));
-    };
-
-    const handleDragSpeedInput = (e: Event) => {
-      e.stopPropagation();
-      e.stopImmediatePropagation();
-      setDragSpeed(parseFloat((e.target as HTMLInputElement).value));
-    };
-
-    const handleDampingInput = (e: Event) => {
-      e.stopPropagation();
-      e.stopImmediatePropagation();
-      setDamping(parseFloat((e.target as HTMLInputElement).value));
-    };
-
-    if (trigger) trigger.addEventListener("click", handleTriggerClick);
-    if (rippleBtn) rippleBtn.addEventListener("click", handleRippleClick);
-    if (swingBtn) swingBtn.addEventListener("click", handleSwingClick);
-
-    if (scrollSlider) scrollSlider.addEventListener("input", handleScrollSpeedInput);
-    if (dragSlider) dragSlider.addEventListener("input", handleDragSpeedInput);
-    if (dampingSlider) dampingSlider.addEventListener("input", handleDampingInput);
-
-    const handleOutsideClick = (e: MouseEvent) => {
-      if (panel && !panel.contains(e.target as Node)) {
-        setDropdownOpen(false);
-      }
-    };
-    window.addEventListener("click", handleOutsideClick);
-
-    return () => {
-      panel.removeEventListener("pointerdown", stopNativePropagation);
-      panel.removeEventListener("pointerup", stopNativePropagation);
-      panel.removeEventListener("pointermove", stopNativePropagation);
-      panel.removeEventListener("mousedown", stopNativePropagation);
-      panel.removeEventListener("mouseup", stopNativePropagation);
-      panel.removeEventListener("mousemove", stopNativePropagation);
-      if (trigger) trigger.removeEventListener("click", handleTriggerClick);
-      if (rippleBtn) rippleBtn.removeEventListener("click", handleRippleClick);
-      if (swingBtn) swingBtn.removeEventListener("click", handleSwingClick);
-
-      if (scrollSlider) scrollSlider.removeEventListener("input", handleScrollSpeedInput);
-      if (dragSlider) dragSlider.removeEventListener("input", handleDragSpeedInput);
-      if (dampingSlider) dampingSlider.removeEventListener("input", handleDampingInput);
-
-      window.removeEventListener("click", handleOutsideClick);
-    };
-  }, [dropdownOpen]);
 
   return (
     <div 
       id="orbit-gallery-container" 
-      className={`w-full h-full overflow-hidden bg-[#050505] touch-none ${className}`}
-      style={{ position: "relative" }}
+      className={`w-full h-full min-h-[500px] relative overflow-hidden bg-[#050505] touch-none ${className}`}
     >
-      
-      {/* Controls Dropdown Container (Top-right corner, glassmorphic panel) */}
-      <div 
-        ref={togglePanelRef}
-        className="absolute z-20 pointer-events-auto"
-        style={{
-          top: "24px",
-          right: "24px",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "flex-end",
-          gap: "8px",
-          pointerEvents: "auto"
-        }}
-      >
-        {/* Trigger Button */}
-        <button
-          ref={triggerButtonRef}
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "8px",
-            backgroundColor: "rgba(13, 13, 15, 0.8)",
-            color: "#ffffff",
-            padding: "8px 16px",
-            border: "1px solid rgba(255, 255, 255, 0.1)",
-            borderRadius: "9999px",
-            backdropFilter: "blur(12px)",
-            boxShadow: "0 4px 12px rgba(0, 0, 0, 0.3)",
-            fontSize: "11px",
-            fontFamily: "monospace",
-            textTransform: "uppercase",
-            letterSpacing: "0.15em",
-            cursor: "pointer",
-            transition: "border-color 0.3s, background-color 0.3s",
-            outline: "none"
-          }}
-        >
-          <span>Controls</span>
-          <svg 
-            width="8" 
-            height="8" 
-            viewBox="0 0 8 8" 
-            fill="none" 
-            style={{ 
-              transform: dropdownOpen ? "rotate(180deg)" : "rotate(0deg)", 
-              transition: "transform 0.3s",
-              stroke: "rgba(255, 255, 255, 0.6)",
-              strokeWidth: "1.5"
-            }}
-          >
-            <path d="M1 2.5L4 5.5L7 2.5" />
-          </svg>
-        </button>
-
-        {/* Dropdown Panel Menu */}
-        {dropdownOpen && (
-          <div
-            className="abyss-controls-panel"
-          >
-            {/* Toggle 1: Kinetic Ripple */}
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "16px" }}>
-              <span className="text-[10px] font-mono tracking-widest text-white/65 uppercase select-none">
-                Kinetic Ripple
-              </span>
-              <button 
-                ref={buttonRef}
-                className={`abyss-toggle-switch ${cascadeEnabled ? 'abyss-toggle-switch-active' : 'abyss-toggle-switch-inactive'}`}
-              >
-                <div 
-                  className="abyss-toggle-knob"
-                  style={{
-                    transform: cascadeEnabled ? "translateX(14px)" : "translateX(0px)",
-                  }}
-                />
-              </button>
-            </div>
-
-            {/* Toggle 2: Swing Focus */}
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "16px" }}>
-              <span className="text-[10px] font-mono tracking-widest text-white/65 uppercase select-none">
-                Swing Focus
-              </span>
-              <button 
-                ref={swingButtonRef}
-                className={`abyss-toggle-switch ${swingEnabled ? 'abyss-toggle-switch-active' : 'abyss-toggle-switch-inactive'}`}
-              >
-                <div 
-                  className="abyss-toggle-knob"
-                  style={{
-                    transform: swingEnabled ? "translateX(14px)" : "translateX(0px)",
-                  }}
-                />
-              </button>
-            </div>
-
-            {/* Divider */}
-            <div style={{ height: "1px", backgroundColor: "rgba(255, 255, 255, 0.08)" }} />
-
-            {/* Slider 1: Scroll Sensitivity */}
-            <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <span className="text-[9px] font-mono tracking-wider text-white/50 uppercase select-none">
-                  Scroll Speed
-                </span>
-                <span className="text-[9px] font-mono text-white/70 font-bold">
-                  {scrollSpeed.toFixed(4)}
-                </span>
-              </div>
-              <input 
-                ref={scrollSliderRef}
-                type="range"
-                min="0.0001"
-                max="0.0020"
-                step="0.0001"
-                defaultValue={scrollSpeed}
-                style={{
-                  width: "100%",
-                }}
-              />
-            </div>
-
-            {/* Slider 2: Drag Sensitivity */}
-            <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <span className="text-[9px] font-mono tracking-wider text-white/50 uppercase select-none">
-                  Drag Speed
-                </span>
-                <span className="text-[9px] font-mono text-white/70 font-bold">
-                  {dragSpeed.toFixed(2)}
-                </span>
-              </div>
-              <input 
-                ref={dragSliderRef}
-                type="range"
-                min="0.1"
-                max="1.5"
-                step="0.05"
-                defaultValue={dragSpeed}
-                style={{
-                  width: "100%",
-                }}
-              />
-            </div>
-
-            {/* Slider 3: Damping Snappiness */}
-            <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <span className="text-[9px] font-mono tracking-wider text-white/50 uppercase select-none">
-                  Snappiness
-                </span>
-                <span className="text-[9px] font-mono text-white/70 font-bold">
-                  {damping.toFixed(1)}
-                </span>
-              </div>
-              <input 
-                ref={dampingSliderRef}
-                type="range"
-                min="0.5"
-                max="5.0"
-                step="0.1"
-                defaultValue={damping}
-                style={{
-                  width: "100%",
-                }}
-              />
-            </div>
-          </div>
-        )}
-      </div>
-
-      <div className="absolute inset-0 z-0">
-        <Canvas camera={{ position: [0, 0.3, 8.5], fov: 45 }}>
+      <div className="absolute inset-0 w-full h-full z-0">
+        <Canvas camera={{ position: [0, 0.3, 8.5], fov: 45 }} style={{ width: "100%", height: "100%" }}>
           <ambientLight intensity={1} />
           <RingGroup 
             items={items} 
             radius={radius} 
+            tilt={tilt}
             initialRotation={initialRotation} 
             onActiveIndexChange={setActiveIndex} 
             cascadeEnabled={cascadeEnabled}

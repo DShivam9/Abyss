@@ -1,0 +1,37 @@
+{
+  "id": "apparatus-page-fade-shift",
+  "name": "Apparatus Page Fade Shift",
+  "category": "Transitions",
+  "description": "Route and view transition executing an asymmetric spatial handoff. Outgoing page fades out while ascending slightly (-20px); incoming page descends (+20px to 0) and fades in, creating directional spatial rhythm.",
+  "previewType": "scroll",
+  "parameters": [
+    {
+      "name": "leaveDuration",
+      "type": "number",
+      "default": 350,
+      "description": "Duration in ms for outgoing page fade and ascent"
+    },
+    {
+      "name": "enterDuration",
+      "type": "number",
+      "default": 400,
+      "description": "Duration in ms for incoming page descent and fade in"
+    },
+    {
+      "name": "shiftY",
+      "type": "number",
+      "default": 20,
+      "description": "Vertical displacement distance in pixels during transition"
+    },
+    {
+      "name": "easing",
+      "type": "string",
+      "default": "power2.inOut",
+      "description": "Animation easing curve for page transition velocity"
+    }
+  ],
+  "lifecycle": {
+    "phases": ["idle", "leave", "swap", "enter"],
+    "trigger": "Navigation or view swap action"
+  }
+}

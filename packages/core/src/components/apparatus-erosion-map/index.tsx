@@ -70,13 +70,41 @@ const DEFAULT_IMAGES = [
   "/images/components%20images/scroll/cosmos_1207399578.jpeg",
   "/images/components%20images/scroll/cosmos_1067833670.jpeg",
   "/images/components%20images/scroll/cosmos_1215932660.jpeg",
+  "/images/components%20images/scroll/cosmos_1225764898.jpeg",
+  "/images/components%20images/scroll/cosmos_1244425812.jpeg",
+  "/images/components%20images/scroll/cosmos_1292975902.jpeg",
+  "/images/components%20images/scroll/cosmos_1298955025.jpeg",
+  "/images/components%20images/scroll/cosmos_1309660817.jpeg",
+  "/images/components%20images/scroll/cosmos_1452408749.jpeg",
+  "/images/components%20images/scroll/cosmos_1556080729.jpeg",
+  "/images/components%20images/scroll/cosmos_1591705408.jpeg",
+  "/images/components%20images/scroll/cosmos_1633231397.jpeg",
   "/images/components%20images/scroll/cosmos_169178344.jpeg",
+  "/images/components%20images/scroll/cosmos_1859262512.jpeg",
+  "/images/components%20images/scroll/cosmos_1994819013.jpeg",
   "/images/components%20images/scroll/cosmos_496247602.jpeg"
 ];
 
-export const ApparatusErosionMap: React.FC<ApparatusErosionMapProps> = ({
+export const ApparatusErosionMap: React.FC<ApparatusErosionMapProps & {
+  noiseScale?: number;
+  edgeGlow?: number;
+  octaves?: number;
+  windPattern?: "linear" | "radial" | "vortex" | "wave" | "turbulent" | "implosion";
+  windAngle?: number;
+  windStretch?: number;
+  curvePower?: number;
+  erosionDamper?: number;
+}> = ({
   images: propImages,
   imageSrc,
+  noiseScale,
+  edgeGlow,
+  octaves: propOctaves = 3,
+  windPattern: propWindPattern = "linear",
+  windAngle: propWindAngle = 180,
+  windStretch: propWindStretch = 2.5,
+  curvePower: propCurvePower = 2.0,
+  erosionDamper = 3.0,
   className = "",
   style,
   onLifecycleChange,
@@ -85,17 +113,15 @@ export const ApparatusErosionMap: React.FC<ApparatusErosionMapProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const visibleCanvasRef = useRef<HTMLCanvasElement>(null);
 
-  const [dropdownOpen, setDropdownOpen] = useState(false);
-
-  // Custom sandbox controls state (fine-grained sliders)
-  const [grainScale, setGrainScale] = useState(0.03); 
-  const [octaves, setOctaves] = useState(3);
-  const [windPattern, setWindPattern] = useState<"linear" | "radial">("linear");
-  const [windAngle, setWindAngle] = useState(180);
-  const [windStretch, setWindStretch] = useState(2.5);
-  const [edgeWidth, setEdgeWidth] = useState(0.04);
-  const [edgeColor, setEdgeColor] = useState({ r: 223, g: 177, b: 91, name: "GOLD" });
-  const [curvePower, setCurvePower] = useState(2.0);
+  // Custom sandbox controls state derived from props
+  const grainScale = noiseScale !== undefined ? noiseScale : 0.005; 
+  const octaves = propOctaves;
+  const windPattern = propWindPattern;
+  const windAngle = propWindAngle;
+  const windStretch = propWindStretch;
+  const edgeWidth = edgeGlow !== undefined ? edgeGlow * 0.03 : 0.04;
+  const edgeColor = { r: 223, g: 177, b: 91, name: "GOLD" };
+  const curvePower = propCurvePower;
 
   // Dynamic progress value driven by ScrollTrigger or Prop
   const [localScrollProgress, setLocalScrollProgress] = useState(0);
@@ -114,7 +140,7 @@ export const ApparatusErosionMap: React.FC<ApparatusErosionMapProps> = ({
     const base = imageSrc ? [imageSrc] : [];
     const combined = [...base];
     for (const img of DEFAULT_IMAGES) {
-      if (combined.length >= 5) break;
+      if (combined.length >= 16) break;
       if (!combined.includes(img)) combined.push(img);
     }
     return combined;
@@ -128,12 +154,13 @@ export const ApparatusErosionMap: React.FC<ApparatusErosionMapProps> = ({
   const configRef = useRef<{
     grainScale: number;
     octaves: number;
-    windPattern: "linear" | "radial";
+    windPattern: "linear" | "radial" | "vortex" | "wave" | "turbulent" | "implosion";
     windAngle: number;
     windStretch: number;
     edgeWidth: number;
     edgeColor: { r: number; g: number; b: number };
     curvePower: number;
+    erosionDamper: number;
     scrollProgress: number;
   }>({
     grainScale,
@@ -144,6 +171,7 @@ export const ApparatusErosionMap: React.FC<ApparatusErosionMapProps> = ({
     edgeWidth,
     edgeColor,
     curvePower,
+    erosionDamper,
     scrollProgress
   });
 
@@ -157,10 +185,11 @@ export const ApparatusErosionMap: React.FC<ApparatusErosionMapProps> = ({
       edgeWidth,
       edgeColor,
       curvePower,
+      erosionDamper,
       scrollProgress
     };
     wakeUpRef.current();
-  }, [grainScale, octaves, windPattern, windAngle, windStretch, edgeWidth, edgeColor, curvePower, scrollProgress]);
+  }, [grainScale, octaves, windPattern, windAngle, windStretch, edgeWidth, edgeColor, curvePower, erosionDamper, scrollProgress]);
 
   // Lifecycle monitoring
   useEffect(() => {
@@ -188,9 +217,9 @@ export const ApparatusErosionMap: React.FC<ApparatusErosionMapProps> = ({
     ScrollTrigger.create({
       trigger: el,
       start: "top top",
-      end: "+=150%",
+      end: "+=1500%",
       pin: true,
-      scrub: 0.1,
+      scrub: 1.5,
       onUpdate: (self) => {
         setLocalScrollProgress(self.progress);
         onLifecycleChange?.(self.progress > 0 && self.progress < 1 ? "buildUp" : "idle");
@@ -201,6 +230,31 @@ export const ApparatusErosionMap: React.FC<ApparatusErosionMapProps> = ({
       ScrollTrigger.getAll().forEach((trigger) => {
         if (trigger.trigger === el) trigger.kill();
       });
+    };
+  }, [propScrollProgress, onLifecycleChange]);
+
+  // Fallback wheel scroll listener if scroll height is limited
+  useEffect(() => {
+    if (propScrollProgress !== undefined) return;
+    const el = containerRef.current;
+    if (!el) return;
+
+    const handleWheel = (e: WheelEvent) => {
+      const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+      if (maxScroll <= 10) {
+        e.preventDefault();
+        setLocalScrollProgress((prev) => {
+          const step = 0.0008;
+          const next = Math.max(0, Math.min(1, prev + (e.deltaY > 0 ? step : -step)));
+          onLifecycleChange?.(next > 0 && next < 1 ? "buildUp" : "idle");
+          return next;
+        });
+      }
+    };
+
+    el.addEventListener("wheel", handleWheel, { passive: false });
+    return () => {
+      el.removeEventListener("wheel", handleWheel);
     };
   }, [propScrollProgress, onLifecycleChange]);
 
@@ -242,11 +296,41 @@ export const ApparatusErosionMap: React.FC<ApparatusErosionMapProps> = ({
           const dx = x - 128;
           const dy = y - 128;
           const r = Math.sqrt(dx * dx + dy * dy);
-          const theta = Math.atan2(dy, dx);
+          const angle = Math.atan2(dy, dx);
           nx = r * 1.5;
-          ny = theta * 40.0;
+          ny = Math.sin(angle * 2) * 35.0 + r * 0.8;
+        } else if (windPattern === "vortex") {
+          const dx = x - 128;
+          const dy = y - 128;
+          const r = Math.sqrt(dx * dx + dy * dy);
+          const angle = Math.atan2(dy, dx) + r * 0.05;
+          nx = Math.cos(angle) * r * (1.0 / (1.0 + windStretch * 0.5)) + 128;
+          ny = Math.sin(angle) * r + 128;
+        } else if (windPattern === "wave") {
+          const rx = x - 128;
+          const ry = y - 128;
+          const rad = (windAngle * Math.PI) / 180;
+          const rotX = rx * Math.cos(rad) - ry * Math.sin(rad);
+          const rotY = rx * Math.sin(rad) + ry * Math.cos(rad);
+          nx = (rotX + Math.sin(rotY * 0.08) * 40.0) * (1.0 / (1.0 + windStretch)) + 128;
+          ny = rotY + 128;
+        } else if (windPattern === "turbulent") {
+          const rx = x - 128;
+          const ry = y - 128;
+          const shearX = Math.sin(ry * 0.05) * 30.0 + Math.cos(rx * 0.03) * 20.0;
+          const shearY = Math.cos(rx * 0.05) * 30.0 + Math.sin(ry * 0.03) * 20.0;
+          nx = (rx + shearX) * (1.0 / (1.0 + windStretch)) + 128;
+          ny = (ry + shearY) + 128;
+        } else if (windPattern === "implosion") {
+          const dx = x - 128;
+          const dy = y - 128;
+          const r = Math.sqrt(dx * dx + dy * dy);
+          const angle = Math.atan2(dy, dx);
+          const funnelR = 256.0 - r;
+          nx = Math.cos(angle) * funnelR * 0.8 + 128;
+          ny = Math.sin(angle) * funnelR * 0.8 + 128;
         } else {
-          // General wind rotation + stretch mapping
+          // General linear wind pattern
           const rad = (windAngle * Math.PI) / 180;
           const cos = Math.cos(rad);
           const sin = Math.sin(rad);
@@ -269,6 +353,19 @@ export const ApparatusErosionMap: React.FC<ApparatusErosionMapProps> = ({
       }
     }
 
+    // Re-normalize noiseData to full 0.0..1.0 range so erosion progresses linearly with scroll
+    let minN = 1.0;
+    let maxN = 0.0;
+    for (let i = 0; i < 256 * 256; i++) {
+      const v = noiseData[i];
+      if (v < minN) minN = v;
+      if (v > maxN) maxN = v;
+    }
+    const rangeN = maxN - minN || 1;
+    for (let i = 0; i < 256 * 256; i++) {
+      noiseData[i] = (noiseData[i] - minN) / rangeN;
+    }
+
     // Mask image data template
     const maskImgData = maskCtx.createImageData(256, 256);
     const maskData32 = new Uint32Array(maskImgData.data.buffer);
@@ -278,17 +375,17 @@ export const ApparatusErosionMap: React.FC<ApparatusErosionMapProps> = ({
       const delta = Math.min(0.1, (now - lastTimeRef.current) / 1000);
       lastTimeRef.current = now;
 
-      const { curvePower, edgeWidth, edgeColor, scrollProgress: targetProgress } = configRef.current;
+      const { curvePower, edgeWidth, edgeColor, erosionDamper, scrollProgress: targetProgress } = configRef.current;
       const totalImages = displayImages.length;
       if (totalImages < 2) return;
 
-      // Delta-corrected smooth interpolation (lerp) - rate independent
+      // Heavy fluid lerp damping to slow down erosion progression
       const diff = targetProgress - lerpedProgressRef.current;
       if (Math.abs(diff) < 0.0001) {
         lerpedProgressRef.current = targetProgress;
         isAnimatingRef.current = false;
       } else {
-        const dampFactor = 3.5; 
+        const dampFactor = Math.max(0.2, erosionDamper); 
         lerpedProgressRef.current += diff * (1.0 - Math.exp(-dampFactor * delta));
       }
       const progress = lerpedProgressRef.current;
@@ -538,12 +635,7 @@ export const ApparatusErosionMap: React.FC<ApparatusErosionMapProps> = ({
     };
   }, [grainScale, octaves, windPattern, windAngle, windStretch, displayImages]);
 
-  // Close dropdown on click outside
-  useEffect(() => {
-    const clickOutside = () => setDropdownOpen(false);
-    window.addEventListener("click", clickOutside);
-    return () => window.removeEventListener("click", clickOutside);
-  }, []);
+
 
   return (
     <div
@@ -560,360 +652,6 @@ export const ApparatusErosionMap: React.FC<ApparatusErosionMapProps> = ({
         className="w-full h-full object-cover block"
       />
 
-
-
-      {/* Pill Controls Panel */}
-      <div
-        style={{
-          position: "absolute",
-          top: "16px",
-          right: "16px",
-          zIndex: 999,
-          pointerEvents: "auto",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "flex-end",
-          gap: "8px"
-        }}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <button
-          onClick={() => setDropdownOpen(!dropdownOpen)}
-          className="abyss-controls-trigger"
-        >
-          <span>{dropdownOpen ? "Close Controls" : "Configure Erosion"}</span>
-          <svg 
-            width="8" 
-            height="8" 
-            viewBox="0 0 8 8" 
-            fill="none" 
-            style={{ 
-              transform: dropdownOpen ? "rotate(180deg)" : "rotate(0deg)", 
-              transition: "transform 0.3s",
-              stroke: "rgba(255, 255, 255, 0.6)",
-              strokeWidth: "1.5"
-            }}
-          >
-            <path d="M1 2.5L4 5.5L7 2.5" />
-          </svg>
-        </button>
-
-        {dropdownOpen && (
-          <div
-            className="abyss-controls-panel"
-            style={{
-              maxHeight: "80vh",
-              overflowY: "auto",
-            }}
-          >
-            {/* SECTION 1: GRAIN SYSTEM */}
-            <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <span className="text-[9px] font-mono tracking-widest text-white/65 uppercase select-none">
-                  Grain System
-                </span>
-                <span className="text-[9px] font-mono text-white/40">{(1 / grainScale).toFixed(0)}Hz</span>
-              </div>
-              
-              {/* Slider for Grain Scale */}
-              <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <span className="text-[9px] font-mono tracking-wider text-white/50 uppercase select-none">
-                    Frequency
-                  </span>
-                  <span className="text-[9px] font-mono text-white/70 font-bold">{grainScale.toFixed(4)}</span>
-                </div>
-                <div style={{ position: "relative", width: "100%", height: "12px", display: "flex", alignItems: "center" }}>
-                  <div 
-                    className="abyss-slider-tick"
-                    style={{
-                      position: "absolute",
-                      left: `${((0.030 - 0.005) / 0.095) * 100}%`,
-                      pointerEvents: "none",
-                      transform: "translateX(-50%)",
-                      zIndex: 1
-                    }}
-                    title="Default: 0.030"
-                  />
-                  <input
-                    type="range"
-                    min="0.005"
-                    max="0.100"
-                    step="0.001"
-                    value={grainScale}
-                    onChange={(e) => setGrainScale(parseFloat(e.target.value))}
-                    style={{
-                      width: "100%",
-                      zIndex: 2
-                    }}
-                  />
-                </div>
-              </div>
-
-              {/* Slider for Octaves */}
-              <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <span className="text-[9px] font-mono tracking-wider text-white/50 uppercase select-none">
-                    Roughness
-                  </span>
-                  <span className="text-[9px] font-mono text-white/70 font-bold">{octaves}</span>
-                </div>
-                <div style={{ position: "relative", width: "100%", height: "12px", display: "flex", alignItems: "center" }}>
-                  <div 
-                    className="abyss-slider-tick"
-                    style={{
-                      position: "absolute",
-                      left: "50%",
-                      pointerEvents: "none",
-                      transform: "translateX(-50%)",
-                      zIndex: 1
-                    }}
-                    title="Default: 3"
-                  />
-                  <input
-                    type="range"
-                    min="1"
-                    max="5"
-                    step="1"
-                    value={octaves}
-                    onChange={(e) => setOctaves(parseInt(e.target.value))}
-                    style={{
-                      width: "100%",
-                      zIndex: 2
-                    }}
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div style={{ height: "1px", backgroundColor: "rgba(255, 255, 255, 0.08)" }} />
-
-            {/* SECTION 2: WIND DIRECTION */}
-            <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-              <span className="text-[9px] font-mono tracking-widest text-white/65 uppercase select-none">
-                Wind Direction
-              </span>
-              
-              {/* Pattern buttons */}
-              <div style={{ display: "flex", gap: "4px" }}>
-                {(["linear", "radial"] as const).map((p) => (
-                  <button
-                    key={p}
-                    onClick={() => setWindPattern(p)}
-                    className={`abyss-segment-button ${windPattern === p ? "abyss-segment-button-active" : ""}`}
-                    style={{
-                      flex: 1,
-                      borderRadius: "6px",
-                      padding: "4px 0",
-                      cursor: "pointer",
-                      textTransform: "uppercase"
-                    }}
-                  >
-                    {p}
-                  </button>
-                ))}
-              </div>
-
-              {windPattern === "linear" ? (
-                <>
-                  {/* Slider for Wind Angle */}
-                  <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                      <span className="text-[9px] font-mono tracking-wider text-white/50 uppercase select-none">
-                        Angle
-                      </span>
-                      <span className="text-[9px] font-mono text-white/70 font-bold">{windAngle}°</span>
-                    </div>
-                    <div style={{ position: "relative", width: "100%", height: "12px", display: "flex", alignItems: "center" }}>
-                      <div 
-                        className="abyss-slider-tick"
-                        style={{
-                          position: "absolute",
-                          left: "50%",
-                          pointerEvents: "none",
-                          transform: "translateX(-50%)",
-                          zIndex: 1
-                        }}
-                        title="Default: 180°"
-                      />
-                      <input
-                        type="range"
-                        min="0"
-                        max="360"
-                        step="5"
-                        value={windAngle}
-                        onChange={(e) => setWindAngle(parseInt(e.target.value))}
-                        style={{
-                          width: "100%",
-                          zIndex: 2
-                        }}
-                      />
-                    </div>
-                  </div>
-
-                  {/* Slider for Wind Stretch */}
-                  <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                      <span className="text-[9px] font-mono tracking-wider text-white/50 uppercase select-none">
-                        Stretch Shift
-                      </span>
-                      <span className="text-[9px] font-mono text-white/70 font-bold">{windStretch.toFixed(1)}x</span>
-                    </div>
-                    <div style={{ position: "relative", width: "100%", height: "12px", display: "flex", alignItems: "center" }}>
-                      <div 
-                        className="abyss-slider-tick"
-                        style={{
-                          position: "absolute",
-                          left: `${(2.5 / 4.0) * 100}%`,
-                          pointerEvents: "none",
-                          transform: "translateX(-50%)",
-                          zIndex: 1
-                        }}
-                        title="Default: 2.5x"
-                      />
-                      <input
-                        type="range"
-                        min="0.0"
-                        max="4.0"
-                        step="0.1"
-                        value={windStretch}
-                        onChange={(e) => setWindStretch(parseFloat(e.target.value))}
-                        style={{
-                          width: "100%",
-                          zIndex: 2
-                        }}
-                      />
-                    </div>
-                  </div>
-                </>
-              ) : (
-                <div style={{ fontSize: "8px", color: "rgba(255,255,255,0.4)", padding: "4px 0", fontStyle: "italic" }}>
-                  Radial stretch centers expansion coordinates outward from pixel centroid.
-                </div>
-              )}
-            </div>
-
-            <div style={{ height: "1px", backgroundColor: "rgba(255, 255, 255, 0.08)" }} />
-
-            {/* SECTION 3: BORDER GLOW */}
-            <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-              <span className="text-[9px] font-mono tracking-widest text-white/65 uppercase select-none">
-                Glowing Edge
-              </span>
-              
-              {/* Slider for Edge Width */}
-              <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <span className="text-[9px] font-mono tracking-wider text-white/50 uppercase select-none">
-                    Glow Thickness
-                  </span>
-                  <span className="text-[9px] font-mono text-white/70 font-bold">{(edgeWidth * 100).toFixed(0)}%</span>
-                </div>
-                <div style={{ position: "relative", width: "100%", height: "12px", display: "flex", alignItems: "center" }}>
-                  <div 
-                    className="abyss-slider-tick"
-                    style={{
-                      position: "absolute",
-                      left: `${(0.04 / 0.15) * 100}%`,
-                      pointerEvents: "none",
-                      transform: "translateX(-50%)",
-                      zIndex: 1
-                    }}
-                    title="Default: 4%"
-                  />
-                  <input
-                    type="range"
-                    min="0.00"
-                    max="0.15"
-                    step="0.005"
-                    value={edgeWidth}
-                    onChange={(e) => setEdgeWidth(parseFloat(e.target.value))}
-                    style={{
-                      width: "100%",
-                      zIndex: 2
-                    }}
-                  />
-                </div>
-              </div>
-
-              {/* Edge Color presets */}
-              {edgeWidth > 0 && (
-                <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                  <span className="text-[9px] font-mono tracking-wider text-white/50 uppercase select-none">
-                    Glow Color
-                  </span>
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: "4px" }}>
-                    {[
-                      { r: 223, g: 177, b: 91, name: "GOLD" },
-                      { r: 223, g: 110, b: 59, name: "AMBER" },
-                      { r: 91, g: 223, b: 140, name: "EMERALD" },
-                      { r: 91, g: 199, b: 223, name: "CYAN" },
-                      { r: 223, g: 91, b: 177, name: "MAGENTA" }
-                    ].map((c) => (
-                      <button
-                        key={c.name}
-                        onClick={() => setEdgeColor(c)}
-                        className={`abyss-segment-button ${edgeColor.name === c.name ? "abyss-segment-button-active" : ""}`}
-                        style={{
-                          borderRadius: "6px",
-                          padding: "4px 8px",
-                          cursor: "pointer"
-                        }}
-                      >
-                        {c.name}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-
-            <div style={{ height: "1px", backgroundColor: "rgba(255, 255, 255, 0.08)" }} />
-
-            {/* SECTION 4: SPEED EASE PROFILE */}
-            <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-              <span className="text-[9px] font-mono tracking-widest text-white/65 uppercase select-none">
-                Transition Ease
-              </span>
-              
-              {/* Slider for Curve Ease Power */}
-              <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <span className="text-[9px] font-mono tracking-wider text-white/50 uppercase select-none">
-                    Exponent Power
-                  </span>
-                  <span className="text-[9px] font-mono text-white/70 font-bold">{curvePower.toFixed(1)}x</span>
-                </div>
-                <div style={{ position: "relative", width: "100%", height: "12px", display: "flex", alignItems: "center" }}>
-                  <div 
-                    className="abyss-slider-tick"
-                    style={{
-                      position: "absolute",
-                      left: `${((2.0 - 1.0) / 3.0) * 100}%`,
-                      pointerEvents: "none",
-                      transform: "translateX(-50%)",
-                      zIndex: 1
-                    }}
-                    title="Default: 2.0x"
-                  />
-                  <input
-                    type="range"
-                    min="1.0"
-                    max="4.0"
-                    step="0.1"
-                    value={curvePower}
-                    onChange={(e) => setCurvePower(parseFloat(e.target.value))}
-                    style={{
-                      width: "100%",
-                      zIndex: 2
-                    }}
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
     </div>
   );
 };

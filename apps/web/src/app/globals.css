@@ -113,6 +113,9 @@
     -webkit-mask: 
       linear-gradient(#fff 0 0) padding-box, 
       linear-gradient(#fff 0 0) border-box;
+    mask: 
+      linear-gradient(#fff 0 0) padding-box, 
+      linear-gradient(#fff 0 0) border-box;
     -webkit-mask-composite: destination-out;
     mask-composite: exclude;
   }
@@ -423,4 +426,23 @@
   animation: abyssNoise 0.5s infinite steps(4);
   pointer-events: none;
   mix-blend-mode: overlay;
+}
+
+/* Thin dark scrollbar for command palette and dark panels */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,0.12) transparent;
+}
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.12);
+  border-radius: 3px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(255,255,255,0.25);
 }

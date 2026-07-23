@@ -42,13 +42,22 @@ const LABELS = [
 
 
 
-export const ApparatusCylinderScroll: React.FC<ApparatusCylinderScrollProps> = ({
-  imageSrc,
+export const ApparatusCylinderScroll: React.FC<ApparatusCylinderScrollProps & {
+  baseSigma?: number;
+  maxBlur?: number;
+  cardGap?: number;
+  pathBend?: number;
+}> = ({
   images,
+  imageSrc,
   scrollProgress,
   className = "",
   style,
-  onLifecycleChange
+  onLifecycleChange,
+  baseSigma: propBaseSigma,
+  maxBlur: propMaxBlur,
+  cardGap: propCardGap,
+  pathBend: propPathBend,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
@@ -56,16 +65,15 @@ export const ApparatusCylinderScroll: React.FC<ApparatusCylinderScrollProps> = (
   const lastStateRef = useRef<"idle" | "discovery" | "buildUp" | "peak" | "recovery" >("idle");
 
   // Config States
-  const [dropdownOpen, setDropdownOpen] = useState(true);
-  const [baseSigma, setBaseSigma] = useState(350); // Width of the Gaussian swell
-  const [smoothFactor, setSmoothFactor] = useState(0.03); // Scroll smoothness
+  const baseSigma = propBaseSigma ?? 350; // Width of the Gaussian swell
+  const [smoothFactor] = useState(0.03); // Scroll smoothness
   const [containerHeight, setContainerHeight] = useState(800);
-  const [maxBlur, setMaxBlur] = useState(2); // Maximum blur (0 to 24px)
-  const [minScaleY, setMinScaleY] = useState(0.2); // Card height scale when off-focus
-  const [cardGap, setCardGap] = useState(28); // Gap spacing between cards
-  const [activeWidth, setActiveWidth] = useState(0.5); // In-focus card width factor
-  const [tiltPower, setTiltPower] = useState(0); // Interaction tilt power
-  const [pathBend, setPathBend] = useState(0); // 3D cylindrical bend factor
+  const maxBlur = propMaxBlur ?? 2; // Maximum blur (0 to 24px)
+  const [minScaleY] = useState(0.2); // Card height scale when off-focus
+  const cardGap = propCardGap ?? 28; // Gap spacing between cards
+  const [activeWidth] = useState(0.5); // In-focus card width factor
+  const [tiltPower] = useState(0); // Interaction tilt power
+  const pathBend = propPathBend ?? 0; // 3D cylindrical bend factor
 
   const targetScrollRef = useRef(-0.08);
   const [activeIdx, setActiveIdx] = useState(0);
@@ -454,7 +462,7 @@ export const ApparatusCylinderScroll: React.FC<ApparatusCylinderScrollProps> = (
                 }}
                 onMouseMove={(e) => handleMouseMove(e, idx)}
                 onMouseLeave={() => handleMouseLeave(idx)}
-                className="w-full h-full origin-center border border-white/5 bg-neutral-900 overflow-hidden cursor-crosshair [transform-style:preserve-3d]"
+                className="w-full h-full origin-center bg-neutral-900 overflow-hidden cursor-crosshair [transform-style:preserve-3d]"
                 style={{
                   willChange: "transform",
                   boxShadow: "0 25px 60px rgba(0, 0, 0, 0.65)"
@@ -587,240 +595,6 @@ export const ApparatusCylinderScroll: React.FC<ApparatusCylinderScrollProps> = (
             ))}
           </div>
         </div>
-      </div>
-
-      {/* Dynamic Controls Panel */}
-      <div
-        className="absolute z-[100] pointer-events-auto"
-        style={{
-          top: "24px",
-          right: "24px",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "flex-end",
-          gap: "8px"
-        }}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <button
-          onClick={() => setDropdownOpen(!dropdownOpen)}
-          className="abyss-controls-trigger"
-        >
-          <span>Ripple Controls</span>
-          <svg
-            width="8"
-            height="8"
-            viewBox="0 0 8 8"
-            fill="none"
-            style={{
-              transform: dropdownOpen ? "rotate(180deg)" : "rotate(0deg)",
-              transition: "transform 0.3s",
-              stroke: "rgba(255, 255, 255, 0.6)",
-              strokeWidth: "1.5"
-            }}
-          >
-            <path d="M1 2.5L4 5.5L7 2.5" />
-          </svg>
-        </button>
-
-        {dropdownOpen && (
-          <div className="abyss-controls-panel">
-            <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-              {/* Focus width slider */}
-              <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                  <span className="text-[9px] font-mono tracking-widest text-white/65 uppercase">
-                    Focus Width (Sigma)
-                  </span>
-                  <span className="text-[9px] font-mono text-white/50">{baseSigma}px</span>
-                </div>
-                <input
-                  type="range"
-                  min="80"
-                  max="350"
-                  step="10"
-                  value={baseSigma}
-                  onChange={(e) => setBaseSigma(Number(e.target.value))}
-                  style={{
-                    background: `linear-gradient(to right, #6ec49a 0%, #6ec49a ${((baseSigma - 80) / 270) * 100}%, rgba(255, 255, 255, 0.08) ${((baseSigma - 80) / 270) * 100}%, rgba(255, 255, 255, 0.08) 100%)`
-                  }}
-                />
-              </div>
-
-              {/* Scroll smoothness slider */}
-              <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                  <span className="text-[9px] font-mono tracking-widest text-white/65 uppercase">
-                    Scroll Smoothness
-                  </span>
-                  <span className="text-[9px] font-mono text-white/50">{smoothFactor}</span>
-                </div>
-                <input
-                  type="range"
-                  min="0.01"
-                  max="0.30"
-                  step="0.01"
-                  value={smoothFactor}
-                  onChange={(e) => setSmoothFactor(Number(e.target.value))}
-                  style={{
-                    background: `linear-gradient(to right, #6ec49a 0%, #6ec49a ${((smoothFactor - 0.01) / 0.29) * 100}%, rgba(255, 255, 255, 0.08) ${((smoothFactor - 0.01) / 0.29) * 100}%, rgba(255, 255, 255, 0.08) 100%)`
-                  }}
-                />
-              </div>
-
-              {/* Max Blur Slider */}
-              <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                  <span className="text-[9px] font-mono tracking-widest text-white/65 uppercase">
-                    Max Blur Limit
-                  </span>
-                  <span className="text-[9px] font-mono text-white/50">{maxBlur}px</span>
-                </div>
-                <input
-                  type="range"
-                  min="0"
-                  max="20"
-                  step="1"
-                  value={maxBlur}
-                  onChange={(e) => setMaxBlur(Number(e.target.value))}
-                  style={{
-                    background: `linear-gradient(to right, #6ec49a 0%, #6ec49a ${(maxBlur / 20) * 100}%, rgba(255, 255, 255, 0.08) ${(maxBlur / 20) * 100}%, rgba(255, 255, 255, 0.08) 100%)`
-                  }}
-                />
-              </div>
-
-              {/* Min Scale Y Slider */}
-              <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                  <span className="text-[9px] font-mono tracking-widest text-white/65 uppercase">
-                    Compressed Height
-                  </span>
-                  <span className="text-[9px] font-mono text-white/50">{minScaleY}x</span>
-                </div>
-                <input
-                  type="range"
-                  min="0.10"
-                  max="0.50"
-                  step="0.05"
-                  value={minScaleY}
-                  onChange={(e) => setMinScaleY(Number(e.target.value))}
-                  style={{
-                    background: `linear-gradient(to right, #6ec49a 0%, #6ec49a ${((minScaleY - 0.1) / 0.4) * 100}%, rgba(255, 255, 255, 0.08) ${((minScaleY - 0.1) / 0.4) * 100}%, rgba(255, 255, 255, 0.08) 100%)`
-                  }}
-                />
-              </div>
-
-              {/* Active Width Factor Slider */}
-              <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                  <span className="text-[9px] font-mono tracking-widest text-white/65 uppercase">
-                    In-Focus Width
-                  </span>
-                  <span className="text-[9px] font-mono text-white/50">{activeWidth}x</span>
-                </div>
-                <input
-                  type="range"
-                  min="0.50"
-                  max="1.00"
-                  step="0.05"
-                  value={activeWidth}
-                  onChange={(e) => setActiveWidth(Number(e.target.value))}
-                  style={{
-                    background: `linear-gradient(to right, #6ec49a 0%, #6ec49a ${((activeWidth - 0.5) / 0.5) * 100}%, rgba(255, 255, 255, 0.08) ${((activeWidth - 0.5) / 0.5) * 100}%, rgba(255, 255, 255, 0.08) 100%)`
-                  }}
-                />
-              </div>
-
-              {/* Card Spacing Gap Slider */}
-              <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                  <span className="text-[9px] font-mono tracking-widest text-white/65 uppercase">
-                    Card Gap Spacing
-                  </span>
-                  <span className="text-[9px] font-mono text-white/50">{cardGap}px</span>
-                </div>
-                <input
-                  type="range"
-                  min="8"
-                  max="48"
-                  step="2"
-                  value={cardGap}
-                  onChange={(e) => setCardGap(Number(e.target.value))}
-                  style={{
-                    background: `linear-gradient(to right, #6ec49a 0%, #6ec49a ${((cardGap - 8) / 40) * 100}%, rgba(255, 255, 255, 0.08) ${((cardGap - 8) / 40) * 100}%, rgba(255, 255, 255, 0.08) 100%)`
-                  }}
-                />
-              </div>
-
-              {/* Hover Tilt Power Slider */}
-              <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                  <span className="text-[9px] font-mono tracking-widest text-white/65 uppercase">
-                    Hover Tilt angle
-                  </span>
-                  <span className="text-[9px] font-mono text-white/50">{tiltPower}°</span>
-                </div>
-                <input
-                  type="range"
-                  min="0"
-                  max="30"
-                  step="1"
-                  value={tiltPower}
-                  onChange={(e) => setTiltPower(Number(e.target.value))}
-                  style={{
-                    background: `linear-gradient(to right, #6ec49a 0%, #6ec49a ${(tiltPower / 30) * 100}%, rgba(255, 255, 255, 0.08) ${(tiltPower / 30) * 100}%, rgba(255, 255, 255, 0.08) 100%)`
-                  }}
-                />
-              </div>
-
-              {/* Path Curvature Slider */}
-              <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                  <span className="text-[9px] font-mono tracking-widest text-white/65 uppercase">
-                    Path Curvature
-                  </span>
-                  <span className="text-[9px] font-mono text-white/50">{pathBend}%</span>
-                </div>
-                <input
-                  type="range"
-                  min="0"
-                  max="100"
-                  step="5"
-                  value={pathBend}
-                  onChange={(e) => setPathBend(Number(e.target.value))}
-                  style={{
-                    background: `linear-gradient(to right, #6ec49a 0%, #6ec49a ${pathBend}%, rgba(255, 255, 255, 0.08) ${pathBend}%, rgba(255, 255, 255, 0.08) 100%)`
-                  }}
-                />
-              </div>
-
-              {/* Reset to Defaults button */}
-              <div style={{
-                borderTop: "1px solid rgba(255, 255, 255, 0.08)",
-                paddingTop: "10px",
-                marginTop: "4px",
-                display: "flex",
-                justifyContent: "center"
-              }}>
-                <button
-                  onClick={() => {
-                    setBaseSigma(350);
-                    setSmoothFactor(0.03);
-                    setMaxBlur(2);
-                    setMinScaleY(0.2);
-                    setCardGap(28);
-                    setActiveWidth(0.5);
-                    setTiltPower(0);
-                    setPathBend(0);
-                  }}
-                  className="py-1.5 px-3 rounded-md text-[9px] font-mono border border-white/10 bg-white/5 text-[#6ec49a] hover:bg-white/10 hover:text-[#5eb389] transition-all select-none cursor-pointer w-full text-center"
-                >
-                  Reset Focal plane
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
 
       {/* Dynamic Cinematic Vignette Overlay */}

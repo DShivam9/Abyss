@@ -35,7 +35,23 @@ export async function GET(req: NextRequest) {
   const componentPath = path.join(baseCorePath, "src/components", resolvedSlug);
 
   try {
-    if (type === "tsx") {
+    if (type === "story") {
+      const docsPath = fs.existsSync(path.join(process.cwd(), "docs/component-breakdowns.md"))
+        ? path.join(process.cwd(), "docs/component-breakdowns.md")
+        : path.resolve(process.cwd(), "../../docs/component-breakdowns.md");
+
+      if (fs.existsSync(docsPath)) {
+        const fullContent = fs.readFileSync(docsPath, "utf8");
+        const sections = fullContent.split(/(?=\n## )/);
+        const match = sections.find((sec) => sec.includes(resolvedSlug));
+        if (match) {
+          return new NextResponse(match.trim(), {
+            headers: { "Content-Type": "text/plain" },
+          });
+        }
+      }
+      return new NextResponse("", { status: 404 });
+    } else if (type === "tsx") {
       const tsxFilePath = path.join(componentPath, "index.tsx");
       if (!fs.existsSync(tsxFilePath)) {
         return NextResponse.json({ error: "Component file not found" }, { status: 404 });

@@ -3,12 +3,19 @@ import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { ApparatusAccordionWallProps } from "./types";
 
-export const ApparatusAccordionWall: React.FC<ApparatusAccordionWallProps> = ({
+export const ApparatusAccordionWall: React.FC<ApparatusAccordionWallProps & {
+  panelCount?: number;
+  speed?: number;
+  triggerMode?: "hover" | "click";
+}> = ({
   images = [],
   titles: _titles = [],
   interactiveMode = "hover",
   activePanelIndex,
   onActivePanelChange,
+  panelCount = 5,
+  speed = 0.65,
+  triggerMode,
   className = "",
   style,
   onLifecycleChange,
@@ -21,19 +28,10 @@ export const ApparatusAccordionWall: React.FC<ApparatusAccordionWallProps> = ({
   const [localActiveIdx, setLocalActiveIdx] = useState<number | null>(null);
   const activeIdx = activePanelIndex !== undefined ? activePanelIndex : localActiveIdx;
 
-  // Interactive controls states
-  const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [activePanelCount, setActivePanelCount] = useState(5);
-  const [activeDuration, setActiveDuration] = useState(0.65);
-  const [activeInteractiveMode, setActiveInteractiveMode] = useState(interactiveMode);
-  
-  // Hover guard state to prevent accordion movements when hovering controls
-  const [hoveringControls, setHoveringControls] = useState(false);
-
-  // Sync props to states
-  useEffect(() => {
-    setActiveInteractiveMode(interactiveMode);
-  }, [interactiveMode]);
+  // Interactive controls states derived from props
+  const activePanelCount = panelCount;
+  const activeDuration = speed;
+  const activeInteractiveMode = triggerMode || interactiveMode;
 
   // Curated fallbacks for images
   const allImages = React.useMemo(() => {
@@ -61,20 +59,6 @@ export const ApparatusAccordionWall: React.FC<ApparatusAccordionWallProps> = ({
     panelsRef.current = panelsRef.current.slice(0, activePanelCount);
   }, [activePanelCount]);
 
-  // Close dropdown on click outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        togglePanelRef.current &&
-        !togglePanelRef.current.contains(event.target as Node)
-      ) {
-        setDropdownOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
   // Lifecycle updates
   const triggerLifecycle = React.useCallback((state: "idle" | "discovery" | "buildUp" | "peak" | "recovery") => {
     onLifecycleChange?.(state);
@@ -98,7 +82,6 @@ export const ApparatusAccordionWall: React.FC<ApparatusAccordionWallProps> = ({
   };
 
   const handlePanelInteraction = (idx: number) => {
-    if (hoveringControls) return;
     if (activeInteractiveMode === "click") {
       if (activeIdx === idx) {
         updateActivePanel(null);
@@ -109,7 +92,6 @@ export const ApparatusAccordionWall: React.FC<ApparatusAccordionWallProps> = ({
   };
 
   const handlePanelMouseEnter = (idx: number) => {
-    if (hoveringControls) return;
     if (activeInteractiveMode === "hover") {
       updateActivePanel(idx);
     }
@@ -199,147 +181,7 @@ export const ApparatusAccordionWall: React.FC<ApparatusAccordionWallProps> = ({
         }
       `}</style>
 
-      {/* Controls Dropdown Menu (Top-right corner, glassmorphic panel) */}
-      <div 
-        ref={togglePanelRef}
-        className="absolute z-30 pointer-events-auto"
-        style={{
-          top: "16px",
-          right: "16px",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "flex-end",
-          gap: "8px",
-        }}
-        onClick={(e) => {
-          e.stopPropagation();
-          e.preventDefault();
-        }}
-        onMouseEnter={() => {
-          setHoveringControls(true);
-          updateActivePanel(null);
-        }}
-        onMouseLeave={() => setHoveringControls(false)}
-      >
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            setDropdownOpen(!dropdownOpen);
-          }}
-          className="abyss-controls-trigger"
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "8px",
-            backgroundColor: "rgba(13, 13, 15, 0.8)",
-            color: "#ffffff",
-            padding: "6px 14px",
-            border: "1px solid rgba(255, 255, 255, 0.1)",
-            borderRadius: "9999px",
-            backdropFilter: "blur(12px)",
-            boxShadow: "0 4px 12px rgba(0, 0, 0, 0.3)",
-            fontSize: "10px",
-            fontFamily: "monospace",
-            textTransform: "uppercase",
-            letterSpacing: "0.15em",
-            cursor: "pointer",
-            transition: "border-color 0.3s, background-color 0.3s",
-            outline: "none"
-          }}
-        >
-          <span>Controls</span>
-          <svg 
-            width="8" 
-            height="8" 
-            viewBox="0 0 8 8" 
-            fill="none" 
-            style={{ 
-              transform: dropdownOpen ? "rotate(180deg)" : "rotate(0deg)", 
-              transition: "transform 0.3s",
-              stroke: "rgba(255, 255, 255, 0.6)",
-              strokeWidth: "1.5"
-            }}
-          >
-            <path d="M1 2.5L4 5.5L7 2.5" />
-          </svg>
-        </button>
 
-        {dropdownOpen && (
-          <div
-            className="abyss-controls-panel"
-          >
-            {/* Slider: Panel Count */}
-            <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <span style={{ fontSize: "9px", fontFamily: "monospace", color: "rgba(255, 255, 255, 0.5)", letterSpacing: "0.08em", textTransform: "uppercase" }}>
-                  Panels
-                </span>
-                <span style={{ fontSize: "9px", fontFamily: "monospace", color: "rgba(255, 255, 255, 0.7)", fontWeight: "bold" }}>
-                  {activePanelCount}
-                </span>
-              </div>
-              <input 
-                type="range"
-                min="3"
-                max="8"
-                step="1"
-                value={activePanelCount}
-                onChange={(e) => setActivePanelCount(parseInt(e.target.value))}
-                style={{
-                  width: "100%",
-                }}
-              />
-            </div>
-
-            {/* Slider: Speed/Duration */}
-            <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <span style={{ fontSize: "9px", fontFamily: "monospace", color: "rgba(255, 255, 255, 0.5)", letterSpacing: "0.08em", textTransform: "uppercase" }}>
-                  Speed
-                </span>
-                <span style={{ fontSize: "9px", fontFamily: "monospace", color: "rgba(255, 255, 255, 0.7)", fontWeight: "bold" }}>
-                  {activeDuration.toFixed(2)}s
-                </span>
-              </div>
-              <input 
-                type="range"
-                min="0.3"
-                max="1.5"
-                step="0.05"
-                value={activeDuration}
-                onChange={(e) => setActiveDuration(parseFloat(e.target.value))}
-                style={{
-                  width: "100%",
-                }}
-              />
-            </div>
-
-            {/* Trigger Toggle: Hover vs Click */}
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "16px" }}>
-              <span style={{ fontSize: "9px", fontFamily: "monospace", color: "rgba(255, 255, 255, 0.65)", letterSpacing: "0.1em", textTransform: "uppercase" }}>
-                Trigger
-              </span>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  const mode = activeInteractiveMode === "hover" ? "click" : "hover";
-                  setActiveInteractiveMode(mode);
-                  updateActivePanel(null);
-                }}
-                className="abyss-segment-button"
-                style={{
-                  padding: "4px 8px",
-                  borderRadius: "4px",
-                  cursor: "pointer",
-                  textTransform: "uppercase"
-                }}
-              >
-                {activeInteractiveMode}
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
 
       {visibleImages.map((img, idx) => {
         const isActive = activeIdx === idx;

@@ -28,7 +28,8 @@ export function SmoothScrollProvider({ children }: { children: ReactNode }) {
       lenis.raf(time * 1000); // GSAP is in seconds, Lenis is in ms
     };
     gsap.ticker.add(updateTicker);
-    gsap.ticker.lagSmoothing(0);
+    // Enable GSAP lag smoothing to prevent animation stuttering on frame drops
+    gsap.ticker.lagSmoothing(500, 33);
 
     // Watch for DOM height changes and resize Lenis
     const resizeObserver = new ResizeObserver(() => {

@@ -18,13 +18,24 @@ const getWrappedIndex = (val: number, len: number) => {
   return ((val % len) + len) % len;
 };
 
-export const ApparatusVenetianBlinds: React.FC<ApparatusVenetianBlindsProps> = ({
+export const ApparatusVenetianBlinds: React.FC<ApparatusVenetianBlindsProps & {
+  slatCount?: number;
+  duration?: number;
+  staggerDelay?: number;
+  parallaxEnabled?: boolean;
+  edgeHighlightEnabled?: boolean;
+  backlightEnabled?: boolean;
+  direction?: "center-out" | "top-to-bottom" | "bottom-to-top" | "edges-in";
+}> = ({
   imageSrc,
   images = [],
-  slatCount = 10,
-  duration = 0.8,
-  staggerDelay = 0.04,
-  direction = "center-out",
+  slatCount: propSlatCount = 12,
+  duration: propDuration = 0.8,
+  staggerDelay: propStaggerDelay = 0.04,
+  parallaxEnabled: propParallaxEnabled = true,
+  edgeHighlightEnabled: propEdgeHighlightEnabled = true,
+  backlightEnabled: propBacklightEnabled = true,
+  direction: propDirection = "center-out",
   className = "",
   style,
   onLifecycleChange,
@@ -39,14 +50,14 @@ export const ApparatusVenetianBlinds: React.FC<ApparatusVenetianBlindsProps> = (
   const frontImagesRef = useRef<(HTMLDivElement | null)[]>([]);
   const backImagesRef = useRef<(HTMLDivElement | null)[]>([]);
   
-  // Interactive controls state
-  const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [parallaxEnabled, setParallaxEnabled] = useState(true);
-  const [edgeHighlightEnabled, setEdgeHighlightEnabled] = useState(true);
-  const [backlightEnabled, setBacklightEnabled] = useState(true);
-  const [activeSlatCount, setActiveSlatCount] = useState(slatCount);
-  const [activeDuration, setActiveDuration] = useState(duration);
-  const [activeDirection, setActiveDirection] = useState(direction);
+  // Interactive controls values from props
+  const parallaxEnabled = propParallaxEnabled;
+  const edgeHighlightEnabled = propEdgeHighlightEnabled;
+  const backlightEnabled = propBacklightEnabled;
+  const activeSlatCount = propSlatCount;
+  const activeDuration = propDuration;
+  const activeDirection = propDirection;
+  const staggerDelay = propStaggerDelay;
 
   const [isTransitioning, setIsTransitioning] = useState(false);
   const mousePos = useRef({ x: 0, y: 0 });
@@ -55,19 +66,6 @@ export const ApparatusVenetianBlinds: React.FC<ApparatusVenetianBlindsProps> = (
   const smoothProgressRef = useRef({ val: scrollProgress });
   const [activeProgressState, setActiveProgressState] = useState(scrollProgress);
 
-  // Sync props to state if they change externally
-  useEffect(() => {
-    setActiveSlatCount(slatCount);
-  }, [slatCount]);
-
-  useEffect(() => {
-    setActiveDuration(duration);
-  }, [duration]);
-
-  useEffect(() => {
-    setActiveDirection(direction);
-  }, [direction]);
-
   // Trim refs arrays when activeSlatCount changes to prevent memory leaks/stale elements
   useEffect(() => {
     slatsRef.current = slatsRef.current.slice(0, activeSlatCount);
@@ -75,20 +73,6 @@ export const ApparatusVenetianBlinds: React.FC<ApparatusVenetianBlindsProps> = (
     frontImagesRef.current = frontImagesRef.current.slice(0, activeSlatCount);
     backImagesRef.current = backImagesRef.current.slice(0, activeSlatCount);
   }, [activeSlatCount]);
-
-  // Close dropdown on click outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        togglePanelRef.current &&
-        !togglePanelRef.current.contains(event.target as Node)
-      ) {
-        setDropdownOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
 
   // Combine imageSrc and images array, fallback to curated list if short
   const allImages = React.useMemo(() => {
@@ -252,9 +236,43 @@ export const ApparatusVenetianBlinds: React.FC<ApparatusVenetianBlindsProps> = (
     }
   }, [activeSlatCount, activeDuration, staggerDelay, activeDirection, parallaxEnabled, backlightEnabled, triggerLifecycle]);
 
+  // Sync updateBlinds whenever activeProgressState changes
+  useEffect(() => {
+    updateBlinds(activeProgressState);
+  }, [activeProgressState, updateBlinds]);
+
+  // Add wheel listener for self-contained scroll/wheel interaction
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+
+    let wheelTimeout: any = null;
+    const handleWheel = (e: WheelEvent) => {
+      e.preventDefault();
+      const delta = e.deltaY * 0.0015;
+      setActiveProgressState((prev) => {
+        const next = Math.max(0, prev + delta);
+        onScrollProgressChange?.(next);
+        return next;
+      });
+      triggerLifecycle("buildUp");
+
+      if (wheelTimeout) clearTimeout(wheelTimeout);
+      wheelTimeout = setTimeout(() => {
+        triggerLifecycle("idle");
+      }, 150);
+    };
+
+    el.addEventListener("wheel", handleWheel, { passive: false });
+    return () => {
+      el.removeEventListener("wheel", handleWheel);
+      if (wheelTimeout) clearTimeout(wheelTimeout);
+    };
+  }, [onScrollProgressChange, triggerLifecycle]);
+
   // Scroll progress scrubbing with smooth inertial lag
   useGSAP(() => {
-    if (scrollProgress === undefined) return;
+    if (scrollProgress === undefined || scrollProgress === 0) return;
 
     gsap.to(smoothProgressRef.current, {
       val: scrollProgress,
@@ -263,63 +281,66 @@ export const ApparatusVenetianBlinds: React.FC<ApparatusVenetianBlindsProps> = (
       overwrite: "auto",
       onUpdate: () => {
         const val = smoothProgressRef.current.val;
-        updateBlinds(val);
         setActiveProgressState(val);
+        updateBlinds(val);
       }
     });
-  }, [scrollProgress, updateBlinds]);
+  }, [scrollProgress]);
 
-  // Hover and proximity tilt tracking
   const handleMouseMove = contextSafe((e: React.MouseEvent<HTMLDivElement>) => {
-    const isFlat = scrollProgress % 1 === 0;
+    const isFlat = activeProgressState % 1 === 0;
     if (isTransitioning || !isFlat) return;
-    if (!containerRef.current) return;
 
-    const rect = containerRef.current.getBoundingClientRect();
-    const x = (e.clientX - rect.left) / rect.width - 0.5;
-    const y = (e.clientY - rect.top) / rect.height - 0.5;
+    const container = containerRef.current;
+    if (!container) return;
 
-    mousePos.current = { x, y };
+    const rect = container.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
 
-    // Micro-tilt the container
-    gsap.to(containerRef.current, {
-      rotateY: x * 8,
-      rotateX: -y * 8,
-      duration: 0.5,
-      ease: "power2.out",
-      overwrite: "auto",
-    });
+    const normX = (x / rect.width - 0.5) * 2;
+    const normY = (y / rect.height - 0.5) * 2;
 
-    // Tilt individual slats slightly towards the cursor (Discovery effect)
+    mousePos.current = { x: normX, y: normY };
+
+    if (parallaxEnabled) {
+      gsap.to(container, {
+        rotateY: normX * 8,
+        rotateX: -normY * 8,
+        duration: 0.4,
+        ease: "power1.out",
+        overwrite: "auto",
+      });
+    }
+
     slatsRef.current.forEach((slat, idx) => {
       if (!slat) return;
-      
-      const slatCenterY = (idx + 0.5) / activeSlatCount - 0.5;
-      const distY = Math.abs(y - slatCenterY);
-      const intensity = Math.max(0, 1 - distY * 2);
+      const center = (activeSlatCount - 1) / 2;
+      const dist = Math.abs(idx - center);
+      const slatFactor = 1 - dist / center;
 
       gsap.to(slat, {
-        rotateX: currentFlip * 180 - y * 15 * intensity,
-        z: intensity * 8,
-        duration: 0.4,
+        rotateX: currentFlip * 180 + normY * 5 * slatFactor,
+        rotateY: normX * 3 * slatFactor,
+        z: (1 - Math.abs(normX)) * 8,
+        duration: 0.3,
         ease: "power1.out",
         overwrite: "auto",
       });
     });
   });
 
-  const handleMouseEnter = () => {
-    const isFlat = scrollProgress % 1 === 0;
+  const handleMouseEnter = contextSafe(() => {
+    const isFlat = activeProgressState % 1 === 0;
     if (isTransitioning || !isFlat) return;
     triggerLifecycle("discovery");
-  };
+  });
 
   const handleMouseLeave = contextSafe(() => {
-    const isFlat = scrollProgress % 1 === 0;
+    const isFlat = activeProgressState % 1 === 0;
     if (isTransitioning || !isFlat) return;
     triggerLifecycle("idle");
 
-    // Reset container and slats to flat orientation
     gsap.to(containerRef.current, {
       rotateY: 0,
       rotateX: 0,
@@ -345,7 +366,7 @@ export const ApparatusVenetianBlinds: React.FC<ApparatusVenetianBlindsProps> = (
   const handleClick = contextSafe(() => {
     if (isTransitioning) return;
 
-    const currentVal = scrollProgress;
+    const currentVal = activeProgressState;
     const targetVal = Math.floor(currentVal) + 1;
 
     setIsTransitioning(true);
@@ -368,6 +389,7 @@ export const ApparatusVenetianBlinds: React.FC<ApparatusVenetianBlindsProps> = (
       onUpdate: function () {
         const ratio = this.progress(); // 0 to 1
         const val = currentVal + ratio * (targetVal - currentVal);
+        setActiveProgressState(val);
         onScrollProgressChange?.(val);
       }
     });
@@ -398,176 +420,6 @@ export const ApparatusVenetianBlinds: React.FC<ApparatusVenetianBlindsProps> = (
           zIndex: 0,
         }}
       />
-
-      {/* Controls Dropdown Menu (Top-right corner, glassmorphic panel) */}
-      <div 
-        ref={togglePanelRef}
-        className="absolute z-20 pointer-events-auto"
-        style={{
-          top: "16px",
-          right: "16px",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "flex-end",
-          gap: "8px",
-        }}
-        onClick={(e) => e.stopPropagation()} // Prevents clicks on controls from triggering flips
-      >
-        <button
-          onClick={() => setDropdownOpen(!dropdownOpen)}
-          className="abyss-controls-trigger"
-        >
-          <span>Controls</span>
-          <svg 
-            width="8" 
-            height="8" 
-            viewBox="0 0 8 8" 
-            fill="none" 
-            style={{ 
-              transform: dropdownOpen ? "rotate(180deg)" : "rotate(0deg)", 
-              transition: "transform 0.3s",
-              stroke: "rgba(255, 255, 255, 0.6)",
-              strokeWidth: "1.5"
-            }}
-          >
-            <path d="M1 2.5L4 5.5L7 2.5" />
-          </svg>
-        </button>
-
-        {dropdownOpen && (
-          <div
-            className="abyss-controls-panel"
-          >
-            {/* Toggle: Inner Parallax */}
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "16px" }}>
-              <span className="text-[9px] font-mono tracking-widest text-white/65 uppercase select-none">
-                Parallax
-              </span>
-              <button 
-                onClick={() => setParallaxEnabled(!parallaxEnabled)}
-                className={`abyss-toggle-switch ${parallaxEnabled ? 'abyss-toggle-switch-active' : 'abyss-toggle-switch-inactive'}`}
-              >
-                <div 
-                  className="abyss-toggle-knob"
-                  style={{
-                    transform: parallaxEnabled ? "translateX(14px)" : "translateX(0px)",
-                  }}
-                />
-              </button>
-            </div>
-
-            {/* Toggle: Edge Light */}
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "16px" }}>
-              <span className="text-[9px] font-mono tracking-widest text-white/65 uppercase select-none">
-                Edge Light
-              </span>
-              <button 
-                onClick={() => setEdgeHighlightEnabled(!edgeHighlightEnabled)}
-                className={`abyss-toggle-switch ${edgeHighlightEnabled ? 'abyss-toggle-switch-active' : 'abyss-toggle-switch-inactive'}`}
-              >
-                <div 
-                  className="abyss-toggle-knob"
-                  style={{
-                    transform: edgeHighlightEnabled ? "translateX(14px)" : "translateX(0px)",
-                  }}
-                />
-              </button>
-            </div>
-
-            {/* Toggle: Backlight Glow */}
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "16px" }}>
-              <span className="text-[9px] font-mono tracking-widest text-white/65 uppercase select-none">
-                Backlight
-              </span>
-              <button 
-                onClick={() => setBacklightEnabled(!backlightEnabled)}
-                className={`abyss-toggle-switch ${backlightEnabled ? 'abyss-toggle-switch-active' : 'abyss-toggle-switch-inactive'}`}
-              >
-                <div 
-                  className="abyss-toggle-knob"
-                  style={{
-                    transform: backlightEnabled ? "translateX(14px)" : "translateX(0px)",
-                  }}
-                />
-              </button>
-            </div>
-
-            {/* Slider: Slat Count */}
-            <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <span className="text-[9px] font-mono tracking-wider text-white/50 uppercase select-none">
-                  Slat Count
-                </span>
-                <span className="text-[9px] font-mono text-white/70 font-bold">
-                  {activeSlatCount}
-                </span>
-              </div>
-              <input 
-                type="range"
-                min="4"
-                max="20"
-                step="1"
-                value={activeSlatCount}
-                onChange={(e) => setActiveSlatCount(parseInt(e.target.value))}
-                style={{
-                  width: "100%",
-                }}
-              />
-            </div>
-
-            {/* Slider: Speed/Duration */}
-            <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <span className="text-[9px] font-mono tracking-wider text-white/50 uppercase select-none">
-                  Speed
-                </span>
-                <span className="text-[9px] font-mono text-white/70 font-bold">
-                  {activeDuration.toFixed(1)}s
-                </span>
-              </div>
-              <input 
-                type="range"
-                min="0.3"
-                max="2.0"
-                step="0.1"
-                value={activeDuration}
-                onChange={(e) => setActiveDuration(parseFloat(e.target.value))}
-                style={{
-                  width: "100%",
-                }}
-              />
-            </div>
-
-            {/* Toggle: Cascade Direction */}
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "16px" }}>
-              <span className="text-[9px] font-mono tracking-widest text-white/65 uppercase select-none">
-                Direction
-              </span>
-              <button
-                onClick={() => {
-                  const directions: ("top-to-bottom" | "bottom-to-top" | "center-out" | "edges-in")[] = [
-                    "center-out",
-                    "edges-in",
-                    "top-to-bottom",
-                    "bottom-to-top"
-                  ];
-                  const nextIdx = (directions.indexOf(activeDirection) + 1) % directions.length;
-                  setActiveDirection(directions[nextIdx]);
-                }}
-                className="abyss-segment-button"
-                style={{
-                  padding: "4px 8px",
-                  borderRadius: "4px",
-                  cursor: "pointer",
-                  textTransform: "uppercase"
-                }}
-              >
-                {activeDirection.replace(/-/g, " ")}
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
 
       {Array.from({ length: activeSlatCount }).map((_, idx) => {
         const topPercent = (idx * 100) / activeSlatCount;
