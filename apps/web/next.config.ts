@@ -2,7 +2,9 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   distDir: process.env.NODE_ENV === "production" ? ".next" : ".next-dev",
-  optimizePackageImports: ["framer-motion"],
+  experimental: {
+    optimizePackageImports: ["framer-motion"],
+  },
   images: {
     formats: ["image/webp"],
   },

@@ -6,7 +6,7 @@ interface ComponentCanvasProps {
   slug: string;
   category: string;
   previewType: "shader" | "scroll" | "gallery" | "transition" | "text";
-  Component: React.ComponentType<any>;
+  Component: React.ComponentType<Record<string, unknown>>;
   imageSrc: string;
   controlValues?: Record<string, number | boolean | string>;
 }
@@ -96,7 +96,7 @@ export function ComponentCanvas({
     return () => {
       el.removeEventListener("wheel", handleWheel);
     };
-  }, [previewType]);
+  }, [previewType, slug]);
 
   // Gallery drag state (for apparatus-ribbon and gallery previews)
   const [isDragging, setIsDragging] = useState(false);

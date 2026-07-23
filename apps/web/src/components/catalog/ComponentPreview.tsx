@@ -16,8 +16,6 @@ import {
   LayoutGrid,
   Layers,
   Zap,
-  Sliders,
-  ShieldCheck,
   ChevronLeft,
   ChevronRight,
   Type,
@@ -312,7 +310,6 @@ export function ComponentPreview({
   prevComponent,
   nextComponent,
   onSelectComponent,
-  categoryColor,
 }: ComponentPreviewProps) {
   const [codeOpen, setCodeOpen] = useState(true);
   const [storyContent, setStoryContent] = useState<string>("");

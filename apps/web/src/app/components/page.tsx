@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useMemo, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
-import { COMPONENT_DETAILS, ComponentDetail } from "@/lib/component-registry";
+import { COMPONENT_DETAILS } from "@/lib/component-registry";
 import { Sidebar } from "@/components/catalog/Sidebar";
 import { ComponentPreview } from "@/components/catalog/ComponentPreview";
 import { CommandPalette } from "@/components/catalog/CommandPalette";

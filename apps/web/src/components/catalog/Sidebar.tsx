@@ -3,7 +3,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { Search, X } from "lucide-react";
-import Lenis from "lenis";
 import { ComponentDetail } from "@/lib/component-registry";
 
 interface CategoryGroup {
@@ -147,7 +146,7 @@ export function Sidebar({
       <div className="flex-1 px-4 py-4 space-y-3">
         {filteredCategories.length === 0 ? (
           <div className="py-8 text-center text-xs text-neutral-500 font-mono">
-            No components match "{searchQuery}"
+            No components match &quot;{searchQuery}&quot;
           </div>
         ) : (
           filteredCategories.map((cat) => {

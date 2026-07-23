@@ -13,7 +13,6 @@ export interface VesselControlsProps {
 }
 
 export function VesselControls({
-  categoryDefaults,
   componentControls = [],
   values,
   onChange,
@@ -22,21 +21,17 @@ export function VesselControls({
 }: VesselControlsProps) {
   const [isOpen, setIsOpen] = useState(true);
 
-  const handleClose = () => {
-    setIsOpen(false);
-    onClose?.();
-  };
-
   // Close on ESC key
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape" && isOpen) {
-        handleClose();
+        setIsOpen(false);
+        onClose?.();
       }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isOpen]);
+  }, [isOpen, onClose]);
 
   const renderControl = (ctrl: ControlConfig) => {
     const val = values[ctrl.key] ?? ctrl.default;
@@ -193,7 +188,10 @@ export function VesselControls({
                 </button>
               )}
               <button
-                onClick={handleClose}
+                onClick={() => {
+                  setIsOpen(false);
+                  onClose?.();
+                }}
                 className="text-neutral-400 hover:text-white transition-colors p-1"
                 title="Close controls (ESC)"
               >
