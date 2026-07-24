@@ -331,7 +331,6 @@ function SidebarItem({ displayName, isSelected, onClick, activeItemRef }: Sideba
   const triggerScramble = () => {
     let frame = 0;
     const totalFrames = 50; // ~830ms smooth wave sweep duration
-    let animId: number;
 
     const animate = () => {
       frame++;
@@ -369,13 +368,13 @@ function SidebarItem({ displayName, isSelected, onClick, activeItemRef }: Sideba
       });
 
       if (frame < totalFrames) {
-        animId = requestAnimationFrame(animate);
+        requestAnimationFrame(animate);
       } else {
         setDisplayText(displayName);
       }
     };
 
-    animId = requestAnimationFrame(animate);
+    requestAnimationFrame(animate);
   };
 
   const handleClick = () => {

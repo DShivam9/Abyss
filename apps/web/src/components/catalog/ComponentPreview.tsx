@@ -7,7 +7,6 @@ import {
   ArrowRight,
   ArrowLeft,
   ArrowUpRight,
-  ExternalLink,
   Copy,
   Check,
   Terminal,
@@ -44,32 +43,7 @@ interface ComponentPreviewProps {
   categoryColor?: string;
 }
 
-function RollUpText({ text }: { text: string }) {
-  return (
-    <span className="relative inline-flex overflow-hidden font-sans">
-      <motion.span
-        variants={{
-          initial: { y: "0%" },
-          hover: { y: "-100%" },
-        }}
-        transition={{ type: "spring", stiffness: 450, damping: 28 }}
-        className="inline-block"
-      >
-        {text}
-      </motion.span>
-      <motion.span
-        variants={{
-          initial: { y: "100%" },
-          hover: { y: "0%" },
-        }}
-        transition={{ type: "spring", stiffness: 450, damping: 28 }}
-        className="absolute inset-0 inline-block"
-      >
-        {text}
-      </motion.span>
-    </span>
-  );
-}
+
 
 function AnimatedCopyButton({
   text,
@@ -140,9 +114,7 @@ function ShowcaseCTAButton({ href }: { href: string }) {
     let frame = 0;
     const waveWidth = 2;
     const totalFrames = (originalText.length + waveWidth) * 2;
-    let intervalId: NodeJS.Timeout;
-
-    intervalId = setInterval(() => {
+    const intervalId = setInterval(() => {
       frame++;
       const waveCenter = Math.floor(frame / 2);
 
@@ -253,9 +225,7 @@ function GithubSourceButton({ slug }: { slug: string }) {
     let frame = 0;
     const waveWidth = 2;
     const totalFrames = (originalText.length + waveWidth) * 2;
-    let intervalId: NodeJS.Timeout;
-
-    intervalId = setInterval(() => {
+    const intervalId = setInterval(() => {
       frame++;
       const waveCenter = Math.floor(frame / 2);
 

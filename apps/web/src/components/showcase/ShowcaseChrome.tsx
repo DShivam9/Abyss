@@ -53,14 +53,12 @@ function CategoryFilterTabs({
     >
       {categories.map((cat) => {
         const isActive = activeCategory === cat;
-        const isSelected = selectedCategory === cat;
 
         return (
           <ScrambleTabButton
             key={cat}
             label={cat}
             isActive={isActive}
-            isSelected={isSelected}
             onHover={() => setHoveredCategory(cat)}
             onClick={() => onSelectCategory(cat)}
           />
@@ -73,13 +71,11 @@ function CategoryFilterTabs({
 function ScrambleTabButton({
   label,
   isActive,
-  isSelected,
   onHover,
   onClick,
 }: {
   label: string;
   isActive: boolean;
-  isSelected: boolean;
   onHover: () => void;
   onClick: () => void;
 }) {
@@ -95,9 +91,7 @@ function ScrambleTabButton({
     let frame = 0;
     const waveWidth = 2;
     const totalFrames = (label.length + waveWidth) * 2;
-    let intervalId: NodeJS.Timeout;
-
-    intervalId = setInterval(() => {
+    const intervalId = setInterval(() => {
       frame++;
       const waveCenter = Math.floor(frame / 2);
 
@@ -246,9 +240,7 @@ function ScrambleHeaderTrigger({
     let frame = 0;
     const waveWidth = 2;
     const totalFrames = (clean.length + waveWidth) * 2;
-    let intervalId: NodeJS.Timeout;
-
-    intervalId = setInterval(() => {
+    const intervalId = setInterval(() => {
       frame++;
       const waveCenter = Math.floor(frame / 2);
 
@@ -313,9 +305,7 @@ function ScrambleControlsTrigger({
     const label = "CONTROLS";
     const waveWidth = 2;
     const totalFrames = (label.length + waveWidth) * 2;
-    let intervalId: NodeJS.Timeout;
-
-    intervalId = setInterval(() => {
+    const intervalId = setInterval(() => {
       frame++;
       const waveCenter = Math.floor(frame / 2);
 
@@ -375,9 +365,7 @@ function ScrambleCatalogLink({ category }: { category: string }) {
     const label = "CATALOG";
     const waveWidth = 2;
     const totalFrames = (label.length + waveWidth) * 2;
-    let intervalId: NodeJS.Timeout;
-
-    intervalId = setInterval(() => {
+    const intervalId = setInterval(() => {
       frame++;
       const waveCenter = Math.floor(frame / 2);
 
@@ -452,9 +440,7 @@ function ScramblePrevLink({ slug }: { slug: string }) {
     const label = "PREV";
     const waveWidth = 2;
     const totalFrames = (label.length + waveWidth) * 2;
-    let intervalId: NodeJS.Timeout;
-
-    intervalId = setInterval(() => {
+    const intervalId = setInterval(() => {
       frame++;
       const waveCenter = Math.floor(frame / 2);
 
@@ -525,9 +511,7 @@ function ScrambleNextLink({ slug }: { slug: string }) {
     const label = "NEXT";
     const waveWidth = 2;
     const totalFrames = (label.length + waveWidth) * 2;
-    let intervalId: NodeJS.Timeout;
-
-    intervalId = setInterval(() => {
+    const intervalId = setInterval(() => {
       frame++;
       const waveCenter = Math.floor(frame / 2);
 
