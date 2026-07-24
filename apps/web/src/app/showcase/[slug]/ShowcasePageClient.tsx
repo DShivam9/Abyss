@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
+import { AnimatePresence } from "framer-motion";
 import { getComponent } from "@/lib/component-registry";
 import { VesselControls } from "@/components/ui/VesselControls";
 import { getCategoryDefaults } from "@/lib/controls/category-defaults";
@@ -119,16 +120,18 @@ export default function ShowcasePageClient({ slug }: { slug: string }) {
     >
       {renderLayout()}
 
-      {controlsOpen && (
-        <VesselControls
-          categoryDefaults={categoryDefaults}
-          componentControls={componentControls}
-          values={controlValues}
-          onChange={handleControlChange}
-          onReset={handleReset}
-          onClose={() => setControlsOpen(false)}
-        />
-      )}
+      <AnimatePresence>
+        {controlsOpen && (
+          <VesselControls
+            categoryDefaults={categoryDefaults}
+            componentControls={componentControls}
+            values={controlValues}
+            onChange={handleControlChange}
+            onReset={handleReset}
+            onClose={() => setControlsOpen(false)}
+          />
+        )}
+      </AnimatePresence>
     </ShowcaseChrome>
   );
 }

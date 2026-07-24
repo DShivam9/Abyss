@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { motion } from "framer-motion";
-import { Search, X } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Search, X, SlidersHorizontal } from "lucide-react";
 import { ComponentDetail } from "@/lib/component-registry";
 
 interface CategoryGroup {
@@ -30,7 +30,14 @@ export function Sidebar({
   onOpenSearch,
 }: SidebarProps) {
   const [searchQuery, setSearchQuery] = useState("");
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [activeFilter, setActiveFilter] = useState("ALL");
   const activeItemRef = useRef<HTMLButtonElement | null>(null);
+
+  const totalComponentCount = categories.reduce(
+    (acc, cat) => acc + cat.components.length,
+    0
+  );
 
   // Track open/collapsed state per category (only 'scroll' open by default, plus active slug category)
   const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>(() => {
@@ -103,43 +110,105 @@ export function Sidebar({
       data-lenis-prevent
       className="flex h-full w-[300px] flex-col bg-[#0A0A0A] border-r border-neutral-900/90 text-white select-none overflow-y-auto overscroll-contain custom-scrollbar scroll-smooth"
     >
-      {/* Header & Functional Search Input */}
+      {/* Header & Controls Toolbar */}
       <div className="p-4 border-b border-neutral-900/90 shrink-0 space-y-3">
-        <div className="flex items-center justify-between px-1">
-          <h2 className="font-sans text-[11px] font-bold tracking-widest text-neutral-400 uppercase">
+        {/* Line 1: Title & Total Component Count */}
+        <div className="flex items-center justify-between px-0.5">
+          <h2 className="font-mono text-[11px] font-bold tracking-widest text-neutral-400 uppercase">
             Catalog Explorer
           </h2>
+          <span className="font-mono text-[10px] text-neutral-500 font-bold px-2 py-0.5 rounded bg-neutral-900 border border-neutral-800/80">
+            {totalComponentCount} COMPONENTS
+          </span>
         </div>
 
-        {/* Real Search Input Box */}
-        <div className="relative flex items-center bg-neutral-900/80 rounded-xl border border-neutral-800/80 focus-within:border-neutral-700 transition-all font-sans">
-          <Search className="w-3.5 h-3.5 text-neutral-500 ml-3 shrink-0" />
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search components..."
-            className="w-full bg-transparent px-2.5 py-2 text-xs text-white placeholder-neutral-500 focus:outline-none font-sans"
-          />
-          {searchQuery ? (
-            <button
-              onClick={() => setSearchQuery("")}
-              className="p-1 mr-1.5 text-neutral-500 hover:text-white transition-colors"
-              title="Clear search"
-            >
-              <X className="w-3.5 h-3.5" />
-            </button>
-          ) : (
-            <button
-              type="button"
-              onClick={onOpenSearch}
-              className="mr-1.5 inline-flex h-5 items-center gap-1 rounded bg-neutral-950 hover:bg-neutral-800 px-1.5 font-mono text-[10px] text-neutral-400 hover:text-white border border-neutral-800 transition-colors cursor-pointer shrink-0"
-              title="Open Command Palette (⌘K)"
-            >
-              ⌘K
-            </button>
-          )}
+        {/* Line 2: Search & Filter Controls Toolbar */}
+        <div className="flex items-center gap-2">
+          {/* Normal Search Input Box */}
+          <div className="relative flex-1 flex items-center bg-neutral-900/90 rounded-xl border border-neutral-800/80 focus-within:border-neutral-700 transition-all font-sans h-8 min-w-0">
+            <Search className="w-3.5 h-3.5 text-neutral-500 ml-2.5 shrink-0" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search..."
+              className="w-full bg-transparent px-2 py-1 text-xs text-white placeholder-neutral-500 focus:outline-none font-sans min-w-0"
+            />
+            {searchQuery ? (
+              <button
+                onClick={() => setSearchQuery("")}
+                className="p-1 mr-1 text-neutral-500 hover:text-white transition-colors cursor-pointer shrink-0"
+                title="Clear search"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            ) : (
+              onOpenSearch && (
+                <button
+                  type="button"
+                  onClick={onOpenSearch}
+                  className="mr-1.5 inline-flex h-5 items-center gap-1 rounded bg-neutral-950 hover:bg-neutral-800 px-1.5 font-mono text-[10px] text-neutral-400 hover:text-white border border-neutral-800 transition-colors cursor-pointer shrink-0"
+                  title="Open Command Palette (⌘K)"
+                >
+                  ⌘K
+                </button>
+              )
+            )}
+          </div>
+
+          {/* Filter Toggle Button */}
+          <button
+            type="button"
+            onClick={() => setIsFilterOpen(!isFilterOpen)}
+            className={`h-8 px-2.5 rounded-xl border flex items-center gap-1.5 text-xs font-mono transition-colors cursor-pointer shrink-0 ${
+              isFilterOpen || activeFilter !== "ALL"
+                ? "bg-neutral-800 border-neutral-700 text-white"
+                : "bg-neutral-900/90 border-neutral-800/80 text-neutral-400 hover:text-white"
+            }`}
+            title="Filter by Tech Stack"
+          >
+            <SlidersHorizontal className="w-3.5 h-3.5" />
+            <span className="text-[10px] font-mono uppercase font-bold tracking-wider">
+              {activeFilter === "ALL" ? "FILTER" : activeFilter}
+            </span>
+          </button>
         </div>
+
+        {/* Expandable Tech Filter Chips */}
+        <AnimatePresence>
+          {isFilterOpen && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+              className="overflow-hidden pt-1"
+            >
+              <div className="flex flex-wrap gap-1.5 pt-1 text-[11px] font-mono">
+                {["ALL", "GSAP", "R3F", "Canvas", "Scroll", "Layout"].map((tag) => (
+                  <button
+                    key={tag}
+                    onClick={() => {
+                      setActiveFilter(tag);
+                      if (tag === "ALL") {
+                        setSearchQuery("");
+                      } else {
+                        setSearchQuery(tag);
+                      }
+                    }}
+                    className={`px-2.5 py-1 rounded-md text-[10px] font-mono font-semibold tracking-wider transition-colors cursor-pointer ${
+                      activeFilter === tag || (tag === "ALL" && !searchQuery)
+                        ? "bg-white text-black font-bold"
+                        : "bg-neutral-900 text-neutral-400 hover:text-white border border-neutral-800"
+                    }`}
+                  >
+                    {tag}
+                  </button>
+                ))}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       {/* Categories & Items List */}
@@ -192,30 +261,23 @@ export function Sidebar({
                     </div>
                   ) : (
                     cat.components.map((comp) => {
-                    const isSelected = comp.slug === selectedSlug;
-                    const displayName = cleanLabel(comp.label);
+                      const isSelected = comp.slug === selectedSlug;
+                      const displayName = cleanLabel(comp.label);
 
-                    return (
-                      <button
-                        key={comp.slug}
-                        ref={isSelected ? activeItemRef : null}
-                        onClick={() => {
-                          onSelectComponent(comp.slug);
-                          if (onCloseMobile) onCloseMobile();
-                        }}
-                        className={`w-full text-left px-3.5 py-2 text-sm rounded-md transition-all duration-150 ease-[cubic-bezier(0.16,1,0.3,1)] transform-gpu relative flex items-center justify-between group/item ${
-                          isSelected
-                            ? "bg-white/[0.09] text-white font-medium shadow-sm translate-x-1"
-                            : "text-neutral-400 hover:text-white hover:bg-white/[0.04] hover:translate-x-1"
-                        }`}
-                      >
-                        <span className="truncate">{displayName}</span>
-                        {isSelected && (
-                          <span className="absolute left-0 top-1.5 bottom-1.5 w-0.5 rounded-r bg-white" />
-                        )}
-                      </button>
-                    );
-                  }))}
+                      return (
+                        <SidebarItem
+                          key={comp.slug}
+                          displayName={displayName}
+                          isSelected={isSelected}
+                          activeItemRef={isSelected ? activeItemRef : null}
+                          onClick={() => {
+                            onSelectComponent(comp.slug);
+                            if (onCloseMobile) onCloseMobile();
+                          }}
+                        />
+                      );
+                    })
+                  )}
                 </div>
               </div>
             </div>
@@ -246,6 +308,93 @@ export function Sidebar({
         </div>
       )}
     </>
+  );
+}
+
+interface SidebarItemProps {
+  displayName: string;
+  isSelected: boolean;
+  onClick: () => void;
+  activeItemRef: React.RefObject<HTMLButtonElement | null> | null;
+}
+
+const ALPHABET_UPPER = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+const ALPHABET_LOWER = "abcdefghijklmnopqrstuvwxyz";
+
+function SidebarItem({ displayName, isSelected, onClick, activeItemRef }: SidebarItemProps) {
+  const [displayText, setDisplayText] = useState(displayName);
+
+  useEffect(() => {
+    setDisplayText(displayName);
+  }, [displayName]);
+
+  const triggerScramble = () => {
+    let frame = 0;
+    const totalFrames = 50; // ~830ms smooth wave sweep duration
+    let animId: number;
+
+    const animate = () => {
+      frame++;
+      const progress = frame / totalFrames;
+
+      // Active wave window (sweeps from index 0 to length + waveWidth)
+      const waveWidth = 3;
+      const waveCenter = progress * (displayName.length + waveWidth);
+
+      setDisplayText((prev) => {
+        const isMutationTick = frame % 2 === 0;
+
+        return displayName
+          .split("")
+          .map((char, i) => {
+            if (char === " " || char === "-" || char === "/") return char;
+
+            // Character is inside active wave ripple window?
+            const isInsideWave = i >= waveCenter - waveWidth && i <= waveCenter;
+
+            if (!isInsideWave) {
+              // Outside wave: stay original character
+              return char;
+            }
+
+            // Inside wave: scramble on mutation tick
+            if (!isMutationTick && prev[i]) {
+              return prev[i];
+            }
+
+            const pool = char === char.toUpperCase() ? ALPHABET_UPPER : ALPHABET_LOWER;
+            return pool[Math.floor(Math.random() * pool.length)];
+          })
+          .join("");
+      });
+
+      if (frame < totalFrames) {
+        animId = requestAnimationFrame(animate);
+      } else {
+        setDisplayText(displayName);
+      }
+    };
+
+    animId = requestAnimationFrame(animate);
+  };
+
+  const handleClick = () => {
+    triggerScramble();
+    onClick();
+  };
+
+  return (
+    <button
+      ref={isSelected ? activeItemRef : null}
+      onClick={handleClick}
+      className={`w-full text-left px-3.5 py-2 text-sm rounded-md transition-colors duration-200 relative flex items-center justify-between group/item cursor-pointer ${
+        isSelected
+          ? "bg-white/[0.09] text-white font-medium shadow-sm"
+          : "text-neutral-400 hover:text-white hover:bg-white/[0.04]"
+      }`}
+    >
+      <span className="truncate">{displayText}</span>
+    </button>
   );
 }
 

@@ -334,18 +334,6 @@ export const ApparatusLayoutMorph: React.FC<ApparatusLayoutMorphProps> = ({
       {/* Background fabric noise overlay */}
       <div className="absolute inset-0 bg-noise opacity-[0.03] pointer-events-none mix-blend-overlay z-10" />
 
-      {/* Status HUD Header */}
-      <div className="absolute top-6 left-6 z-30 flex items-center gap-4 pointer-events-none">
-        <div className="flex items-center gap-2 rounded-full border border-white/10 bg-black/60 px-3.5 py-1.5 backdrop-blur-md">
-          <span className="h-2 w-2 rounded-full bg-[#10b981] animate-pulse" />
-          <span className="font-mono text-[10px] font-bold tracking-widest text-white/90">
-            {currentFormationName}
-          </span>
-        </div>
-        <span className="font-mono text-[10px] text-white/40">
-          {scrollPct}% MORPH
-        </span>
-      </div>
 
       {/* 3D Viewport Layer */}
       <div 

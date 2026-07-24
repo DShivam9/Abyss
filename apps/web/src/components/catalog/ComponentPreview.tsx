@@ -6,6 +6,7 @@ import { motion, AnimatePresence, useInView } from "framer-motion";
 import {
   ArrowRight,
   ArrowLeft,
+  ArrowUpRight,
   ExternalLink,
   Copy,
   Check,
@@ -19,6 +20,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Type,
+  Code2,
 } from "lucide-react";
 import { ComponentDetail, COMPONENT_DETAILS } from "@/lib/component-registry";
 import Lenis from "lenis";
@@ -125,25 +127,271 @@ function AnimatedCopyButton({
 }
 
 function ShowcaseCTAButton({ href }: { href: string }) {
-  return (
-    <Link href={href} className="block w-full">
-      <motion.div
-        whileTap={{ scale: 0.985 }}
-        transition={{ type: "spring", stiffness: 400, damping: 25 }}
-        className="group relative flex items-center justify-between px-6 h-13 rounded-2xl bg-white border border-neutral-900 text-neutral-900 overflow-hidden cursor-pointer select-none font-sans transition-all duration-300 hover:bg-[#0A0A0A] hover:text-white shadow-sm hover:shadow-xl transform-gpu"
-      >
-        <span className="text-sm font-bold tracking-tight font-sans">
-          Launch Live Showcase
-        </span>
+  const [isHovered, setIsHovered] = useState(false);
+  const originalText = "OPEN SHOWCASE";
+  const [displayText, setDisplayText] = useState(originalText);
 
-        <div className="flex items-center gap-2.5">
-          <span className="hidden sm:inline-block font-mono text-[10px] uppercase px-2 py-0.5 rounded-md bg-neutral-100 group-hover:bg-neutral-800 text-neutral-500 group-hover:text-neutral-300 border border-neutral-200 group-hover:border-neutral-700 transition-colors">
-            ENTER ↵
-          </span>
-          <ArrowRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1.5 shrink-0" />
-        </div>
+  useEffect(() => {
+    if (!isHovered) {
+      setDisplayText(originalText);
+      return;
+    }
+
+    let frame = 0;
+    const waveWidth = 2;
+    const totalFrames = (originalText.length + waveWidth) * 2;
+    let intervalId: NodeJS.Timeout;
+
+    intervalId = setInterval(() => {
+      frame++;
+      const waveCenter = Math.floor(frame / 2);
+
+      const result = originalText
+        .split("")
+        .map((char, i) => {
+          if (char === " ") return " ";
+          const isInsideWave = i >= waveCenter - waveWidth && i <= waveCenter;
+          if (isInsideWave) {
+            const isUpper = char === char.toUpperCase();
+            const chars = isUpper ? "ABCDEFGHIJKLMNOPQRSTUVWXYZ" : "abcdefghijklmnopqrstuvwxyz";
+            return chars[Math.floor(Math.random() * chars.length)];
+          }
+          return char;
+        })
+        .join("");
+
+      setDisplayText(result);
+
+      if (frame >= totalFrames) {
+        clearInterval(intervalId);
+        setDisplayText(originalText);
+      }
+    }, 28);
+
+    return () => clearInterval(intervalId);
+  }, [isHovered]);
+
+  return (
+    <Link
+      href={href}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      className="inline-block group pt-1"
+    >
+      <motion.div
+        initial="initial"
+        whileHover="hover"
+        className="relative flex items-center gap-2.5 cursor-pointer select-none py-2 px-5 rounded-lg overflow-hidden"
+      >
+        {/* Hover-Only Dark Lens Pill Reveal (Scale & Opacity, Zero Borders) */}
+        <motion.div
+          variants={{
+            initial: { scale: 0.85, opacity: 0 },
+            hover: { scale: 1, opacity: 1 },
+          }}
+          transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+          className="absolute inset-0 bg-neutral-900 rounded-lg pointer-events-none"
+        />
+
+        {/* Content Container (Flips color from black to white on hover) */}
+        <motion.div
+          variants={{
+            initial: { color: "#171717" },
+            hover: { color: "#FFFFFF" },
+          }}
+          transition={{ duration: 0.2 }}
+          className="relative z-10 text-sm font-mono font-bold uppercase tracking-widest flex items-center gap-2.5"
+        >
+          {/* Text with Wave Scramble */}
+          <span className="font-mono min-w-[150px] inline-block">{displayText}</span>
+
+          {/* Symmetrical Diagonal 45deg Arrow Spring Cascade */}
+          <div className="relative w-4 h-4 overflow-hidden shrink-0 flex items-center justify-center">
+            {/* Primary Arrow: Exits UP-RIGHT on hover, returns from UP-RIGHT on unhover */}
+            <motion.div
+              variants={{
+                initial: { x: "0%", y: "0%" },
+                hover: { x: "100%", y: "-100%" },
+              }}
+              transition={{ type: "spring", stiffness: 380, damping: 26 }}
+              className="absolute inset-0 flex items-center justify-center"
+            >
+              <ArrowUpRight className="w-4 h-4 text-neutral-400" />
+            </motion.div>
+
+            {/* Secondary Arrow: Enters from bottom-left on hover, exits to bottom-left on unhover */}
+            <motion.div
+              variants={{
+                initial: { x: "-100%", y: "100%" },
+                hover: { x: "0%", y: "0%" },
+              }}
+              transition={{ type: "spring", stiffness: 380, damping: 26 }}
+              className="absolute inset-0 flex items-center justify-center"
+            >
+              <ArrowUpRight className="w-4 h-4 text-white" />
+            </motion.div>
+          </div>
+        </motion.div>
       </motion.div>
     </Link>
+  );
+}
+
+function GithubSourceButton({ slug }: { slug: string }) {
+  const [isHovered, setIsHovered] = useState(false);
+  const originalText = "VIEW CODE";
+  const [displayText, setDisplayText] = useState(originalText);
+
+  const githubUrl = `https://github.com/DShivam9/Abyss/tree/main/packages/core/src/components/${slug}`;
+
+  useEffect(() => {
+    if (!isHovered) {
+      setDisplayText(originalText);
+      return;
+    }
+
+    let frame = 0;
+    const waveWidth = 2;
+    const totalFrames = (originalText.length + waveWidth) * 2;
+    let intervalId: NodeJS.Timeout;
+
+    intervalId = setInterval(() => {
+      frame++;
+      const waveCenter = Math.floor(frame / 2);
+
+      const result = originalText
+        .split("")
+        .map((char, i) => {
+          if (char === " ") return " ";
+          const isInsideWave = i >= waveCenter - waveWidth && i <= waveCenter;
+          if (isInsideWave) {
+            const isUpper = char === char.toUpperCase();
+            const chars = isUpper ? "ABCDEFGHIJKLMNOPQRSTUVWXYZ" : "abcdefghijklmnopqrstuvwxyz";
+            return chars[Math.floor(Math.random() * chars.length)];
+          }
+          return char;
+        })
+        .join("");
+
+      setDisplayText(result);
+
+      if (frame >= totalFrames) {
+        clearInterval(intervalId);
+        setDisplayText(originalText);
+      }
+    }, 28);
+
+    return () => clearInterval(intervalId);
+  }, [isHovered]);
+
+  return (
+    <a
+      href={githubUrl}
+      target="_blank"
+      rel="noopener noreferrer"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      className="inline-block group pt-1"
+    >
+      <motion.div
+        initial="initial"
+        whileHover="hover"
+        className="relative flex items-center gap-2.5 cursor-pointer select-none py-2 px-5 rounded-lg overflow-hidden"
+      >
+        {/* Hover-Only Dark Lens Pill Reveal */}
+        <motion.div
+          variants={{
+            initial: { scale: 0.85, opacity: 0 },
+            hover: { scale: 1, opacity: 1 },
+          }}
+          transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+          className="absolute inset-0 bg-neutral-900 rounded-lg pointer-events-none"
+        />
+
+        {/* Content Container */}
+        <motion.div
+          variants={{
+            initial: { color: "#525252" },
+            hover: { color: "#FFFFFF" },
+          }}
+          transition={{ duration: 0.2 }}
+          className="relative z-10 text-sm font-mono font-bold uppercase tracking-widest flex items-center gap-2"
+        >
+          {/* Code Icon */}
+          <Code2 className="w-4 h-4 shrink-0 text-neutral-400 group-hover:text-white transition-colors" />
+
+          {/* Text with Wave Scramble */}
+          <span className="font-mono min-w-[100px] inline-block">{displayText}</span>
+
+          {/* Symmetrical Diagonal 45deg Arrow Spring Cascade */}
+          <div className="relative w-4 h-4 overflow-hidden shrink-0 flex items-center justify-center">
+            {/* Primary Arrow */}
+            <motion.div
+              variants={{
+                initial: { x: "0%", y: "0%" },
+                hover: { x: "100%", y: "-100%" },
+              }}
+              transition={{ type: "spring", stiffness: 380, damping: 26 }}
+              className="absolute inset-0 flex items-center justify-center"
+            >
+              <ArrowUpRight className="w-4 h-4 text-neutral-400" />
+            </motion.div>
+
+            {/* Secondary Arrow */}
+            <motion.div
+              variants={{
+                initial: { x: "-100%", y: "100%" },
+                hover: { x: "0%", y: "0%" },
+              }}
+              transition={{ type: "spring", stiffness: 380, damping: 26 }}
+              className="absolute inset-0 flex items-center justify-center"
+            >
+              <ArrowUpRight className="w-4 h-4 text-white" />
+            </motion.div>
+          </div>
+        </motion.div>
+      </motion.div>
+    </a>
+  );
+}
+
+function TechStackRollUpItem({ tag }: { tag: string }) {
+  return (
+    <motion.div
+      initial="initial"
+      whileHover="hover"
+      className="relative inline-flex items-center cursor-pointer select-none group"
+    >
+      {tag.split("").map((char, index) => {
+        if (char === " ") {
+          return <span key={index} className="inline-block w-1 select-none" />;
+        }
+        return (
+          <div key={index} className="relative inline-block h-4 overflow-hidden">
+            {/* Stationary Base Faded Gray Letter (Stays fixed in place) */}
+            <span className="block text-xs font-mono font-medium text-neutral-400 leading-none">
+              {char}
+            </span>
+
+            {/* Overlapping Hover Bold Black Letter (Rolls UP from below & overlaps faded text) */}
+            <motion.span
+              variants={{
+                initial: { y: "100%" },
+                hover: { y: "0%" },
+              }}
+              transition={{
+                duration: 0.28,
+                delay: index * 0.025,
+                ease: [0.16, 1, 0.3, 1],
+              }}
+              className="absolute inset-0 block text-xs font-mono font-bold text-black leading-none bg-white"
+            >
+              {char}
+            </motion.span>
+          </div>
+        );
+      })}
+    </motion.div>
   );
 }
 
@@ -303,7 +551,41 @@ function StoryViewer({ content }: { content: string }) {
   flushList("list-final");
 
   return <div className="space-y-2">{blocks}</div>;
-}
+}const containerVariants = {
+  initial: { opacity: 1 },
+  animate: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.05,
+      delayChildren: 0.02,
+    },
+  },
+  exit: {
+    opacity: 0,
+    y: -6,
+    transition: { duration: 0.15, ease: [0.16, 1, 0.3, 1] },
+  },
+};
+
+const itemVariants = {
+  initial: { opacity: 0, y: 14, filter: "blur(4px)" },
+  animate: {
+    opacity: 1,
+    y: 0,
+    filter: "blur(0px)",
+    transition: { duration: 0.42, ease: [0.16, 1, 0.3, 1] },
+  },
+};
+
+const imageVariants = {
+  initial: { opacity: 0, scale: 0.96, filter: "blur(8px)" },
+  animate: {
+    opacity: 1,
+    scale: 1,
+    filter: "blur(0px)",
+    transition: { duration: 0.48, ease: [0.16, 1, 0.3, 1] },
+  },
+};
 
 export function ComponentPreview({
   component,
@@ -442,10 +724,10 @@ export default function ExamplePage() {
         <AnimatePresence mode="wait">
           <motion.div
             key={component.slug}
-            initial={{ opacity: 0, scale: 0.94, filter: "blur(12px)" }}
-            animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
-            exit={{ opacity: 0, scale: 1.06, filter: "blur(12px)" }}
-            transition={{ duration: 0.38, ease: [0.16, 1, 0.3, 1] }}
+            variants={containerVariants}
+            initial="initial"
+            animate="animate"
+            exit="exit"
             className="max-w-6xl mx-auto pb-16 transform-gpu"
           >
           {/* 2-Column Responsive Grid */}
@@ -454,29 +736,27 @@ export default function ExamplePage() {
             {/* Left Column (7 Cols): Standalone Image & Action CTAs */}
             <div className="lg:col-span-7 space-y-6">
               {/* Image Preview Card */}
-              <Link
-                href={`/showcase/${component.slug}`}
-                className="group relative block w-full overflow-hidden rounded-2xl bg-neutral-950 shadow-md border border-neutral-200/80 transition-all duration-300 hover:shadow-2xl"
-              >
-                <img
-                  src={imagePath}
-                  alt={displayName}
-                  className="w-full max-h-[54vh] min-h-[320px] object-cover rounded-2xl transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.015]"
-                />
-                {/* Subtle Hover Overlay */}
-                <div className="absolute inset-0 bg-black/25 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center pointer-events-none backdrop-blur-[2px]">
-                  <span className="bg-neutral-900/90 text-white text-xs font-semibold px-4 py-2 rounded-full border border-neutral-700 shadow-xl tracking-wider uppercase font-sans flex items-center gap-1.5">
-                    <span>Open Live Showcase</span>
-                    <ExternalLink className="w-3.5 h-3.5" />
-                  </span>
-                </div>
-              </Link>
+              <motion.div variants={imageVariants}>
+                <Link
+                  href={`/showcase/${component.slug}`}
+                  className="group relative block w-full overflow-hidden rounded-2xl bg-neutral-950 shadow-md border border-neutral-200/80 transition-all duration-300 hover:shadow-2xl"
+                >
+                  <img
+                    src={imagePath}
+                    alt={displayName}
+                    className="w-full max-h-[54vh] min-h-[320px] object-cover rounded-2xl transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.015]"
+                  />
+                </Link>
+              </motion.div>
 
-              {/* Primary CTA */}
-              <ShowcaseCTAButton href={`/showcase/${component.slug}`} />
+              {/* Action CTAs (Showcase + GitHub Source) */}
+              <motion.div variants={itemVariants} className="flex flex-wrap items-center justify-center gap-6 pt-2 pb-1">
+                <ShowcaseCTAButton href={`/showcase/${component.slug}`} />
+                <GithubSourceButton slug={component.slug} />
+              </motion.div>
 
               {/* Next / Previous Directional Cards with Mini Thumbnails */}
-              <div className="grid grid-cols-2 gap-4 pt-2">
+              <motion.div variants={itemVariants} className="grid grid-cols-2 gap-4 pt-2">
                 {prevComponent ? (
                   <button
                     onClick={() => onSelectComponent(prevComponent.slug)}
@@ -532,77 +812,68 @@ export default function ExamplePage() {
                 ) : (
                   <div />
                 )}
-              </div>
+              </motion.div>
             </div>
 
             {/* Right Column (5 Cols): Component Specs & Code Card */}
             <div className="lg:col-span-5 space-y-6">
-              {/* Category & Subtype Badges */}
-              <div className="flex items-center gap-2.5">
-                {/* Category Pill with Unique Vector Icon & Hover RollUp */}
+              {/* Category & Subtype Typographic Header */}
+              <motion.div variants={itemVariants} className="flex items-center gap-2 text-xs font-mono font-bold tracking-widest uppercase text-neutral-400 select-none">
                 {(() => {
                   const CategoryIcon =
                     CATEGORY_ICONS[component.category.toLowerCase()] || Sparkles;
                   return (
-                    <motion.span
-                      initial="initial"
-                      whileHover="hover"
-                      className="inline-flex items-center gap-2 px-3.5 py-1.5 text-xs font-bold rounded-full bg-[#0A0A0A] hover:bg-[#171717] text-white border border-neutral-800 shadow-sm cursor-pointer select-none font-sans transition-colors duration-200"
-                    >
-                      <CategoryIcon className="w-3.5 h-3.5 text-neutral-300 shrink-0" />
-                      <RollUpText text={component.category.toUpperCase()} />
-                    </motion.span>
+                    <span className="flex items-center gap-1.5 text-neutral-900 font-semibold">
+                      <CategoryIcon className="w-3.5 h-3.5 text-neutral-700 shrink-0" />
+                      <span>{component.category.toUpperCase()}</span>
+                    </span>
                   );
                 })()}
 
-                {/* Subtype Badge Chip */}
                 {component.subtype && (
-                  <span className="px-2.5 py-1 text-[11px] font-sans font-semibold uppercase tracking-wider text-neutral-600 bg-neutral-100 rounded-lg border border-neutral-200/80">
-                    {component.subtype}
-                  </span>
+                  <>
+                    <span className="text-neutral-300 font-normal">/</span>
+                    <span className="text-neutral-500 font-medium">{component.subtype.toUpperCase()}</span>
+                  </>
                 )}
-              </div>
+              </motion.div>
 
               {/* Title */}
-              <div>
+              <motion.div variants={itemVariants}>
                 <h1 className="text-3xl lg:text-4xl font-extrabold tracking-tight text-neutral-900 leading-tight font-sans">
                   {displayName}
                 </h1>
-              </div>
+              </motion.div>
 
               {/* Overview Description */}
-              <div className="space-y-2 pt-2 border-t border-neutral-100">
-                <h2 className="text-xs font-semibold tracking-wider uppercase text-neutral-400 font-sans">
+              <motion.div variants={itemVariants} className="space-y-1.5 pt-1">
+                <h2 className="text-[11px] font-mono font-bold tracking-widest uppercase text-neutral-400">
                   Overview
                 </h2>
                 <p className="text-sm text-neutral-600 leading-relaxed font-sans">
                   {component.desc}
                 </p>
-              </div>
+              </motion.div>
 
-              {/* Tech Stack Chips with Hover-Only RollUp Effect */}
+              {/* Tech Stack Typographic List with Dual-Text RollUp */}
               {component.tags && component.tags.length > 0 && (
-                <div className="space-y-2 pt-3 border-t border-neutral-100">
-                  <h2 className="text-xs font-semibold tracking-wider uppercase text-neutral-400 font-sans">
+                <motion.div variants={itemVariants} className="space-y-1.5 pt-2">
+                  <h2 className="text-[11px] font-mono font-bold tracking-widest uppercase text-neutral-400">
                     Tech Stack
                   </h2>
-                  <div className="flex flex-wrap gap-2">
-                    {component.tags.map((tag) => (
-                      <motion.span
-                        key={tag}
-                        initial="initial"
-                        whileHover="hover"
-                        className="px-3 py-1 text-xs font-medium rounded-lg bg-neutral-100 text-neutral-800 border border-neutral-200/80 hover:bg-neutral-900 hover:text-white transition-colors duration-200 cursor-pointer flex items-center"
-                      >
-                        <RollUpText text={tag} />
-                      </motion.span>
+                  <div className="text-xs font-mono flex flex-wrap items-center gap-x-2.5 gap-y-1">
+                    {component.tags.map((tag, idx) => (
+                      <React.Fragment key={tag}>
+                        {idx > 0 && <span className="text-neutral-300 select-none">•</span>}
+                        <TechStackRollUpItem tag={tag} />
+                      </React.Fragment>
                     ))}
                   </div>
-                </div>
+                </motion.div>
               )}
 
               {/* CLI Quick Install Card */}
-              <div className="space-y-2 pt-3 border-t border-neutral-100">
+              <motion.div variants={itemVariants} className="space-y-2 pt-3 border-t border-neutral-100">
                 <h2 className="text-xs font-semibold tracking-wider uppercase text-neutral-400 font-sans">
                   CLI Installation
                 </h2>
@@ -616,10 +887,10 @@ export default function ExamplePage() {
                     icon={Terminal}
                   />
                 </div>
-              </div>
+              </motion.div>
 
               {/* Source Code Usage Box */}
-              <div className="pt-3 border-t border-neutral-100 space-y-2">
+              <motion.div variants={itemVariants} className="pt-3 border-t border-neutral-100 space-y-2">
                 <div className="flex items-center justify-between">
                   <h2 className="text-xs font-semibold tracking-wider uppercase text-neutral-400 font-sans">
                     Source Code Usage
@@ -659,7 +930,7 @@ export default function ExamplePage() {
                     </motion.div>
                   )}
                 </AnimatePresence>
-              </div>
+              </motion.div>
 
             </div>
 
@@ -667,7 +938,7 @@ export default function ExamplePage() {
 
           {/* Middle Section: Design & Motion Story (Clean Professional Technical Spec) */}
           {storyContent && (
-            <div className="my-16 pt-10 pb-6 border-t border-neutral-200/80 font-sans">
+            <motion.div variants={itemVariants} className="my-16 pt-10 pb-6 border-t border-neutral-200/80 font-sans">
               <div className="space-y-6">
                 <TextScramble
                   text="DESIGN & MOTION BREAKDOWN"
@@ -676,11 +947,11 @@ export default function ExamplePage() {
 
                 <StoryViewer content={storyContent} />
               </div>
-            </div>
+            </motion.div>
           )}
 
           {/* Bottom Section: Related Category Components Carousel */}
-          <div className="mt-12 pt-10 border-t border-neutral-200/70">
+          <motion.div variants={itemVariants} className="mt-12 pt-10 border-t border-neutral-200/70">
             {/* Category Components Infinite Horizontal Carousel */}
             {relatedComponents.length > 0 && (
               <div className="space-y-4">
@@ -757,8 +1028,7 @@ export default function ExamplePage() {
                 </div>
               </div>
             )}
-
-          </div>
+          </motion.div>
         </motion.div>
       </AnimatePresence>
       </div>

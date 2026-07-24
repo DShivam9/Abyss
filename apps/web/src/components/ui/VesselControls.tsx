@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import { X, RotateCcw } from "lucide-react";
 import { ControlConfig } from "@/lib/component-registry";
 
 export interface VesselControlsProps {
@@ -10,6 +12,68 @@ export interface VesselControlsProps {
   onChange: (key: string, value: number | boolean | string) => void;
   onReset?: () => void;
   onClose?: () => void;
+}
+
+function TactileSlider({
+  label,
+  value,
+  min,
+  max,
+  step,
+  unit = "",
+  onChange,
+}: {
+  label: string;
+  value: number;
+  min: number;
+  max: number;
+  step: number;
+  unit?: string;
+  onChange: (val: number) => void;
+}) {
+  const pct = Math.max(0, Math.min(100, ((value - min) / (max - min)) * 100));
+
+  return (
+    <div className="space-y-2 pt-1 group">
+      <div className="flex items-center justify-between text-xs">
+        <span className="font-mono text-[11px] font-bold uppercase tracking-wider text-neutral-400 group-hover:text-neutral-200 transition-colors">
+          {label}
+        </span>
+        <span className="font-mono text-xs font-bold text-white bg-neutral-900 px-2 py-0.5 rounded border border-neutral-800 tracking-wider">
+          {value}
+          {unit}
+        </span>
+      </div>
+
+      <div className="relative flex items-center h-5 select-none">
+        {/* Hairline Base Track */}
+        <div className="relative w-full h-[2px] bg-neutral-800 rounded-full overflow-hidden">
+          {/* Active Fill Bar */}
+          <div
+            className="h-full bg-white transition-[width] duration-75 ease-out"
+            style={{ width: `${pct}%` }}
+          />
+        </div>
+
+        {/* Precision Vertical Reticle Handle */}
+        <div
+          className="absolute top-1/2 -translate-y-1/2 w-[3px] h-4 bg-white rounded-[1px] pointer-events-none transition-transform duration-100 group-hover:scale-125"
+          style={{ left: `calc(${pct}% - 1.5px)` }}
+        />
+
+        {/* Native Touch/Mouse Event Overlay */}
+        <input
+          type="range"
+          min={min}
+          max={max}
+          step={step}
+          value={value}
+          onChange={(e) => onChange(parseFloat(e.target.value))}
+          className="absolute inset-0 w-full h-full opacity-0 cursor-ew-resize z-10"
+        />
+      </div>
+    </div>
+  );
 }
 
 export function VesselControls({
@@ -33,6 +97,11 @@ export function VesselControls({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isOpen, onClose]);
 
+  const handleClose = () => {
+    setIsOpen(false);
+    onClose?.();
+  };
+
   const renderControl = (ctrl: ControlConfig) => {
     const val = values[ctrl.key] ?? ctrl.default;
 
@@ -43,48 +112,36 @@ export function VesselControls({
       const numericVal = typeof val === "number" ? val : Number(val) || 0;
 
       return (
-        <div key={ctrl.key} className="space-y-1.5">
-          <div className="flex items-center justify-between text-xs">
-            <span className="font-mono text-[10px] uppercase tracking-wider text-neutral-400">
-              {ctrl.label}
-            </span>
-            <span className="font-mono text-xs text-neutral-200">
-              {numericVal}
-              {ctrl.unit || ""}
-            </span>
-          </div>
-          <input
-            type="range"
-            min={min}
-            max={max}
-            step={step}
-            value={numericVal}
-            onChange={(e) => onChange(ctrl.key, parseFloat(e.target.value))}
-            className="w-full h-1 bg-neutral-800 rounded-lg appearance-none cursor-pointer accent-white hover:bg-neutral-700 transition-colors"
-          />
-        </div>
+        <TactileSlider
+          key={ctrl.key}
+          label={ctrl.label}
+          value={numericVal}
+          min={min}
+          max={max}
+          step={step}
+          unit={ctrl.unit}
+          onChange={(newVal) => onChange(ctrl.key, newVal)}
+        />
       );
     }
 
     if (ctrl.type === "toggle") {
       const boolVal = Boolean(val);
       return (
-        <div key={ctrl.key} className="flex items-center justify-between py-1">
-          <span className="font-mono text-[10px] uppercase tracking-wider text-neutral-400">
+        <div key={ctrl.key} className="flex items-center justify-between py-2 border-b border-neutral-900/60">
+          <span className="font-mono text-[11px] font-bold uppercase tracking-wider text-neutral-400">
             {ctrl.label}
           </span>
           <button
             type="button"
             onClick={() => onChange(ctrl.key, !boolVal)}
-            className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-              boolVal ? "bg-white" : "bg-neutral-800"
+            className={`px-3 py-1 text-[11px] font-mono font-bold tracking-wider rounded-lg border transition-all cursor-pointer ${
+              boolVal
+                ? "bg-white text-black border-white"
+                : "bg-neutral-900 text-neutral-500 border-neutral-800 hover:text-white"
             }`}
           >
-            <span
-              className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-neutral-900 shadow-lg ring-0 transition duration-200 ease-in-out ${
-                boolVal ? "translate-x-4" : "translate-x-0"
-              }`}
-            />
+            {boolVal ? "ACTIVE" : "DISABLED"}
           </button>
         </div>
       );
@@ -93,23 +150,28 @@ export function VesselControls({
     if (ctrl.type === "select") {
       const strVal = String(val);
       return (
-        <div key={ctrl.key} className="space-y-1.5">
+        <div key={ctrl.key} className="space-y-2 pt-1">
           <div className="flex items-center justify-between text-xs">
-            <span className="font-mono text-[10px] uppercase tracking-wider text-neutral-400">
+            <span className="font-mono text-[11px] font-bold uppercase tracking-wider text-neutral-400">
               {ctrl.label}
             </span>
           </div>
-          <select
-            value={strVal}
-            onChange={(e) => onChange(ctrl.key, e.target.value)}
-            className="w-full bg-neutral-900 border border-white/10 rounded px-2.5 py-1.5 font-sans text-xs text-neutral-200 focus:outline-none focus:border-white/30 transition-colors"
-          >
+          <div className="flex flex-wrap gap-1.5 pt-0.5">
             {ctrl.options?.map((opt) => (
-              <option key={opt.value} value={opt.value}>
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => onChange(ctrl.key, opt.value)}
+                className={`px-2.5 py-1 text-[10px] font-mono font-bold tracking-wider rounded-md transition-all cursor-pointer ${
+                  strVal === String(opt.value)
+                    ? "bg-white text-black font-extrabold"
+                    : "bg-neutral-900 text-neutral-400 hover:text-white border border-neutral-800"
+                }`}
+              >
                 {opt.label}
-              </option>
+              </button>
             ))}
-          </select>
+          </div>
         </div>
       );
     }
@@ -117,17 +179,17 @@ export function VesselControls({
     if (ctrl.type === "color") {
       const strVal = String(val);
       return (
-        <div key={ctrl.key} className="flex items-center justify-between py-1">
-          <span className="font-mono text-[10px] uppercase tracking-wider text-neutral-400">
+        <div key={ctrl.key} className="flex items-center justify-between py-2 border-b border-neutral-900/60">
+          <span className="font-mono text-[11px] font-bold uppercase tracking-wider text-neutral-400">
             {ctrl.label}
           </span>
           <div className="flex items-center gap-2">
-            <span className="font-mono text-xs text-neutral-300">{strVal}</span>
+            <span className="font-mono text-xs text-neutral-300 font-bold">{strVal}</span>
             <input
               type="color"
               value={strVal}
               onChange={(e) => onChange(ctrl.key, e.target.value)}
-              className="w-6 h-6 rounded border border-white/10 bg-transparent cursor-pointer"
+              className="w-6 h-6 rounded border border-neutral-700 bg-transparent cursor-pointer"
             />
           </div>
         </div>
@@ -138,87 +200,62 @@ export function VesselControls({
   };
 
   return (
-    <div className="fixed top-16 right-6 z-[1000] font-sans">
-      {/* Toggle Button */}
-      {!isOpen && !onClose && (
-        <button
-          onClick={() => setIsOpen(true)}
-          className="flex items-center gap-2 px-3.5 py-2.5 bg-[#111113]/90 hover:bg-[#111113] border border-white/10 hover:border-white/20 rounded-lg shadow-2xl text-neutral-300 hover:text-white transition-all backdrop-blur-md group cursor-pointer"
-          title="Open Controls (ESC to close)"
-        >
-          <svg
-            className="w-4 h-4 text-neutral-400 group-hover:text-white transition-colors"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={1.5}
-              d="M10.5 6h9.75M10.5 6a1.5 1.5 0 1 1-3 0m3 0a1.5 1.5 0 1 0-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 1 1-3 0m3 0a1.5 1.5 0 1 0-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 1 1-3 0m3 0a1.5 1.5 0 1 0-3 0m-9.75 0h9.75"
-            />
-          </svg>
-          <span className="font-mono text-xs tracking-wider uppercase">Controls</span>
-        </button>
-      )}
-
-      {/* Drawer Panel */}
-      {isOpen && (
-        <div
-          className="w-88 sm:w-[360px] bg-[#0d0d10]/95 border border-neutral-800/90 rounded-2xl shadow-2xl overflow-hidden backdrop-blur-2xl animate-in fade-in slide-in-from-top-4 duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]"
-          style={{ transitionTimingFunction: "cubic-bezier(0.16, 1, 0.3, 1)" }}
-        >
-          {/* Header */}
-          <div className="flex items-center justify-between px-4 py-3 border-b border-neutral-900 bg-black/40">
-            <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="font-mono text-xs font-medium tracking-wider uppercase text-neutral-200">
-                Tuning Panel
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              {onReset && (
-                <button
-                  onClick={onReset}
-                  className="font-mono text-[10px] uppercase text-neutral-400 hover:text-white transition-colors"
-                  title="Reset to defaults"
-                >
-                  Reset
-                </button>
-              )}
-              <button
-                onClick={() => {
-                  setIsOpen(false);
-                  onClose?.();
-                }}
-                className="text-neutral-400 hover:text-white transition-colors p-1"
-                title="Close controls (ESC)"
-              >
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-          </div>
-
-          {/* Controls Body */}
-          <div className="p-4 space-y-4 max-h-[88vh] overflow-y-auto custom-scrollbar">
-            {/* Component Controls Section */}
-            {componentControls.length > 0 && (
-              <div className="space-y-3">
-                <div className="space-y-3">{componentControls.map(renderControl)}</div>
-              </div>
-            )}
-
-            {componentControls.length === 0 && (
-              <div className="text-center py-4 font-mono text-xs text-neutral-500">
-                No configurable controls for this component.
-              </div>
-            )}
-          </div>
+    <motion.div
+      initial={{ x: "100%" }}
+      animate={{ x: "0%" }}
+      exit={{ x: "100%" }}
+      transition={{ type: "spring", stiffness: 400, damping: 30 }}
+      className="fixed top-[52px] bottom-0 right-0 z-50 w-full sm:w-[380px] bg-[#0A0A0A]/98 backdrop-blur-2xl border-l border-neutral-800/90 shadow-2xl flex flex-col font-mono text-white"
+    >
+      {/* Header Bar */}
+      <div className="flex items-center justify-between px-5 py-4 border-b border-neutral-900 bg-neutral-950/60 shrink-0">
+        <div className="flex items-center gap-2">
+          <span className="font-mono text-xs font-bold tracking-widest uppercase text-neutral-300">
+            TUNING INSPECTOR
+          </span>
         </div>
-      )}
-    </div>
+        <div className="flex items-center gap-3">
+          {onReset && (
+            <button
+              onClick={onReset}
+              className="flex items-center gap-1 font-mono text-[10px] font-bold uppercase tracking-wider text-neutral-400 hover:text-white transition-colors cursor-pointer"
+              title="Reset all parameters to default"
+            >
+              <RotateCcw className="w-3 h-3" />
+              <span>RESET</span>
+            </button>
+          )}
+          <button
+            onClick={handleClose}
+            className="p-1 text-neutral-400 hover:text-white transition-colors cursor-pointer group"
+            title="Close controls (ESC)"
+          >
+            <X className="w-4 h-4 transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:rotate-90" />
+          </button>
+        </div>
+      </div>
+
+      {/* Parameters Controls Body */}
+      <div className="flex-1 overflow-y-auto p-5 space-y-5 custom-scrollbar">
+        {componentControls.length > 0 ? (
+          <div className="space-y-4">
+            <div className="text-[10px] font-mono font-bold tracking-widest text-neutral-500 uppercase pb-1 border-b border-neutral-900">
+              COMPONENT PARAMETERS
+            </div>
+            <div className="space-y-4">{componentControls.map(renderControl)}</div>
+          </div>
+        ) : (
+          <div className="py-12 text-center text-xs text-neutral-500 font-mono">
+            No configurable controls for this component.
+          </div>
+        )}
+      </div>
+
+      {/* Footer Info */}
+      <div className="p-4 border-t border-neutral-900 bg-neutral-950/80 text-[10px] font-mono text-neutral-500 flex items-center justify-between shrink-0">
+        <span>LIVE INTERACTIVE TUNER</span>
+        <span>ESC TO CLOSE</span>
+      </div>
+    </motion.div>
   );
 }
