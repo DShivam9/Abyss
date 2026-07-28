@@ -30,8 +30,10 @@ export * from "./components/apparatus-depth-swim";
 export * from "./components/apparatus-cylinder-scroll";
 export * from "./components/apparatus-focus-ring";
 export * from "./components/apparatus-cursor-wake";
-export * from "./components/apparatus-page-fade-shift";
 export * from "./components/apparatus-page-overlay-wipe";
+export * from "./components/apparatus-liquid-text";
+export * from "./components/apparatus-typewriter-decay";
+
 
 
 

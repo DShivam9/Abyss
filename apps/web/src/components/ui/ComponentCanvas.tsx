@@ -30,7 +30,7 @@ export function ComponentCanvas({
     targetProgress.current = 0;
     currentProgress.current = 0;
     setScrollProgress(0);
-  }, [previewType]);
+  }, [previewType, slug]);
 
   // LERP interpolation loop (60fps smooth physics scroll)
   useEffect(() => {
@@ -43,7 +43,15 @@ export function ComponentCanvas({
       const diff = targetProgress.current - currentProgress.current;
       // Interpolate when there is meaningful delta to prevent infinite CPU wake lock
       if (Math.abs(diff) > 0.0001) {
-        currentProgress.current += diff * 0.035; // Eased LERP factor for heavy, smooth scroll physics
+        const customDamp = typeof controlValues.scrollDamping === "number" ? controlValues.scrollDamping : 0.08;
+        const rate = Math.min(0.50, Math.max(0.005, customDamp));
+
+        // VELOCITY CEILING: Generous per-frame step cap for responsive butter-smooth motion
+        const maxStepPerFrame = Math.max(0.008, rate * 0.15);
+        const rawStep = diff * rate;
+        const clampedStep = Math.max(-maxStepPerFrame, Math.min(maxStepPerFrame, rawStep));
+
+        currentProgress.current += clampedStep;
         setScrollProgress(currentProgress.current);
 
         // Dispatch window scroll event for components listening to scroll position/velocity
@@ -70,8 +78,18 @@ export function ComponentCanvas({
       e.preventDefault();
       e.stopPropagation();
 
-      const factor = previewType === "gallery" ? 0.0001 : slug === "apparatus-erosion-map" ? 0.000025 : 0.00015; // High-precision scroll resolution
-      let next = targetProgress.current + e.deltaY * factor;
+      const clampedDeltaY = Math.max(-80, Math.min(80, e.deltaY));
+      const factor = previewType === "gallery" ? 0.0001 : slug === "apparatus-erosion-map" ? 0.00018 : 0.00015; // Perfect 1-2 flicks pace
+      const nextUnclamped = targetProgress.current + clampedDeltaY * factor;
+
+      // Absorbs rapid wheel spikes: limit target distance queue from current progress
+      const maxTargetBuffer = 0.18;
+      const nextClamped = Math.max(
+        currentProgress.current - maxTargetBuffer,
+        Math.min(currentProgress.current + maxTargetBuffer, nextUnclamped)
+      );
+
+      let next = nextClamped;
 
       // Clamp scroll progress in scroll mode
       if (previewType === "scroll") {

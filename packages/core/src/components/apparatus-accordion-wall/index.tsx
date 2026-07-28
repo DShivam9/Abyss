@@ -21,7 +21,6 @@ export const ApparatusAccordionWall: React.FC<ApparatusAccordionWallProps & {
   onLifecycleChange,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const togglePanelRef = useRef<HTMLDivElement>(null);
   const panelsRef = useRef<(HTMLDivElement | null)[]>([]);
   
   // Local active panel index if uncontrolled

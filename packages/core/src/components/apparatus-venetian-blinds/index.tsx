@@ -43,7 +43,6 @@ export const ApparatusVenetianBlinds: React.FC<ApparatusVenetianBlindsProps & {
   onScrollProgressChange,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const togglePanelRef = useRef<HTMLDivElement>(null);
   const backlightRef = useRef<HTMLDivElement>(null);
   const slatsRef = useRef<(HTMLDivElement | null)[]>([]);
   const glaresRef = useRef<(HTMLDivElement | null)[]>([]);

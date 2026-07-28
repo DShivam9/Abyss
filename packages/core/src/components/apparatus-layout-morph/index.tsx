@@ -1,5 +1,4 @@
 import React, { useRef, useState, useEffect } from "react";
-import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { ApparatusLayoutMorphProps } from "./types";
@@ -100,7 +99,7 @@ function getHelix(count: number, W: number, H: number): CardTransform[] {
   return transforms;
 }
 
-function getWedge(count: number, W: number, H: number): CardTransform[] {
+function getWedge(count: number, _W: number, H: number): CardTransform[] {
   const transforms: CardTransform[] = [];
   const scale = 0.48;
 
@@ -187,8 +186,8 @@ export const ApparatusLayoutMorph: React.FC<ApparatusLayoutMorphProps> = ({
   const imageRefs = useRef<(HTMLImageElement | null)[]>([]);
 
   const [localProgress, setLocalProgress] = useState(0);
-  const [currentFormationName, setCurrentFormationName] = useState("CONSTELLATION");
-  const [scrollPct, setScrollPct] = useState(0);
+  const [_currentFormationName, setCurrentFormationName] = useState("CONSTELLATION");
+  const [_scrollPct, setScrollPct] = useState(0);
 
   const displayImages = images.length > 0 ? images.slice(0, cardCount) : DEFAULT_IMAGES.slice(0, cardCount);
   const displayTitles = titles.length > 0 ? titles.slice(0, cardCount) : DEFAULT_TITLES.slice(0, cardCount);

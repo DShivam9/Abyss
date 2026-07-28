@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import Lenis from "lenis";
-import { Sliders, ChevronDown, Search, ArrowLeft, ArrowRight, X } from "lucide-react";
+import { ChevronDown, Search, ArrowLeft, ArrowRight, X, Eye, EyeOff } from "lucide-react";
 import { ComponentDetail, COMPONENT_DETAILS } from "@/lib/component-registry";
 
 function getInteractionPrompt(comp: ComponentDetail): string {
@@ -285,6 +285,53 @@ function ScrambleHeaderTrigger({
   );
 }
 
+function TactileSlidersIcon({ className = "w-3.5 h-3.5" }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      {/* Top Track Line */}
+      <line x1="4" y1="6" x2="20" y2="6" className="opacity-40" />
+      {/* Top Knob */}
+      <line
+        x1="8"
+        y1="3.5"
+        x2="8"
+        y2="8.5"
+        className="transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:translate-x-2.5 text-white"
+      />
+
+      {/* Middle Track Line */}
+      <line x1="4" y1="12" x2="20" y2="12" className="opacity-40" />
+      {/* Middle Knob */}
+      <line
+        x1="16"
+        y1="9.5"
+        x2="16"
+        y2="14.5"
+        className="transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:-translate-x-3.5 text-white"
+      />
+
+      {/* Bottom Track Line */}
+      <line x1="4" y1="18" x2="20" y2="18" className="opacity-40" />
+      {/* Bottom Knob */}
+      <line
+        x1="10"
+        y1="15.5"
+        x2="10"
+        y2="20.5"
+        className="transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:translate-x-2 text-white"
+      />
+    </svg>
+  );
+}
+
 function ScrambleControlsTrigger({
   controlsOpen,
   onClick,
@@ -292,58 +339,15 @@ function ScrambleControlsTrigger({
   controlsOpen: boolean;
   onClick: () => void;
 }) {
-  const [isHovered, setIsHovered] = useState(false);
-  const [displayText, setDisplayText] = useState("CONTROLS");
-
-  useEffect(() => {
-    if (!isHovered) {
-      setDisplayText("CONTROLS");
-      return;
-    }
-
-    let frame = 0;
-    const label = "CONTROLS";
-    const waveWidth = 2;
-    const totalFrames = (label.length + waveWidth) * 2;
-    const intervalId = setInterval(() => {
-      frame++;
-      const waveCenter = Math.floor(frame / 2);
-
-      const result = label
-        .split("")
-        .map((char, i) => {
-          if (char === " ") return " ";
-          const isInsideWave = i >= waveCenter - waveWidth && i <= waveCenter;
-          if (isInsideWave) {
-            const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-            return chars[Math.floor(Math.random() * chars.length)];
-          }
-          return char;
-        })
-        .join("");
-
-      setDisplayText(result);
-
-      if (frame >= totalFrames) {
-        clearInterval(intervalId);
-        setDisplayText("CONTROLS");
-      }
-    }, 28);
-
-    return () => clearInterval(intervalId);
-  }, [isHovered]);
-
   return (
     <button
       onClick={onClick}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
       className={`flex items-center gap-2 text-xs font-mono tracking-widest uppercase transition-colors cursor-pointer select-none py-1 group ${
         controlsOpen ? "text-white font-bold" : "text-neutral-400 hover:text-white font-semibold"
       }`}
     >
-      <Sliders className="w-3.5 h-3.5 transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:rotate-45" />
-      <span className="min-w-[70px] inline-block text-center">{displayText}</span>
+      <TactileSlidersIcon className="w-3.5 h-3.5" />
+      <span className="inline-block tracking-wider">CONTROLS</span>
       <span className="text-[10px] font-mono px-1 rounded bg-neutral-900 text-neutral-500 border border-neutral-800">
         C
       </span>
@@ -583,6 +587,7 @@ export function ShowcaseChrome({
 }: ShowcaseChromeProps) {
   const router = useRouter();
   const [chromeVisible, setChromeVisible] = useState(true);
+  const [isHudHidden, setIsHudHidden] = useState(true);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("ALL");
@@ -600,6 +605,7 @@ export function ShowcaseChrome({
     let timer: NodeJS.Timeout;
 
     const handleMouseMove = () => {
+      if (isHudHidden) return;
       setChromeVisible(true);
       clearTimeout(timer);
       timer = setTimeout(() => {
@@ -614,7 +620,7 @@ export function ShowcaseChrome({
       window.removeEventListener("mousemove", handleMouseMove);
       clearTimeout(timer);
     };
-  }, [drawerOpen, controlsOpen]);
+  }, [drawerOpen, controlsOpen, isHudHidden]);
 
   // Click outside listener for drawer & sheet
   useEffect(() => {
@@ -672,6 +678,8 @@ export function ShowcaseChrome({
         router.push(`/showcase/${nextComp.slug}`);
       } else if (e.key.toLowerCase() === "c" && onToggleControls) {
         onToggleControls();
+      } else if (e.key.toLowerCase() === "h") {
+        setIsHudHidden((prev) => !prev);
       } else if (e.key.toLowerCase() === "f") {
         if (!document.fullscreenElement) {
           document.documentElement.requestFullscreen().catch(() => {});
@@ -713,10 +721,29 @@ export function ShowcaseChrome({
 
   return (
     <div className="relative min-h-screen w-full bg-[#070708] font-sans antialiased text-white">
+      {/* Floating Restore HUD Pill (when HUD is hidden) */}
+      <AnimatePresence>
+        {isHudHidden && (
+          <motion.button
+            initial={{ opacity: 0, scale: 0.9, y: -8 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.9, y: -8 }}
+            onClick={() => setIsHudHidden(false)}
+            className="fixed top-4 right-6 z-50 flex items-center gap-2 px-3 py-1.5 bg-[#08080a]/90 hover:bg-[#121215] text-xs font-mono tracking-wider text-neutral-300 hover:text-white border border-neutral-800 rounded-lg shadow-xl backdrop-blur-md transition-all cursor-pointer group"
+            title="Show HUD UI (Press H)"
+          >
+            <Eye className="w-3.5 h-3.5 text-neutral-400 group-hover:text-white transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-125" />
+            <span>SHOW HUD</span>
+          </motion.button>
+        )}
+      </AnimatePresence>
+
       {/* Sleek Top Bar */}
       <header
-        className={`fixed top-0 left-0 right-0 z-50 flex h-[52px] items-center justify-between px-6 bg-[#070708]/90 backdrop-blur-md border-b border-neutral-900/80 transition-opacity duration-300 ${
-          chromeVisible || drawerOpen || controlsOpen ? "opacity-100" : "opacity-0 pointer-events-none"
+        className={`fixed top-0 left-0 right-0 z-50 flex h-[52px] items-center justify-between px-6 bg-[#070708]/90 backdrop-blur-md border-b border-neutral-900/80 transition-all duration-300 ${
+          !isHudHidden && (chromeVisible || drawerOpen || controlsOpen)
+            ? "opacity-100 translate-y-0"
+            : "opacity-0 -translate-y-2 pointer-events-none"
         }`}
       >
         {/* Left: Back Link & Unboxed Category */}
@@ -737,15 +764,24 @@ export function ShowcaseChrome({
           />
         </div>
 
-        {/* Right: Unboxed Controls Trigger */}
-        {onToggleControls ? (
-          <ScrambleControlsTrigger
-            controlsOpen={Boolean(controlsOpen)}
-            onClick={onToggleControls}
-          />
-        ) : (
-          <div className="w-20" />
-        )}
+        {/* Right: Unboxed Controls & Hide HUD Triggers */}
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setIsHudHidden(true)}
+            className="flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-mono tracking-wider text-neutral-400 hover:text-white bg-neutral-900/60 hover:bg-neutral-800/80 border border-neutral-800 rounded-md transition-all duration-200 cursor-pointer group"
+            title="Hide HUD UI (Press H)"
+          >
+            <EyeOff className="w-3.5 h-3.5 text-neutral-400 group-hover:text-white transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-125" />
+            <span>HIDE HUD</span>
+          </button>
+
+          {onToggleControls && (
+            <ScrambleControlsTrigger
+              controlsOpen={Boolean(controlsOpen)}
+              onClick={onToggleControls}
+            />
+          )}
+        </div>
       </header>
 
       {/* Direction 1: Top Architectural Drawer Sheet */}
@@ -854,8 +890,10 @@ export function ShowcaseChrome({
 
       {/* Sleek Floating Bottom Area — Pure Text, No Container Box */}
       <footer
-        className={`fixed bottom-5 left-0 right-0 z-40 px-8 flex items-center justify-between pointer-events-none text-xs text-neutral-400 font-sans tracking-wide transition-opacity duration-300 ${
-          chromeVisible || controlsOpen ? "opacity-100" : "opacity-0"
+        className={`fixed bottom-5 left-0 right-0 z-40 px-8 flex items-center justify-between pointer-events-none text-xs text-neutral-400 font-sans tracking-wide transition-all duration-300 ${
+          !isHudHidden && (chromeVisible || controlsOpen)
+            ? "opacity-100 translate-y-0"
+            : "opacity-0 translate-y-2"
         }`}
       >
         {/* Left: Quick Switcher with Directional Arrow Cascade */}
@@ -884,9 +922,18 @@ export function ShowcaseChrome({
           {getInteractionPrompt(component)}
         </div>
 
-        {/* Right: Key Shortcuts */}
-        <div className="text-neutral-500 text-[11px] font-mono tracking-wider uppercase">
-          F FULLSCREEN · ESC EXIT
+        {/* Right: Key Shortcuts & Hide HUD Trigger */}
+        <div className="flex items-center gap-3 text-neutral-500 text-[11px] font-mono tracking-wider uppercase">
+          <button
+            onClick={() => setIsHudHidden(true)}
+            className="pointer-events-auto hover:text-white transition-colors flex items-center gap-1 group"
+            title="Hide HUD (Press H)"
+          >
+            <EyeOff className="w-3 h-3 text-neutral-400 group-hover:text-white transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-125" />
+            <span>H HIDE HUD</span>
+          </button>
+          <span>·</span>
+          <span>F FULLSCREEN · ESC EXIT</span>
         </div>
       </footer>
     </div>

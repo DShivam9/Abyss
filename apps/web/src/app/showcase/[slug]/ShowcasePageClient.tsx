@@ -44,7 +44,15 @@ export default function ShowcasePageClient({ slug }: { slug: string }) {
   };
 
   const handleReset = () => {
-    setControlValues(initialValues);
+    // Globally preserve active variant/pattern selections when resetting parameters
+    const activeVariantKeys = ["wavePattern", "motionVariant", "selectedVariant", "layoutPattern", "variant", "pattern", "fontFamily"];
+    const preservedVariants: Record<string, string | number | boolean> = {};
+    activeVariantKeys.forEach((key) => {
+      if (controlValues[key] !== undefined) {
+        preservedVariants[key] = controlValues[key];
+      }
+    });
+    setControlValues({ ...initialValues, ...preservedVariants });
   };
 
   if (!meta || !Component) {
@@ -70,6 +78,8 @@ export default function ShowcasePageClient({ slug }: { slug: string }) {
     "apparatus-depth-swim",
     "apparatus-cylinder-scroll",
     "apparatus-layout-morph",
+    "apparatus-radial-vortex",
+    "apparatus-3d-typography-grid",
   ]);
   const isSelfContainedScroll = SELF_CONTAINED_SCROLL.has(slug);
 

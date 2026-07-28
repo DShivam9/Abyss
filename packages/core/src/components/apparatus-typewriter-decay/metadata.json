@@ -1,0 +1,20 @@
+{
+  "slug": "apparatus-typewriter-decay",
+  "label": "APPARATUS TYPEWRITER DECAY",
+  "category": "text",
+  "subtype": "text",
+  "desc": "Scroll-free interactive kinetic typography. Auto-types on mount, distorts on hover, and shatters into digital noise polygon shards on click before re-typing.",
+  "tags": ["GSAP", "Interactive", "Hover", "Click", "Typography"],
+  "previewType": "scroll",
+  "controls": [
+    {
+      "type": "slider",
+      "key": "decayRate",
+      "label": "Entropy Decay Speed",
+      "default": 1.0,
+      "min": 0.5,
+      "max": 3.0,
+      "step": 0.1
+    }
+  ]
+}

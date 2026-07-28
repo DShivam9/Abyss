@@ -2,35 +2,36 @@ import React, { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { ApparatusDualWaveProps, DualWaveItem } from "./types";
 
-// Full list of 24 premium specimen names matching cosmos images
+// 24 unique single-word aesthetic visual, motion, color, and optics titles (zero duplicates)
 const DEFAULT_ITEMS: DualWaveItem[] = [
-  { id: "01", name: "AÉTHYR • 1", imageSrc: "/images/components images/scroll/cosmos_1309660817.jpeg" },
-  { id: "02", name: "MÉLANCØLIE", imageSrc: "/images/components images/scroll/cosmos_1859262512.jpeg" },
-  { id: "03", name: "BASALT DUST", imageSrc: "/images/components images/scroll/cosmos_2063063057.jpeg" },
-  { id: "04", name: "COPPER SHARD", imageSrc: "/images/components images/scroll/cosmos_679994644.jpeg" },
-  { id: "05", name: "HÉLIØS • †", imageSrc: "/images/components images/scroll/cosmos_1244425812.jpeg" },
-  { id: "06", name: "ÉPHÉMÈRE", imageSrc: "/images/components images/scroll/cosmos_1994819013.jpeg" },
-  { id: "07", name: "AMPHORA", imageSrc: "/images/components images/scroll/cosmos_2086495860.jpeg" },
-  { id: "08", name: "VELOCITY", imageSrc: "/images/components images/scroll/cosmos_51259133.jpeg" },
-  { id: "09", name: "BRÛLÉE • §", imageSrc: "/images/components images/scroll/cosmos_586109684.jpeg" },
-  { id: "10", name: "SØLSTICE *", imageSrc: "/images/components images/scroll/cosmos_1452408749.jpeg" },
-  { id: "11", name: "LATTICE VOID", imageSrc: "/images/components images/scroll/cosmos_1298955025.jpeg" },
-  { id: "12", name: "SILVER SILK", imageSrc: "/images/components images/scroll/cosmos_2093433371.jpeg" },
-  { id: "13", name: "NÉBULÆ", imageSrc: "/images/components images/scroll/cosmos_520815919.jpeg" },
-  { id: "14", name: "APØCRYPHA • ‡", imageSrc: "/images/components images/scroll/cosmos_666194661.jpeg" },
-  { id: "15", name: "LITHIC EDGE", imageSrc: "/images/components images/scroll/cosmos_961582572.jpeg" },
-  { id: "16", name: "MONOCHROME", imageSrc: "/images/components images/scroll/cosmos_1067833670.jpeg" },
-  { id: "17", name: "ŒUVRE", imageSrc: "/images/components images/scroll/cosmos_1207399578.jpeg" },
-  { id: "18", name: "SILICÆ *", imageSrc: "/images/components images/scroll/cosmos_1215932660.jpeg" },
-  { id: "19", name: "RESONANCE", imageSrc: "/images/components images/scroll/cosmos_169178344.jpeg" },
-  { id: "20", name: "SPECTRA", imageSrc: "/images/components images/scroll/cosmos_496247602.jpeg" },
-  { id: "21", name: "CÉLESTIA • 5", imageSrc: "/images/components images/scroll/cosmos_1225764898.jpeg" },
-  { id: "22", name: "VÉRTIGØ • ‡", imageSrc: "/images/components images/scroll/cosmos_1556080729.jpeg" },
-  { id: "23", name: "GOSSAMER", imageSrc: "/images/components images/scroll/cosmos_1633231397.jpeg" },
-  { id: "24", name: "STELLAR FLOW", imageSrc: "/images/components images/scroll/cosmos_1872135509.jpeg" },
+  { id: "01", name: "LUMINESCENCE", imageSrc: "/images/components images/scroll/cosmos_1309660817.jpeg" },
+  { id: "02", name: "RADIANCE", imageSrc: "/images/components images/scroll/cosmos_1859262512.jpeg" },
+  { id: "03", name: "SPECTRUM", imageSrc: "/images/components images/scroll/cosmos_2063063057.jpeg" },
+  { id: "04", name: "ROTATION", imageSrc: "/images/components images/scroll/cosmos_679994644.jpeg" },
+  { id: "05", name: "AURORA", imageSrc: "/images/components images/scroll/cosmos_1244425812.jpeg" },
+  { id: "06", name: "EXPOSURE", imageSrc: "/images/components images/scroll/cosmos_1994819013.jpeg" },
+  { id: "07", name: "SOLSTICE", imageSrc: "/images/components images/scroll/cosmos_2086495860.jpeg" },
+  { id: "08", name: "CHROMATIC", imageSrc: "/images/components images/scroll/cosmos_51259133.jpeg" },
+  { id: "09", name: "KINETIC", imageSrc: "/images/components images/scroll/cosmos_586109684.jpeg" },
+  { id: "10", name: "HARMONY", imageSrc: "/images/components images/scroll/cosmos_1452408749.jpeg" },
+  { id: "11", name: "IRIDESCENCE", imageSrc: "/images/components images/scroll/cosmos_1298955025.jpeg" },
+  { id: "12", name: "TRANSITION", imageSrc: "/images/components images/scroll/cosmos_2093433371.jpeg" },
+  { id: "13", name: "PERSPECTIVE", imageSrc: "/images/components images/scroll/cosmos_520815919.jpeg" },
+  { id: "14", name: "APERTURE", imageSrc: "/images/components images/scroll/cosmos_666194661.jpeg" },
+  { id: "15", name: "GRADIENT", imageSrc: "/images/components images/scroll/cosmos_961582572.jpeg" },
+  { id: "16", name: "SILHOUETTE", imageSrc: "/images/components images/scroll/cosmos_1067833670.jpeg" },
+  { id: "17", name: "VELOCITY", imageSrc: "/images/components images/scroll/cosmos_1207399578.jpeg" },
+  { id: "18", name: "REFLECTION", imageSrc: "/images/components images/scroll/cosmos_1215932660.jpeg" },
+  { id: "19", name: "ECLIPSE", imageSrc: "/images/components images/scroll/cosmos_169178344.jpeg" },
+  { id: "20", name: "RESONANCE", imageSrc: "/images/components images/scroll/cosmos_496247602.jpeg" },
+  { id: "21", name: "OPAL", imageSrc: "/images/components images/scroll/cosmos_1225764898.jpeg" },
+  { id: "22", name: "PRISMATIC", imageSrc: "/images/components images/scroll/cosmos_1556080729.jpeg" },
+  { id: "23", name: "HALO", imageSrc: "/images/components images/scroll/cosmos_1633231397.jpeg" },
+  { id: "24", name: "CELESTIAL", imageSrc: "/images/components images/scroll/cosmos_1872135509.jpeg" },
 ];
 
 export const ApparatusDualWave: React.FC<ApparatusDualWaveProps & {
+  fontFamily?: string;
   frequency?: number;
   amplitude?: number;
   waveNum?: number;
@@ -38,9 +39,15 @@ export const ApparatusDualWave: React.FC<ApparatusDualWaveProps & {
   maxBlur?: number;
   maxRotation?: number;
   cornerAlignment?: number;
+  curvature?: number;
+  columnLag?: number;
+  velocitySqueeze?: number;
+  scrollDamping?: number;
+  wavePattern?: "iris" | "horizon" | "hourglass" | "dualSine" | "vortex" | "shear";
 }> = ({
   items,
   imageSrc,
+  fontFamily: propFontFamily,
   frequency,
   amplitude,
   waveNum: propWaveNum,
@@ -48,6 +55,11 @@ export const ApparatusDualWave: React.FC<ApparatusDualWaveProps & {
   maxBlur: propMaxBlur,
   maxRotation: propMaxRotation,
   cornerAlignment: propCornerAlignment,
+  curvature: propCurvature,
+  columnLag: propColumnLag,
+  velocitySqueeze: propVelocitySqueeze,
+  scrollDamping: propScrollDamping,
+  wavePattern: propWavePattern = "iris",
   className = "",
   style,
   onLifecycleChange,
@@ -57,21 +69,30 @@ export const ApparatusDualWave: React.FC<ApparatusDualWaveProps & {
   
   // Size bounds
   const [dimensions, setDimensions] = useState({ width: 800, height: 600 });
-  const [activeIdx, setActiveIdx] = useState(0);
   const activeIdxRef = useRef(0);
   
   // Interactive tuning controls derived from props
   const cornerAlignment = propCornerAlignment !== undefined ? propCornerAlignment : 1.0;
-  const waveRange = amplitude !== undefined ? (amplitude / 60) * 100 : 100;
-  const waveSpeed = frequency !== undefined ? frequency / 2 : 1.0;
+  const waveRange = amplitude !== undefined ? (amplitude / 60) * 100 : 125;
+  const waveSpeed = frequency !== undefined ? frequency / 2 : 0.9;
   const waveNum = propWaveNum !== undefined ? propWaveNum : 0.45;
-  const spacing = propSpacing !== undefined ? propSpacing : 65;
-  const curvature = 0.0;
-  const maxBlur = propMaxBlur !== undefined ? propMaxBlur : 3.0;
-  const maxRotation = propMaxRotation !== undefined ? propMaxRotation : 8.0;
+  const spacing = propSpacing !== undefined ? Math.max(35, propSpacing) : 72;
+  const curvature = propCurvature !== undefined ? propCurvature : 0.35;
+  const columnLag = propColumnLag !== undefined ? propColumnLag : 0.40;
+  const velocitySqueeze = propVelocitySqueeze !== undefined ? propVelocitySqueeze : 0.85;
+  const scrollDamping = propScrollDamping !== undefined ? propScrollDamping : 0.08;
+  const maxBlur = propMaxBlur !== undefined ? propMaxBlur : 2.5;
+  const maxRotation = propMaxRotation !== undefined ? propMaxRotation : 6.5;
+  
+  const resolvedFontFamily = propFontFamily || "'Hatton', 'Larken', serif";
+  const resolvedFontStyle = "normal";
   
   // Animation loop playheads & layout refs
   const smoothOffsetRef = useRef(0);
+  const smoothOffsetRightRef = useRef(0);
+  const mousePosRef = useRef({ x: 0, y: 0 });
+  const smoothMouseRef = useRef({ x: 0, y: 0 });
+  const centerImageFrameRef = useRef<HTMLDivElement>(null);
   const [activeImageIdx, setActiveImageIdx] = useState(0);
   const activeImageIdxRef = useRef(0);
   const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
@@ -81,8 +102,13 @@ export const ApparatusDualWave: React.FC<ApparatusDualWaveProps & {
   const waveRangeRef = useRef(waveRange);
   const waveSpeedRef = useRef(waveSpeed);
   const waveNumRef = useRef(waveNum);
+  const frequencyRef = useRef(frequency !== undefined ? frequency : 2.5);
   const spacingRef = useRef(spacing);
   const curvatureRef = useRef(curvature);
+  const columnLagRef = useRef(columnLag);
+  const velocitySqueezeRef = useRef(velocitySqueeze);
+  const scrollDampingRef = useRef(scrollDamping);
+  const wavePatternRef = useRef(propWavePattern);
   const maxBlurRef = useRef(maxBlur);
   const maxRotationRef = useRef(maxRotation);
 
@@ -95,11 +121,16 @@ export const ApparatusDualWave: React.FC<ApparatusDualWaveProps & {
     waveRangeRef.current = waveRange;
     waveSpeedRef.current = waveSpeed;
     waveNumRef.current = waveNum;
+    frequencyRef.current = frequency !== undefined ? frequency : 2.5;
     spacingRef.current = spacing;
     curvatureRef.current = curvature;
+    columnLagRef.current = columnLag;
+    velocitySqueezeRef.current = velocitySqueeze;
+    scrollDampingRef.current = scrollDamping;
+    wavePatternRef.current = propWavePattern;
     maxBlurRef.current = maxBlur;
     maxRotationRef.current = maxRotation;
-  }, [cornerAlignment, waveRange, waveSpeed, waveNum, spacing, curvature, maxBlur, maxRotation]);
+  }, [cornerAlignment, waveRange, waveSpeed, waveNum, frequency, spacing, curvature, columnLag, velocitySqueeze, scrollDamping, propWavePattern, maxBlur, maxRotation]);
   
   // Animation frame reference to cancel active transitions
   const presetAnimRef = useRef<number | null>(null);
@@ -194,11 +225,25 @@ export const ApparatusDualWave: React.FC<ApparatusDualWaveProps & {
       onLifecycleChange?.("idle");
     };
 
+    const handlePointerMove = (e: PointerEvent) => {
+      const rect = container.getBoundingClientRect();
+      if (rect.width <= 0 || rect.height <= 0) return;
+      const x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+      const y = ((e.clientY - rect.top) / rect.height) * 2 - 1;
+      mousePosRef.current = { x: Math.max(-1, Math.min(1, x)), y: Math.max(-1, Math.min(1, y)) };
+    };
+
+    const handlePointerLeave = () => {
+      mousePosRef.current = { x: 0, y: 0 };
+    };
+
     container.addEventListener("wheel", handleWheel, { passive: false });
     container.addEventListener("touchstart", handleTouchStart, { passive: true });
     container.addEventListener("touchmove", handleTouchMove, { passive: false });
     container.addEventListener("touchend", handleTouchEndOrCancel, { passive: true });
     container.addEventListener("touchcancel", handleTouchEndOrCancel, { passive: true });
+    container.addEventListener("pointermove", handlePointerMove);
+    container.addEventListener("pointerleave", handlePointerLeave);
 
     return () => {
       container.removeEventListener("wheel", handleWheel);
@@ -206,6 +251,8 @@ export const ApparatusDualWave: React.FC<ApparatusDualWaveProps & {
       container.removeEventListener("touchmove", handleTouchMove);
       container.removeEventListener("touchend", handleTouchEndOrCancel);
       container.removeEventListener("touchcancel", handleTouchEndOrCancel);
+      container.removeEventListener("pointermove", handlePointerMove);
+      container.removeEventListener("pointerleave", handlePointerLeave);
       if (wheelTimeout) clearTimeout(wheelTimeout);
     };
   }, [onLifecycleChange]);
@@ -243,17 +290,61 @@ export const ApparatusDualWave: React.FC<ApparatusDualWaveProps & {
         scrollOffsetRef.current += scrollVelocityRef.current * dt;
       }
       
-      // Target scroll chasing interpolation (Lenis Smooth scroll effect with heavy weight)
+      // Calculate effective rate based on scrollDampingRef (range 0.01 to 0.30)
+      const rawDamp = scrollDampingRef.current;
+      const effectiveRate = Math.min(0.50, Math.max(0.005, rawDamp));
+
+      // Cap target scrollOffset buffer to absorb rapid wheel spikes
+      const maxOffsetBuffer = spacingRef.current * 4.0;
+      if (scrollOffsetRef.current > smoothOffsetRef.current + maxOffsetBuffer) {
+        scrollOffsetRef.current = smoothOffsetRef.current + maxOffsetBuffer;
+      } else if (scrollOffsetRef.current < smoothOffsetRef.current - maxOffsetBuffer) {
+        scrollOffsetRef.current = smoothOffsetRef.current - maxOffsetBuffer;
+      }
+
+      // Left column interpolation with generous velocity cap for responsive buttery motion
       const diff = scrollOffsetRef.current - smoothOffsetRef.current;
       if (Math.abs(diff) < 0.05) {
         smoothOffsetRef.current = scrollOffsetRef.current;
       } else {
-        smoothOffsetRef.current += diff * (1 - Math.pow(1 - 0.04, dt * 60));
+        const rawStep = diff * (1 - Math.pow(1 - effectiveRate, dt * 60));
+        const maxPixelsPerFrame = Math.max(12.0, effectiveRate * 120.0);
+        const clampedStep = Math.max(-maxPixelsPerFrame, Math.min(maxPixelsPerFrame, rawStep));
+        smoothOffsetRef.current += clampedStep;
+      }
+
+      // Right column interpolation with generous velocity cap
+      const rightRate = Math.max(0.001, effectiveRate * (1.0 - columnLagRef.current * 0.5));
+      const diffRight = scrollOffsetRef.current - smoothOffsetRightRef.current;
+      if (Math.abs(diffRight) < 0.05) {
+        smoothOffsetRightRef.current = scrollOffsetRef.current;
+      } else {
+        const rawRightStep = diffRight * (1 - Math.pow(1 - rightRate, dt * 60));
+        const maxRightPixels = Math.max(12.0, rightRate * 120.0);
+        const clampedRightStep = Math.max(-maxRightPixels, Math.min(maxRightPixels, rawRightStep));
+        smoothOffsetRightRef.current += clampedRightStep;
+      }
+
+      // Smooth LERP mouse movement (subtle magnetic floating offset)
+      smoothMouseRef.current.x += (mousePosRef.current.x - smoothMouseRef.current.x) * 0.05;
+      smoothMouseRef.current.y += (mousePosRef.current.y - smoothMouseRef.current.y) * 0.05;
+
+      const mouseXPx = smoothMouseRef.current.x * 10;
+      const mouseYPx = smoothMouseRef.current.y * 10;
+
+      // Apply physical velocity squeeze and mouse parallax on center image frame
+      const velMag = Math.min(1.0, Math.abs(scrollVelocityRef.current) / 2500);
+      const velScale = 1.0 - velMag * 0.035 * velocitySqueezeRef.current;
+      if (centerImageFrameRef.current) {
+        centerImageFrameRef.current.style.transform = `translate3d(calc(-50% + ${mouseXPx.toFixed(1)}px), calc(-50% + ${mouseYPx.toFixed(1)}px), 0) scale(${velScale.toFixed(4)})`;
       }
 
       const H = dimensionsRef.current.height;
       const W = dimensionsRef.current.width;
       const computedWaveRange = (170 + (Math.max(170, W / 2 - pinchX - 120) - 170) * cornerAlignmentRef.current) * (waveRangeRef.current / 100);
+
+      const mouseContainerX = (smoothMouseRef.current.x * W / 2) + W / 2;
+      const mouseContainerY = (smoothMouseRef.current.y * H / 2) + H / 2;
 
       let minDistance = Infinity;
       let closestIndex = 0;
@@ -271,23 +362,66 @@ export const ApparatusDualWave: React.FC<ApparatusDualWaveProps & {
         if (isLeft) {
           offset = k * spacingRef.current - smoothOffsetRef.current;
         } else {
-          offset = (k + 0.5) * spacingRef.current + smoothOffsetRef.current;
+          offset = (k + 0.5) * spacingRef.current + smoothOffsetRightRef.current;
         }
 
         const wrappedOffset = (((offset + totalSpan / 2) % totalSpan + totalSpan) % totalSpan) - totalSpan / 2;
         const y = H / 2 - itemHeight / 2 + wrappedOffset;
 
+        // Viewport Culling (ponytail performance fix): Hide offscreen DOM items to lock 60-120fps
+        if (y < -90 || y > H + 90) {
+          el.style.display = "none";
+          continue;
+        }
+        el.style.display = "block";
+
         const centerY = H / 2;
         const itemCenterY = y + itemHeight / 2;
         const distToCenter = Math.abs(itemCenterY - centerY);
         const normalizedDist = Math.min(1.0, distToCenter / (H / 2 || 1));
+        const centerWeight = Math.pow(Math.cos(normalizedDist * Math.PI * 0.5), 1.8);
 
-        // Interpolate profile between linear triangle (0.0) and hemisphere circular arc (1.0)
-        const triangleProfile = normalizedDist;
-        const hemisphereProfile = 1.0 - Math.sqrt(Math.max(0, 1.0 - normalizedDist * normalizedDist));
-        const blendedProfile = (1.0 - curvatureRef.current) * triangleProfile + curvatureRef.current * hemisphereProfile;
+        const normY = (y - H / 2) / (H / 2 || 1);
+        
+        let baseHorizontalOffset = 0;
+        let baseAngle = 0;
 
-        const baseHorizontalOffset = pinchX + blendedProfile * computedWaveRange;
+        if (wavePatternRef.current === "vortex") {
+          // 1. Vortex Funnel: Spiral acceleration inward toward central image with funnel tilt
+          const funnelFactor = Math.pow(normalizedDist, 1.4);
+          baseHorizontalOffset = pinchX + funnelFactor * computedWaveRange;
+          baseAngle = normY * maxRotationRef.current * 1.8 * (isLeft ? 1 : -1);
+        } else if (wavePatternRef.current === "iris") {
+          // 1. Aperture Iris: Spherical lens gate expanding around central cover image
+          const irisLens = Math.sin(normalizedDist * Math.PI * 0.5);
+          const irisOffset = (1.0 - irisLens * curvatureRef.current) * computedWaveRange * 0.9;
+          baseHorizontalOffset = pinchX + irisOffset;
+          baseAngle = normY * maxRotationRef.current * (isLeft ? -1 : 1);
+        } else if (wavePatternRef.current === "horizon") {
+          // Option C: Split Horizon — Inverted asymmetrical diagonal slope framing center photo
+          const leftSlope = (1.0 - normY) * curvatureRef.current * 0.5;
+          const rightSlope = (1.0 + normY) * curvatureRef.current * 0.5;
+          baseHorizontalOffset = pinchX + (isLeft ? leftSlope : rightSlope) * computedWaveRange * 0.9;
+          baseAngle = (isLeft ? -1 : 1) * normY * maxRotationRef.current * 0.8;
+        } else if (wavePatternRef.current === "shear") {
+          // 4. Diagonal Shear: Inverted diagonal stream corridor (X-pattern)
+          const shearOffset = normY * computedWaveRange * 0.8;
+          baseHorizontalOffset = pinchX + (isLeft ? shearOffset : -shearOffset);
+          baseAngle = (isLeft ? -12 : 12); // Constant diagonal stream slant
+        } else if (wavePatternRef.current === "dualSine") {
+          // Valentin Descombes Codrops Dual Wave Sine Path Formula
+          const sineWaveVal = Math.sin(normY * waveNumRef.current * Math.PI * 2.0);
+          const waveOffset = sineWaveVal * waveRangeRef.current;
+          baseHorizontalOffset = pinchX + (isLeft ? -waveOffset : waveOffset);
+          baseAngle = Math.cos(normY * waveNumRef.current * Math.PI * 2.0) * maxRotationRef.current * (isLeft ? -1 : 1);
+        } else {
+          // Hourglass Pinch (MAIN ORIGINAL VARIANT - DEFAULT)
+          const triangleProfile = normalizedDist;
+          const hemisphereProfile = 1.0 - Math.sqrt(Math.max(0, 1.0 - normalizedDist * normalizedDist));
+          const blendedProfile = (1.0 - curvatureRef.current) * triangleProfile + curvatureRef.current * hemisphereProfile;
+          baseHorizontalOffset = pinchX + blendedProfile * computedWaveRange;
+          baseAngle = (isLeft ? -1 : 1) * (y - H / 2) / (H / 2 || 1) * maxRotationRef.current;
+        }
 
         // Keep track of the item closest to center
         if (distToCenter < minDistance) {
@@ -295,32 +429,67 @@ export const ApparatusDualWave: React.FC<ApparatusDualWaveProps & {
           closestIndex = originalIdx;
         }
 
-        const angle = (isLeft ? -1 : 1) * (y - H / 2) / (H / 2 || 1) * maxRotationRef.current;
-        const blurAmount = (originalIdx === activeIdxRef.current) ? 0 : normalizedDist * maxBlurRef.current;
-        const opacity = (originalIdx === activeIdxRef.current) ? 1.0 : Math.max(0.08, 0.65 - normalizedDist * 0.85);
+        // Calculate item position relative to cursor for Gravitational Wave Lens
+        const itemX = isLeft ? (W / 2 - baseHorizontalOffset) : (W / 2 + baseHorizontalOffset);
+        const itemY = y + itemHeight / 2;
 
-        // Mutate styles directly on the DOM node
+        const dx = mouseContainerX - itemX;
+        const dy = mouseContainerY - itemY;
+        const distToMouse = Math.sqrt(dx * dx + dy * dy);
+        
+        // Gaussian bell-curve falloff around cursor location (radius: 140px)
+        const gaussianFocus = Math.exp(-(distToMouse * distToMouse) / (2 * 140 * 140));
+
+        // Gravitational Wave Lens offset (text gracefully bulges outward near cursor)
+        const mouseLensOffset = gaussianFocus * 18;
+
+        // Subtle directional tilt towards cursor
+        const mouseTiltAngle = (dy / (distToMouse || 1)) * gaussianFocus * (isLeft ? -8 : 8);
+        const totalAngle = baseAngle + mouseTiltAngle;
+        
+        // Continuous organic bell-curve weight centered at viewport middle
+        const totalHighlight = Math.min(1.0, centerWeight + gaussianFocus * 0.65);
+        
+        // Smooth edge fade out at extreme top/bottom bounds so items don't pop
+        const edgeFade = normalizedDist > 0.85 ? Math.max(0, (1.0 - normalizedDist) / 0.15) : 1.0;
+        const opacity = Math.min(1.0, (0.05 + centerWeight * 0.95 + gaussianFocus * 0.35) * edgeFade);
+        
+        // Continuous depth blur (clears at center focus and near cursor hover)
+        const blurAmount = Math.max(0, (1.0 - totalHighlight) * maxBlurRef.current);
+
+        // Kinetic velocity shear: slants text along scroll vector during rapid movement
+        const velShear = (scrollVelocityRef.current / 2000) * (isLeft ? -1 : 1);
+        const cappedSkew = Math.max(-6, Math.min(6, velShear * 8));
+
+        const effectiveHorizontalOffset = baseHorizontalOffset + mouseLensOffset;
+
+        // Mutate transform and styles directly on the DOM node for 60fps performance
         el.style.transform = isLeft
-          ? `translate3d(calc(-100% - ${baseHorizontalOffset}px), ${y}px, 0) rotate(${angle.toFixed(1)}deg)`
-          : `translate3d(${baseHorizontalOffset}px, ${y}px, 0) rotate(${angle.toFixed(1)}deg)`;
+          ? `translate3d(calc(-100% - ${effectiveHorizontalOffset.toFixed(1)}px), ${y.toFixed(1)}px, 0) rotate(${totalAngle.toFixed(1)}deg) skewY(${cappedSkew.toFixed(2)}deg)`
+          : `translate3d(${effectiveHorizontalOffset.toFixed(1)}px, ${y.toFixed(1)}px, 0) rotate(${totalAngle.toFixed(1)}deg) skewY(${cappedSkew.toFixed(2)}deg)`;
 
-        el.style.opacity = String(opacity);
-        el.style.filter = `blur(${blurAmount.toFixed(2)}px)`;
+        el.style.opacity = opacity.toFixed(3);
+        // GPU Shader Pass Bypass: Skip blur filter when negligible to eliminate GPU overhead
+        el.style.filter = blurAmount > 0.15 ? `blur(${blurAmount.toFixed(1)}px)` : "none";
 
         const textSpan = el.firstElementChild as HTMLElement;
         if (textSpan) {
-          if (originalIdx === activeIdxRef.current) {
-            textSpan.style.color = "white";
-          } else {
-            textSpan.style.color = "#737373"; // text-neutral-500
-          }
+          // Continuous scale, letter-spacing, and luminance interpolation driven by totalHighlight
+          const textLuma = Math.round(115 + totalHighlight * 140);
+          const textScale = 1.0 + totalHighlight * 0.09;
+          const letterSpacing = totalHighlight * 0.065;
+
+          textSpan.style.color = `rgb(${textLuma}, ${textLuma}, ${textLuma})`;
+          textSpan.style.letterSpacing = `${letterSpacing.toFixed(3)}em`;
+          textSpan.style.transform = `scale(${textScale.toFixed(3)})`;
+          textSpan.style.display = "inline-block";
+          textSpan.style.transformOrigin = isLeft ? "right center" : "left center";
         }
       }
 
-      // Update activeIdx state ONLY on item boundaries to trigger center image crossfade
+      // Update activeIdxRef ONLY on item boundaries to trigger center image crossfade
       if (closestIndex !== activeIdxRef.current) {
         activeIdxRef.current = closestIndex;
-        setActiveIdx(closestIndex);
       }
 
       // Update activeImageIdx state ONLY on image index boundaries to trigger Framer Motion transition
@@ -341,7 +510,7 @@ export const ApparatusDualWave: React.FC<ApparatusDualWaveProps & {
     };
   }, []);
 
-  const displayItems = items && items.length > 0 ? items : [...DEFAULT_ITEMS, ...DEFAULT_ITEMS, ...DEFAULT_ITEMS];
+  const displayItems = items && items.length > 0 ? items : [...DEFAULT_ITEMS, ...DEFAULT_ITEMS];
   const leftColumnItems = displayItems.filter((_, idx) => idx % 2 === 0);
   const rightColumnItems = displayItems.filter((_, idx) => idx % 2 !== 0);
 
@@ -353,6 +522,22 @@ export const ApparatusDualWave: React.FC<ApparatusDualWaveProps & {
   const pinchX = imageWidth / 2 + gapFromImage; // Base horizontal distance from container center
 
   const activeImage = displayItems[activeImageIdx]?.imageSrc || imageSrc || displayItems[0].imageSrc;
+
+  const jumpToItem = (originalIdx: number, isLeft: boolean, k: number) => {
+    const colCount = isLeft ? leftColumnItems.length : rightColumnItems.length;
+    const totalSpan = colCount * spacingRef.current;
+    if (totalSpan <= 0) return;
+    
+    const rawTarget = isLeft ? (k * spacingRef.current) : (-(k + 0.5) * spacingRef.current);
+    
+    // Shortest path delta modulo totalSpan
+    let diff = (rawTarget - scrollOffsetRef.current) % totalSpan;
+    if (diff > totalSpan / 2) diff -= totalSpan;
+    if (diff < -totalSpan / 2) diff += totalSpan;
+
+    scrollOffsetRef.current += diff;
+    activeIdxRef.current = originalIdx;
+  };
 
   return (
     <div
@@ -369,7 +554,6 @@ export const ApparatusDualWave: React.FC<ApparatusDualWaveProps & {
         {/* LEFT COLUMN (Right-aligned relative to center axis) */}
         {leftColumnItems.map((item, k) => {
           const originalIdx = k * 2;
-          const isActive = originalIdx === activeIdx;
           
           return (
             <div
@@ -381,25 +565,17 @@ export const ApparatusDualWave: React.FC<ApparatusDualWaveProps & {
                 left: "50%",
                 height: `${itemHeight}px`,
                 transform: "translate3d(-100%, 0, 0)",
-                opacity: 0.1,
+                opacity: 0,
                 willChange: "transform, opacity, filter",
-                transition: "color 0.4s ease, opacity 0.25s ease",
               }}
-              onClick={() => {
-                setActiveIdx(originalIdx);
-                scrollOffsetRef.current = k * spacing;
-              }}
+              onClick={() => jumpToItem(originalIdx, true, k)}
             >
               <span
-                className={`tracking-normal uppercase leading-none transition-all duration-300 ${
-                  isActive
-                    ? "text-white"
-                    : "text-neutral-500"
-                }`}
+                className="uppercase leading-none"
                 style={{
-                  fontFamily: "var(--font-editorial), serif",
+                  fontFamily: resolvedFontFamily,
                   fontWeight: 200,
-                  fontStyle: "italic",
+                  fontStyle: resolvedFontStyle,
                   fontSize: isFullscreen ? "clamp(1.2rem, 2.8vw, 2.2rem)" : "clamp(1.0rem, 2.0vw, 1.6rem)",
                 }}
               >
@@ -411,7 +587,8 @@ export const ApparatusDualWave: React.FC<ApparatusDualWaveProps & {
 
         {/* CENTER IMAGE BLOCK (Centered viewport block) */}
         <div 
-          className="absolute pointer-events-auto overflow-hidden bg-black"
+          ref={centerImageFrameRef}
+          className="absolute pointer-events-auto overflow-hidden bg-black rounded-[2px]"
           style={{
             top: "50%",
             left: "50%",
@@ -419,16 +596,17 @@ export const ApparatusDualWave: React.FC<ApparatusDualWaveProps & {
             height: `${imageHeight}px`,
             transform: "translate3d(-50%, -50%, 0)",
             boxShadow: "0 30px 60px -15px rgba(0, 0, 0, 0.85)",
+            willChange: "transform",
             zIndex: 10,
           }}
         >
           <AnimatePresence mode="popLayout">
             <motion.div
               key={activeImageIdx}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.15, ease: "easeInOut" }}
+              initial={{ opacity: 0, scale: 0.94, y: scrollVelocityRef.current >= 0 ? 14 : -14 }}
+              animate={{ opacity: 1, scale: 1.0, y: 0 }}
+              exit={{ opacity: 0, scale: 1.04, y: scrollVelocityRef.current >= 0 ? -14 : 14 }}
+              transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
               className="absolute inset-0 w-full h-full"
             >
               <img
@@ -443,7 +621,6 @@ export const ApparatusDualWave: React.FC<ApparatusDualWaveProps & {
         {/* RIGHT COLUMN (Left-aligned relative to center axis) */}
         {rightColumnItems.map((item, k) => {
           const originalIdx = k * 2 + 1;
-          const isActive = originalIdx === activeIdx;
           
           return (
             <div
@@ -455,25 +632,17 @@ export const ApparatusDualWave: React.FC<ApparatusDualWaveProps & {
                 left: "50%",
                 height: `${itemHeight}px`,
                 transform: "translate3d(0, 0, 0)",
-                opacity: 0.1,
+                opacity: 0,
                 willChange: "transform, opacity, filter",
-                transition: "color 0.4s ease, opacity 0.25s ease",
               }}
-              onClick={() => {
-                setActiveIdx(originalIdx);
-                scrollOffsetRef.current = -(k + 0.5) * spacing;
-              }}
+              onClick={() => jumpToItem(originalIdx, false, k)}
             >
               <span
-                className={`tracking-normal uppercase leading-none transition-all duration-300 ${
-                  isActive
-                    ? "text-white"
-                    : "text-neutral-500"
-                }`}
+                className="uppercase leading-none"
                 style={{
-                  fontFamily: "var(--font-editorial), serif",
+                  fontFamily: resolvedFontFamily,
                   fontWeight: 200,
-                  fontStyle: "italic",
+                  fontStyle: resolvedFontStyle,
                   fontSize: isFullscreen ? "clamp(1.2rem, 2.8vw, 2.2rem)" : "clamp(1.0rem, 2.0vw, 1.6rem)",
                 }}
               >

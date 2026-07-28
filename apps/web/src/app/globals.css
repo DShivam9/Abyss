@@ -5,6 +5,22 @@
 
 @custom-variant dark (&:is(.dark *));
 
+@font-face {
+  font-family: 'Hatton';
+  src: url('/fonts/hatton-font-family/PP Hatton Ultralight 200.otf') format('opentype');
+  font-weight: 200;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Larken';
+  src: url('/fonts/larken-typeface/larken.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
 @theme {
   /* Font families */
   --font-sans: var(--font-satoshi), system-ui, -apple-system, sans-serif;
@@ -142,6 +158,31 @@
   .no-scrollbar {
     -ms-overflow-style: none !important;
     scrollbar-width: none !important;
+  }
+
+  /* Custom Scrollbar for Control Panels */
+  .custom-scrollbar {
+    scrollbar-width: thin !important;
+    scrollbar-color: rgba(255, 255, 255, 0.3) rgba(0, 0, 0, 0.2) !important;
+    -ms-overflow-style: auto !important;
+  }
+  .custom-scrollbar::-webkit-scrollbar {
+    display: block !important;
+    width: 6px !important;
+    height: 6px !important;
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    display: block !important;
+    background: rgba(10, 10, 10, 0.8) !important;
+    border-radius: 9999px !important;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    display: block !important;
+    background: rgba(255, 255, 255, 0.25) !important;
+    border-radius: 9999px !important;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.5) !important;
   }
 }
 

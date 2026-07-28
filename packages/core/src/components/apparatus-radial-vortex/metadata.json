@@ -1,0 +1,8 @@
+{
+  "name": "apparatus-radial-vortex",
+  "displayName": "Apparatus Radial Vortex",
+  "description": "Concentric typographical rings counter-rotate in ambient kinetic orbit when idle, accelerating into a hypnotic vortex as you scroll.",
+  "category": "text",
+  "tags": ["GSAP", "Typography", "Kinetic", "Radial", "Vortex"],
+  "author": "vessel"
+}

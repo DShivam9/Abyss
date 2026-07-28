@@ -12,6 +12,7 @@ export interface ControlConfig {
   step?: number;
   unit?: string;
   options?: { label: string; value: string }[];
+  dependsOn?: { key: string; value: string | number | boolean };
 }
 
 export interface ComponentDetail {
@@ -240,9 +241,80 @@ export const COMPONENT_DETAILS: Record<string, ComponentDetail> = {
     tags: ["GSAP", "Lenis", "Split Scroll", "Clip Path"],
     previewType: "scroll",
     controls: [
+      {
+        type: "select",
+        key: "motionVariant",
+        label: "Motion Variant",
+        default: "classic",
+        options: [
+          { label: "Classic Window Parallax", value: "classic" },
+          { label: "3D Concave Cylinder (Inward)", value: "cylinder" },
+          { label: "3D Convex Cylinder (Outward)", value: "convex" }
+        ]
+      },
+      // Classic-Only Sliders
+      {
+        type: "slider",
+        key: "cropAmount",
+        label: "Image Framing Crop",
+        default: 15,
+        min: 5,
+        max: 25,
+        step: 1,
+        unit: "%",
+        dependsOn: { key: "motionVariant", value: "classic" }
+      },
+      // Concave-Only Sliders
+      {
+        type: "slider",
+        key: "concaveDepth",
+        label: "Inward Z-Depth",
+        default: 520,
+        min: 200,
+        max: 800,
+        step: 10,
+        unit: "px",
+        dependsOn: { key: "motionVariant", value: "cylinder" }
+      },
+      {
+        type: "slider",
+        key: "concaveTilt",
+        label: "Inward Pitch Angle",
+        default: 42,
+        min: 10,
+        max: 60,
+        step: 1,
+        unit: "°",
+        dependsOn: { key: "motionVariant", value: "cylinder" }
+      },
+      // Convex-Only Sliders
+      {
+        type: "slider",
+        key: "convexBulge",
+        label: "Outward Z-Bulge",
+        default: 480,
+        min: 200,
+        max: 800,
+        step: 10,
+        unit: "px",
+        dependsOn: { key: "motionVariant", value: "convex" }
+      },
+      {
+        type: "slider",
+        key: "convexTilt",
+        label: "Outward Pitch Angle",
+        default: 38,
+        min: 10,
+        max: 60,
+        step: 1,
+        unit: "°",
+        dependsOn: { key: "motionVariant", value: "convex" }
+      },
+      // Common Shared Sliders
+      { type: "slider", key: "parallaxIntensity", label: "Parallax Intensity", default: 70, min: 0, max: 100, step: 5, unit: "%" },
+      { type: "slider", key: "borderRadius", label: "Corner Radius", default: 8, min: 0, max: 32, step: 1, unit: "px" },
       { type: "slider", key: "speedFactor", label: "Parallax Speed", default: 1.0, min: 0.5, max: 2.0, step: 0.1 },
       { type: "slider", key: "splitRatio", label: "Column Split Ratio", default: 50, min: 25, max: 75, step: 1, unit: "%" },
-      { type: "slider", key: "cropAmount", label: "Image Framing Crop", default: 15, min: 5, max: 25, step: 1, unit: "%" },
       { type: "slider", key: "bgScale", label: "Image Scale", default: 40, min: 20, max: 90, step: 5, unit: "%" },
       { type: "slider", key: "inertia", label: "Motion Smoothness", default: 4, min: 1, max: 15, step: 1 },
       { type: "slider", key: "autoScrollSpeed", label: "Drift Speed", default: 25, min: 0, max: 60, step: 5 },
@@ -272,10 +344,6 @@ export const COMPONENT_DETAILS: Record<string, ComponentDetail> = {
     tags: ["GSAP", "Scroll", "Canvas 2D", "Perlin Noise"],
     previewType: "scroll",
     controls: [
-      { type: "slider", key: "erosionDamper", label: "Erosion Fluid Damper", default: 3.0, min: 0.5, max: 20.0, step: 0.5 },
-      { type: "slider", key: "noiseScale", label: "Erosion Scale", default: 0.005, min: 0.001, max: 0.02, step: 0.001 },
-      { type: "slider", key: "edgeGlow", label: "Edge Brightness", default: 1.5, min: 0, max: 3, step: 0.1 },
-      { type: "slider", key: "octaves", label: "Perlin Octaves", default: 3, min: 1, max: 6, step: 1 },
       {
         type: "select",
         key: "windPattern",
@@ -292,7 +360,11 @@ export const COMPONENT_DETAILS: Record<string, ComponentDetail> = {
       },
       { type: "slider", key: "windAngle", label: "Wind Angle", default: 180, min: 0, max: 360, step: 5, unit: "°" },
       { type: "slider", key: "windStretch", label: "Wind Stretch", default: 2.5, min: 0.5, max: 5.0, step: 0.1 },
-      { type: "slider", key: "curvePower", label: "Curve Easing Power", default: 2.0, min: 0.5, max: 4.0, step: 0.1 }
+      { type: "slider", key: "erosionDamper", label: "Erosion Fluid Damper", default: 1.0, min: 0.1, max: 10.0, step: 0.1 },
+      { type: "slider", key: "noiseScale", label: "Erosion Scale", default: 0.005, min: 0.001, max: 0.02, step: 0.001 },
+      { type: "slider", key: "edgeGlow", label: "Edge Brightness", default: 1.5, min: 0, max: 3, step: 0.1 },
+      { type: "slider", key: "octaves", label: "Perlin Octaves", default: 3, min: 1, max: 6, step: 1 },
+      { type: "slider", key: "curvePower", label: "Curve Easing Power", default: 1.0, min: 0.5, max: 4.0, step: 0.1 }
     ]
   },
   "apparatus-dual-wave": {
@@ -306,13 +378,55 @@ export const COMPONENT_DETAILS: Record<string, ComponentDetail> = {
     tags: ["GSAP", "Scroll", "Sine Wave", "Typography"],
     previewType: "scroll",
     controls: [
-      { type: "slider", key: "frequency", label: "Sine Frequency", default: 2, min: 0.5, max: 5, step: 0.1 },
-      { type: "slider", key: "amplitude", label: "Sine Amplitude", default: 60, min: 10, max: 150, step: 5, unit: "px" },
-      { type: "slider", key: "waveNum", label: "Wave Density", default: 0.45, min: 0.1, max: 1.0, step: 0.05 },
-      { type: "slider", key: "spacing", label: "Text Item Spacing", default: 65, min: 30, max: 120, step: 5, unit: "px" },
-      { type: "slider", key: "maxBlur", label: "Depth Blur", default: 3.0, min: 0, max: 10, step: 0.5, unit: "px" },
-      { type: "slider", key: "maxRotation", label: "Tilt Angle", default: 8.0, min: 0, max: 25, step: 1, unit: "°" },
-      { type: "slider", key: "cornerAlignment", label: "Corner Alignment", default: 1.0, min: 0, max: 1.0, step: 0.1 }
+      {
+        type: "select",
+        key: "wavePattern",
+        label: "Wave Path Pattern",
+        default: "iris",
+        options: [
+          { label: "Lens Focus", value: "iris" },
+          { label: "Split Horizon", value: "horizon" },
+          { label: "Center Pinch", value: "hourglass" },
+          { label: "Sine Wave", value: "dualSine" },
+          { label: "Spiral Funnel", value: "vortex" },
+          { label: "Diagonal Slant", value: "shear" }
+        ]
+      },
+      // Universal Shared Controls
+      { type: "slider", key: "scrollDamping", label: "Scroll Damping", default: 0.08, min: 0.01, max: 0.30, step: 0.005 },
+      { type: "slider", key: "spacing", label: "Text Item Spacing", default: 72, min: 35, max: 150, step: 1, unit: "px" },
+      { type: "slider", key: "maxBlur", label: "Depth Blur", default: 2.5, min: 0, max: 10, step: 0.1, unit: "px" },
+
+      // 1. Lens Focus Controls (DEFAULT VARIANT)
+      { type: "slider", key: "amplitude", label: "Lens Flare Range", default: 90, min: 20, max: 200, step: 1, unit: "px", dependsOn: { key: "wavePattern", value: "iris" } },
+      { type: "slider", key: "curvature", label: "Lens Curve Softness", default: 0.50, min: 0.1, max: 1.0, step: 0.01, dependsOn: { key: "wavePattern", value: "iris" } },
+      { type: "slider", key: "maxRotation", label: "Lens Tilt Angle", default: 7.5, min: 0, max: 30, step: 0.1, unit: "°", dependsOn: { key: "wavePattern", value: "iris" } },
+
+      // 4. Split Horizon Controls (OPTION C)
+      { type: "slider", key: "amplitude", label: "Horizon Spread", default: 85, min: 10, max: 180, step: 1, unit: "px", dependsOn: { key: "wavePattern", value: "horizon" } },
+      { type: "slider", key: "curvature", label: "Slope Angle", default: 0.60, min: 0.1, max: 1.5, step: 0.01, dependsOn: { key: "wavePattern", value: "horizon" } },
+      { type: "slider", key: "maxRotation", label: "Horizon Tilt", default: 7.0, min: 0, max: 25, step: 0.1, unit: "°", dependsOn: { key: "wavePattern", value: "horizon" } },
+
+      // 5. Center Pinch Controls
+      { type: "slider", key: "amplitude", label: "Pinch Width Range", default: 75, min: 10, max: 150, step: 1, unit: "px", dependsOn: { key: "wavePattern", value: "hourglass" } },
+      { type: "slider", key: "curvature", label: "Curvature Profile", default: 0.35, min: 0.0, max: 1.0, step: 0.01, dependsOn: { key: "wavePattern", value: "hourglass" } },
+      { type: "slider", key: "maxRotation", label: "Tilt Angle", default: 6.5, min: 0, max: 30, step: 0.1, unit: "°", dependsOn: { key: "wavePattern", value: "hourglass" } },
+      { type: "slider", key: "cornerAlignment", label: "Corner Alignment", default: 1.0, min: 0, max: 1.0, step: 0.01, dependsOn: { key: "wavePattern", value: "hourglass" } },
+
+      // 6. Sine Wave Controls
+      { type: "slider", key: "frequency", label: "Sine Frequency", default: 1.8, min: 0.5, max: 5.0, step: 0.1, dependsOn: { key: "wavePattern", value: "dualSine" } },
+      { type: "slider", key: "amplitude", label: "Sine Amplitude", default: 70, min: 10, max: 150, step: 1, unit: "px", dependsOn: { key: "wavePattern", value: "dualSine" } },
+      { type: "slider", key: "waveNum", label: "Wave Density", default: 0.45, min: 0.1, max: 1.0, step: 0.01, dependsOn: { key: "wavePattern", value: "dualSine" } },
+      { type: "slider", key: "maxRotation", label: "Tangential Tilt", default: 6.5, min: 0, max: 30, step: 0.1, unit: "°", dependsOn: { key: "wavePattern", value: "dualSine" } },
+
+      // 7. Spiral Funnel Controls
+      { type: "slider", key: "curvature", label: "Funnel Curve Power", default: 0.85, min: 0.2, max: 2.5, step: 0.05, dependsOn: { key: "wavePattern", value: "vortex" } },
+      { type: "slider", key: "amplitude", label: "Funnel Depth Range", default: 90, min: 20, max: 200, step: 1, unit: "px", dependsOn: { key: "wavePattern", value: "vortex" } },
+      { type: "slider", key: "maxRotation", label: "Funnel Twist Angle", default: 12.0, min: 0, max: 45, step: 0.5, unit: "°", dependsOn: { key: "wavePattern", value: "vortex" } },
+
+      // 8. Diagonal Slant Controls
+      { type: "slider", key: "maxRotation", label: "Slant Angle", default: 10.0, min: 0, max: 35, step: 0.5, unit: "°", dependsOn: { key: "wavePattern", value: "shear" } },
+      { type: "slider", key: "amplitude", label: "Corridor Width", default: 70, min: 10, max: 150, step: 1, unit: "px", dependsOn: { key: "wavePattern", value: "shear" } }
     ]
   },
   "apparatus-clip-morph": {
@@ -528,9 +642,95 @@ export const COMPONENT_DETAILS: Record<string, ComponentDetail> = {
       { type: "toggle", key: "enable3DDepth", label: "3D Depth Shift", default: true },
       { type: "toggle", key: "enableParallaxCounter", label: "Parallax Counter", default: true }
     ]
+  },
+  "apparatus-liquid-text": {
+    id: "53",
+    label: "APPARATUS LIQUID TEXT",
+    filename: "",
+    desc: "Headline glyphs render as hollow vessels that fill with animated sloshing liquid as you scroll, featuring per-character staggered liquid levels and real-time surface wave physics.",
+    slug: "apparatus-liquid-text",
+    category: "text",
+    subtype: "text",
+    tags: ["GSAP", "Scroll", "SVG", "Liquid Simulation", "Typography"],
+    previewType: "scroll",
+    controls: [
+      { type: "color", key: "liquidColor", label: "Liquid Fill Color", default: "#3b82f6" },
+      { type: "color", key: "strokeColor", label: "Glyph Outline Color", default: "#ffffff" },
+      { type: "slider", key: "waveSpeed", label: "Liquid Slosh Speed", default: 1.5, min: 0.5, max: 4.0, step: 0.1 },
+      { type: "slider", key: "waveAmplitude", label: "Wave Amplitude", default: 12, min: 2, max: 30, step: 1, unit: "px" }
+    ]
+  },
+  "apparatus-typewriter-decay": {
+    id: "54",
+    label: "APPARATUS TYPEWRITER DECAY",
+    filename: "",
+    desc: "Text types out character by character on scroll and continuously degrades behind the cursor through 4 entropy stages: fresh typography → noise distortion → polygon fragmentation → particle dissolution.",
+    slug: "apparatus-typewriter-decay",
+    category: "text",
+    subtype: "text",
+    tags: ["GSAP", "Typewriter", "Entropy", "Hover", "Click", "Typography"],
+    previewType: "scroll",
+    controls: [
+      { type: "slider", key: "decayRate", label: "Entropy Decay Rate", default: 1.0, min: 0.5, max: 3.0, step: 0.1 }
+    ]
+  },
+  "apparatus-radial-vortex": {
+    id: "55",
+    label: "APPARATUS RADIAL VORTEX",
+    filename: "",
+    desc: "Concentric typographical rings counter-rotate in ambient kinetic orbit when idle, accelerating into a hypnotic vortex as you scroll.",
+    slug: "apparatus-radial-vortex",
+    category: "text",
+    subtype: "text",
+    tags: ["GSAP", "Typography", "Kinetic", "Radial", "Vortex"],
+    previewType: "scroll",
+    controls: [
+      { type: "select", key: "presetText", label: "Word Preset", default: "POINT", options: [{ label: "POINT", value: "POINT" }, { label: "ABYSS", value: "ABYSS" }, { label: "VORTEX", value: "VORTEX" }, { label: "KINETIC", value: "KINETIC" }] },
+      { type: "slider", key: "ringSpeed", label: "Orbit Speed", default: 1.0, min: 0.1, max: 3.0, step: 0.1 },
+      { type: "slider", key: "vortexScale", label: "Vortex Scale", default: 1.0, min: 0.5, max: 1.8, step: 0.1 },
+      { type: "slider", key: "scrollSens", label: "Scroll Torque Sensitivity", default: 1.0, min: 0.2, max: 3.0, step: 0.1 },
+      { type: "slider", key: "arcCoverage", label: "Arc Span Degrees", default: 240, min: 120, max: 360, step: 10 },
+      { type: "slider", key: "letterSpacing", label: "Ring Distance Spacing", default: 30, min: 15, max: 45, step: 1 },
+      { type: "slider", key: "letterOpacity", label: "Letter Opacity", default: 0.98, min: 0.3, max: 1.0, step: 0.05 },
+      { type: "slider", key: "breathAmount", label: "Idle Breath Pulse", default: 1.0, min: 0.0, max: 3.0, step: 0.2 }
+    ]
+  },
+  "apparatus-3d-typography-grid": {
+    id: "56",
+    label: "APPARATUS 3D TYPOGRAPHY GRID",
+    filename: "",
+    desc: "A monumental 3D extruded wireframe letterform or custom word that rotates in 3D spatial depth on scroll.",
+    slug: "apparatus-3d-typography-grid",
+    category: "text",
+    subtype: "text",
+    tags: ["GSAP", "Typography", "3D", "Wireframe", "Monumental"],
+    controls: [
+      { type: "select", key: "motionMode", label: "3D Motion Mode", default: "wave", options: [
+        { label: "WAVE (3D Sine Floating)", value: "wave" },
+        { label: "ORBIT (Pure 360° Spin)", value: "orbit" },
+        { label: "DRIFT (3D Depth Pulse)", value: "drift" },
+        { label: "VORTEX (Helical Twist)", value: "vortex" }
+      ] },
+      { type: "select", key: "presetWord", label: "Word Preset", default: "", options: [
+        { label: "NONE (Single Letter)", value: "" },
+        { label: "ABYSS", value: "ABYSS" },
+        { label: "KINETIC", value: "KINETIC" },
+        { label: "VORTEX", value: "VORTEX" },
+        { label: "HYPER", value: "HYPER" },
+        { label: "MATRIX", value: "MATRIX" },
+        { label: "CYBER", value: "CYBER" },
+        { label: "COSMOS", value: "COSMOS" },
+        { label: "VECTOR", value: "VECTOR" },
+        { label: "POINT", value: "POINT" }
+      ] },
+      { type: "select", key: "presetLetter", label: "Single Letter", default: "A", options: ["A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z"].map(l => ({ label: l, value: l })) },
+      { type: "slider", key: "rotationSpeed", label: "3D Rotation Speed", default: 1.0, min: 0.2, max: 3.0, step: 0.1 },
+      { type: "slider", key: "wireframeDepth", label: "3D Extrusion Depth", default: 7, min: 2, max: 30, step: 1 }
+    ]
   }
 };
-// Force reload: 2026-07-20
+
+// Force reload: 2026-07-25
 
 
 
@@ -564,8 +764,13 @@ export const COMPONENT_IMPORTS: Record<string, React.ComponentType<VesselCompone
   "apparatus-focus-ring": dynamic(() => import("../../../../packages/core/src/components/apparatus-focus-ring"), { ssr: false }),
   "apparatus-cursor-wake": dynamic(() => import("../../../../packages/core/src/components/apparatus-cursor-wake"), { ssr: false }),
   "apparatus-page-fade-shift": dynamic(() => import("../../../../packages/core/src/components/apparatus-page-fade-shift"), { ssr: false }),
-  "apparatus-page-overlay-wipe": dynamic(() => import("../../../../packages/core/src/components/apparatus-page-overlay-wipe"), { ssr: false })
+  "apparatus-page-overlay-wipe": dynamic(() => import("../../../../packages/core/src/components/apparatus-page-overlay-wipe"), { ssr: false }),
+  "apparatus-liquid-text": dynamic(() => import("../../../../packages/core/src/components/apparatus-liquid-text"), { ssr: false }),
+  "apparatus-typewriter-decay": dynamic(() => import("../../../../packages/core/src/components/apparatus-typewriter-decay"), { ssr: false }),
+  "apparatus-radial-vortex": dynamic(() => import("../../../../packages/core/src/components/apparatus-radial-vortex"), { ssr: false }),
+  "apparatus-3d-typography-grid": dynamic(() => import("../../../../packages/core/src/components/apparatus-3d-typography-grid"), { ssr: false })
 };
+
 
 
 export function getComponent(slug: string) {

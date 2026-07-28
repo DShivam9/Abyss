@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef } from "react";
 import { gsap } from "gsap";
 import { useGSAP } from "@gsap/react";
 import { ApparatusPhaseDriftProps } from "./types";
@@ -78,7 +78,6 @@ export const ApparatusPhaseDrift: React.FC<ApparatusPhaseDriftProps & {
   onLifecycleChange
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const hudRef = useRef<HTMLDivElement>(null);
   const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
 
   const imageList = images && images.length > 0 ? images : DEFAULT_IMAGES;

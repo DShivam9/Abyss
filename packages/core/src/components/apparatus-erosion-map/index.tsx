@@ -74,15 +74,7 @@ const DEFAULT_IMAGES = [
   "/images/components%20images/scroll/cosmos_1244425812.jpeg",
   "/images/components%20images/scroll/cosmos_1292975902.jpeg",
   "/images/components%20images/scroll/cosmos_1298955025.jpeg",
-  "/images/components%20images/scroll/cosmos_1309660817.jpeg",
-  "/images/components%20images/scroll/cosmos_1452408749.jpeg",
-  "/images/components%20images/scroll/cosmos_1556080729.jpeg",
-  "/images/components%20images/scroll/cosmos_1591705408.jpeg",
-  "/images/components%20images/scroll/cosmos_1633231397.jpeg",
-  "/images/components%20images/scroll/cosmos_169178344.jpeg",
-  "/images/components%20images/scroll/cosmos_1859262512.jpeg",
-  "/images/components%20images/scroll/cosmos_1994819013.jpeg",
-  "/images/components%20images/scroll/cosmos_496247602.jpeg"
+  "/images/components%20images/scroll/cosmos_1309660817.jpeg"
 ];
 
 export const ApparatusErosionMap: React.FC<ApparatusErosionMapProps & {
@@ -103,8 +95,8 @@ export const ApparatusErosionMap: React.FC<ApparatusErosionMapProps & {
   windPattern: propWindPattern = "linear",
   windAngle: propWindAngle = 180,
   windStretch: propWindStretch = 2.5,
-  curvePower: propCurvePower = 2.0,
-  erosionDamper = 3.0,
+  curvePower: propCurvePower = 1.0,
+  erosionDamper = 1.0,
   className = "",
   style,
   onLifecycleChange,
@@ -127,8 +119,9 @@ export const ApparatusErosionMap: React.FC<ApparatusErosionMapProps & {
   const [localScrollProgress, setLocalScrollProgress] = useState(0);
   const scrollProgress = propScrollProgress !== undefined ? propScrollProgress : localScrollProgress;
 
-  // Refs for delta-corrected smooth interpolation (ref-rate independent)
+  // Refs for delta-corrected smooth interpolation & physical weight
   const lerpedProgressRef = useRef(0);
+  const velocityRef = useRef(0);
   const lastTimeRef = useRef(typeof performance !== "undefined" ? performance.now() : 0);
   const animFrameIdRef = useRef<number | null>(null);
   const isAnimatingRef = useRef(false);
@@ -140,7 +133,7 @@ export const ApparatusErosionMap: React.FC<ApparatusErosionMapProps & {
     const base = imageSrc ? [imageSrc] : [];
     const combined = [...base];
     for (const img of DEFAULT_IMAGES) {
-      if (combined.length >= 16) break;
+      if (combined.length >= 8) break;
       if (!combined.includes(img)) combined.push(img);
     }
     return combined;
@@ -191,6 +184,14 @@ export const ApparatusErosionMap: React.FC<ApparatusErosionMapProps & {
     wakeUpRef.current();
   }, [grainScale, octaves, windPattern, windAngle, windStretch, edgeWidth, edgeColor, curvePower, erosionDamper, scrollProgress]);
 
+  // Reset internal lerped progress when scrollProgress prop resets to 0
+  useEffect(() => {
+    if (propScrollProgress === 0) {
+      lerpedProgressRef.current = 0;
+      velocityRef.current = 0;
+    }
+  }, [propScrollProgress]);
+
   // Lifecycle monitoring
   useEffect(() => {
     onLifecycleChange?.("discovery");
@@ -217,7 +218,7 @@ export const ApparatusErosionMap: React.FC<ApparatusErosionMapProps & {
     ScrollTrigger.create({
       trigger: el,
       start: "top top",
-      end: "+=1500%",
+      end: "+=6000%",
       pin: true,
       scrub: 1.5,
       onUpdate: (self) => {
@@ -244,7 +245,7 @@ export const ApparatusErosionMap: React.FC<ApparatusErosionMapProps & {
       if (maxScroll <= 10) {
         e.preventDefault();
         setLocalScrollProgress((prev) => {
-          const step = 0.0008;
+          const step = 0.00015;
           const next = Math.max(0, Math.min(1, prev + (e.deltaY > 0 ? step : -step)));
           onLifecycleChange?.(next > 0 && next < 1 ? "buildUp" : "idle");
           return next;
@@ -379,14 +380,19 @@ export const ApparatusErosionMap: React.FC<ApparatusErosionMapProps & {
       const totalImages = displayImages.length;
       if (totalImages < 2) return;
 
-      // Heavy fluid lerp damping to slow down erosion progression
+      // Heavy fluid lerp damping to give momentum & physical weight
       const diff = targetProgress - lerpedProgressRef.current;
-      if (Math.abs(diff) < 0.0001) {
+      let vel = 0;
+      if (Math.abs(diff) < 0.00005) {
         lerpedProgressRef.current = targetProgress;
+        velocityRef.current = 0;
         isAnimatingRef.current = false;
       } else {
-        const dampFactor = Math.max(0.2, erosionDamper); 
-        lerpedProgressRef.current += diff * (1.0 - Math.exp(-dampFactor * delta));
+        const dampFactor = Math.max(0.1, erosionDamper); 
+        const step = diff * (1.0 - Math.exp(-dampFactor * delta));
+        lerpedProgressRef.current += step;
+        vel = step / (delta || 0.016);
+        velocityRef.current = vel;
       }
       const progress = lerpedProgressRef.current;
 
@@ -407,7 +413,7 @@ export const ApparatusErosionMap: React.FC<ApparatusErosionMapProps & {
       ctx.resetTransform();
       ctx.scale(dpr, dpr);
 
-      // Clear main canvas with solid dark background color to prevent leftover frames
+      // Clear main canvas with solid dark background color
       ctx.fillStyle = "#070708";
       ctx.fillRect(0, 0, width, height);
 
@@ -444,11 +450,10 @@ export const ApparatusErosionMap: React.FC<ApparatusErosionMapProps & {
       };
 
       if (progress < 0.15) {
-        // Phase 0: Text "SCROLL" on black background erodes to reveal Image 0
+        // Phase 0: Text "EROSION" on black background erodes to reveal Image 0
         const localProg = progress / 0.15;
 
-        // Base layer: centered card with Image 0 (drawn directly onto the main canvas)
-        // Card scales up from 0.94 -> 1.0 and fades in from 0 -> 1 alpha
+        // Base layer: centered card with Image 0 (drawn directly onto main canvas)
         ctx.save();
         ctx.translate(width / 2, height / 2);
         const cardScale = 0.94 + 0.06 * localProg;
@@ -463,7 +468,7 @@ export const ApparatusErosionMap: React.FC<ApparatusErosionMapProps & {
         ctx.shadowOffsetX = 0;
         ctx.shadowOffsetY = 24;
         ctx.fillRect(dx, dy, drawW, drawH);
-        ctx.shadowColor = "transparent"; // Reset shadow
+        ctx.shadowColor = "transparent";
 
         const imgNext = loadedImagesRef.current[0];
         if (imgNext && imgNext.complete) {
@@ -471,7 +476,7 @@ export const ApparatusErosionMap: React.FC<ApparatusErosionMapProps & {
         }
         ctx.restore();
 
-        // Generate threshold dither mask for this localProg
+        // Generate threshold dither mask for this localProg with dynamic edge glow
         const edgeColorVal = (edgeColor.b << 16) | (edgeColor.g << 8) | edgeColor.r;
         for (let i = 0; i < 256 * 256; i++) {
           const noiseVal = noiseData[i];
@@ -490,13 +495,12 @@ export const ApparatusErosionMap: React.FC<ApparatusErosionMapProps & {
 
         maskCtx.putImageData(maskImgData, 0, 0);
 
-        // Ensure bufferCanvas dimensions match visible canvas
         if (bufferCanvas.width !== visibleCanvas.width || bufferCanvas.height !== visibleCanvas.height) {
           bufferCanvas.width = visibleCanvas.width;
           bufferCanvas.height = visibleCanvas.height;
         }
 
-        // Draw top layer (full-screen black with big text) ON the buffer canvas
+        // Draw top layer (full-screen black with text) ON buffer canvas
         bufferCtx.save();
         bufferCtx.resetTransform();
         bufferCtx.scale(dpr, dpr);
@@ -505,9 +509,7 @@ export const ApparatusErosionMap: React.FC<ApparatusErosionMapProps & {
         bufferCtx.fillStyle = "#070708";
         bufferCtx.fillRect(0, 0, width, height);
 
-        // Large clean sans-serif text in the center - significantly larger
-        // Resolved with standard browser fallback fonts instead of CSS variable names
-        const textScale = 1.0 + 0.04 * localProg;
+        const textScale = 1.0 + 0.05 * localProg;
         bufferCtx.save();
         bufferCtx.translate(width / 2, height / 2);
         bufferCtx.scale(textScale, textScale);
@@ -519,47 +521,52 @@ export const ApparatusErosionMap: React.FC<ApparatusErosionMapProps & {
         bufferCtx.textBaseline = "middle";
         bufferCtx.fillText("EROSION", width / 2, height / 2);
 
-        // Subtext labeling device
         bufferCtx.fillStyle = `rgba(255, 255, 255, ${0.35 * (1.0 - localProg)})`;
         bufferCtx.font = "bold 11px 'Geist Mono', 'Fira Code', monospace";
         bufferCtx.fillText("THRESHOLD WEATHERING SYSTEM", width / 2, height / 2 + 105);
-        bufferCtx.restore(); // Restore text scale
-        bufferCtx.restore(); // Restore bufferCtx main state
+        bufferCtx.restore();
+        bufferCtx.restore();
 
-        // Apply dither mask stretched to full screen size ON the buffer canvas
+        // Apply dither mask ON buffer canvas
         bufferCtx.save();
         bufferCtx.globalCompositeOperation = "destination-in";
         bufferCtx.imageSmoothingEnabled = true;
         bufferCtx.drawImage(maskCanvas, 0, 0, visibleCanvas.width, visibleCanvas.height);
         bufferCtx.restore();
 
-        // Draw the masked buffer canvas over the main canvas (revealing the base layer)
+        // Draw masked buffer canvas onto main canvas
         ctx.save();
         ctx.drawImage(bufferCanvas, 0, 0, width, height);
         ctx.restore();
 
       } else {
-        // Phase 1 to N: Image-to-Image transitions
+        // Phase 1 to N: Image-to-Image transitions with solid hold state
         const pRemaining = (progress - 0.15) / 0.85;
-        const floatIdx = pRemaining * (totalImages - 1);
+        const totalTransitions = totalImages - 1;
+        const floatIdx = Math.max(0, Math.min(totalTransitions - 0.0001, pRemaining * totalTransitions));
         const activeIdx = Math.min(totalImages - 2, Math.floor(floatIdx));
         const nextIdx = activeIdx + 1;
 
-        // Apply ease-in curve power transition profile
-        let localProg = floatIdx - activeIdx;
+        const rawStepProg = floatIdx - activeIdx; // 0.0 to 1.0 for this image step
+        // Hold threshold: first 8% of step stays solid image. Remaining 92% erodes smoothly to next image.
+        const holdThreshold = 0.08;
+        let localProg = 0;
+        if (rawStepProg > holdThreshold) {
+          localProg = (rawStepProg - holdThreshold) / (1.0 - holdThreshold);
+        }
         localProg = Math.pow(localProg, curvePower);
 
         const imgNext = loadedImagesRef.current[nextIdx];
         const imgCurrent = loadedImagesRef.current[activeIdx];
 
-        // Draw backing card shadow behind the frame
+        // Draw backing card shadow behind frame
         ctx.fillStyle = "#0c0c0d";
         ctx.shadowColor = "rgba(0, 0, 0, 0.75)";
         ctx.shadowBlur = 56;
         ctx.shadowOffsetX = 0;
         ctx.shadowOffsetY = 24;
         ctx.fillRect(dx, dy, drawW, drawH);
-        ctx.shadowColor = "transparent"; // Reset shadow
+        ctx.shadowColor = "transparent";
 
         if (imgNext && imgNext.complete) {
           drawImageCover(imgNext, ctx);
@@ -583,7 +590,6 @@ export const ApparatusErosionMap: React.FC<ApparatusErosionMapProps & {
 
         maskCtx.putImageData(maskImgData, 0, 0);
 
-        // Ensure bufferCanvas dimensions match visible canvas
         if (bufferCanvas.width !== visibleCanvas.width || bufferCanvas.height !== visibleCanvas.height) {
           bufferCanvas.width = visibleCanvas.width;
           bufferCanvas.height = visibleCanvas.height;
@@ -598,13 +604,13 @@ export const ApparatusErosionMap: React.FC<ApparatusErosionMapProps & {
           drawImageCover(imgCurrent, bufferCtx);
         }
 
-        // Apply dither mask stretched to card frame ON the buffer canvas
+        // Apply dither mask ON buffer canvas
         bufferCtx.globalCompositeOperation = "destination-in";
         bufferCtx.imageSmoothingEnabled = true;
         bufferCtx.drawImage(maskCanvas, dx, dy, drawW, drawH);
         bufferCtx.restore();
 
-        // Draw the masked buffer canvas over the main canvas (revealing the base layer)
+        // Draw masked buffer canvas onto main canvas
         ctx.save();
         ctx.drawImage(bufferCanvas, 0, 0, width, height);
         ctx.restore();

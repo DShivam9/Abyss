@@ -5,7 +5,6 @@ import { useGSAP } from "@gsap/react";
 import {
   ApparatusPageOverlayWipeProps,
   WipeDirection,
-  WipeStyle,
 } from "./types";
 
 interface TransitionImageItem {
