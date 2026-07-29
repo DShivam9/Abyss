@@ -3,7 +3,7 @@ export interface ShowcaseComponent {
   name: string;
   slug: string;
   description: string;
-  category: "image" | "geometry" | "scroll" | "gallary" | "hybrid" | "transition" | "text";
+  category: "image" | "geometry" | "scroll" | "gallary" | "hybrid" | "transition" | "text" | "svg";
   complexity: "Simple" | "Intermediate" | "Advanced";
   techBadges: string[];
   accentHex: string;

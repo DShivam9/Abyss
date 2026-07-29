@@ -1,0 +1,8 @@
+{
+  "name": "apparatus-parallax-bleed",
+  "displayName": "Apparatus Parallax Bleed",
+  "description": "4 full-bleed image sections stacked sequentially with deep internal parallax bounds, virtual camera momentum, and weighted layer micro-latency.",
+  "category": "scroll",
+  "tags": ["GSAP", "ScrollTrigger", "Parallax", "Full Bleed", "Cinematic", "Physics"],
+  "author": "vessel"
+}

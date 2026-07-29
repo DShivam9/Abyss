@@ -61,6 +61,11 @@ export const CATEGORY_DEFAULTS: Record<string, ControlConfig[]> = {
         { label: "Lines", value: "lines" }
       ]
     }
+  ],
+  svg: [
+    { type: "slider", key: "strokeWidth", label: "Stroke Width", default: 2, min: 0.5, max: 10, step: 0.5, unit: "px" },
+    { type: "slider", key: "duration", label: "Animation Duration", default: 1000, min: 200, max: 4000, step: 100, unit: "ms" },
+    { type: "slider", key: "blurAmount", label: "SVG Blur Amount", default: 4, min: 0, max: 20, step: 1, unit: "px" }
   ]
 };
 

@@ -5,24 +5,12 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import Lenis from "lenis";
-import { ChevronDown, Search, ArrowLeft, ArrowRight, X, Eye, EyeOff } from "lucide-react";
+import { ChevronDown, Search, ArrowLeft, ArrowRight, X, Eye, EyeOff, Home } from "lucide-react";
 import { ComponentDetail, COMPONENT_DETAILS } from "@/lib/component-registry";
 
-function getInteractionPrompt(comp: ComponentDetail): string {
-  if (comp.previewType === "scroll" || comp.category === "scroll") {
-    return "Scroll to animate";
-  }
-  if (comp.previewType === "gallery" || comp.category === "gallary") {
-    return "Drag or scroll to navigate";
-  }
-  if (comp.previewType === "transition" || comp.category === "transition") {
-    return "Click or scroll to transition";
-  }
-  if (comp.category === "text") {
-    return "Hover or scroll text";
-  }
-  return "Move cursor to interact";
-}
+
+
+
 
 function cleanLabel(label: string) {
   let clean = label.replace(/^APPARATUS\s+/i, "");
@@ -150,14 +138,63 @@ function ScrambleTabButton({
   );
 }
 
+function HighlightedText({
+  text,
+  query,
+  isActive,
+}: {
+  text: string;
+  query: string;
+  isActive: boolean;
+}) {
+  if (!query.trim()) {
+    return (
+      <span
+        className={`block transition-colors ${
+          isActive ? "text-black font-bold" : "text-neutral-500 font-medium"
+        }`}
+      >
+        {text}
+      </span>
+    );
+  }
+
+  const escaped = query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const regex = new RegExp(`(${escaped})`, "gi");
+  const parts = text.split(regex);
+
+  return (
+    <span
+      className={`block transition-colors ${
+        isActive ? "text-black font-bold" : "text-neutral-300 font-medium"
+      }`}
+    >
+      {parts.map((part, i) =>
+        part.toLowerCase() === query.toLowerCase() ? (
+          <mark
+            key={i}
+            className={`px-0.5 rounded-sm font-bold ${
+              isActive ? "bg-black text-white" : "bg-amber-400/30 text-amber-200"
+            }`}
+          >
+            {part}
+          </mark>
+        ) : (
+          part
+        )
+      )}
+    </span>
+  );
+}
+
 function RollUpDrawerComponentItem({
   label,
-  subtype,
+  searchQuery = "",
   isActive,
   onClick,
 }: {
   label: string;
-  subtype?: string;
+  searchQuery?: string;
   isActive: boolean;
   onClick: () => void;
 }) {
@@ -174,17 +211,11 @@ function RollUpDrawerComponentItem({
     >
       {/* Overlapping Letter Roll-up Label */}
       <div className="relative overflow-hidden py-0.5 text-xs font-mono">
-        {/* Base Stationary Text */}
-        <span
-          className={`block transition-colors ${
-            isActive ? "text-black font-bold" : "text-neutral-500 font-medium"
-          }`}
-        >
-          {label}
-        </span>
+        {/* Base Stationary Text with Search Highlighting */}
+        <HighlightedText text={label} query={searchQuery} isActive={isActive} />
 
         {/* Overlapping Staggered Roll-up Text */}
-        {!isActive && (
+        {!isActive && !searchQuery && (
           <div className="absolute inset-0 flex items-center pointer-events-none">
             {label.split("").map((char, i) => (
               <motion.span
@@ -205,15 +236,14 @@ function RollUpDrawerComponentItem({
         )}
       </div>
 
-      {subtype && (
-        <span
-          className={`text-[10px] font-mono uppercase ${
-            isActive ? "text-neutral-600 font-bold" : "text-neutral-600 group-hover:text-neutral-400"
-          }`}
-        >
-          {subtype}
-        </span>
-      )}
+      {/* Right side status indicator (Active Dot / Hover Arrow) */}
+      <div className="flex items-center text-[10px] font-mono">
+        {isActive ? (
+          <span className="w-1.5 h-1.5 rounded-full bg-black shrink-0" />
+        ) : (
+          <ArrowRight className="w-3 h-3 text-neutral-600 opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200 shrink-0" />
+        )}
+      </div>
     </button>
   );
 }
@@ -591,8 +621,33 @@ export function ShowcaseChrome({
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("ALL");
+  const [recentlyViewed, setRecentlyViewed] = useState<ComponentDetail[]>([]);
   const drawerRef = useRef<HTMLDivElement>(null);
   const sheetRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      const raw = sessionStorage.getItem("abyss_recently_viewed");
+      if (raw) setRecentlyViewed(JSON.parse(raw));
+    } catch {
+      // Ignore sessionStorage access errors
+    }
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined" || !component) return;
+    try {
+      const raw = sessionStorage.getItem("abyss_recently_viewed");
+      const parsed: ComponentDetail[] = raw ? JSON.parse(raw) : [];
+      const filtered = parsed.filter((item) => item.slug !== component.slug);
+      const updated = [component, ...filtered].slice(0, 4);
+      sessionStorage.setItem("abyss_recently_viewed", JSON.stringify(updated));
+      setRecentlyViewed(updated);
+    } catch {
+      // Ignore sessionStorage access errors
+    }
+  }, [component]);
 
   const allComponents = Object.values(COMPONENT_DETAILS);
   const categoryItems = allComponents.filter((c) => c.category === component.category);
@@ -693,8 +748,10 @@ export function ShowcaseChrome({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [component.slug, prevComp, nextComp, router, onToggleControls, drawerOpen]);
 
-  // Categories list
-  const categoriesList = ["ALL", "SCROLL", "GALLERY", "IMAGE", "GEOMETRY", "HYBRID"];
+  // Categories list in exact requested order: scroll, gallery, transition, text, geometry, image
+  const categoriesList = ["ALL", "SCROLL", "GALLERY", "TRANSITION", "TEXT", "SVG", "GEOMETRY", "IMAGE"];
+
+  const CATEGORY_ORDER = ["scroll", "gallary", "gallery", "transition", "text", "svg", "geometry", "image", "hybrid"];
 
   // Filtered components
   const filteredComponents = allComponents.filter((c) => {
@@ -711,13 +768,19 @@ export function ShowcaseChrome({
     return matchesSearch && matchesCategory;
   });
 
-  // Group filtered components by category
+  // Group filtered components by category in strict requested order
   const groupedCategories = Array.from(
     new Set(filteredComponents.map((c) => c.category))
-  ).map((cat) => ({
-    category: cat,
-    items: filteredComponents.filter((c) => c.category === cat),
-  }));
+  )
+    .sort((a, b) => {
+      const idxA = CATEGORY_ORDER.indexOf(a.toLowerCase());
+      const idxB = CATEGORY_ORDER.indexOf(b.toLowerCase());
+      return (idxA === -1 ? 99 : idxA) - (idxB === -1 ? 99 : idxB);
+    })
+    .map((cat) => ({
+      category: cat,
+      items: filteredComponents.filter((c) => c.category === cat),
+    }));
 
   return (
     <div className="relative min-h-screen w-full bg-[#070708] font-sans antialiased text-white">
@@ -729,18 +792,18 @@ export function ShowcaseChrome({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: -8 }}
             onClick={() => setIsHudHidden(false)}
-            className="fixed top-4 right-6 z-50 flex items-center gap-2 px-3 py-1.5 bg-[#08080a]/90 hover:bg-[#121215] text-xs font-mono tracking-wider text-neutral-300 hover:text-white border border-neutral-800 rounded-lg shadow-xl backdrop-blur-md transition-all cursor-pointer group"
+            className="fixed top-4 right-6 z-50 flex items-center gap-2 px-4 py-2 bg-white/[0.06] hover:bg-white/[0.12] text-xs font-mono tracking-wider text-white border border-white/25 hover:border-white/45 rounded-full shadow-[inset_0_1px_1px_0_rgba(255,255,255,0.4),_0_12px_32px_-4px_rgba(0,0,0,0.7)] backdrop-blur-2xl backdrop-saturate-200 hover:shadow-[inset_0_1px_1px_0_rgba(255,255,255,0.6),_0_0_25px_rgba(255,255,255,0.15)] transition-all duration-300 cursor-pointer group"
             title="Show HUD UI (Press H)"
           >
-            <Eye className="w-3.5 h-3.5 text-neutral-400 group-hover:text-white transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-125" />
+            <Eye className="w-3.5 h-3.5 text-neutral-300 group-hover:text-white transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-125" />
             <span>SHOW HUD</span>
           </motion.button>
         )}
       </AnimatePresence>
 
-      {/* Sleek Top Bar */}
+      {/* Sleek Top Bar (Glassmorphic) */}
       <header
-        className={`fixed top-0 left-0 right-0 z-50 flex h-[52px] items-center justify-between px-6 bg-[#070708]/90 backdrop-blur-md border-b border-neutral-900/80 transition-all duration-300 ${
+        className={`fixed top-0 left-0 right-0 z-50 flex h-[52px] items-center justify-between px-6 bg-zinc-950/40 backdrop-blur-xl border-b border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.37)] transition-all duration-300 ${
           !isHudHidden && (chromeVisible || drawerOpen || controlsOpen)
             ? "opacity-100 translate-y-0"
             : "opacity-0 -translate-y-2 pointer-events-none"
@@ -766,21 +829,21 @@ export function ShowcaseChrome({
 
         {/* Right: Unboxed Controls & Hide HUD Triggers */}
         <div className="flex items-center gap-3">
-          <button
-            onClick={() => setIsHudHidden(true)}
-            className="flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-mono tracking-wider text-neutral-400 hover:text-white bg-neutral-900/60 hover:bg-neutral-800/80 border border-neutral-800 rounded-md transition-all duration-200 cursor-pointer group"
-            title="Hide HUD UI (Press H)"
-          >
-            <EyeOff className="w-3.5 h-3.5 text-neutral-400 group-hover:text-white transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-125" />
-            <span>HIDE HUD</span>
-          </button>
-
           {onToggleControls && (
             <ScrambleControlsTrigger
               controlsOpen={Boolean(controlsOpen)}
               onClick={onToggleControls}
             />
           )}
+
+          <button
+            onClick={() => setIsHudHidden(true)}
+            className="flex items-center gap-1.5 px-3.5 py-1.5 text-[11px] font-mono tracking-wider text-white bg-white/[0.06] hover:bg-white/[0.12] border border-white/25 hover:border-white/45 rounded-full shadow-[inset_0_1px_1px_0_rgba(255,255,255,0.4),_0_10px_28px_-4px_rgba(0,0,0,0.6)] backdrop-blur-2xl backdrop-saturate-200 hover:shadow-[inset_0_1px_1px_0_rgba(255,255,255,0.6),_0_0_20px_rgba(255,255,255,0.12)] transition-all duration-300 cursor-pointer group"
+            title="Hide HUD UI (Press H)"
+          >
+            <EyeOff className="w-3.5 h-3.5 text-neutral-300 group-hover:text-white transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-125" />
+            <span>HIDE HUD</span>
+          </button>
         </div>
       </header>
 
@@ -790,35 +853,65 @@ export function ShowcaseChrome({
           <motion.div
             id="showcase-drawer-sheet"
             ref={sheetRef}
-            initial={{ opacity: 0, y: -16 }}
+            initial={{ opacity: 0, y: -24 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -16 }}
-            transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
+            exit={{ opacity: 0, y: -18 }}
+            transition={{
+              duration: 0.32,
+              ease: [0.16, 1, 0.3, 1],
+            }}
             onWheel={(e) => e.stopPropagation()}
-            className="fixed top-[52px] inset-x-0 z-40 bg-[#08080a]/70 backdrop-blur-3xl backdrop-saturate-150 border-b border-white/10 shadow-[0_24px_60px_rgba(0,0,0,0.85)] p-6 lg:p-8 max-h-[80vh] overflow-y-auto custom-scrollbar"
+            className="fixed top-[52px] bottom-0 inset-x-0 z-50 bg-[#08080a]/70 backdrop-blur-3xl backdrop-saturate-150 border-b border-white/10 shadow-[0_24px_60px_rgba(0,0,0,0.85)] p-6 lg:p-8 overflow-y-auto custom-scrollbar"
           >
-            <div className="max-w-7xl mx-auto space-y-6">
+            <motion.div
+              initial="hidden"
+              animate="visible"
+              transition={{ staggerChildren: 0.06, delayChildren: 0.04 }}
+              className="max-w-7xl mx-auto space-y-6 pb-16"
+            >
               {/* Drawer Control Toolbar */}
-              <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-neutral-900">
-                {/* Search Input */}
-                <div className="relative flex items-center bg-neutral-900/90 rounded-xl border border-neutral-800/80 focus-within:border-neutral-700 w-full sm:w-80 h-9 px-3">
-                  <Search className="w-3.5 h-3.5 text-neutral-500 mr-2 shrink-0" />
-                  <input
-                    type="text"
-                    placeholder="Search components..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    autoFocus
-                    className="w-full bg-transparent text-xs text-white placeholder-neutral-500 focus:outline-none font-mono"
-                  />
-                  {searchQuery && (
-                    <button
-                      onClick={() => setSearchQuery("")}
-                      className="p-1 text-neutral-500 hover:text-white transition-colors"
-                    >
-                      <X className="w-3.5 h-3.5" />
-                    </button>
-                  )}
+              <motion.div
+                variants={{
+                  hidden: { opacity: 0, y: -14, filter: "blur(8px)" },
+                  visible: {
+                    opacity: 1,
+                    y: 0,
+                    filter: "blur(0px)",
+                    transition: { duration: 0.3, ease: [0.16, 1, 0.3, 1] },
+                  },
+                }}
+                className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-neutral-900"
+              >
+                {/* Search Input & Home Button */}
+                <div className="flex items-center gap-2.5 w-full sm:w-auto">
+                  <Link
+                    href="/components"
+                    className="flex items-center gap-1.5 px-3 h-9 bg-neutral-900/90 hover:bg-neutral-800 text-xs font-mono font-bold text-neutral-300 hover:text-white rounded-xl border border-neutral-800/80 transition-colors cursor-pointer shrink-0 select-none group"
+                    title="Return to Main Catalog Page"
+                  >
+                    <Home className="w-3.5 h-3.5 text-neutral-400 group-hover:text-white transition-transform duration-300 group-hover:scale-110" />
+                    <span>HOME</span>
+                  </Link>
+
+                  <div className="relative flex items-center bg-neutral-900/90 rounded-xl border border-neutral-800/80 focus-within:border-neutral-700 w-full sm:w-72 h-9 px-3">
+                    <Search className="w-3.5 h-3.5 text-neutral-500 mr-2 shrink-0" />
+                    <input
+                      type="text"
+                      placeholder="Search components..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      autoFocus
+                      className="w-full bg-transparent text-xs text-white placeholder-neutral-500 focus:outline-none font-mono"
+                    />
+                    {searchQuery && (
+                      <button
+                        onClick={() => setSearchQuery("")}
+                        className="p-1 text-neutral-500 hover:text-white transition-colors"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                  </div>
                 </div>
 
                 {/* Category Filter Tabs with Sliding White Pill Transfer */}
@@ -841,46 +934,107 @@ export function ShowcaseChrome({
                     <X className="w-4 h-4 transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:rotate-90" />
                   </button>
                 </div>
-              </div>
+              </motion.div>
 
-              {/* Categorized Component Columns Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 pt-2">
-                {groupedCategories.map((group) => (
-                  <div key={group.category} className="space-y-3">
-                    {/* Category Column Header */}
-                    <div className="flex items-center justify-between pb-2 border-b border-neutral-900">
-                      <span className="text-[11px] font-mono font-bold tracking-widest uppercase text-neutral-500">
-                        {group.category}
-                      </span>
-                      <span className="text-[10px] font-mono text-neutral-600 font-semibold">
-                        {group.items.length}
-                      </span>
-                    </div>
-
-                    {/* Component Items List with Overlapping Letter Roll-Up */}
-                    <div className="space-y-1">
-                      {group.items.map((c) => {
-                        const isActive = c.slug === component.slug;
-                        const label = cleanLabel(c.label);
-
-                        return (
-                          <RollUpDrawerComponentItem
-                            key={c.slug}
-                            label={label}
-                            subtype={c.subtype}
-                            isActive={isActive}
-                            onClick={() => {
-                              setDrawerOpen(false);
-                              router.push(`/showcase/${c.slug}`);
-                            }}
-                          />
-                        );
-                      })}
-                    </div>
+              {/* Recently Visited Architectural Micro-Bar */}
+              {recentlyViewed.length > 0 && (
+                <motion.div
+                  variants={{
+                    hidden: { opacity: 0, y: -10, filter: "blur(6px)" },
+                    visible: {
+                      opacity: 1,
+                      y: 0,
+                      filter: "blur(0px)",
+                      transition: { duration: 0.3, ease: [0.16, 1, 0.3, 1] },
+                    },
+                  }}
+                  className="flex items-center gap-3 pt-1 border-b border-neutral-900/80 pb-3"
+                >
+                  <div className="flex items-center gap-1.5 text-[10px] font-mono font-bold tracking-widest text-neutral-500 uppercase shrink-0 select-none">
+                    <span className="w-1 h-3 bg-neutral-700 rounded-full inline-block" />
+                    <span>RECENT SHOWCASE</span>
                   </div>
-                ))}
-              </div>
-            </div>
+                  <div className="flex items-center gap-2 overflow-x-auto custom-scrollbar">
+                    {recentlyViewed.map((item) => {
+                      const isActive = item.slug === component.slug;
+                      return (
+                        <button
+                          key={item.slug}
+                          onClick={() => {
+                            setDrawerOpen(false);
+                            router.push(`/showcase/${item.slug}`);
+                          }}
+                          className={`flex items-center gap-2 px-3 py-1.5 rounded-md border text-xs font-mono transition-all duration-200 cursor-pointer shrink-0 select-none group ${
+                            isActive
+                              ? "bg-neutral-800/90 border-neutral-700 text-white font-bold shadow-md shadow-black/40"
+                              : "bg-neutral-950/60 hover:bg-neutral-900 border-neutral-900 hover:border-neutral-800 text-neutral-400 hover:text-neutral-200"
+                          }`}
+                        >
+                          <span className="text-[9px] font-mono font-semibold tracking-wider text-neutral-500 uppercase px-1 py-0.5 bg-neutral-900 group-hover:bg-neutral-800 rounded transition-colors">
+                            {item.category}
+                          </span>
+                          <span className="tracking-tight">{cleanLabel(item.label)}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </motion.div>
+              )}
+
+              {/* Categorized Component Columns Grid with Motion Layout Morph */}
+              <motion.div layout className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 pt-2">
+                <AnimatePresence mode="popLayout">
+                  {groupedCategories.map((group) => (
+                    <motion.div
+                      layout
+                      key={group.category}
+                      initial={{ opacity: 0, filter: "blur(12px)", scale: 0.88, x: -16 }}
+                      animate={{ opacity: 1, filter: "blur(0px)", scale: 1, x: 0 }}
+                      exit={{ opacity: 0, filter: "blur(14px)", scale: 0.82, x: 24 }}
+                      transition={{
+                        layout: { type: "spring", stiffness: 420, damping: 32 },
+                        opacity: { duration: 0.28, ease: [0.16, 1, 0.3, 1] },
+                        filter: { duration: 0.28, ease: [0.16, 1, 0.3, 1] },
+                        scale: { duration: 0.28, ease: [0.16, 1, 0.3, 1] },
+                        x: { duration: 0.28, ease: [0.16, 1, 0.3, 1] },
+                      }}
+                      className="space-y-3"
+                    >
+                      {/* Category Column Header */}
+                      <div className="flex items-center justify-between pb-2 border-b border-neutral-900">
+                        <span className="text-[11px] font-mono font-bold tracking-widest uppercase text-neutral-500">
+                          {group.category}
+                        </span>
+                        <span className="text-[10px] font-mono text-neutral-600 font-semibold">
+                          {group.items.length}
+                        </span>
+                      </div>
+
+                      {/* Component Items List with Overlapping Letter Roll-Up */}
+                      <div className="space-y-1">
+                        {group.items.map((c) => {
+                          const isActive = c.slug === component.slug;
+                          const label = cleanLabel(c.label);
+
+                          return (
+                            <RollUpDrawerComponentItem
+                              key={c.slug}
+                              label={label}
+                              searchQuery={searchQuery}
+                              isActive={isActive}
+                              onClick={() => {
+                                setDrawerOpen(false);
+                                router.push(`/showcase/${c.slug}`);
+                              }}
+                            />
+                          );
+                        })}
+                      </div>
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
+              </motion.div>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -890,8 +1044,8 @@ export function ShowcaseChrome({
 
       {/* Sleek Floating Bottom Area — Pure Text, No Container Box */}
       <footer
-        className={`fixed bottom-5 left-0 right-0 z-40 px-8 flex items-center justify-between pointer-events-none text-xs text-neutral-400 font-sans tracking-wide transition-all duration-300 ${
-          !isHudHidden && (chromeVisible || controlsOpen)
+        className={`fixed bottom-5 left-0 right-0 z-30 px-8 flex items-center justify-between pointer-events-none text-xs text-neutral-400 font-sans tracking-wide transition-all duration-300 ${
+          !isHudHidden && !drawerOpen && (chromeVisible || controlsOpen)
             ? "opacity-100 translate-y-0"
             : "opacity-0 translate-y-2"
         }`}
@@ -915,11 +1069,6 @@ export function ShowcaseChrome({
               <ArrowRight className="w-3.5 h-3.5" />
             </span>
           )}
-        </div>
-
-        {/* Center: Interaction Guide Prompt */}
-        <div className="text-neutral-400 font-mono text-xs tracking-wider uppercase">
-          {getInteractionPrompt(component)}
         </div>
 
         {/* Right: Key Shortcuts & Hide HUD Trigger */}

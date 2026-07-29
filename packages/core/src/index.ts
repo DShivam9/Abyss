@@ -31,8 +31,13 @@ export * from "./components/apparatus-cylinder-scroll";
 export * from "./components/apparatus-focus-ring";
 export * from "./components/apparatus-cursor-wake";
 export * from "./components/apparatus-page-overlay-wipe";
-export * from "./components/apparatus-liquid-text";
-export * from "./components/apparatus-typewriter-decay";
+export * from "./components/apparatus-cinematic-unstack";
+export * from "./components/apparatus-parallax-bleed";
+export * from "./components/apparatus-gravity-cursor";
+export * from "./components/apparatus-3d-shatter-sphere";
+
+
+
 
 
 

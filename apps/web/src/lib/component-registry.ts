@@ -24,7 +24,7 @@ export interface ComponentDetail {
   category: string;
   subtype: string;
   tags?: string[];
-  previewType?: "shader" | "scroll" | "gallery" | "transition" | "text";
+  previewType?: "shader" | "scroll" | "gallery" | "transition" | "text" | "svg";
   controls?: ControlConfig[];
 }
 
@@ -643,58 +643,6 @@ export const COMPONENT_DETAILS: Record<string, ComponentDetail> = {
       { type: "toggle", key: "enableParallaxCounter", label: "Parallax Counter", default: true }
     ]
   },
-  "apparatus-liquid-text": {
-    id: "53",
-    label: "APPARATUS LIQUID TEXT",
-    filename: "",
-    desc: "Headline glyphs render as hollow vessels that fill with animated sloshing liquid as you scroll, featuring per-character staggered liquid levels and real-time surface wave physics.",
-    slug: "apparatus-liquid-text",
-    category: "text",
-    subtype: "text",
-    tags: ["GSAP", "Scroll", "SVG", "Liquid Simulation", "Typography"],
-    previewType: "scroll",
-    controls: [
-      { type: "color", key: "liquidColor", label: "Liquid Fill Color", default: "#3b82f6" },
-      { type: "color", key: "strokeColor", label: "Glyph Outline Color", default: "#ffffff" },
-      { type: "slider", key: "waveSpeed", label: "Liquid Slosh Speed", default: 1.5, min: 0.5, max: 4.0, step: 0.1 },
-      { type: "slider", key: "waveAmplitude", label: "Wave Amplitude", default: 12, min: 2, max: 30, step: 1, unit: "px" }
-    ]
-  },
-  "apparatus-typewriter-decay": {
-    id: "54",
-    label: "APPARATUS TYPEWRITER DECAY",
-    filename: "",
-    desc: "Text types out character by character on scroll and continuously degrades behind the cursor through 4 entropy stages: fresh typography → noise distortion → polygon fragmentation → particle dissolution.",
-    slug: "apparatus-typewriter-decay",
-    category: "text",
-    subtype: "text",
-    tags: ["GSAP", "Typewriter", "Entropy", "Hover", "Click", "Typography"],
-    previewType: "scroll",
-    controls: [
-      { type: "slider", key: "decayRate", label: "Entropy Decay Rate", default: 1.0, min: 0.5, max: 3.0, step: 0.1 }
-    ]
-  },
-  "apparatus-radial-vortex": {
-    id: "55",
-    label: "APPARATUS RADIAL VORTEX",
-    filename: "",
-    desc: "Concentric typographical rings counter-rotate in ambient kinetic orbit when idle, accelerating into a hypnotic vortex as you scroll.",
-    slug: "apparatus-radial-vortex",
-    category: "text",
-    subtype: "text",
-    tags: ["GSAP", "Typography", "Kinetic", "Radial", "Vortex"],
-    previewType: "scroll",
-    controls: [
-      { type: "select", key: "presetText", label: "Word Preset", default: "POINT", options: [{ label: "POINT", value: "POINT" }, { label: "ABYSS", value: "ABYSS" }, { label: "VORTEX", value: "VORTEX" }, { label: "KINETIC", value: "KINETIC" }] },
-      { type: "slider", key: "ringSpeed", label: "Orbit Speed", default: 1.0, min: 0.1, max: 3.0, step: 0.1 },
-      { type: "slider", key: "vortexScale", label: "Vortex Scale", default: 1.0, min: 0.5, max: 1.8, step: 0.1 },
-      { type: "slider", key: "scrollSens", label: "Scroll Torque Sensitivity", default: 1.0, min: 0.2, max: 3.0, step: 0.1 },
-      { type: "slider", key: "arcCoverage", label: "Arc Span Degrees", default: 240, min: 120, max: 360, step: 10 },
-      { type: "slider", key: "letterSpacing", label: "Ring Distance Spacing", default: 30, min: 15, max: 45, step: 1 },
-      { type: "slider", key: "letterOpacity", label: "Letter Opacity", default: 0.98, min: 0.3, max: 1.0, step: 0.05 },
-      { type: "slider", key: "breathAmount", label: "Idle Breath Pulse", default: 1.0, min: 0.0, max: 3.0, step: 0.2 }
-    ]
-  },
   "apparatus-3d-typography-grid": {
     id: "56",
     label: "APPARATUS 3D TYPOGRAPHY GRID",
@@ -727,12 +675,92 @@ export const COMPONENT_DETAILS: Record<string, ComponentDetail> = {
       { type: "slider", key: "rotationSpeed", label: "3D Rotation Speed", default: 1.0, min: 0.2, max: 3.0, step: 0.1 },
       { type: "slider", key: "wireframeDepth", label: "3D Extrusion Depth", default: 7, min: 2, max: 30, step: 1 }
     ]
+  },
+  "apparatus-cinematic-unstack": {
+    id: "57",
+    label: "APPARATUS CINEMATIC UNSTACK",
+    filename: "scroll/cosmos_1067833670.jpeg",
+    desc: "A pinned stack of image cards where scrolling lifts each top card upward with 3D tilt, scale shrink, and opacity fade, revealing the next card with an intentional 15% dwell phase.",
+    slug: "apparatus-cinematic-unstack",
+    category: "scroll",
+    subtype: "stack",
+    tags: ["GSAP", "ScrollTrigger", "3D Perspective", "Cinematic Stack", "Dwell Phase"],
+    previewType: "scroll",
+    controls: [
+      { type: "select", key: "variant", label: "Kinetic Motion Variant", default: "cinematic-unstack", options: [
+        { label: "CINEMATIC UNSTACK (Parallax Lift)", value: "cinematic-unstack" },
+        { label: "HELICAL FAN (3D Spiral Spin)", value: "helical-fan" },
+        { label: "HYPER ORIGAMI (3D Unfold & Surge)", value: "hyper-origami" },
+        { label: "VESSEL CURTAIN (Theatrical Pitch Roll)", value: "vessel-curtain" },
+        { label: "PRISM SHUTTER (3D Shear Slide)", value: "prism-shutter" },
+        { label: "QUANTUM WARP (Gravitational Wormhole)", value: "quantum-warp" },
+        { label: "VORTEX PEEL (Helical Spin Dive)", value: "vortex-peel" }
+      ] },
+      { type: "slider", key: "cardCount", label: "Stack Depth", default: 6, min: 3, max: 12, step: 1 },
+      { type: "slider", key: "parallaxIntensity", label: "Internal Image Parallax", default: 35, min: 0, max: 80, step: 5, unit: "%" },
+      { type: "slider", key: "cardBendAmount", label: "Velocity Card Bend Arc", default: 35, min: 0, max: 100, step: 2, unit: "px" },
+      { type: "slider", key: "tiltAngle", label: "Backward Pitch Angle", default: 10, min: 0, max: 45, step: 1, unit: "°" },
+      { type: "slider", key: "scrollSensitivity", label: "Scroll Travel Pace", default: 20, min: 5, max: 100, step: 5 },
+      { type: "slider", key: "exitScale", label: "Exit Scale Reduction", default: 0.80, min: 0.30, max: 1.0, step: 0.05 },
+      { type: "slider", key: "exitOpacity", label: "Exit Opacity Fade", default: 1.0, min: 0.0, max: 1.0, step: 0.05 },
+      { type: "slider", key: "borderRadius", label: "Corner Radius", default: 20, min: 0, max: 50, step: 2, unit: "px" },
+      { type: "slider", key: "perspective", label: "3D Perspective Depth", default: 1200, min: 300, max: 2500, step: 50, unit: "px" }
+    ]
+  },
+  "apparatus-parallax-bleed": {
+    id: "60",
+    label: "APPARATUS PARALLAX BLEED",
+    filename: "scroll/p1.png",
+    desc: "4 full-bleed image sections stacked sequentially with deep internal parallax bounds, virtual camera momentum, and weighted layer micro-latency.",
+    slug: "apparatus-parallax-bleed",
+    category: "scroll",
+    subtype: "full-bleed",
+    tags: ["GSAP", "ScrollTrigger", "Parallax", "Full Bleed", "Cinematic", "Physics"],
+    previewType: "scroll",
+    controls: [
+      { type: "slider", key: "parallaxIntensity", label: "Internal Parallax Intensity", default: 45, min: 10, max: 100, step: 5, unit: "%" },
+      { type: "slider", key: "zoomFactor", label: "Center Zoom Scale", default: 1.15, min: 1.0, max: 1.4, step: 0.05 }
+    ]
+  },
+  "apparatus-gravity-cursor": {
+    id: "61",
+    label: "APPARATUS GRAVITY CURSOR",
+    filename: "Gallary/cosmos_1110264921.jpeg",
+    desc: "Interactive physics-driven cursor gallery where clicking or hold-dragging stream-spawns image bodies that fall with gravity, bounce elastically on the spatial floor, and dissolve cleanly.",
+    slug: "apparatus-gravity-cursor",
+    category: "gallary",
+    subtype: "interactive-physics",
+    tags: ["Cursor", "Gravity", "Physics", "Gallery", "Interactive", "Bounce"],
+    previewType: "gallery",
+    controls: [
+      { type: "select", key: "gravityMode", label: "GRAVITY PHYSICS MODE", default: "normal", options: [{ label: "Normal Gravity", value: "normal" }, { label: "Zero-Gravity Float", value: "zero-gravity" }, { label: "Heavy Gravity Sink", value: "heavy-gravity" }] },
+      { type: "slider", key: "gravity", label: "Gravitational Acceleration", default: 0.55, min: 0.1, max: 1.5, step: 0.05 },
+      { type: "slider", key: "bounceDamping", label: "Floor Elasticity / Bounce", default: 0.62, min: 0.1, max: 0.9, step: 0.05, dependsOn: { key: "gravityMode", value: "normal" } },
+      { type: "slider", key: "spawnInterval", label: "Hold Stream Rate", default: 55, min: 30, max: 150, step: 5, unit: "ms" },
+      { type: "slider", key: "imageSize", label: "Spawn Image Scale", default: 140, min: 80, max: 240, step: 10, unit: "px" },
+      { type: "slider", key: "maxItems", label: "Memory Pool Cap", default: 45, min: 15, max: 80, step: 5 }
+    ]
+  },
+  "apparatus-3d-shatter-sphere": {
+    id: "62",
+    label: "APPARATUS 3D SHATTER SPHERE",
+    filename: "Gallary/cosmos_1110264921.jpeg",
+    desc: "Interactive 3D gallery sphere distributed in Fibonacci spatial bounds. Drag to rotate in 3D perspective space, click to trigger a 3D explosion shatter into spatial tile fragments.",
+    slug: "apparatus-3d-shatter-sphere",
+    category: "gallary",
+    subtype: "3d-interactive",
+    tags: ["3D", "Sphere", "Shatter", "Explosion", "Gallery", "WebGL"],
+    previewType: "gallery",
+    controls: [
+      { type: "select", key: "shapeMode", label: "3D GEOMETRY SHAPE", default: "sphere", options: [{ label: "3D Sphere Shell", value: "sphere" }, { label: "3D Cube Monolith (6 Faces)", value: "cuboid" }, { label: "3D Cuboid Grid (24 Panels)", value: "cuboid-grid" }] },
+      { type: "slider", key: "sphereRadius", label: "3D Structure Radius", default: 420, min: 200, max: 650, step: 10, unit: "px" },
+      { type: "slider", key: "shatterForce", label: "Explosion Shatter Force", default: 1.8, min: 0.5, max: 3.5, step: 0.1 },
+      { type: "slider", key: "cardScale", label: "Tile Card Scale", default: 1.05, min: 0.5, max: 2.0, step: 0.05 },
+      { type: "slider", key: "itemCount", label: "3D Card Sphere Count", default: 42, min: 20, max: 60, step: 2, dependsOn: { key: "shapeMode", value: "sphere" } },
+      { type: "slider", key: "autoRotateSpeed", label: "Idle Spin Momentum", default: 0.5, min: 0, max: 2.5, step: 0.05 }
+    ]
   }
 };
-
-// Force reload: 2026-07-25
-
-
 
 // Dynamic imports mapping slug to component inside packages/core
 export const COMPONENT_IMPORTS: Record<string, React.ComponentType<VesselComponentProps>> = {
@@ -765,13 +793,12 @@ export const COMPONENT_IMPORTS: Record<string, React.ComponentType<VesselCompone
   "apparatus-cursor-wake": dynamic(() => import("../../../../packages/core/src/components/apparatus-cursor-wake"), { ssr: false }),
   "apparatus-page-fade-shift": dynamic(() => import("../../../../packages/core/src/components/apparatus-page-fade-shift"), { ssr: false }),
   "apparatus-page-overlay-wipe": dynamic(() => import("../../../../packages/core/src/components/apparatus-page-overlay-wipe"), { ssr: false }),
-  "apparatus-liquid-text": dynamic(() => import("../../../../packages/core/src/components/apparatus-liquid-text"), { ssr: false }),
-  "apparatus-typewriter-decay": dynamic(() => import("../../../../packages/core/src/components/apparatus-typewriter-decay"), { ssr: false }),
-  "apparatus-radial-vortex": dynamic(() => import("../../../../packages/core/src/components/apparatus-radial-vortex"), { ssr: false }),
-  "apparatus-3d-typography-grid": dynamic(() => import("../../../../packages/core/src/components/apparatus-3d-typography-grid"), { ssr: false })
+  "apparatus-3d-typography-grid": dynamic(() => import("../../../../packages/core/src/components/apparatus-3d-typography-grid"), { ssr: false }),
+  "apparatus-cinematic-unstack": dynamic(() => import("../../../../packages/core/src/components/apparatus-cinematic-unstack"), { ssr: false }),
+  "apparatus-parallax-bleed": dynamic(() => import("../../../../packages/core/src/components/apparatus-parallax-bleed"), { ssr: false }),
+  "apparatus-gravity-cursor": dynamic(() => import("../../../../packages/core/src/components/apparatus-gravity-cursor"), { ssr: false }),
+  "apparatus-3d-shatter-sphere": dynamic(() => import("../../../../packages/core/src/components/apparatus-3d-shatter-sphere"), { ssr: false })
 };
-
-
 
 export function getComponent(slug: string) {
   const meta = COMPONENT_DETAILS[slug];
@@ -784,6 +811,8 @@ export function getComponent(slug: string) {
       meta.previewType = "transition";
     } else if (meta.category === "text") {
       meta.previewType = "text";
+    } else if (meta.category === "svg") {
+      meta.previewType = "svg";
     } else {
       meta.previewType = "shader";
     }

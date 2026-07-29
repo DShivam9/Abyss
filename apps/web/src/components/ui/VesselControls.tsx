@@ -341,10 +341,10 @@ export function VesselControls({
       animate={{ x: "0%" }}
       exit={{ x: "100%" }}
       transition={{ type: "spring", stiffness: 400, damping: 30 }}
-      className="fixed top-[52px] bottom-0 right-0 z-50 w-full sm:w-[380px] max-h-[calc(100vh-52px)] bg-[#0A0A0A]/98 backdrop-blur-2xl border-l border-neutral-800/90 shadow-2xl flex flex-col font-mono text-white overflow-hidden"
+      className="fixed top-[52px] bottom-0 right-0 z-50 w-full sm:w-[380px] max-h-[calc(100vh-52px)] bg-zinc-950/40 backdrop-blur-2xl border-l border-white/10 shadow-[-10px_0_30px_0_rgba(0,0,0,0.5)] flex flex-col font-mono text-white overflow-hidden"
     >
-      {/* Header Bar */}
-      <div className="flex items-center justify-between px-5 py-4 border-b border-neutral-900 bg-neutral-950/60 shrink-0">
+      {/* Header Bar (Glassmorphic) */}
+      <div className="flex items-center justify-between px-5 py-4 border-b border-white/10 bg-zinc-900/30 backdrop-blur-md shrink-0">
         <div className="flex items-center gap-2">
           <span className="font-mono text-xs font-bold tracking-widest uppercase text-neutral-300">
             TUNING INSPECTOR
@@ -355,7 +355,7 @@ export function VesselControls({
             <NonReversingResetButton
               title="Reset all parameters to default"
               onClick={onReset}
-              className="flex items-center gap-1.5 font-mono text-[10px] font-bold uppercase tracking-wider text-neutral-400 hover:text-white transition-colors cursor-pointer py-1 px-2 rounded-md hover:bg-neutral-900/80 border border-transparent hover:border-neutral-800"
+              className="flex items-center gap-1.5 font-mono text-[10px] font-bold uppercase tracking-wider text-neutral-400 hover:text-white transition-colors cursor-pointer py-1 px-2 rounded-md hover:bg-white/10 border border-transparent hover:border-white/10"
               iconClassName="w-3.5 h-3.5 text-neutral-400 group-hover:text-white"
             >
               <span>RESET</span>
@@ -363,7 +363,7 @@ export function VesselControls({
           )}
           <button
             onClick={handleClose}
-            className="p-1.5 text-neutral-400 hover:text-white transition-colors cursor-pointer group/close rounded-md hover:bg-neutral-900/80 border border-transparent hover:border-neutral-800"
+            className="p-1.5 text-neutral-400 hover:text-white transition-colors cursor-pointer group/close rounded-md hover:bg-white/10 border border-transparent hover:border-white/10"
             title="Close controls (ESC)"
           >
             <X className="w-4 h-4 transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover/close:rotate-90 group-hover/close:scale-110" />
@@ -380,20 +380,20 @@ export function VesselControls({
       >
         {componentControls.length > 0 ? (
           <div className="space-y-4">
-            <div className="text-[10px] font-mono font-bold tracking-widest text-neutral-500 uppercase pb-1 border-b border-neutral-900">
+            <div className="text-[10px] font-mono font-bold tracking-widest text-neutral-400 uppercase pb-1 border-b border-white/10">
               COMPONENT PARAMETERS
             </div>
             <div className="space-y-4">{componentControls.map(renderControl)}</div>
           </div>
         ) : (
-          <div className="py-12 text-center text-xs text-neutral-500 font-mono">
+          <div className="py-12 text-center text-xs text-neutral-400 font-mono">
             No configurable controls for this component.
           </div>
         )}
       </div>
 
-      {/* Footer Info */}
-      <div className="p-4 border-t border-neutral-900 bg-neutral-950/80 text-[10px] font-mono text-neutral-500 flex items-center justify-between shrink-0">
+      {/* Footer Info (Glassmorphic) */}
+      <div className="p-4 border-t border-white/10 bg-zinc-900/30 backdrop-blur-md text-[10px] font-mono text-neutral-400 flex items-center justify-between shrink-0">
         <span>LIVE INTERACTIVE TUNER</span>
         <span>ESC TO CLOSE</span>
       </div>

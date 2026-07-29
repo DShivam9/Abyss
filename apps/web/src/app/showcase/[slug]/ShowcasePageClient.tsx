@@ -78,13 +78,14 @@ export default function ShowcasePageClient({ slug }: { slug: string }) {
     "apparatus-depth-swim",
     "apparatus-cylinder-scroll",
     "apparatus-layout-morph",
-    "apparatus-radial-vortex",
     "apparatus-3d-typography-grid",
+    "apparatus-cinematic-unstack",
+    "apparatus-parallax-bleed",
   ]);
   const isSelfContainedScroll = SELF_CONTAINED_SCROLL.has(slug);
 
   // Select Layout Strategy
-  const isGallery = isSelfContainedScroll || meta.category === "gallary" || (meta.category !== "scroll" && (meta.subtype === "gallery" || meta.subtype === "ring"));
+  const isGallery = isSelfContainedScroll || meta.category === "gallary" || meta.category === "svg" || meta.previewType === "gallery" || (meta.category !== "scroll" && (meta.subtype === "gallery" || meta.subtype === "ring"));
   const previewType = meta.previewType || (meta.category === "scroll" ? "scroll" : "shader");
   const isScroll = !isGallery && (previewType === "scroll" || meta.category === "scroll");
   const isTransition = meta.category === "transition" || previewType === "transition";

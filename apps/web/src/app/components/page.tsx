@@ -9,12 +9,13 @@ import { CommandPalette } from "@/components/catalog/CommandPalette";
 
 const CATEGORIES = [
   { id: "scroll", label: "Scroll", color: "#dfb15b" },
-  { id: "image", label: "Image", color: "#e05b5b" },
-  { id: "geometry", label: "Geometry", color: "#9c8cb9" },
   { id: "gallary", label: "Gallery", color: "#c4719d" },
-  { id: "hybrid", label: "Hybrid", color: "#5b9cdf" },
   { id: "transition", label: "Transition", color: "#6ec49a" },
   { id: "text", label: "Text", color: "#e88034" },
+  { id: "svg", label: "SVG", color: "#00f0ff" },
+  { id: "geometry", label: "Geometry", color: "#9c8cb9" },
+  { id: "image", label: "Image", color: "#e05b5b" },
+  { id: "hybrid", label: "Hybrid", color: "#5b9cdf" },
 ];
 
 const ALL_COMPONENTS = Object.values(COMPONENT_DETAILS);
