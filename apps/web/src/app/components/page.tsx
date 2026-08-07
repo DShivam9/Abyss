@@ -33,7 +33,8 @@ function CatalogContent() {
       const firstInTab = ALL_COMPONENTS.find((c) => c.category === initialTab);
       if (firstInTab) return firstInTab.slug;
     }
-    return ALL_COMPONENTS[0]?.slug || "japparii";
+    const firstScrollComp = ALL_COMPONENTS.find((c) => c.category === "scroll");
+    return firstScrollComp?.slug || ALL_COMPONENTS[0]?.slug || "parallax-column";
   }, [initialSlug, initialTab]);
 
   const [selectedSlug, setSelectedSlug] = useState<string>(defaultSlug);
