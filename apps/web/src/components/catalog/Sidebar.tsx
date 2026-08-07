@@ -1,8 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import Link from "next/link";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { Search, X, BookOpen, Clock, Heart, ArrowUpRight } from "lucide-react";
 import { ComponentDetail } from "@/lib/component-registry";
 
@@ -83,10 +82,7 @@ export function Sidebar({
   const [isInputFocused, setIsInputFocused] = useState(false);
   const activeItemRef = useRef<HTMLButtonElement | null>(null);
 
-  const totalComponentCount = categories.reduce(
-    (acc, cat) => acc + cat.components.length,
-    0
-  );
+
 
   // Track open/collapsed state per category (starts closed, dropdowns on mount)
   const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>(() => {
