@@ -147,40 +147,7 @@ export function ShowcaseChrome({
     };
   }, [drawerOpen]);
 
-  // Scoped Lenis smooth scroll for drawer sheet
-  useEffect(() => {
-    if (!drawerOpen || !sheetRef.current) return;
-    const sheetEl = sheetRef.current;
 
-    const handleScrollTrap = (e: Event) => {
-      e.stopPropagation();
-    };
-
-    sheetEl.addEventListener("wheel", handleScrollTrap, { passive: true });
-    sheetEl.addEventListener("touchmove", handleScrollTrap, { passive: true });
-
-    const drawerLenis = new Lenis({
-      wrapper: sheetEl,
-      content: sheetEl.firstElementChild as HTMLElement,
-      duration: 1.2,
-      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-      smoothWheel: true,
-    });
-
-    let rafId: number;
-    function update(time: number) {
-      drawerLenis.raf(time);
-      rafId = requestAnimationFrame(update);
-    }
-    rafId = requestAnimationFrame(update);
-
-    return () => {
-      sheetEl.removeEventListener("wheel", handleScrollTrap);
-      sheetEl.removeEventListener("touchmove", handleScrollTrap);
-      cancelAnimationFrame(rafId);
-      drawerLenis.destroy();
-    };
-  }, [drawerOpen]);
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -303,7 +270,8 @@ export function ShowcaseChrome({
               ease: [0.16, 1, 0.3, 1],
             }}
             onWheel={(e) => e.stopPropagation()}
-            className="fixed top-0 bottom-0 inset-x-0 z-[100] bg-[#060608]/65 backdrop-blur-2xl backdrop-saturate-180 border-b border-white/10 shadow-[0_32px_80px_rgba(0,0,0,0.7)] p-6 lg:p-8 overflow-y-auto custom-scrollbar"
+            onTouchMove={(e) => e.stopPropagation()}
+            className="fixed top-0 bottom-0 inset-x-0 z-[100] bg-[#060608]/65 backdrop-blur-2xl backdrop-saturate-180 border-b border-white/10 shadow-[0_32px_80px_rgba(0,0,0,0.7)] p-6 lg:p-8 overflow-y-auto overscroll-contain touch-pan-y custom-scrollbar"
           >
             <motion.div
               initial="hidden"
