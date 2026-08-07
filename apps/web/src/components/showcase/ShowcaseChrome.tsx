@@ -129,21 +129,23 @@ export function ShowcaseChrome({
 
   // Lock body scroll and pause root Lenis when drawer is open
   useEffect(() => {
-    const rootLenis = (window as unknown as { lenis?: Lenis }).lenis;
+    const getLenis = () => (window as unknown as { lenis?: { stop: () => void; start: () => void } }).lenis;
 
     if (drawerOpen) {
       document.body.style.overflow = "hidden";
       document.documentElement.style.overflow = "hidden";
-      rootLenis?.stop();
+      getLenis()?.stop();
     } else {
       document.body.style.overflow = "";
       document.documentElement.style.overflow = "";
-      rootLenis?.start();
+      document.body.style.pointerEvents = "";
+      getLenis()?.start();
     }
     return () => {
       document.body.style.overflow = "";
       document.documentElement.style.overflow = "";
-      rootLenis?.start();
+      document.body.style.pointerEvents = "";
+      getLenis()?.start();
     };
   }, [drawerOpen]);
 

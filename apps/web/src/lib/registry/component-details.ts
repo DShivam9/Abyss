@@ -677,9 +677,13 @@ export const COMPONENT_DETAILS: Record<string, ComponentDetail> = {
     tags: ["GSAP", "ScrollTrigger", "Parallax", "Full Bleed", "Cinematic", "Physics"],
     previewType: "scroll",
     controls: [
-      { type: "slider", key: "parallaxIntensity", label: "Internal Parallax Intensity", default: 45, min: 10, max: 100, step: 5, unit: "%" },
-      { type: "slider", key: "scrollSpeed", label: "Scroll Speed", default: 1.0, min: 0.2, max: 3.0, step: 0.1, unit: "x" },
-      { type: "slider", key: "zoomFactor", label: "Center Zoom Scale", default: 1.15, min: 1.0, max: 1.4, step: 0.05 }
+      { type: "slider", key: "parallaxIntensity", label: "INTERNAL PARALLAX INTENSITY", default: 45, min: 10, max: 100, step: 5, unit: "%" },
+      { type: "slider", key: "scrollSpeed", label: "SCROLL MOMENTUM SENSITIVITY", default: 1.0, min: 0.2, max: 3.0, step: 0.1, unit: "x" },
+      { type: "slider", key: "inertialDamping", label: "SCROLL DAMPING SMOOTHNESS", default: 6.0, min: 1.5, max: 12.0, step: 0.5 },
+      { type: "slider", key: "mouseDrift", label: "CURSOR LAG DRIFT DISTANCE", default: 6, min: 0, max: 30, step: 2, unit: "px" },
+      { type: "slider", key: "blurDepth", label: "BOTTOM PROGRESSIVE BLUR DEPTH", default: 280, min: 120, max: 400, step: 20, unit: "px" },
+      { type: "select", key: "indicatorStyle", label: "SIDE PROGRESS INDICATOR", default: "dashes", options: [{ label: "Precision Segmented Dashes", value: "dashes" }, { label: "Micro Radar Dots", value: "dots" }, { label: "Hidden / Pure Minimalist", value: "hidden" }] },
+      { type: "slider", key: "imageBrightness", label: "IMAGE BRIGHTNESS BALANCE", default: 90, min: 50, max: 120, step: 5, unit: "%" }
     ]
   },
   "apparatus-gravity-cursor": {
