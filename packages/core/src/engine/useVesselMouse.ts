@@ -61,9 +61,10 @@ export function useVesselMouse(containerRef: React.RefObject<HTMLElement | null>
   }, [containerRef]);
 
   const updateMouse = (_deltaTime: number) => {
-    // Lerp mouse coordinates
-    currentMouse.current.x = THREE.MathUtils.lerp(currentMouse.current.x, targetMouse.current.x, 0.1);
-    currentMouse.current.y = THREE.MathUtils.lerp(currentMouse.current.y, targetMouse.current.y, 0.1);
+    // Exponential spring lerp for smooth cursor momentum
+    const easeFactor = 1.0 - Math.exp(-12.0 * Math.min(_deltaTime || 0.016, 0.1));
+    currentMouse.current.x += (targetMouse.current.x - currentMouse.current.x) * easeFactor;
+    currentMouse.current.y += (targetMouse.current.y - currentMouse.current.y) * easeFactor;
 
     // Compute raw velocity from target mouse (as specified in Issue 11 fix)
     const rawVx = targetMouse.current.x - lastTarget.current.x;

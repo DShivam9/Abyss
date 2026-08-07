@@ -10,6 +10,7 @@ import { ShaderShowcaseLayout } from "@/components/showcase/ShaderShowcaseLayout
 import { ScrollShowcaseLayout } from "@/components/showcase/ScrollShowcaseLayout";
 import { GalleryShowcaseLayout } from "@/components/showcase/GalleryShowcaseLayout";
 import { TransitionShowcaseLayout } from "@/components/showcase/TransitionShowcaseLayout";
+import { ComponentErrorBoundary } from "@/components/showcase/ComponentErrorBoundary";
 
 export default function ShowcasePageClient({ slug }: { slug: string }) {
   const { Component, meta } = getComponent(slug);
@@ -84,17 +85,26 @@ export default function ShowcasePageClient({ slug }: { slug: string }) {
   ]);
   const isSelfContainedScroll = SELF_CONTAINED_SCROLL.has(slug);
 
-  // Select Layout Strategy
-  const isGallery = isSelfContainedScroll || meta.category === "gallary" || meta.category === "svg" || meta.previewType === "gallery" || (meta.category !== "scroll" && (meta.subtype === "gallery" || meta.subtype === "ring"));
-  const previewType = meta.previewType || (meta.category === "scroll" ? "scroll" : "shader");
-  const isScroll = !isGallery && (previewType === "scroll" || meta.category === "scroll");
-  const isTransition = meta.category === "transition" || previewType === "transition";
+  const previewType = meta.previewType || (meta.category === "scroll" ? "scroll" : meta.category === "text" ? "text" : "shader");
+  const isText = meta.category === "text" || previewType === "text";
+  const isScroll = !isText && !isSelfContainedScroll && (previewType === "scroll" || meta.category === "scroll");
+  const isGallery = !isText && !isScroll && (isSelfContainedScroll || meta.category === "gallary" || meta.category === "svg" || previewType === "gallery" || (meta.category !== "scroll" && (meta.subtype === "gallery" || meta.subtype === "ring")));
+  const isTransition = !isText && (meta.category === "transition" || previewType === "transition");
+
 
   const renderComponent = () => {
     return <Component imageSrc={defaultImageSrc} {...controlValues} />;
   };
 
   const renderLayout = () => {
+    if (isText) {
+      return (
+        <div className="relative w-full bg-[#070708] min-h-screen">
+          {renderComponent()}
+        </div>
+      );
+    }
+
     if (isScroll) {
       return (
         <ScrollShowcaseLayout accentColor="#dfb15b">
@@ -102,6 +112,7 @@ export default function ShowcasePageClient({ slug }: { slug: string }) {
         </ScrollShowcaseLayout>
       );
     }
+
     if (isGallery) {
       return (
         <GalleryShowcaseLayout>
@@ -129,7 +140,9 @@ export default function ShowcasePageClient({ slug }: { slug: string }) {
       onToggleControls={() => setControlsOpen(!controlsOpen)}
       controlsOpen={controlsOpen}
     >
-      {renderLayout()}
+      <ComponentErrorBoundary fallbackSlug={slug}>
+        {renderLayout()}
+      </ComponentErrorBoundary>
 
       <AnimatePresence>
         {controlsOpen && (

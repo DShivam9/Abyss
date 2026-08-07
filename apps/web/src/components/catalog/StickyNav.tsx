@@ -14,9 +14,9 @@ export function StickyNav({ categories, activeCategory, onSelectCategory }: Cate
       <div className="mx-auto flex max-w-7xl items-center space-x-2 overflow-x-auto px-6 py-4 scrollbar-none">
         <button
           onClick={() => onSelectCategory("all")}
-          className={`rounded-full px-4 py-1.5 font-sans text-xs font-medium transition-colors ${
+          className={`rounded-full px-4 py-1.5 font-sans text-xs font-medium transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-[1px] active:scale-[0.96] active:translate-y-0 ${
             activeCategory === "all"
-              ? "bg-white text-black"
+              ? "bg-white text-black shadow-sm"
               : "bg-neutral-900 text-neutral-400 hover:bg-neutral-800 hover:text-white"
           }`}
         >
@@ -29,14 +29,14 @@ export function StickyNav({ categories, activeCategory, onSelectCategory }: Cate
             <button
               key={cat.id}
               onClick={() => onSelectCategory(cat.id)}
-              className={`flex items-center space-x-2 rounded-full px-4 py-1.5 font-sans text-xs font-medium transition-all ${
+              className={`flex items-center space-x-2 rounded-full px-4 py-1.5 font-sans text-xs font-medium transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-[1px] active:scale-[0.96] active:translate-y-0 ${
                 isActive
-                  ? "bg-white text-black"
+                  ? "bg-white text-black shadow-sm"
                   : "bg-neutral-900/80 text-neutral-400 hover:bg-neutral-800 hover:text-white"
               }`}
             >
               <span
-                className="h-2 w-2 rounded-full"
+                className="h-2 w-2 rounded-full transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-125"
                 style={{ backgroundColor: cat.color }}
               />
               <span className="capitalize">{cat.label}</span>

@@ -13,39 +13,39 @@ try {
 }
 
 const DEFAULT_IMAGES = [
-  "/images/components images/scroll/cosmos_1067833670.jpeg",
-  "/images/components images/scroll/cosmos_1207399578.jpeg",
-  "/images/components images/scroll/cosmos_1215932660.jpeg",
-  "/images/components images/scroll/cosmos_1225764898.jpeg",
-  "/images/components images/scroll/cosmos_1244425812.jpeg",
-  "/images/components images/scroll/cosmos_1292975902.jpeg",
-  "/images/components images/scroll/cosmos_1298955025.jpeg",
-  "/images/components images/scroll/cosmos_1309660817.jpeg",
-  "/images/components images/scroll/cosmos_1452408749.jpeg",
-  "/images/components images/scroll/cosmos_1556080729.jpeg",
-  "/images/components images/scroll/cosmos_1591705408.jpeg",
-  "/images/components images/scroll/cosmos_1633231397.jpeg",
-  "/images/components images/scroll/cosmos_169178344.jpeg",
-  "/images/components images/scroll/cosmos_1859262512.jpeg",
-  "/images/components images/scroll/cosmos_1872135509.jpeg",
-  "/images/components images/scroll/cosmos_1994819013.jpeg",
-  "/images/components images/scroll/cosmos_2063063057.jpeg",
-  "/images/components images/scroll/cosmos_2086495860.jpeg",
-  "/images/components images/scroll/cosmos_2093433371.jpeg",
-  "/images/components images/scroll/cosmos_362742055.jpeg",
-  "/images/components images/scroll/cosmos_496247602.jpeg",
-  "/images/components images/scroll/cosmos_51140502.jpeg",
-  "/images/components images/scroll/cosmos_51259133.jpeg",
-  "/images/components images/scroll/cosmos_520815919.jpeg",
-  "/images/components images/scroll/cosmos_524862175.jpeg",
-  "/images/components images/scroll/cosmos_553216837.jpeg",
-  "/images/components images/scroll/cosmos_586109684.jpeg",
-  "/images/components images/scroll/cosmos_641044503.jpeg",
-  "/images/components images/scroll/cosmos_664508213.jpeg",
-  "/images/components images/scroll/cosmos_666194661.jpeg",
-  "/images/components images/scroll/cosmos_679994644.jpeg",
-  "/images/components images/scroll/cosmos_861775148.jpeg",
-  "/images/components images/scroll/cosmos_961582572.jpeg"
+  "/images/components images/scroll/cosmos_1067833670.webp",
+  "/images/components images/scroll/cosmos_1207399578.webp",
+  "/images/components images/scroll/cosmos_1215932660.webp",
+  "/images/components images/scroll/cosmos_1225764898.webp",
+  "/images/components images/scroll/cosmos_1244425812.webp",
+  "/images/components images/scroll/cosmos_1292975902.webp",
+  "/images/components images/scroll/cosmos_1298955025.webp",
+  "/images/components images/scroll/cosmos_1309660817.webp",
+  "/images/components images/scroll/cosmos_1452408749.webp",
+  "/images/components images/scroll/cosmos_1556080729.webp",
+  "/images/components images/scroll/cosmos_1591705408.webp",
+  "/images/components images/scroll/cosmos_1633231397.webp",
+  "/images/components images/scroll/cosmos_169178344.webp",
+  "/images/components images/scroll/cosmos_1859262512.webp",
+  "/images/components images/scroll/cosmos_1872135509.webp",
+  "/images/components images/scroll/cosmos_1994819013.webp",
+  "/images/components images/scroll/cosmos_2063063057.webp",
+  "/images/components images/scroll/cosmos_2086495860.webp",
+  "/images/components images/scroll/cosmos_2093433371.webp",
+  "/images/components images/scroll/cosmos_362742055.webp",
+  "/images/components images/scroll/cosmos_496247602.webp",
+  "/images/components images/scroll/cosmos_51140502.webp",
+  "/images/components images/scroll/cosmos_51259133.webp",
+  "/images/components images/scroll/cosmos_520815919.webp",
+  "/images/components images/scroll/cosmos_524862175.webp",
+  "/images/components images/scroll/cosmos_553216837.webp",
+  "/images/components images/scroll/cosmos_586109684.webp",
+  "/images/components images/scroll/cosmos_641044503.webp",
+  "/images/components images/scroll/cosmos_664508213.webp",
+  "/images/components images/scroll/cosmos_666194661.webp",
+  "/images/components images/scroll/cosmos_679994644.webp",
+  "/images/components images/scroll/cosmos_861775148.webp",
+  "/images/components images/scroll/cosmos_961582572.webp"
 ];
 
 const getDeterministicCoords = (index: number, total: number): { x: number; y: number; z: number } => {
@@ -154,6 +154,7 @@ export const ApparatusDepthSwim: React.FC<ApparatusDepthSwimProps & {
   const containerRef = useRef<HTMLDivElement>(null);
   const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
   const innerRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const imgRefs = useRef<(HTMLImageElement | null)[]>([]);
   const lastStateRef = useRef<"idle" | "discovery" | "buildUp" | "peak" | "recovery">("idle");
 
   // Config derived from props
@@ -256,7 +257,7 @@ export const ApparatusDepthSwim: React.FC<ApparatusDepthSwimProps & {
 
     const handleWheel = (e: WheelEvent) => {
       // scroll camera Z depth (0.0 to 1.0)
-      scrollVelocityRef.current = Math.max(-0.06, Math.min(0.06, scrollVelocityRef.current + e.deltaY * 0.00003));
+      scrollVelocityRef.current = Math.max(-0.08, Math.min(0.08, scrollVelocityRef.current + e.deltaY * 0.00035));
       isScrollingRef.current = true;
     };
 
@@ -270,7 +271,7 @@ export const ApparatusDepthSwim: React.FC<ApparatusDepthSwimProps & {
       const deltaY = lastTouchY - touchY;
       lastTouchY = touchY;
 
-      scrollVelocityRef.current = Math.max(-0.06, Math.min(0.06, scrollVelocityRef.current + deltaY * 0.00006));
+      scrollVelocityRef.current = Math.max(-0.08, Math.min(0.08, scrollVelocityRef.current + deltaY * 0.0007));
       isScrollingRef.current = true;
     };
 
@@ -330,10 +331,6 @@ export const ApparatusDepthSwim: React.FC<ApparatusDepthSwimProps & {
   useEffect(() => {
     scrollDirectionRef.current = scrollDirection;
   }, [scrollDirection]);
-
-  if (typeof window !== "undefined") {
-    (window as any).depthRangeRef = depthRangeRef;
-  }
 
   // Main animation tick loop
   useGSAP(() => {
@@ -405,12 +402,7 @@ export const ApparatusDepthSwim: React.FC<ApparatusDepthSwimProps & {
         const hoverZOffset = hoverProgress * 40; // lift card 40px closer on hover
         const translateZ = baseTranslateZ + hoverZOffset;
         
-        // Depth-of-field blur (decreased to 0 on hover)
-        const baseBlur = Math.min(maxBlurRef.current, Math.abs(relativeZ) * (maxBlurRef.current * 1.25));
-        const blur = baseBlur * (1 - hoverProgress);
-        
         // Depth-based scroll parallax factor: closer cards (low z) scroll faster
-        // ponytail: closer cards (z=0) scroll faster, distant cards (z=1) scroll slower
         const parallaxFactor = 1.5 - item.z * 0.8;
         const scrollAmount = relativeZ * scrollSpeedRef.current * parallaxFactor;
         
@@ -429,7 +421,7 @@ export const ApparatusDepthSwim: React.FC<ApparatusDepthSwimProps & {
           // Vortex spiral rotation + expansion
           const baseAngle = Math.atan2(item.y, item.x);
           const baseDist = Math.sqrt(item.x * item.x + item.y * item.y);
-          const rotationAngle = relativeZ * Math.PI * 0.6; // rotation based on Z depth position
+          const rotationAngle = relativeZ * Math.PI * 0.6;
           const expansionFactor = 1.0 + relativeZ * 0.3;
           
           const angle = baseAngle + rotationAngle;
@@ -450,49 +442,42 @@ export const ApparatusDepthSwim: React.FC<ApparatusDepthSwimProps & {
         }
 
         // Dynamic opacity fade:
-        // approaching: fades in from distance 0.5 to 0.0
-        // departing: fades out as it moves towards the top of the screen
+        // Approaching: Fades in from distance 0.45 to 0.0
+        // Departing / Passing Camera: Fades out smoothly to 0 as relativeZ approaches -0.26
         let opacity = 0;
         if (relativeZ > 0) {
-          opacity = Math.max(0, 1.0 - relativeZ * 2.0);
+          opacity = Math.max(0, 1.0 - relativeZ * 2.2);
         } else {
-          if (direction === "vertical" || direction === "diagonal" || direction === "zigzag") {
-            // ponytail: fade based on Y coordinate to ensure all cards fade at screen top
-            const fadeStart = -12; // starts fading at -12vh
-            const fadeEnd = -42; // fully invisible at -42vh
-            const yProgress = Math.max(0, Math.min(1.0, (finalY - fadeStart) / (fadeEnd - fadeStart)));
-            opacity = (1.0 - yProgress) * Math.max(0, 1.0 - Math.abs(relativeZ) * 3.3);
-          } else if (direction === "horizontal") {
-            // For horizontal, fade out as they depart left
-            const fadeStart = -20; // starts fading at -20vw
-            const fadeEnd = -50; // fully invisible at -50vw
-            const xProgress = Math.max(0, Math.min(1.0, (finalX - fadeStart) / (fadeEnd - fadeStart)));
-            opacity = (1.0 - xProgress) * Math.max(0, 1.0 - Math.abs(relativeZ) * 3.3);
-          } else {
-            // For creative / radial, fade out purely based on relativeZ
-            opacity = Math.max(0, 1.0 - Math.abs(relativeZ) * 3.3);
-          }
+          opacity = Math.max(0, 1.0 - Math.abs(relativeZ) * 3.8);
         }
         
-        // zIndex layer stacking
-        const zIndexVal = Math.round(1000 - relativeZ * 1000);
+        // If card is invisible, skip GPU layer rendering entirely
+        if (opacity <= 0.01) {
+          el.style.opacity = "0";
+          el.style.pointerEvents = "none";
+          continue;
+        }
 
         // Volumetric cursor parallax offset: closer cards shift more to cursor position
         const mouseParallaxFactor = (1.5 - item.z) * cursorParallaxPowerRef.current;
         const mouseShiftX = mouseRef.current.x * mouseParallaxFactor;
         const mouseShiftY = mouseRef.current.y * mouseParallaxFactor;
 
-        // Apply transformations
-        el.style.transform = `translate3d(calc(-50% + ${finalX}vw + ${mouseShiftX}px), calc(-50% + ${finalY}vh + ${mouseShiftY}px), ${translateZ}px)`;
-        el.style.filter = `blur(${blur}px)`;
-        el.style.opacity = `${opacity}`;
-        el.style.zIndex = `${zIndexVal}`;
+        const winW = window.innerWidth;
+        const winH = window.innerHeight;
+        const posX = (winW * finalX) / 100 + mouseShiftX;
+        const posY = (winH * finalY) / 100 + mouseShiftY;
 
-        // ponytail: scroll-based parallax on image inside frame
-        const img = el.querySelector("img");
+        // Apply 100% GPU-accelerated hardware transformations
+        el.style.transform = `translate3d(${posX.toFixed(1)}px, ${posY.toFixed(1)}px, ${translateZ.toFixed(1)}px)`;
+        el.style.opacity = opacity.toFixed(2);
+        el.style.pointerEvents = opacity > 0.4 ? "auto" : "none";
+
+        // Scroll-based parallax on image inside frame (using cached img ref)
+        const img = imgRefs.current[i];
         if (img) {
-          const imgY = Math.max(-22, Math.min(22, relativeZ * -55));
-          img.style.transform = `scale(1.2) translateY(${imgY}px)`;
+          const imgY = Math.max(-20, Math.min(20, relativeZ * -50));
+          img.style.transform = `scale(1.2) translateY(${imgY.toFixed(1)}px)`;
         }
       }
 
@@ -667,12 +652,15 @@ export const ApparatusDepthSwim: React.FC<ApparatusDepthSwimProps & {
               }}
             >
               <img
+                ref={(el) => {
+                  imgRefs.current[idx] = el;
+                }}
                 src={item.src}
                 alt={`Specimen ${idx + 1}`}
                 className="w-full h-full object-cover pointer-events-none select-none"
                 style={{
                   filter: "grayscale(15%) contrast(100%) brightness(95%)",
-                  transform: "scale(1.2)", // ponytail: scale up for scroll parallax bleed
+                  transform: "scale(1.2)",
                   willChange: "transform"
                 }}
               />

@@ -1,13 +1,10 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
-import { JetBrains_Mono, Geist } from "next/font/google";
+import { JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { SmoothScrollProvider } from "@/components/providers/SmoothScrollProvider";
 import { CursorProvider } from "@/components/providers/CursorProvider";
 import { cn } from "@/lib/utils";
-
-const geist = Geist({subsets:['latin'],variable:'--font-sans'});
-
 
 // Navbar import removed
 
@@ -60,7 +57,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning className={cn("h-full", "antialiased", satoshi.variable, jetbrainsMono.variable, "font-sans", geist.variable, editorialNew.variable)}>
+    <html lang="en" suppressHydrationWarning className={cn("h-full", "antialiased", satoshi.variable, jetbrainsMono.variable, "font-sans", editorialNew.variable)}>
       <body suppressHydrationWarning className="min-h-full flex flex-col bg-vessel-base text-vessel-text-primary font-sans">
         <div className="noise-bg" />
         <SmoothScrollProvider>

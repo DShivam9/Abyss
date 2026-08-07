@@ -19,10 +19,6 @@ export const CATEGORY_DEFAULTS: Record<string, ControlConfig[]> = {
     { type: "slider", key: "intensity", label: "Intensity", default: 1, min: 0, max: 2, step: 0.05 },
     { type: "slider", key: "hoverRadius", label: "Hover Radius", default: 150, min: 20, max: 500, step: 10, unit: "px" }
   ],
-  geometry: [
-    { type: "slider", key: "intensity", label: "Intensity", default: 1, min: 0, max: 2, step: 0.05 },
-    { type: "slider", key: "hoverRadius", label: "Hover Radius", default: 150, min: 20, max: 500, step: 10, unit: "px" }
-  ],
   gallary: [
     { type: "slider", key: "gapSize", label: "Gap Size", default: 16, min: 0, max: 64, step: 4, unit: "px" },
     { type: "slider", key: "transitionDuration", label: "Transition Duration", default: 500, min: 100, max: 2000, step: 50, unit: "ms" },

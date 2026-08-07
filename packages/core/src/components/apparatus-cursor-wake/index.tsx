@@ -2,12 +2,12 @@ import React, { useEffect, useRef } from "react";
 import { ApparatusCursorWakeProps, CursorWakeItem } from "./types";
 
 const DEFAULT_ITEMS: CursorWakeItem[] = [
-  { id: "01", name: "SPECIMEN 1724", imageSrc: "/images/components images/Gallary/cosmos_1724531036.jpeg" },
-  { id: "02", name: "SPECIMEN 1948", imageSrc: "/images/components images/Gallary/cosmos_1948095192.jpeg" },
-  { id: "03", name: "SPECIMEN 2046", imageSrc: "/images/components images/Gallary/cosmos_2046923474.jpeg" },
-  { id: "04", name: "SPECIMEN 0623", imageSrc: "/images/components images/Gallary/cosmos_623139356.jpeg" },
-  { id: "05", name: "SPECIMEN 0842", imageSrc: "/images/components images/Gallary/cosmos_842932938.jpeg" },
-  { id: "06", name: "SPECIMEN 0854", imageSrc: "/images/components images/Gallary/cosmos_854490082.jpeg" },
+  { id: "01", name: "SPECIMEN 1724", imageSrc: "/images/components images/Gallary/cosmos_1724531036.webp" },
+  { id: "02", name: "SPECIMEN 1948", imageSrc: "/images/components images/Gallary/cosmos_1948095192.webp" },
+  { id: "03", name: "SPECIMEN 2046", imageSrc: "/images/components images/Gallary/cosmos_2046923474.webp" },
+  { id: "04", name: "SPECIMEN 0623", imageSrc: "/images/components images/Gallary/cosmos_623139356.webp" },
+  { id: "05", name: "SPECIMEN 0842", imageSrc: "/images/components images/Gallary/cosmos_842932938.webp" },
+  { id: "06", name: "SPECIMEN 0854", imageSrc: "/images/components images/Gallary/cosmos_854490082.webp" },
 ];
 
 interface PathPoint {

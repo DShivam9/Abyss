@@ -23,7 +23,7 @@ const DEFAULT_PAGES: TransitionImageItem[] = [
     eyebrow: "VESSEL // APPARATUS TRANSITION 12",
     headline: "PHYSICAL BARRIER OVERLAY WIPE",
     tag: "ROUTE 01 // DEPLOYMENT SEAL",
-    image: "/images/components images/Transitions/ChatGPT Image Jul 15, 2026, 05_26_02 PM.png",
+    image: "/images/components images/Transitions/ChatGPT Image Jul 15, 2026, 05_26_02 PM.webp",
   },
   {
     id: "page-02",
@@ -31,7 +31,7 @@ const DEFAULT_PAGES: TransitionImageItem[] = [
     eyebrow: "VESSEL // SPATIAL SEGREGATION",
     headline: "ZERO VISUAL BLEED CONTINUITY",
     tag: "ROUTE 02 // MONOLITHIC SWEEP",
-    image: "/images/components images/Transitions/ChatGPT Image Jul 15, 2026, 05_29_20 PM.png",
+    image: "/images/components images/Transitions/ChatGPT Image Jul 15, 2026, 05_29_20 PM.webp",
   },
   {
     id: "page-03",
@@ -39,7 +39,7 @@ const DEFAULT_PAGES: TransitionImageItem[] = [
     eyebrow: "VESSEL // KINETIC HARDWARE",
     headline: "DUAL-PHASE VELOCITY CURVE",
     tag: "ROUTE 03 // VECTOR CURTAIN",
-    image: "/images/components images/Transitions/ChatGPT Image Jul 15, 2026, 05_37_33 PM.png",
+    image: "/images/components images/Transitions/ChatGPT Image Jul 15, 2026, 05_37_33 PM.webp",
   },
 ];
 

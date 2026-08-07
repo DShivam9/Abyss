@@ -40,8 +40,8 @@ export function CategorySection({
           </span>
         </div>
         <div
-          className="mt-3 h-[2px] w-full"
-          style={{ backgroundColor: color }}
+          className="mt-3 h-[1px] w-full bg-gradient-to-r from-white/30 via-white/10 to-transparent transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]"
+          style={{ backgroundImage: `linear-gradient(to right, ${color}, ${color}80 50%, transparent)` }}
         />
       </div>
 

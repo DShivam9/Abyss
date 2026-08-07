@@ -5,14 +5,12 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { getComponent, COMPONENT_DETAILS } from "@/lib/component-registry";
-import { CopyButton } from "@/components/ui/copy-button";
 import { motion } from "framer-motion";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 
 const CATEGORY_COLORS: Record<string, string> = {
   scroll: "#dfb15b",
   image: "#ffffff",
-  geometry: "#9c8cb9",
   gallary: "#c4719d",
   hybrid: "#5b9cdf",
   transition: "#6ec49a",
@@ -242,23 +240,6 @@ export function DetailPageClient({ slug }: { slug: string }) {
           </Link>
         </motion.div>
 
-        {/* CLI Installation */}
-        <motion.div
-          className="flex flex-col space-y-2 rounded-[6px] border border-neutral-900 bg-[#111113] p-4"
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.18, ease: [0.16, 1, 0.3, 1] }}
-        >
-          <span className="font-sans text-xs font-medium text-neutral-400">
-            CLI Installation
-          </span>
-          <div className="flex items-center justify-between font-mono text-xs text-white">
-            <span className="select-all text-neutral-300">
-              npx abyss-ui add {meta.slug}
-            </span>
-            <CopyButton text={`npx abyss-ui add ${meta.slug}`} />
-          </div>
-        </motion.div>
 
         {/* Collapsible Source Code Inspector */}
         <motion.div

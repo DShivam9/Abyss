@@ -83,11 +83,11 @@ export const ApparatusVenetianBlinds: React.FC<ApparatusVenetianBlindsProps & {
     // Curated fallback images from Transitions folder
     if (list.length <= 1) {
       const fallbackList = [
-        "/images/components%20images/Transitions/ChatGPT%20Image%20Jul%2015%2C%202026%2C%2005_26_02%20PM.png",
-        "/images/components%20images/Transitions/ChatGPT%20Image%20Jul%2015%2C%202026%2C%2005_29_20%20PM.png",
-        "/images/components%20images/Transitions/ChatGPT%20Image%20Jul%2015%2C%202026%2C%2005_37_33%20PM.png",
-        "/images/components%20images/Transitions/ChatGPT%20Image%20Jul%2015%2C%202026%2C%2005_44_29%20PM.png",
-        "/images/components%20images/Transitions/ChatGPT%20Image%20Jul%2015%2C%202026%2C%2005_45_55%20PM.png",
+        "/images/components%20images/Transitions/ChatGPT%20Image%20Jul%2015%2C%202026%2C%2005_26_02%20PM.webp",
+        "/images/components%20images/Transitions/ChatGPT%20Image%20Jul%2015%2C%202026%2C%2005_29_20%20PM.webp",
+        "/images/components%20images/Transitions/ChatGPT%20Image%20Jul%2015%2C%202026%2C%2005_37_33%20PM.webp",
+        "/images/components%20images/Transitions/ChatGPT%20Image%20Jul%2015%2C%202026%2C%2005_44_29%20PM.webp",
+        "/images/components%20images/Transitions/ChatGPT%20Image%20Jul%2015%2C%202026%2C%2005_45_55%20PM.webp",
       ];
       
       if (list.length === 1) {

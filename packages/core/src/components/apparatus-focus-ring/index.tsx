@@ -13,14 +13,14 @@ try {
 }
 
 const DEFAULT_ITEMS: FocusRingItem[] = [
-  { id: "01", name: "AÉTHYR • 1", imageSrc: "/images/components images/scroll/cosmos_1309660817.jpeg" },
-  { id: "02", name: "MÉLANCØLIE", imageSrc: "/images/components images/scroll/cosmos_1859262512.jpeg" },
-  { id: "03", name: "BASALT DUST", imageSrc: "/images/components images/scroll/cosmos_2063063057.jpeg" },
-  { id: "04", name: "COPPER SHARD", imageSrc: "/images/components images/scroll/cosmos_679994644.jpeg" },
-  { id: "05", name: "HÉLIØS • †", imageSrc: "/images/components images/scroll/cosmos_1244425812.jpeg" },
-  { id: "06", name: "ÉPHÉMÈRE", imageSrc: "/images/components images/scroll/cosmos_1994819013.jpeg" },
-  { id: "07", name: "AMPHORA", imageSrc: "/images/components images/scroll/cosmos_2086495860.jpeg" },
-  { id: "08", name: "VELOCITY", imageSrc: "/images/components images/scroll/cosmos_51259133.jpeg" },
+  { id: "01", name: "AÉTHYR • 1", imageSrc: "/images/components images/scroll/cosmos_1309660817.webp" },
+  { id: "02", name: "MÉLANCØLIE", imageSrc: "/images/components images/scroll/cosmos_1859262512.webp" },
+  { id: "03", name: "BASALT DUST", imageSrc: "/images/components images/scroll/cosmos_2063063057.webp" },
+  { id: "04", name: "COPPER SHARD", imageSrc: "/images/components images/scroll/cosmos_679994644.webp" },
+  { id: "05", name: "HÉLIØS • †", imageSrc: "/images/components images/scroll/cosmos_1244425812.webp" },
+  { id: "06", name: "ÉPHÉMÈRE", imageSrc: "/images/components images/scroll/cosmos_1994819013.webp" },
+  { id: "07", name: "AMPHORA", imageSrc: "/images/components images/scroll/cosmos_2086495860.webp" },
+  { id: "08", name: "VELOCITY", imageSrc: "/images/components images/scroll/cosmos_51259133.webp" },
 ];
 
 const OdometerDigit: React.FC<{ digit: string }> = ({ digit }) => {

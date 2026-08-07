@@ -162,11 +162,11 @@ export function ComponentCanvas({
 
   if (previewType === "shader") {
     return (
-      <div className="w-full max-w-[420px] aspect-[3/4] relative bg-transparent overflow-hidden flex items-center justify-center">
+      <div className="w-full max-h-[68vh] max-w-[440px] relative bg-transparent flex items-center justify-center p-4">
         <Component
           imageSrc={imageSrc}
           isFullscreen={false}
-          className="w-full h-full object-cover"
+          className="w-full h-full object-contain"
           {...controlValues}
         />
       </div>

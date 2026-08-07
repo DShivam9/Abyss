@@ -1,9 +1,14 @@
+/**
+ * Barrel export for @abyss-ui/core.
+ * Currently unused — web app imports components directly via dynamic().
+ * Kept for potential future npm publishing.
+ */
+
 export * from "./engine/types";
 export * from "./engine/useVesselMouse";
 export * from "./engine/useVesselScroll";
-export * from "./engine/useVesselLifecycle";
 export * from "./engine/VesselCanvas";
-export * from "./components/infinite-canvas";
+export * from "./engine/motion";
 
 export * from "./components/acg-fleece";
 export * from "./components/apparatus-dee";
@@ -35,12 +40,8 @@ export * from "./components/apparatus-cinematic-unstack";
 export * from "./components/apparatus-parallax-bleed";
 export * from "./components/apparatus-gravity-cursor";
 export * from "./components/apparatus-3d-shatter-sphere";
-
-
-
-
-
-
+export * from "./components/apparatus-turbulence-lens";
+export * from "./components/apparatus-ripple-scramble";
 
 
 

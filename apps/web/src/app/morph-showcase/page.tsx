@@ -12,15 +12,15 @@ const CARD_W = 260;
 const CARD_H = 340;
 
 const DEFAULT_IMAGES = [
-  "/images/components%20images/scroll/cosmos_1309660817.jpeg",
-  "/images/components%20images/scroll/cosmos_1859262512.jpeg",
-  "/images/components%20images/scroll/cosmos_2063063057.jpeg",
-  "/images/components%20images/scroll/cosmos_679994644.jpeg",
-  "/images/components%20images/scroll/cosmos_1244425812.jpeg",
-  "/images/components%20images/scroll/cosmos_1994819013.jpeg",
-  "/images/components%20images/scroll/cosmos_2086495860.jpeg",
-  "/images/components%20images/scroll/cosmos_51259133.jpeg",
-  "/images/components%20images/scroll/cosmos_586109684.jpeg",
+  "/images/components%20images/scroll/cosmos_1309660817.webp",
+  "/images/components%20images/scroll/cosmos_1859262512.webp",
+  "/images/components%20images/scroll/cosmos_2063063057.webp",
+  "/images/components%20images/scroll/cosmos_679994644.webp",
+  "/images/components%20images/scroll/cosmos_1244425812.webp",
+  "/images/components%20images/scroll/cosmos_1994819013.webp",
+  "/images/components%20images/scroll/cosmos_2086495860.webp",
+  "/images/components%20images/scroll/cosmos_51259133.webp",
+  "/images/components%20images/scroll/cosmos_586109684.webp",
 ];
 
 const DEFAULT_TITLES = [

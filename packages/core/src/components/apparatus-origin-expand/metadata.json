@@ -1,0 +1,8 @@
+{
+  "name": "apparatus-origin-expand",
+  "displayName": "Apparatus Origin Expand",
+  "description": "Dynamic route transition expanding clicked element rectangle into full-viewport background mask before revealing destination.",
+  "category": "transition",
+  "tags": ["GSAP", "Transition", "Origin", "BoundingRect"],
+  "author": "vessel"
+}

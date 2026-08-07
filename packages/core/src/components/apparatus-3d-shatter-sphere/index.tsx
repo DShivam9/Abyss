@@ -4,28 +4,28 @@ import { VesselComponentProps } from "../../engine/types";
 
 // Expanded Dedicated Image Pool (22 Unique High-Res Assets)
 const GALLERY_IMAGES = [
-  "/images/components%20images/Gallary/cosmos_1110264921.jpeg",
-  "/images/components%20images/Gallary/cosmos_1309943729.jpeg",
-  "/images/components%20images/Gallary/cosmos_140351120.jpeg",
-  "/images/components%20images/Gallary/cosmos_1441380570.jpeg",
-  "/images/components%20images/Gallary/cosmos_145253936.jpeg",
-  "/images/components%20images/Gallary/cosmos_1578342658.jpeg",
-  "/images/components%20images/Gallary/cosmos_1724531036.jpeg",
-  "/images/components%20images/Gallary/cosmos_1948095192.jpeg",
-  "/images/components%20images/Gallary/cosmos_2046923474.jpeg",
-  "/images/components%20images/Gallary/cosmos_623139356.jpeg",
-  "/images/components%20images/Gallary/cosmos_842932938.jpeg",
-  "/images/components%20images/Gallary/cosmos_854490082.jpeg",
-  "/images/components%20images/Transitions/ChatGPT%20Image%20Jul%2015,%202026,%2005_26_02%20PM.png",
-  "/images/components%20images/Transitions/ChatGPT%20Image%20Jul%2015,%202026,%2005_29_20%20PM.png",
-  "/images/components%20images/Transitions/ChatGPT%20Image%20Jul%2015,%202026,%2005_37_33%20PM.png",
-  "/images/components%20images/Transitions/ChatGPT%20Image%20Jul%2015,%202026,%2005_44_29%20PM.png",
-  "/images/components%20images/Transitions/ChatGPT%20Image%20Jul%2015,%202026,%2005_45_55%20PM.png",
-  "/images/components%20images/Transitions/ChatGPT%20Image%20Jul%2015,%202026,%2005_54_47%20PM.png",
-  "/images/components%20images/Transitions/ChatGPT%20Image%20Jul%2016,%202026,%2006_08_32%20PM.png",
-  "/images/components%20images/Transitions/ChatGPT%20Image%20Jul%2016,%202026,%2006_10_44%20PM.png",
-  "/images/components%20images/Transitions/ChatGPT%20Image%20Jul%2016,%202026,%2006_11_21%20PM.png",
-  "/images/components%20images/Transitions/ChatGPT%20Image%20Jul%2016,%202026,%2006_12_28%20PM.png",
+  "/images/components%20images/Gallary/cosmos_1110264921.webp",
+  "/images/components%20images/Gallary/cosmos_1309943729.webp",
+  "/images/components%20images/Gallary/cosmos_140351120.webp",
+  "/images/components%20images/Gallary/cosmos_1441380570.webp",
+  "/images/components%20images/Gallary/cosmos_145253936.webp",
+  "/images/components%20images/Gallary/cosmos_1578342658.webp",
+  "/images/components%20images/Gallary/cosmos_1724531036.webp",
+  "/images/components%20images/Gallary/cosmos_1948095192.webp",
+  "/images/components%20images/Gallary/cosmos_2046923474.webp",
+  "/images/components%20images/Gallary/cosmos_623139356.webp",
+  "/images/components%20images/Gallary/cosmos_842932938.webp",
+  "/images/components%20images/Gallary/cosmos_854490082.webp",
+  "/images/components%20images/Transitions/ChatGPT%20Image%20Jul%2015,%202026,%2005_26_02%20PM.webp",
+  "/images/components%20images/Transitions/ChatGPT%20Image%20Jul%2015,%202026,%2005_29_20%20PM.webp",
+  "/images/components%20images/Transitions/ChatGPT%20Image%20Jul%2015,%202026,%2005_37_33%20PM.webp",
+  "/images/components%20images/Transitions/ChatGPT%20Image%20Jul%2015,%202026,%2005_44_29%20PM.webp",
+  "/images/components%20images/Transitions/ChatGPT%20Image%20Jul%2015,%202026,%2005_45_55%20PM.webp",
+  "/images/components%20images/Transitions/ChatGPT%20Image%20Jul%2015,%202026,%2005_54_47%20PM.webp",
+  "/images/components%20images/Transitions/ChatGPT%20Image%20Jul%2016,%202026,%2006_08_32%20PM.webp",
+  "/images/components%20images/Transitions/ChatGPT%20Image%20Jul%2016,%202026,%2006_10_44%20PM.webp",
+  "/images/components%20images/Transitions/ChatGPT%20Image%20Jul%2016,%202026,%2006_11_21%20PM.webp",
+  "/images/components%20images/Transitions/ChatGPT%20Image%20Jul%2016,%202026,%2006_12_28%20PM.webp",
 ];
 
 export interface Apparatus3DShatterSphereProps extends VesselComponentProps {
@@ -108,6 +108,8 @@ export default function Apparatus3DShatterSphere({
 
     const handlePointerDown = (e: PointerEvent) => {
       isDraggingRef.current = true;
+      velXRef.current = 0;
+      velYRef.current = 0;
       lastMouseRef.current = { x: e.clientX, y: e.clientY };
       pointerStartRef.current = { x: e.clientX, y: e.clientY, time: performance.now() };
     };
@@ -160,7 +162,7 @@ export default function Apparatus3DShatterSphere({
     // 1. Scene & Camera Setup
     const scene = new THREE.Scene();
 
-    const camera = new THREE.PerspectiveCamera(45, width / height, 1, 4000);
+    const camera = new THREE.PerspectiveCamera(45, width / height, 1, 10000);
     camera.position.set(0, 0, 1650);
 
     // 2. WebGL Renderer
@@ -238,6 +240,28 @@ export default function Apparatus3DShatterSphere({
       tex.colorSpace = THREE.SRGBColorSpace;
       return tex;
     });
+
+    // Helper: Deform plane geometry vertices to curve along 3D sphere radius arc
+    const createSphericalCurvedPlaneGeo = (width: number, height: number, radius: number) => {
+      const geo = new THREE.PlaneGeometry(width, height, 16, 16);
+      const posAttr = geo.attributes.position;
+
+      for (let i = 0; i < posAttr.count; i++) {
+        const x = posAttr.getX(i);
+        const y = posAttr.getY(i);
+        const distSq = x * x + y * y;
+        const maxRadiusSq = radius * radius;
+
+        if (distSq < maxRadiusSq) {
+          const zOffset = radius - Math.sqrt(maxRadiusSq - distSq);
+          posAttr.setZ(i, -zOffset * 0.95);
+        }
+      }
+
+      posAttr.needsUpdate = true;
+      geo.computeVertexNormals();
+      return geo;
+    };
 
     const defaultPlaneGeo = new THREE.PlaneGeometry(120, 155);
     let meshesData: MeshData[] = [];
@@ -332,8 +356,9 @@ export default function Apparatus3DShatterSphere({
           });
         });
       } else {
-        // 3D SPHERE MODE: Fibonacci Point Shell Distribution
+        // 3D SPHERE MODE: Fibonacci Point Shell Distribution with Spherical Arc Curved Geometry
         const goldenRatio = (1 + Math.sqrt(5)) / 2;
+        const curvedGeo = createSphericalCurvedPlaneGeo(120, 155, sphereRadiusRef.current);
 
         for (let i = 0; i < count; i++) {
           const theta = Math.acos(1 - (2 * (i + 0.5)) / count);
@@ -353,7 +378,7 @@ export default function Apparatus3DShatterSphere({
             opacity: 1.0,
           });
 
-          const mesh = new THREE.Mesh(defaultPlaneGeo.clone(), material);
+          const mesh = new THREE.Mesh(curvedGeo.clone(), material);
           mesh.lookAt(unitPos.clone().multiplyScalar(2));
           const baseRot = mesh.rotation.clone();
 
@@ -366,6 +391,7 @@ export default function Apparatus3DShatterSphere({
             material,
           });
         }
+        curvedGeo.dispose();
       }
     };
 
@@ -411,9 +437,11 @@ export default function Apparatus3DShatterSphere({
       } else {
         structureGroup.rotation.y += velYRef.current;
         structureGroup.rotation.x += velXRef.current;
+        velYRef.current *= 0.8;
+        velXRef.current *= 0.8;
       }
 
-      // Smooth Shatter Explosion Lerp Progress
+      // Smooth Shatter Explosion Lerp Progress with Elastic Overshoot
       const targetShatter = isShatteredRef.current ? 1 : 0;
       shatterProgressRef.current += (targetShatter - shatterProgressRef.current) * (1 - Math.exp(-6.5 * dt));
       const sP = shatterProgressRef.current;
@@ -426,13 +454,67 @@ export default function Apparatus3DShatterSphere({
       const layoutMultiplier = Math.max(1.0, 0.5 + currentCardScale * 0.5);
       const effectiveDistance = currentRadius * layoutMultiplier;
 
-      meshesData.forEach((data) => {
-        const burstDist = 1 + sP * currentShatterForce * 0.85;
-        const scaledPos = data.unitPos.clone().multiplyScalar(effectiveDistance * burstDist);
-        data.mesh.position.copy(scaledPos);
-        data.mesh.rotation.copy(data.baseRot);
+      // Dynamic Camera Z Framing: Prevents tile clipping at high radius & max shatter force
+      const targetCameraZ = Math.max(
+        1650,
+        effectiveDistance * (1 + sP * currentShatterForce * 0.7) * 1.4
+      );
+      camera.position.z += (targetCameraZ - camera.position.z) * (1 - Math.exp(-8 * dt));
+
+      const totalItems = Math.max(1, meshesData.length - 1);
+      const tiltX = velXRef.current * 1.6;
+      const tiltY = velYRef.current * 1.6;
+
+      meshesData.forEach((data, i) => {
+        // Micro Stagger + Spring Elastic Overshoot
+        const staggerRatio = i / totalItems;
+        const tileSP = Math.max(0, Math.min(1, (sP - staggerRatio * 0.12) / 0.88));
+        const elasticBounce = Math.sin(tileSP * Math.PI) * 0.05;
+        const progress = tileSP + elasticBounce;
+
+        if (activeShapeMode === "cuboid") {
+          // Monolith Cube: 6 Monolith Vault Wall Unfold & Sliding Displacement
+          const pushDist = 1 + progress * currentShatterForce * 1.25;
+          const scaledPos = data.unitPos.clone().multiplyScalar(effectiveDistance * pushDist);
+          data.mesh.position.copy(scaledPos);
+
+          // Hinge unfold tilt on shatter
+          const hAngle = progress * 0.65 * (i % 2 === 0 ? 1 : -1);
+          data.mesh.rotation.set(
+            data.baseRot.x + tiltX + hAngle,
+            data.baseRot.y + tiltY + hAngle * 0.5,
+            data.baseRot.z
+          );
+          data.material.opacity = 1.0;
+        } else if (activeShapeMode === "cuboid-grid") {
+          // Cuboid Grid: Deconstructed Matrix Blueprint Dispersal
+          const matrixDisplace = 1 + progress * currentShatterForce * 1.1;
+          const scaledPos = data.unitPos.clone().multiplyScalar(effectiveDistance * matrixDisplace);
+          data.mesh.position.copy(scaledPos);
+
+          // Z-axis matrix panel rotation on shatter
+          const zSpin = progress * Math.PI * (i % 2 === 0 ? 0.4 : -0.4);
+          data.mesh.rotation.set(
+            data.baseRot.x + tiltX,
+            data.baseRot.y + tiltY,
+            data.baseRot.z + zSpin
+          );
+          data.material.opacity = 1.0;
+        } else {
+          // Default Sphere: Spherical Radial Burst
+          const burstDist = 1 + progress * currentShatterForce * 0.85;
+          const scaledPos = data.unitPos.clone().multiplyScalar(effectiveDistance * burstDist);
+          data.mesh.position.copy(scaledPos);
+
+          data.mesh.rotation.set(
+            data.baseRot.x + tiltX,
+            data.baseRot.y + tiltY,
+            data.baseRot.z
+          );
+          data.material.opacity = 1.0;
+        }
+
         data.mesh.scale.set(currentCardScale, currentCardScale, currentCardScale);
-        data.material.opacity = 1.0;
       });
 
       // Render WebGL Frame

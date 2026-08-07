@@ -1,11 +1,6 @@
 import { useRef, useEffect, useMemo } from "react";
 import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { VesselComponentProps } from "../../engine/types";
-
-if (typeof window !== "undefined") {
-  gsap.registerPlugin(ScrollTrigger);
-}
 
 // Dedicated full-bleed image sections (p1, p2, p3, p4) with single-word headlines
 const DEFAULT_BLEED_SECTIONS = [
@@ -13,37 +8,39 @@ const DEFAULT_BLEED_SECTIONS = [
     id: "01",
     title: "HORIZON",
     alignClass: "inset-0 flex items-center justify-center text-center px-6",
-    image: "/images/components%20images/scroll/p1.png",
+    image: "/images/components%20images/scroll/p1.webp",
   },
   {
     id: "02",
     title: "VOID",
     alignClass: "inset-0 flex items-center justify-end text-right px-8 md:px-20",
-    image: "/images/components%20images/scroll/p2.png",
+    image: "/images/components%20images/scroll/p2.webp",
   },
   {
     id: "03",
     title: "MONOLITH",
     alignClass: "inset-0 flex items-center justify-start text-left px-8 md:px-20",
-    image: "/images/components%20images/scroll/p3.png",
+    image: "/images/components%20images/scroll/p3.webp",
   },
   {
     id: "04",
     title: "ECHO",
     alignClass: "inset-0 flex items-center justify-center text-center px-6",
-    image: "/images/components%20images/scroll/p4.png",
+    image: "/images/components%20images/scroll/p4.webp",
   },
 ];
 
 export interface ApparatusParallaxBleedProps extends VesselComponentProps {
   sections?: typeof DEFAULT_BLEED_SECTIONS;
   parallaxIntensity?: number;
+  scrollSpeed?: number;
   scrollProgress?: number;
 }
 
 export default function ApparatusParallaxBleed({
   sections = DEFAULT_BLEED_SECTIONS,
   parallaxIntensity = 45, // 0% - 100% intensity
+  scrollSpeed = 1.0,
   className = "",
   style = {},
   onLifecycleChange,
@@ -54,15 +51,16 @@ export default function ApparatusParallaxBleed({
   const imageRefs = useRef<(HTMLImageElement | null)[]>([]);
   const textRefs = useRef<(HTMLDivElement | null)[]>([]);
 
-  // Infinite accumulator state
+  // Accumulator state
   const targetProgressRef = useRef<number>(0);
   const smoothProgressRef = useRef<number>(0);
   const velocityRef = useRef<number>(0);
   const animationFrameRef = useRef<number | null>(null);
+  const scrollSpeedRef = useRef<number>(scrollSpeed);
 
   // Parallax ratio calculation (% shift)
   const parallaxOffsetRatio = useMemo(() => {
-    return (parallaxIntensity / 100) * 0.35; // max 35% shift (GEMINI.md §11.5)
+    return (parallaxIntensity / 100) * 0.35; // max 35% shift
   }, [parallaxIntensity]);
 
   // Inject High-Contrast Editorial Google Fonts (Syne 800)
@@ -84,16 +82,21 @@ export default function ApparatusParallaxBleed({
     }
   }, [externalProgress]);
 
-  // Infinite Dual-Input Scroll Listener: Mouse Wheel + Touch + ScrollTrigger
+  // Keep scrollSpeed ref in sync
+  useEffect(() => {
+    scrollSpeedRef.current = scrollSpeed;
+  }, [scrollSpeed]);
+
+  // Self-contained wheel + touch listener (container-only, no window, no ScrollTrigger)
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
 
     const handleWheel = (e: WheelEvent) => {
       e.preventDefault();
-      // Continuous upward infinite scroll sensitivity
-      const delta = e.deltaY * 0.00045;
-      targetProgressRef.current += delta;
+      e.stopPropagation();
+      const delta = e.deltaY * 0.00045 * scrollSpeedRef.current;
+      targetProgressRef.current = Math.max(0, targetProgressRef.current + delta);
     };
 
     let touchStartY = 0;
@@ -103,37 +106,21 @@ export default function ApparatusParallaxBleed({
     const handleTouchMove = (e: TouchEvent) => {
       const deltaY = touchStartY - e.touches[0].clientY;
       touchStartY = e.touches[0].clientY;
-      targetProgressRef.current += deltaY * 0.001;
+      targetProgressRef.current = Math.max(0, targetProgressRef.current + deltaY * 0.001 * scrollSpeedRef.current);
     };
 
     container.addEventListener("wheel", handleWheel, { passive: false });
-    window.addEventListener("wheel", handleWheel, { passive: false });
     container.addEventListener("touchstart", handleTouchStart, { passive: true });
     container.addEventListener("touchmove", handleTouchMove, { passive: true });
 
-    // Fallback ScrollTrigger
-    const st = ScrollTrigger.create({
-      trigger: container,
-      start: "top top",
-      end: "bottom bottom",
-      scrub: 1.2,
-      onUpdate: (self) => {
-        if (self.progress > 0) {
-          targetProgressRef.current = self.progress * 4;
-        }
-      },
-    });
-
     return () => {
       container.removeEventListener("wheel", handleWheel);
-      window.removeEventListener("wheel", handleWheel);
       container.removeEventListener("touchstart", handleTouchStart);
       container.removeEventListener("touchmove", handleTouchMove);
-      st.kill();
     };
   }, []);
 
-  // 60FPS Continuous Upward Parallax Engine with Zero-Fade Single-Word Display Motion
+  // 60FPS Continuous Upward Parallax Engine — Lenis-style exponential easing
   useEffect(() => {
     let lastTime = performance.now();
     let lastProgress = 0;
@@ -142,8 +129,8 @@ export default function ApparatusParallaxBleed({
       const dt = Math.min((time - lastTime) / 1000, 0.1);
       lastTime = time;
 
-      // Damped lerp momentum (scrollthumbrule.md)
-      const lerpSpeed = 4.5;
+      // Lenis-style exponential decay lerp (duration ~1.2s feel)
+      const lerpSpeed = 6.0;
       smoothProgressRef.current += (targetProgressRef.current - smoothProgressRef.current) * (1 - Math.exp(-lerpSpeed * dt));
 
       const p = smoothProgressRef.current;
@@ -175,7 +162,7 @@ export default function ApparatusParallaxBleed({
         // Raw distance from current virtual position
         const rawPos = idx - p;
         // Modular wrap calculation around totalCount (-totalCount/2 to +totalCount/2)
-        let wrappedPos = (((rawPos + totalCount / 2) % totalCount) + totalCount) % totalCount - totalCount / 2;
+        const wrappedPos = (((rawPos + totalCount / 2) % totalCount) + totalCount) % totalCount - totalCount / 2;
 
         // Continuous Upward Translation (NO PINNING, NO FADING)
         const sectionY = wrappedPos * 100; // +100% -> 0% -> -100%
@@ -188,7 +175,7 @@ export default function ApparatusParallaxBleed({
           scale: 1.0,
         });
 
-        // Expanded Inner Image Parallax Shift (GEMINI.md §11.5: top: -35%, height: 170%)
+        // Expanded Inner Image Parallax Shift (top: -35%, height: 170%)
         const internalImgY = -wrappedPos * parallaxOffsetRatio * 100;
         gsap.set(imgEl, {
           y: `${internalImgY}%`,
@@ -220,6 +207,7 @@ export default function ApparatusParallaxBleed({
   return (
     <div
       ref={containerRef}
+      data-lenis-prevent
       className={`relative w-full h-screen bg-[#050505] font-[#Syne',sans-serif] text-white overflow-hidden select-none ${className}`}
       style={style}
     >
@@ -231,7 +219,7 @@ export default function ApparatusParallaxBleed({
             ref={(el) => { sectionRefs.current[idx] = el; }}
             className="absolute inset-0 w-full h-full overflow-hidden transform-gpu origin-center"
           >
-            {/* Expanded Inner Image Container (GEMINI.md §11.5: top: -35%, height: 170%) */}
+            {/* Expanded Inner Image Container (top: -35%, height: 170%) */}
             <div className="absolute top-[-35%] left-0 w-full h-[170%] overflow-hidden pointer-events-none">
               <img
                 ref={(el) => { imageRefs.current[idx] = el; }}

@@ -22,15 +22,24 @@ export function CommandPalette({
   const [selectedIndex, setSelectedIndex] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Auto-focus input when opened
+  // Auto-focus input and lock body scroll when opened
   useEffect(() => {
     if (isOpen) {
       setQuery("");
       setSelectedIndex(0);
+      document.body.style.overflow = "hidden";
+      document.documentElement.style.overflow = "hidden";
       setTimeout(() => {
         inputRef.current?.focus();
       }, 50);
+    } else {
+      document.body.style.overflow = "";
+      document.documentElement.style.overflow = "";
     }
+    return () => {
+      document.body.style.overflow = "";
+      document.documentElement.style.overflow = "";
+    };
   }, [isOpen]);
 
   const cleanLabel = (label: string) => {
@@ -116,9 +125,9 @@ export function CommandPalette({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
+            transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
             onClick={onClose}
-            className="fixed inset-0 bg-black/65 backdrop-blur-sm"
+            className="fixed inset-0 bg-black/75 backdrop-blur-md"
           />
 
           {/* Modal Dialog */}
@@ -126,8 +135,8 @@ export function CommandPalette({
             initial={{ opacity: 0, scale: 0.94, y: -16 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.94, y: -16 }}
-            transition={{ type: "spring", stiffness: 420, damping: 28, mass: 0.8 }}
-            className="relative z-10 w-full max-w-xl overflow-hidden rounded-xl bg-[#0A0A0A] border border-neutral-800 shadow-2xl text-white font-sans antialiased transform-gpu"
+            transition={{ type: "spring", stiffness: 220, damping: 24, mass: 1.2 }}
+            className="relative z-10 w-full max-w-xl overflow-hidden rounded-xl bg-[#0A0A0A] border border-white/10 shadow-[0_25px_50px_-12px_rgba(0,0,0,0.9),inset_0_1px_1px_rgba(255,255,255,0.1)] text-white font-sans antialiased transform-gpu"
           >
             {/* Search Input Bar */}
             <div className="flex items-center gap-3 px-4 border-b border-neutral-800/80 bg-neutral-900/40">
@@ -178,9 +187,9 @@ export function CommandPalette({
                         onClose();
                       }}
                       onMouseEnter={() => setSelectedIndex(idx)}
-                      className={`w-full text-left px-3 py-2.5 rounded-lg flex items-center justify-between transition-colors ${
+                      className={`w-full text-left px-3 py-2.5 rounded-lg flex items-center justify-between transition-all duration-250 ease-[cubic-bezier(0.16,1,0.3,1)] active:scale-[0.98] ${
                         isSelected
-                          ? "bg-white/[0.08] text-white"
+                          ? "bg-white/[0.09] text-white translate-x-1"
                           : "text-neutral-300 hover:bg-white/[0.04]"
                       }`}
                     >

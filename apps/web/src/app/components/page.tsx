@@ -13,7 +13,6 @@ const CATEGORIES = [
   { id: "transition", label: "Transition", color: "#6ec49a" },
   { id: "text", label: "Text", color: "#e88034" },
   { id: "svg", label: "SVG", color: "#00f0ff" },
-  { id: "geometry", label: "Geometry", color: "#9c8cb9" },
   { id: "image", label: "Image", color: "#e05b5b" },
   { id: "hybrid", label: "Hybrid", color: "#5b9cdf" },
 ];

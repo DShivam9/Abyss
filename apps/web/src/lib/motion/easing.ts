@@ -1,3 +1,8 @@
+/**
+ * Abyss Website Motion & Easing
+ * Website-level motion constants — used for page UI, navigation, and site transitions.
+ */
+
 import { gsap } from "gsap";
 import { CustomEase } from "gsap/CustomEase";
 

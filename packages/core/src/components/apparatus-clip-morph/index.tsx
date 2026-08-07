@@ -27,10 +27,10 @@ const SHAPE_KEYFRAMES = {
 };
 
 const DEFAULT_IMAGES = [
-  "/images/components images/Transitions/ChatGPT Image Jul 16, 2026, 06_08_32 PM.png",
-  "/images/components images/Transitions/ChatGPT Image Jul 16, 2026, 06_10_44 PM.png",
-  "/images/components images/Transitions/ChatGPT Image Jul 16, 2026, 06_11_21 PM.png",
-  "/images/components images/Transitions/ChatGPT Image Jul 16, 2026, 06_12_28 PM.png"
+  "/images/components images/Transitions/ChatGPT Image Jul 16, 2026, 06_08_32 PM.webp",
+  "/images/components images/Transitions/ChatGPT Image Jul 16, 2026, 06_10_44 PM.webp",
+  "/images/components images/Transitions/ChatGPT Image Jul 16, 2026, 06_11_21 PM.webp",
+  "/images/components images/Transitions/ChatGPT Image Jul 16, 2026, 06_12_28 PM.webp"
 ];
 
 // Helper to calculate clip path polygon string by scaling and rotating the target shape

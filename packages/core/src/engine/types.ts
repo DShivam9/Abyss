@@ -45,7 +45,7 @@ export interface VesselComponentMeta {
 }
 
 export interface VesselComponentProps {
-  imageSrc: string;
+  imageSrc?: string;
   className?: string;
   style?: React.CSSProperties;
   onLifecycleChange?: (state: "idle" | "discovery" | "buildUp" | "peak" | "recovery") => void;

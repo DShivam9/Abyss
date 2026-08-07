@@ -67,14 +67,14 @@ class ValueNoise2D {
 }
 
 const DEFAULT_IMAGES = [
-  "/images/components%20images/scroll/cosmos_1207399578.jpeg",
-  "/images/components%20images/scroll/cosmos_1067833670.jpeg",
-  "/images/components%20images/scroll/cosmos_1215932660.jpeg",
-  "/images/components%20images/scroll/cosmos_1225764898.jpeg",
-  "/images/components%20images/scroll/cosmos_1244425812.jpeg",
-  "/images/components%20images/scroll/cosmos_1292975902.jpeg",
-  "/images/components%20images/scroll/cosmos_1298955025.jpeg",
-  "/images/components%20images/scroll/cosmos_1309660817.jpeg"
+  "/images/components%20images/scroll/cosmos_1207399578.webp",
+  "/images/components%20images/scroll/cosmos_1067833670.webp",
+  "/images/components%20images/scroll/cosmos_1215932660.webp",
+  "/images/components%20images/scroll/cosmos_1225764898.webp",
+  "/images/components%20images/scroll/cosmos_1244425812.webp",
+  "/images/components%20images/scroll/cosmos_1292975902.webp",
+  "/images/components%20images/scroll/cosmos_1298955025.webp",
+  "/images/components%20images/scroll/cosmos_1309660817.webp"
 ];
 
 export const ApparatusErosionMap: React.FC<ApparatusErosionMapProps & {

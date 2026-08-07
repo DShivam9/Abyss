@@ -13,9 +13,11 @@ if (typeof window !== "undefined") {
 export function SmoothScrollProvider({ children }: { children: ReactNode }) {
   useGSAP(() => {
     const lenis = new Lenis({
-      duration: 1.2,
-      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)), // Exponential decay
+      duration: 1.5,
+      easing: (t) => (t === 1 ? 1 : 1 - Math.pow(2, -10 * t)), // Abyss exponential decay ease
       smoothWheel: true,
+      wheelMultiplier: 0.95,
+      touchMultiplier: 1.4,
     });
 
     (window as unknown as { lenis: Lenis }).lenis = lenis;

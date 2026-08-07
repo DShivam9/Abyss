@@ -3,18 +3,18 @@ import { VesselComponentProps } from "../../engine/types";
 
 // 12 default curated high-resolution imagery with encoded URLs
 const DEFAULT_STACK_IMAGES = [
-  "/images/components%20images/scroll/cosmos_1067833670.jpeg",
-  "/images/components%20images/scroll/cosmos_1215932660.jpeg",
-  "/images/components%20images/scroll/cosmos_1292975902.jpeg",
-  "/images/components%20images/scroll/cosmos_1309660817.jpeg",
-  "/images/components%20images/scroll/cosmos_1633231397.jpeg",
-  "/images/components%20images/scroll/cosmos_1859262512.jpeg",
-  "/images/components%20images/scroll/cosmos_1067833670.jpeg",
-  "/images/components%20images/scroll/cosmos_1215932660.jpeg",
-  "/images/components%20images/scroll/cosmos_1292975902.jpeg",
-  "/images/components%20images/scroll/cosmos_1309660817.jpeg",
-  "/images/components%20images/scroll/cosmos_1633231397.jpeg",
-  "/images/components%20images/scroll/cosmos_1859262512.jpeg",
+  "/images/components%20images/scroll/cosmos_1067833670.webp",
+  "/images/components%20images/scroll/cosmos_1215932660.webp",
+  "/images/components%20images/scroll/cosmos_1292975902.webp",
+  "/images/components%20images/scroll/cosmos_1309660817.webp",
+  "/images/components%20images/scroll/cosmos_1633231397.webp",
+  "/images/components%20images/scroll/cosmos_1859262512.webp",
+  "/images/components%20images/scroll/cosmos_1067833670.webp",
+  "/images/components%20images/scroll/cosmos_1215932660.webp",
+  "/images/components%20images/scroll/cosmos_1292975902.webp",
+  "/images/components%20images/scroll/cosmos_1309660817.webp",
+  "/images/components%20images/scroll/cosmos_1633231397.webp",
+  "/images/components%20images/scroll/cosmos_1859262512.webp",
 ];
 
 export type UnstackVariant = 

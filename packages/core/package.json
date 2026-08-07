@@ -8,10 +8,7 @@
     "build": "tsc"
   },
   "dependencies": {
-    "framer-motion": "^11.0.0",
-    "lucide-react": "^0.300.0",
-    "clsx": "^2.1.0",
-    "tailwind-merge": "^2.2.0"
+    "framer-motion": "^11.0.0"
   },
   "peerDependencies": {
     "react": "^18 || ^19",

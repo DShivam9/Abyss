@@ -4,21 +4,21 @@ import { useGSAP } from "@gsap/react";
 import { ApparatusCylinderScrollProps } from "./types";
 
 const DEFAULT_IMAGES = [
-  "/images/components images/scroll/cosmos_1309660817.jpeg",
-  "/images/components images/scroll/cosmos_1859262512.jpeg",
-  "/images/components images/scroll/cosmos_2063063057.jpeg",
-  "/images/components images/scroll/cosmos_679994644.jpeg",
-  "/images/components images/scroll/cosmos_1244425812.jpeg",
-  "/images/components images/scroll/cosmos_1994819013.jpeg",
-  "/images/components images/scroll/cosmos_2086495860.jpeg",
-  "/images/components images/scroll/cosmos_51259133.jpeg",
-  "/images/components images/scroll/cosmos_1067833670.jpeg",
-  "/images/components images/scroll/cosmos_1207399578.jpeg",
-  "/images/components images/scroll/cosmos_1215932660.jpeg",
-  "/images/components images/scroll/cosmos_1225764898.jpeg",
-  "/images/components images/scroll/cosmos_1298955025.jpeg",
-  "/images/components images/scroll/cosmos_1452408749.jpeg",
-  "/images/components images/scroll/cosmos_1556080729.jpeg"
+  "/images/components images/scroll/cosmos_1309660817.webp",
+  "/images/components images/scroll/cosmos_1859262512.webp",
+  "/images/components images/scroll/cosmos_2063063057.webp",
+  "/images/components images/scroll/cosmos_679994644.webp",
+  "/images/components images/scroll/cosmos_1244425812.webp",
+  "/images/components images/scroll/cosmos_1994819013.webp",
+  "/images/components images/scroll/cosmos_2086495860.webp",
+  "/images/components images/scroll/cosmos_51259133.webp",
+  "/images/components images/scroll/cosmos_1067833670.webp",
+  "/images/components images/scroll/cosmos_1207399578.webp",
+  "/images/components images/scroll/cosmos_1215932660.webp",
+  "/images/components images/scroll/cosmos_1225764898.webp",
+  "/images/components images/scroll/cosmos_1298955025.webp",
+  "/images/components images/scroll/cosmos_1452408749.webp",
+  "/images/components images/scroll/cosmos_1556080729.webp"
 ];
 
 // Content Satoshi text mock bank

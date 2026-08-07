@@ -4,19 +4,19 @@ import { ApparatusParallaxColumnProps } from "./types";
 
 // Default premium images from Abyss assets — ultra-optimized, no repeats across columns
 const DEFAULT_LEFT_IMAGES = [
-  "/images/components%20images/scroll/cosmos_1309660817.jpeg",
-  "/images/components%20images/scroll/cosmos_2063063057.jpeg",
-  "/images/components%20images/scroll/cosmos_1244425812.jpeg",
-  "/images/components%20images/scroll/cosmos_2086495860.jpeg",
-  "/images/components%20images/scroll/cosmos_51259133.jpeg"
+  "/images/components%20images/scroll/cosmos_1309660817.webp",
+  "/images/components%20images/scroll/cosmos_2063063057.webp",
+  "/images/components%20images/scroll/cosmos_1244425812.webp",
+  "/images/components%20images/scroll/cosmos_2086495860.webp",
+  "/images/components%20images/scroll/cosmos_51259133.webp"
 ];
 
 const DEFAULT_RIGHT_IMAGES = [
-  "/images/components%20images/scroll/cosmos_1452408749.jpeg",
-  "/images/components%20images/scroll/cosmos_1298955025.jpeg",
-  "/images/components%20images/scroll/cosmos_2093433371.jpeg",
-  "/images/components%20images/scroll/cosmos_520815919.jpeg",
-  "/images/components%20images/scroll/Glowing%20White%20Horse.jpg"
+  "/images/components%20images/scroll/cosmos_1452408749.webp",
+  "/images/components%20images/scroll/cosmos_1298955025.webp",
+  "/images/components%20images/scroll/cosmos_2093433371.webp",
+  "/images/components%20images/scroll/cosmos_520815919.webp",
+  "/images/components%20images/scroll/Glowing%20White%20Horse.webp"
 ];
 
 export const ApparatusParallaxColumn: React.FC<ApparatusParallaxColumnProps & {

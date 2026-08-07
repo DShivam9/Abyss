@@ -63,39 +63,44 @@ export const VesselCanvas: React.FC<VesselCanvasProps> = ({
 
     const handleMouseEnter = () => {
       targetHover.current = 1.0;
+      mouseStateRef.current.isHovering = true;
       if (onLifecycleChange) onLifecycleChange("discovery");
     };
 
     const handleMouseLeave = () => {
       targetHover.current = 0.0;
+      mouseStateRef.current.isHovering = false;
       if (onLifecycleChange) onLifecycleChange("recovery");
     };
 
     const handleMouseMove = (e: MouseEvent) => {
       const rect = container.getBoundingClientRect();
-      const x = (e.clientX - rect.left) / rect.width;
-      const y = 1.0 - (e.clientY - rect.top) / rect.height;
+      const x = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+      const y = Math.max(0, Math.min(1, 1.0 - (e.clientY - rect.top) / rect.height));
       targetMouse.current.set(x, y);
+      mouseStateRef.current.position.set(x, y);
     };
 
     const handleMouseDown = (e: MouseEvent) => {
       if (onClickCanvas) {
         const rect = container.getBoundingClientRect();
-        const x = (e.clientX - rect.left) / rect.width;
-        const y = 1.0 - (e.clientY - rect.top) / rect.height;
+        const x = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+        const y = Math.max(0, Math.min(1, 1.0 - (e.clientY - rect.top) / rect.height));
         onClickCanvas(new THREE.Vector2(x, y), clock.current);
       }
     };
 
-    // Touch support (Issue 15)
+    // Touch support
     const handleTouchStart = (e: TouchEvent) => {
       targetHover.current = 1.0;
+      mouseStateRef.current.isHovering = true;
       if (onLifecycleChange) onLifecycleChange("discovery");
       if (e.touches.length === 0) return;
       const rect = container.getBoundingClientRect();
-      const x = (e.touches[0].clientX - rect.left) / rect.width;
-      const y = 1.0 - (e.touches[0].clientY - rect.top) / rect.height;
+      const x = Math.max(0, Math.min(1, (e.touches[0].clientX - rect.left) / rect.width));
+      const y = Math.max(0, Math.min(1, 1.0 - (e.touches[0].clientY - rect.top) / rect.height));
       targetMouse.current.set(x, y);
+      mouseStateRef.current.position.set(x, y);
 
       if (onClickCanvas) {
         onClickCanvas(new THREE.Vector2(x, y), clock.current);
@@ -105,13 +110,15 @@ export const VesselCanvas: React.FC<VesselCanvasProps> = ({
     const handleTouchMove = (e: TouchEvent) => {
       if (e.touches.length === 0) return;
       const rect = container.getBoundingClientRect();
-      const x = (e.touches[0].clientX - rect.left) / rect.width;
-      const y = 1.0 - (e.touches[0].clientY - rect.top) / rect.height;
+      const x = Math.max(0, Math.min(1, (e.touches[0].clientX - rect.left) / rect.width));
+      const y = Math.max(0, Math.min(1, 1.0 - (e.touches[0].clientY - rect.top) / rect.height));
       targetMouse.current.set(x, y);
+      mouseStateRef.current.position.set(x, y);
     };
 
     const handleTouchEnd = () => {
       targetHover.current = 0.0;
+      mouseStateRef.current.isHovering = false;
       targetMouse.current.set(0.5, 0.5);
       if (onLifecycleChange) onLifecycleChange("recovery");
     };
@@ -135,7 +142,7 @@ export const VesselCanvas: React.FC<VesselCanvasProps> = ({
       container.removeEventListener("touchmove", handleTouchMove);
       container.removeEventListener("touchend", handleTouchEnd);
     };
-  }, [onClickCanvas, onLifecycleChange]);
+  }, [onClickCanvas, onLifecycleChange, mouseStateRef]);
 
   const clock = useRef(new THREE.Clock());
 
@@ -206,7 +213,7 @@ export const VesselCanvas: React.FC<VesselCanvasProps> = ({
     let loadedTexture: THREE.Texture | null = null;
 
     textureLoader.load(
-      imageSrc,
+      imageSrc || "",
       (texture) => {
         loadedTexture = texture;
         material.uniforms.tMap.value = texture;
@@ -291,13 +298,11 @@ export const VesselCanvas: React.FC<VesselCanvasProps> = ({
       updateMouse(delta);
       updateScroll();
 
-      // Smoothly update hover value (override to 0.0 if prefersReducedMotion is active)
+      // Smoothly update hover value with asymmetric silk exponential easing (building up and melting back slowly)
       const activeTargetHover = prefersReducedMotion ? 0.0 : targetHover.current;
-      currentHover.current = THREE.MathUtils.lerp(
-        currentHover.current,
-        activeTargetHover,
-        0.08
-      );
+      const rate = activeTargetHover === 1.0 ? 4.5 : 3.2;
+      const easeFactor = 1.0 - Math.exp(-rate * Math.min(delta, 0.1));
+      currentHover.current += (activeTargetHover - currentHover.current) * easeFactor;
 
       // Sync uniforms
       material.uniforms.uMouse.value.copy(mouseStateRef.current.position);
@@ -344,7 +349,7 @@ export const VesselCanvas: React.FC<VesselCanvasProps> = ({
         aspectRatio: `${imgDimensions.width} / ${imgDimensions.height}`,
         ...style,
       }}
-      className={`w-full relative overflow-hidden select-none pointer-events-auto ${className}`}
+      className={`max-h-[68vh] max-w-[440px] w-full relative overflow-visible select-none pointer-events-auto group cursor-pointer ${className}`}
     >
       <canvas ref={canvasRef} className="absolute inset-0 block w-full h-full" />
     </div>

@@ -318,81 +318,101 @@ interface SidebarItemProps {
   activeItemRef: React.RefObject<HTMLButtonElement | null> | null;
 }
 
-const ALPHABET_UPPER = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-const ALPHABET_LOWER = "abcdefghijklmnopqrstuvwxyz";
+const SCRAMBLE_CHAR_SET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*";
+
+function scrambleWordLastCharFirst(
+  text: string,
+  waveCenter: number,
+  waveWidth: number = 2,
+  frame: number = 0
+): string {
+  const len = text.length;
+  let out = "";
+  for (let i = 0; i < len; i++) {
+    const char = text[i];
+    if (char === " " || char === "-" || char === "/") {
+      out += char;
+    } else if (i >= waveCenter - waveWidth && i <= waveCenter) {
+      out += SCRAMBLE_CHAR_SET[(frame + i * 3) % SCRAMBLE_CHAR_SET.length];
+    } else {
+      out += char;
+    }
+  }
+  return out;
+}
 
 function SidebarItem({ displayName, isSelected, onClick, activeItemRef }: SidebarItemProps) {
+  const [isHovered, setIsHovered] = useState(false);
   const [displayText, setDisplayText] = useState(displayName);
+  const isAnimatingRef = useRef<boolean>(false);
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     setDisplayText(displayName);
   }, [displayName]);
 
-  const triggerScramble = () => {
-    let frame = 0;
-    const totalFrames = 50; // ~830ms smooth wave sweep duration
-
-    const animate = () => {
-      frame++;
-      const progress = frame / totalFrames;
-
-      // Active wave window (sweeps from index 0 to length + waveWidth)
-      const waveWidth = 3;
-      const waveCenter = progress * (displayName.length + waveWidth);
-
-      setDisplayText((prev) => {
-        const isMutationTick = frame % 2 === 0;
-
-        return displayName
-          .split("")
-          .map((char, i) => {
-            if (char === " " || char === "-" || char === "/") return char;
-
-            // Character is inside active wave ripple window?
-            const isInsideWave = i >= waveCenter - waveWidth && i <= waveCenter;
-
-            if (!isInsideWave) {
-              // Outside wave: stay original character
-              return char;
-            }
-
-            // Inside wave: scramble on mutation tick
-            if (!isMutationTick && prev[i]) {
-              return prev[i];
-            }
-
-            const pool = char === char.toUpperCase() ? ALPHABET_UPPER : ALPHABET_LOWER;
-            return pool[Math.floor(Math.random() * pool.length)];
-          })
-          .join("");
-      });
-
-      if (frame < totalFrames) {
-        requestAnimationFrame(animate);
-      } else {
-        setDisplayText(displayName);
-      }
+  useEffect(() => {
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
     };
+  }, []);
 
-    requestAnimationFrame(animate);
-  };
+  const triggerScramble = React.useCallback(() => {
+    if (isAnimatingRef.current) return;
+    isAnimatingRef.current = true;
 
-  const handleClick = () => {
-    triggerScramble();
-    onClick();
-  };
+    let frame = 0;
+    const waveWidth = 2;
+    const totalFrames = (displayName.length + waveWidth) * 2;
+
+    if (intervalRef.current) clearInterval(intervalRef.current);
+
+    intervalRef.current = setInterval(() => {
+      frame++;
+      const waveCenter = Math.floor(frame / 2);
+      const result = scrambleWordLastCharFirst(displayName, waveCenter, waveWidth, frame);
+
+      setDisplayText(result);
+
+      if (frame >= totalFrames) {
+        if (intervalRef.current) clearInterval(intervalRef.current);
+        intervalRef.current = null;
+        setDisplayText(displayName);
+        isAnimatingRef.current = false;
+      }
+    }, 38);
+  }, [displayName]);
 
   return (
     <button
       ref={isSelected ? activeItemRef : null}
-      onClick={handleClick}
-      className={`w-full text-left px-3.5 py-2 text-sm rounded-md transition-colors duration-200 relative flex items-center justify-between group/item cursor-pointer ${
+      onClick={onClick}
+      onMouseEnter={() => {
+        setIsHovered(true);
+        triggerScramble();
+      }}
+      onMouseLeave={() => setIsHovered(false)}
+      className={`w-full text-left px-3.5 py-2 text-sm rounded-md transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] active:scale-[0.98] relative flex items-center justify-between group/item cursor-pointer overflow-hidden ${
         isSelected
           ? "bg-white/[0.09] text-white font-medium shadow-sm"
-          : "text-neutral-400 hover:text-white hover:bg-white/[0.04]"
+          : "text-neutral-400 hover:text-white hover:bg-white/[0.04] hover:translate-x-0.5"
       }`}
     >
-      <span className="truncate">{displayText}</span>
+      <span className="truncate font-mono text-xs z-10">{displayText}</span>
+
+      {/* 1px Hairline Scanline Underline Accent on Hover */}
+      {!isSelected && (
+        <motion.span
+          initial={false}
+          animate={{
+            scaleX: isHovered ? 1 : 0,
+            opacity: isHovered ? 1 : 0,
+            transformOrigin: isHovered ? "0% 50%" : "100% 50%",
+          }}
+          transition={{ duration: isHovered ? 0.35 : 0.88, ease: [0.16, 1, 0.3, 1] }}
+          className="absolute bottom-0 left-3.5 right-3.5 h-[1px] bg-gradient-to-r from-white via-white/80 to-transparent pointer-events-none transform-gpu will-change-transform"
+        />
+      )}
     </button>
   );
 }

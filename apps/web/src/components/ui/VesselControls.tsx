@@ -2,11 +2,11 @@
 
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { X, RotateCcw } from "lucide-react";
+import { X, RotateCcw, SlidersHorizontal } from "lucide-react";
 import { ControlConfig } from "@/lib/component-registry";
 
 export interface VesselControlsProps {
-  categoryDefaults: ControlConfig[];
+  categoryDefaults?: ControlConfig[];
   componentControls?: ControlConfig[];
   values: Record<string, number | boolean | string>;
   onChange: (key: string, value: number | boolean | string) => void;
@@ -14,18 +14,44 @@ export interface VesselControlsProps {
   onClose?: () => void;
 }
 
+function LineSheetVariantBar({
+  value,
+  options = [],
+  onChange,
+}: {
+  value: string;
+  options: { label: string; value: string }[];
+  onChange: (val: string) => void;
+}) {
+  return (
+    <div className="grid grid-cols-3 gap-1 bg-[#0E0E12] p-1.5 rounded-xl border border-white/10 shadow-inner select-none">
+      {options.map((opt) => {
+        const isSelected = opt.value === value;
+        return (
+          <button
+            key={opt.value}
+            type="button"
+            onClick={() => onChange(opt.value)}
+            className={`py-2 px-1 text-xs font-sans transition-all cursor-pointer text-center rounded-lg ${
+              isSelected
+                ? "bg-white text-black font-bold shadow-sm"
+                : "text-neutral-400 hover:text-white hover:bg-white/[0.04] font-medium"
+            }`}
+          >
+            <span className="truncate block">{opt.label}</span>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
 function NonReversingResetButton({
   title,
   onClick,
-  className,
-  iconClassName = "w-3 h-3",
-  children
 }: {
   title: string;
   onClick: () => void;
-  className: string;
-  iconClassName?: string;
-  children?: React.ReactNode;
 }) {
   const [rotation, setRotation] = useState(0);
 
@@ -39,18 +65,18 @@ function NonReversingResetButton({
       title={title}
       onClick={onClick}
       onMouseEnter={handleHover}
-      className={className}
+      className="flex items-center gap-1.5 font-sans text-xs font-medium text-neutral-300 hover:text-white transition-all cursor-pointer py-1.5 px-3 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 shadow-sm"
     >
       <RotateCcw
         style={{ transform: `rotate(${rotation}deg)` }}
-        className={`${iconClassName} transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]`}
+        className="w-3.5 h-3.5 text-neutral-400 group-hover:text-white transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]"
       />
-      {children}
+      <span>Reset</span>
     </button>
   );
 }
 
-function TactileSlider({
+function HairlineGridRow({
   label,
   value,
   defaultValue,
@@ -73,14 +99,20 @@ function TactileSlider({
   const [isHovered, setIsHovered] = useState(false);
   const [displayVal, setDisplayVal] = useState(value);
 
-  // Smooth lerp value interpolation for readout badge
+  // Smooth lerp value interpolation using Abyss exponential decay
   useEffect(() => {
     let frameId: number;
-    const lerp = () => {
+    let lastTime = performance.now();
+
+    const lerp = (time: number) => {
+      const dt = Math.min(0.05, (time - lastTime) / 1000);
+      lastTime = time;
+
       setDisplayVal((prev) => {
         const diff = value - prev;
-        if (Math.abs(diff) < 0.005) return value;
-        return prev + diff * 0.25;
+        if (Math.abs(diff) < 0.001) return value;
+        const smoothFactor = 1 - Math.pow(1 - 0.22, dt * 60);
+        return prev + diff * smoothFactor;
       });
       frameId = requestAnimationFrame(lerp);
     };
@@ -96,64 +128,65 @@ function TactileSlider({
 
   return (
     <div
-      className="space-y-2 pt-1 group"
+      className="p-3.5 space-y-2.5 hover:bg-white/[0.02] transition-colors group select-none"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
+      {/* Label Left, Monospace Badge Right */}
       <div className="flex items-center justify-between text-xs">
-        <span className="font-mono text-[11px] font-bold uppercase tracking-wider text-neutral-400 group-hover:text-neutral-200 transition-colors">
+        <span className="font-sans text-[11px] font-semibold uppercase tracking-wider text-neutral-300 group-hover:text-white transition-colors">
           {label}
         </span>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5">
           {!isDefault && defaultValue !== undefined && (
-            <NonReversingResetButton
-              title={`Reset parameter to default (${defaultValue}${unit})`}
+            <button
+              type="button"
+              title={`Reset parameter (${defaultValue}${unit})`}
               onClick={() => onChange(defaultValue)}
-              className="p-1 text-neutral-300 hover:text-white bg-neutral-900 hover:bg-neutral-800 rounded border border-neutral-800 transition-all cursor-pointer shadow-sm flex items-center justify-center"
-              iconClassName="w-3 h-3 text-neutral-300 hover:text-white"
-            />
+              className="p-1 text-neutral-400 hover:text-white bg-black/80 hover:bg-neutral-900 rounded border border-white/10 transition-all cursor-pointer flex items-center justify-center active:scale-90"
+            >
+              <RotateCcw className="w-2.5 h-2.5 transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]" />
+            </button>
           )}
-          <span className="font-mono text-xs font-bold text-white bg-neutral-900 px-2 py-0.5 rounded border border-neutral-800 tracking-wider transition-all duration-150 shadow-inner">
+          <span className="font-mono text-xs font-bold text-white bg-black/90 px-2 py-0.5 rounded border border-white/15 tracking-tight shadow-inner min-w-[42px] text-right">
             {formattedDisplay}
             {unit}
           </span>
         </div>
       </div>
 
-      <div className="relative flex items-center h-6 select-none">
+      {/* Hairline Range Slider Track */}
+      <div className="relative flex items-center h-4 select-none cursor-pointer">
         {/* Track Base */}
-        <div className={`relative w-full h-[3px] rounded-full overflow-hidden transition-all duration-200 ${
-          isDragging ? "bg-neutral-700/80 shadow-[0_0_8px_rgba(255,255,255,0.15)]" : "bg-neutral-800"
-        }`}>
-          {/* Active Tension Fill Bar */}
+        <div className="relative w-full h-[2px] rounded-full bg-neutral-800 group-hover:bg-neutral-700/80 transition-colors overflow-hidden">
           <div
-            className={`h-full transition-[width] duration-100 ease-out ${
-              isDragging ? "bg-white shadow-[0_0_10px_rgba(255,255,255,0.5)]" : "bg-neutral-200 group-hover:bg-white"
+            className={`h-full rounded-full transition-all duration-150 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+              isDragging ? "bg-white shadow-[0_0_8px_rgba(255,255,255,0.8)]" : "bg-neutral-300 group-hover:bg-white"
             }`}
             style={{ width: `${pct}%` }}
           />
         </div>
 
-        {/* Default Baseline Reticle Hairline Notch Tick Mark */}
-        {defPct !== undefined && defaultValue !== undefined && (
+        {/* Default Baseline Indicator Tick */}
+        {defPct !== undefined && defaultValue !== undefined && Math.abs(pct - defPct) > 4 && (
           <div
-            title={`Default Baseline: ${defaultValue}${unit}`}
+            title={`Default: ${defaultValue}${unit}`}
             onClick={() => onChange(defaultValue)}
-            className="absolute top-1/2 -translate-y-1/2 w-[2px] h-3.5 bg-neutral-500/70 hover:bg-emerald-400 rounded-full z-15 cursor-pointer transition-colors"
-            style={{ left: `calc(${defPct}% - 1px)` }}
+            className="absolute top-1/2 -translate-y-1/2 w-[1.5px] h-2.5 bg-neutral-500/70 hover:bg-white z-10 cursor-pointer transition-colors"
+            style={{ left: `calc(${defPct}%)` }}
           />
         )}
 
-        {/* Micro-deforming Tactile Reticle */}
+        {/* 2px Hairline Vertical Needle Thumb */}
         <div
-          className={`absolute top-1/2 -translate-y-1/2 pointer-events-none transition-all duration-150 ease-out rounded-[1px] bg-white shadow-[0_0_8px_rgba(0,0,0,0.8)] ${
+          className={`absolute top-1/2 -translate-y-1/2 pointer-events-none transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] bg-white shadow-[0_0_8px_rgba(255,255,255,0.9)] z-20 ${
             isDragging
-              ? "w-[5px] h-5 scale-y-110 shadow-[0_0_12px_rgba(255,255,255,0.6)]"
+              ? "w-[2.5px] h-4 scale-y-110"
               : isHovered
-              ? "w-[3px] h-4.5 scale-110 shadow-[0_0_6px_rgba(255,255,255,0.4)]"
-              : "w-[2.5px] h-3.5 opacity-90"
+              ? "w-[2px] h-3.5"
+              : "w-[2px] h-3 opacity-90"
           }`}
-          style={{ left: `calc(${pct}% - ${isDragging ? 2.5 : 1.25}px)` }}
+          style={{ left: `calc(${pct}% - ${isDragging ? 1.25 : 1}px)` }}
         />
 
         {/* Input Overlay */}
@@ -168,7 +201,7 @@ function TactileSlider({
           onTouchStart={() => setIsDragging(true)}
           onTouchEnd={() => setIsDragging(false)}
           onChange={(e) => onChange(parseFloat(e.target.value))}
-          className="absolute inset-0 w-full h-full opacity-0 cursor-ew-resize z-20"
+          className="absolute inset-0 w-full h-full opacity-0 cursor-ew-resize z-30"
         />
       </div>
     </div>
@@ -201,8 +234,10 @@ export function VesselControls({
     onClose?.();
   };
 
+  const selectControl = componentControls.find((c) => c.type === "select");
+  const otherControls = componentControls.filter((c) => c.type !== "select");
+
   const renderControl = (ctrl: ControlConfig) => {
-    // Conditional control filtering
     if (ctrl.dependsOn) {
       const parentVal = values[ctrl.dependsOn.key];
       if (parentVal !== undefined && String(parentVal) !== String(ctrl.dependsOn.value)) {
@@ -219,7 +254,7 @@ export function VesselControls({
       const numericVal = typeof val === "number" ? val : Number(val) || 0;
 
       return (
-        <TactileSlider
+        <HairlineGridRow
           key={ctrl.key}
           label={ctrl.label}
           value={numericVal}
@@ -236,17 +271,17 @@ export function VesselControls({
     if (ctrl.type === "toggle") {
       const boolVal = Boolean(val);
       return (
-        <div key={ctrl.key} className="flex items-center justify-between py-2 border-b border-neutral-900/60">
-          <span className="font-mono text-[11px] font-bold uppercase tracking-wider text-neutral-400">
+        <div key={ctrl.key} className="p-3.5 flex items-center justify-between hover:bg-white/[0.02] transition-colors select-none">
+          <span className="font-sans text-[11px] font-semibold uppercase tracking-wider text-neutral-300">
             {ctrl.label}
           </span>
           <button
             type="button"
             onClick={() => onChange(ctrl.key, !boolVal)}
-            className={`px-3 py-1 text-[11px] font-mono font-bold tracking-wider rounded-lg border transition-all cursor-pointer ${
+            className={`px-3 py-1 text-xs font-sans font-bold rounded-md border transition-all cursor-pointer ${
               boolVal
-                ? "bg-white text-black border-white"
-                : "bg-neutral-900 text-neutral-500 border-neutral-800 hover:text-white"
+                ? "bg-white text-black border-white shadow-sm"
+                : "bg-neutral-900 text-neutral-400 border-white/10 hover:text-white"
             }`}
           >
             {boolVal ? "ACTIVE" : "DISABLED"}
@@ -255,77 +290,20 @@ export function VesselControls({
       );
     }
 
-    if (ctrl.type === "select") {
-      const strVal = String(val);
-      const handleVariantSelect = (newVariant: string) => {
-        onChange(ctrl.key, newVariant);
-        // Automatically apply hand-calibrated preset defaults for the selected variant
-        if (ctrl.key === "motionVariant") {
-          if (newVariant === "classic") {
-            onChange("cropAmount", 15);
-            onChange("parallaxIntensity", 70);
-            onChange("borderRadius", 12);
-            onChange("columnGap", 16);
-            onChange("imageGap", 16);
-          } else if (newVariant === "cylinder") {
-            onChange("concaveDepth", 520);
-            onChange("concaveTilt", 42);
-            onChange("parallaxIntensity", 40);
-            onChange("borderRadius", 8);
-            onChange("columnGap", 20);
-            onChange("imageGap", 0);
-          } else if (newVariant === "convex") {
-            onChange("convexBulge", 480);
-            onChange("convexTilt", 38);
-            onChange("parallaxIntensity", 40);
-            onChange("borderRadius", 8);
-            onChange("columnGap", 20);
-            onChange("imageGap", 0);
-          }
-        }
-      };
-
-      return (
-        <div key={ctrl.key} className="space-y-1.5 pt-1">
-          <div className="flex items-center justify-between text-xs">
-            <span className="font-mono text-[11px] font-bold uppercase tracking-wider text-neutral-400">
-              {ctrl.label}
-            </span>
-          </div>
-          <div className="relative group/select">
-            <select
-              value={strVal}
-              onChange={(e) => handleVariantSelect(e.target.value)}
-              className="w-full bg-neutral-900 text-white font-mono text-xs font-bold px-3 py-2 rounded-md border border-neutral-800 hover:border-neutral-700 focus:outline-none focus:border-white transition-colors cursor-pointer appearance-none tracking-wider pr-8"
-            >
-              {ctrl.options?.map((opt) => (
-                <option key={opt.value} value={opt.value} className="bg-neutral-900 text-white py-1">
-                  {opt.label}
-                </option>
-              ))}
-            </select>
-            <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-neutral-400 text-[9px] transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] group-focus-within/select:rotate-180 group-hover/select:translate-y-[-40%]">
-              ▼
-            </div>
-          </div>
-        </div>
-      );
-    }
-
     if (ctrl.type === "color") {
       const strVal = String(val);
       return (
-        <div key={ctrl.key} className="flex items-center justify-between py-2 border-b border-neutral-900/60">
-          <span className="font-mono text-[11px] font-bold uppercase tracking-wider text-neutral-400">
+        <div key={ctrl.key} className="p-3.5 flex items-center justify-between hover:bg-white/[0.02] transition-colors select-none">
+          <span className="font-sans text-[11px] font-semibold uppercase tracking-wider text-neutral-300">
             {ctrl.label}
           </span>
           <div className="flex items-center gap-2">
-            <span className="font-mono text-xs text-neutral-300 font-bold">{strVal}</span>
+            <span className="font-mono text-xs text-white font-bold">{strVal}</span>
             <input
               type="color"
               value={strVal}
               onChange={(e) => onChange(ctrl.key, e.target.value)}
-              className="w-6 h-6 rounded border border-neutral-700 bg-transparent cursor-pointer"
+              className="w-5 h-5 rounded border border-white/20 bg-transparent cursor-pointer"
             />
           </div>
         </div>
@@ -335,67 +313,113 @@ export function VesselControls({
     return null;
   };
 
+  const handleSelectChange = (newVariant: string) => {
+    if (selectControl) {
+      onChange(selectControl.key, newVariant);
+      if (selectControl.key === "motionVariant") {
+        if (newVariant === "classic") {
+          onChange("cropAmount", 15);
+          onChange("parallaxIntensity", 70);
+          onChange("borderRadius", 12);
+          onChange("columnGap", 16);
+          onChange("imageGap", 16);
+        } else if (newVariant === "cylinder") {
+          onChange("concaveDepth", 520);
+          onChange("concaveTilt", 42);
+          onChange("parallaxIntensity", 40);
+          onChange("borderRadius", 8);
+          onChange("columnGap", 20);
+          onChange("imageGap", 0);
+        } else if (newVariant === "convex") {
+          onChange("convexBulge", 480);
+          onChange("convexTilt", 38);
+          onChange("parallaxIntensity", 40);
+          onChange("borderRadius", 8);
+          onChange("columnGap", 20);
+          onChange("imageGap", 0);
+        }
+      }
+    }
+  };
+
   return (
     <motion.div
-      initial={{ x: "100%" }}
-      animate={{ x: "0%" }}
-      exit={{ x: "100%" }}
-      transition={{ type: "spring", stiffness: 400, damping: 30 }}
-      className="fixed top-[52px] bottom-0 right-0 z-50 w-full sm:w-[380px] max-h-[calc(100vh-52px)] bg-zinc-950/40 backdrop-blur-2xl border-l border-white/10 shadow-[-10px_0_30px_0_rgba(0,0,0,0.5)] flex flex-col font-mono text-white overflow-hidden"
+      initial={{ x: "100%", opacity: 0 }}
+      animate={{ x: "0%", opacity: 1 }}
+      exit={{ x: "100%", opacity: 0 }}
+      transition={{ type: "spring", stiffness: 420, damping: 32 }}
+      className="fixed top-16 right-6 bottom-6 z-50 w-full sm:w-[350px] bg-[#09090C]/95 backdrop-blur-3xl border border-white/10 rounded-2xl shadow-[0_30px_80px_rgba(0,0,0,0.95),inset_0_1px_0_rgba(255,255,255,0.1)] flex flex-col font-sans text-white overflow-hidden select-none"
     >
-      {/* Header Bar (Glassmorphic) */}
-      <div className="flex items-center justify-between px-5 py-4 border-b border-white/10 bg-zinc-900/30 backdrop-blur-md shrink-0">
-        <div className="flex items-center gap-2">
-          <span className="font-mono text-xs font-bold tracking-widest uppercase text-neutral-300">
-            TUNING INSPECTOR
-          </span>
+      {/* Header Bar */}
+      <div className="flex items-center justify-between px-5 py-4 border-b border-white/10 bg-white/[0.01] shrink-0">
+        <div className="flex items-center gap-2.5">
+          <div className="w-7 h-7 rounded-lg bg-white/[0.04] border border-white/10 flex items-center justify-center shadow-inner text-white">
+            <SlidersHorizontal className="w-3.5 h-3.5" />
+          </div>
+          <div>
+            <h3 className="font-sans text-xs font-semibold text-white tracking-tight leading-none">
+              Tuning Inspector
+            </h3>
+            <p className="font-sans text-[10px] text-neutral-400 leading-none mt-1">
+              Live Component Parameters
+            </p>
+          </div>
         </div>
-        <div className="flex items-center gap-3">
+
+        <div className="flex items-center gap-2">
           {onReset && (
             <NonReversingResetButton
               title="Reset all parameters to default"
               onClick={onReset}
-              className="flex items-center gap-1.5 font-mono text-[10px] font-bold uppercase tracking-wider text-neutral-400 hover:text-white transition-colors cursor-pointer py-1 px-2 rounded-md hover:bg-white/10 border border-transparent hover:border-white/10"
-              iconClassName="w-3.5 h-3.5 text-neutral-400 group-hover:text-white"
-            >
-              <span>RESET</span>
-            </NonReversingResetButton>
+            />
           )}
           <button
             onClick={handleClose}
-            className="p-1.5 text-neutral-400 hover:text-white transition-colors cursor-pointer group/close rounded-md hover:bg-white/10 border border-transparent hover:border-white/10"
+            className="p-1.5 text-neutral-400 hover:text-white transition-colors cursor-pointer group/close rounded-lg bg-white/[0.04] hover:bg-white/[0.08] border border-white/10"
             title="Close controls (ESC)"
           >
-            <X className="w-4 h-4 transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover/close:rotate-90 group-hover/close:scale-110" />
+            <X className="w-3.5 h-3.5 transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover/close:rotate-90" />
           </button>
         </div>
       </div>
 
-      {/* Parameters Controls Body */}
+      {/* Body Content */}
       <div
         onWheel={(e) => e.stopPropagation()}
         onTouchMove={(e) => e.stopPropagation()}
-        style={{ overflowY: "auto" }}
-        className="flex-1 min-h-0 overflow-y-auto p-5 space-y-5 custom-scrollbar overscroll-contain"
+        className="flex-1 min-h-0 overflow-y-auto p-5 space-y-4 custom-scrollbar overscroll-contain"
       >
-        {componentControls.length > 0 ? (
-          <div className="space-y-4">
-            <div className="text-[10px] font-mono font-bold tracking-widest text-neutral-400 uppercase pb-1 border-b border-white/10">
-              COMPONENT PARAMETERS
+        {/* Variant Hairline Box */}
+        {selectControl && (
+          <div className="space-y-2">
+            <label className="block font-sans text-[11px] font-semibold text-neutral-400 uppercase tracking-wider">
+              {selectControl.label}
+            </label>
+            <LineSheetVariantBar
+              value={String(values[selectControl.key] ?? selectControl.default)}
+              options={selectControl.options || []}
+              onChange={handleSelectChange}
+            />
+          </div>
+        )}
+
+        {/* Single Architectural Hairline Grid Table */}
+        {otherControls.length > 0 ? (
+          <div className="space-y-2">
+            <div className="flex items-center justify-between text-[11px] font-semibold text-neutral-400 uppercase tracking-wider">
+              <span>Parameters</span>
+              <span className="font-mono text-[10px] text-neutral-500 font-normal">{otherControls.length} PROPS</span>
             </div>
-            <div className="space-y-4">{componentControls.map(renderControl)}</div>
+
+            <div className="bg-[#0E0E12]/80 border border-white/10 rounded-xl overflow-hidden divide-y divide-white/10 shadow-sm">
+              {otherControls.map(renderControl)}
+            </div>
           </div>
         ) : (
-          <div className="py-12 text-center text-xs text-neutral-400 font-mono">
+          <div className="py-12 text-center text-xs text-neutral-400 font-sans">
             No configurable controls for this component.
           </div>
         )}
-      </div>
-
-      {/* Footer Info (Glassmorphic) */}
-      <div className="p-4 border-t border-white/10 bg-zinc-900/30 backdrop-blur-md text-[10px] font-mono text-neutral-400 flex items-center justify-between shrink-0">
-        <span>LIVE INTERACTIVE TUNER</span>
-        <span>ESC TO CLOSE</span>
       </div>
     </motion.div>
   );

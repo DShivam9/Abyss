@@ -14,19 +14,19 @@ const DEFAULT_IMAGES: TransitionImageItem[] = [
     id: "img-01",
     label: "1",
     tag: "IMAGE 01 // ASYMMETRIC FADE SHIFT",
-    image: "/images/components images/Transitions/ChatGPT Image Jul 15, 2026, 05_26_02 PM.png",
+    image: "/images/components images/Transitions/ChatGPT Image Jul 15, 2026, 05_26_02 PM.webp",
   },
   {
     id: "img-02",
     label: "2",
     tag: "IMAGE 02 // SPATIAL DISPLACEMENT",
-    image: "/images/components images/Transitions/ChatGPT Image Jul 15, 2026, 05_29_20 PM.png",
+    image: "/images/components images/Transitions/ChatGPT Image Jul 15, 2026, 05_29_20 PM.webp",
   },
   {
     id: "img-03",
     label: "3",
     tag: "IMAGE 03 // VECTOR DECAY",
-    image: "/images/components images/Transitions/ChatGPT Image Jul 15, 2026, 05_37_33 PM.png",
+    image: "/images/components images/Transitions/ChatGPT Image Jul 15, 2026, 05_37_33 PM.webp",
   },
 ];
 
