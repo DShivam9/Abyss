@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { ArrowLeft, GitCommit, ExternalLink } from "lucide-react";
+import { ArrowLeft, Github, ExternalLink } from "lucide-react";
 
 interface CommitEntry {
   id: string;
@@ -256,19 +256,17 @@ export default function ChangelogPage() {
                   <span className="inline-block px-3 py-1 rounded border border-neutral-800 bg-neutral-900/90 text-neutral-300 text-[10px] uppercase font-bold tracking-widest">
                     {entry.tag}
                   </span>
-                  {entry.commitHash && (
-                    <a
-                      href={`https://github.com/DShivam9/Abyss/commit/${entry.commitHash}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 px-2 py-1 rounded border border-neutral-800/80 bg-neutral-950 text-neutral-400 hover:text-white hover:border-neutral-700 text-[10px] font-mono transition-colors group active:scale-[0.96]"
-                      title={`View commit ${entry.commitHash} on GitHub`}
-                    >
-                      <GitCommit className="w-3 h-3 text-neutral-500 group-hover:text-white transition-colors" />
-                      <span>{entry.commitHash}</span>
-                      <ExternalLink className="w-2.5 h-2.5 text-neutral-600 group-hover:text-neutral-400 transition-colors" />
-                    </a>
-                  )}
+                  <a
+                    href="https://github.com/DShivam9/Abyss"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 px-2 py-1 rounded border border-neutral-800/80 bg-neutral-950 text-neutral-400 hover:text-white hover:border-neutral-700 text-[10px] font-mono transition-colors group active:scale-[0.96]"
+                    title="View GitHub Repository"
+                  >
+                    <Github className="w-3 h-3 text-neutral-500 group-hover:text-white transition-colors" />
+                    <span>Repository</span>
+                    <ExternalLink className="w-2.5 h-2.5 text-neutral-600 group-hover:text-neutral-400 transition-colors" />
+                  </a>
                 </div>
               </div>
 
