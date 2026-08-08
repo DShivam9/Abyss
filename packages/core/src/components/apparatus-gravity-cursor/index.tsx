@@ -1,4 +1,4 @@
-import { useRef, useEffect, useState, useCallback } from "react";
+import { useRef, useEffect, useCallback } from "react";
 import { VesselComponentProps } from "../../engine/types";
 
 // Dedicated Gallery Images from Gallary & Scroll folders (28 unique images)
@@ -48,6 +48,7 @@ export interface ApparatusGravityCursorProps extends VesselComponentProps {
 }
 
 interface PhysicsBody {
+  active: boolean;
   id: number;
   src: string;
   x: number;
@@ -60,8 +61,8 @@ interface PhysicsBody {
   opacity: number;
   scale: number;
   settled: boolean;
-  age: number; // Age in frames
-  maxAge: number; // Life duration before dissolve
+  age: number;
+  maxAge: number;
 }
 
 export default function ApparatusGravityCursor({
@@ -81,20 +82,39 @@ export default function ApparatusGravityCursor({
   onLifecycleChange,
 }: ApparatusGravityCursorProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const bodiesRef = useRef<PhysicsBody[]>([]);
-  const [, setRenderTrigger] = useState(0);
+  const boundsRef = useRef<DOMRect | null>(null);
 
   // Active physics mode
   const currentMode = zeroGravity ? "zero-gravity" : gravityMode;
+
+  // Pre-allocated object pool & DOM ref array (Zero React re-render overhead!)
+  const poolSize = Math.max(maxItems, 50);
+  const poolRef = useRef<PhysicsBody[]>(
+    Array.from({ length: poolSize }, (_, i) => ({
+      active: false,
+      id: i,
+      src: "",
+      x: -9999,
+      y: -9999,
+      vx: 0,
+      vy: 0,
+      rotation: 0,
+      vSpin: 0,
+      bounces: 0,
+      opacity: 0,
+      scale: 0,
+      settled: true,
+      age: 0,
+      maxAge: 0,
+    }))
+  );
+  const imgRefs = useRef<(HTMLImageElement | null)[]>([]);
+  const nextSlotRef = useRef<number>(0);
 
   // Mouse & interaction state
   const mousePosRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
   const isMouseDownRef = useRef<boolean>(false);
   const lastSpawnTimeRef = useRef<number>(0);
-  const idCounterRef = useRef<number>(0);
-
-  // Direct DOM Refs map for 60FPS GPU transform updates without React re-render overhead
-  const domNodesRef = useRef<Map<number, HTMLDivElement>>(new Map());
 
   // Pick next image in pool
   const imgIndexRef = useRef<number>(0);
@@ -104,98 +124,102 @@ export default function ApparatusGravityCursor({
     return src;
   }, []);
 
-  // Spawn single physics body at (x, y)
+  // Update cached container bounds (prevents layout thrashing on mousemove)
+  const updateBounds = useCallback(() => {
+    if (containerRef.current) {
+      boundsRef.current = containerRef.current.getBoundingClientRect();
+    }
+  }, []);
+
+  // Spawn single physics body by recycling slot from pre-allocated pool (Zero React re-renders)
   const spawnBody = useCallback(
     (x: number, y: number) => {
       const now = performance.now();
       if (now - lastSpawnTimeRef.current < spawnInterval) return;
       lastSpawnTimeRef.current = now;
 
-      // Cap pool size for peak 60FPS performance
-      if (bodiesRef.current.length >= maxItems) {
-        const oldest = bodiesRef.current.shift();
-        if (oldest) {
-          domNodesRef.current.delete(oldest.id);
-        }
-      }
+      const slotIdx = nextSlotRef.current;
+      nextSlotRef.current = (nextSlotRef.current + 1) % poolSize;
 
-      const id = idCounterRef.current++;
+      const body = poolRef.current[slotIdx];
       const src = getNextImage();
 
-      // Velocity Setup per Mode
       let vx = 0;
       let vy = 0;
       let vSpin = 0;
 
       if (currentMode === "heavy-gravity") {
-        // High downward gravity burst (rapid drop)
         vx = (Math.random() - 0.5) * 4.0;
         vy = Math.random() * 2.0 + 1.0;
         vSpin = (Math.random() - 0.5) * 0.8;
       } else if (currentMode === "zero-gravity") {
-        // Pure weightless upward float drift
         vx = (Math.random() - 0.5) * 2.8;
         vy = -(Math.random() * 2.0 + 1.2);
         vSpin = (Math.random() - 0.5) * 1.5;
       } else {
-        // Normal Earth downward gravity + pop impulse
         vx = (Math.random() - 0.5) * 8.5;
         vy = -(Math.random() * 4.5 + 3.5);
         vSpin = (Math.random() - 0.5) * 1.5;
       }
 
-      const newBody: PhysicsBody = {
-        id,
-        src,
-        x: x - imageSize / 2,
-        y: y - imageSize / 2,
-        vx,
-        vy,
-        rotation: (Math.random() - 0.5) * 12,
-        vSpin,
-        bounces: 0,
-        opacity: 1,
-        scale: 0.1, // Starts small, pops out quickly
-        settled: false,
-        age: 0,
-        maxAge: currentMode === "heavy-gravity" ? 140 + Math.random() * 30 : 170 + Math.random() * 50,
-      };
+      body.active = true;
+      body.src = src;
+      body.x = x - imageSize / 2;
+      body.y = y - imageSize / 2;
+      body.vx = vx;
+      body.vy = vy;
+      body.rotation = (Math.random() - 0.5) * 12;
+      body.vSpin = vSpin;
+      body.bounces = 0;
+      body.opacity = 1;
+      body.scale = 0.1;
+      body.settled = false;
+      body.age = 0;
+      body.maxAge = currentMode === "heavy-gravity" ? 140 + Math.random() * 30 : 170 + Math.random() * 50;
 
-      bodiesRef.current.push(newBody);
-      setRenderTrigger((v) => v + 1);
+      const imgEl = imgRefs.current[slotIdx];
+      if (imgEl) {
+        if (imgEl.src !== window.location.origin + src && !imgEl.src.endsWith(src)) {
+          imgEl.src = src;
+        }
+        imgEl.style.opacity = "1";
+        imgEl.style.transform = `translate3d(${body.x}px, ${body.y}px, 0px) rotate(${body.rotation}deg) scale(0.1)`;
+      }
 
       if (onLifecycleChange) onLifecycleChange("buildUp");
     },
-    [spawnInterval, maxItems, imageSize, currentMode, getNextImage, onLifecycleChange]
+    [spawnInterval, poolSize, imageSize, currentMode, getNextImage, onLifecycleChange]
   );
 
-  // Pre-populate unique floating images randomly across full canvas for magnetic-repulsor mode
+  // Pre-populate unique floating images for magnetic-repulsor mode
   useEffect(() => {
-    // Clear any previous mode bodies on mode switch
-    bodiesRef.current = [];
-    domNodesRef.current.clear();
+    // Reset pool
+    for (let i = 0; i < poolRef.current.length; i++) {
+      const b = poolRef.current[i];
+      b.active = false;
+      b.opacity = 0;
+      const imgEl = imgRefs.current[i];
+      if (imgEl) {
+        imgEl.style.opacity = "0";
+        imgEl.style.transform = "translate3d(-9999px, -9999px, 0px) scale(0)";
+      }
+    }
 
     if (currentMode !== "magnetic-repulsor") return;
 
-    const container = containerRef.current;
-    const width = container ? container.getBoundingClientRect().width : window.innerWidth;
-    const height = container ? container.getBoundingClientRect().height : window.innerHeight;
-    const canvasWidth = width > 0 ? width : 1200;
-    const canvasHeight = height > 0 ? height : 700;
+    updateBounds();
+    const rect = boundsRef.current;
+    const canvasWidth = rect && rect.width > 0 ? rect.width : window.innerWidth;
+    const canvasHeight = rect && rect.height > 0 ? rect.height : window.innerHeight;
 
-    const initialBodies: PhysicsBody[] = [];
     const uniqueImages = [...GALLERY_IMAGES];
-
-    // Non-overlapping grid placement across full viewport (7 columns x 4 rows)
     const cols = 7;
     const rows = 4;
     const cellW = Math.max((canvasWidth - 80) / cols, imageSize * 0.9);
     const cellH = Math.max((canvasHeight - 80) / rows, imageSize * 1.1);
 
-    for (let i = 0; i < uniqueImages.length; i++) {
-      const id = idCounterRef.current++;
+    for (let i = 0; i < Math.min(uniqueImages.length, poolSize); i++) {
       const src = uniqueImages[i];
-
       const c = i % cols;
       const r = Math.floor(i / cols);
 
@@ -208,39 +232,43 @@ export default function ApparatusGravityCursor({
       const x = Math.max(20, Math.min(canvasWidth - imageSize - 20, cellX + jitterX));
       const y = Math.max(20, Math.min(canvasHeight - imageSize * 1.25 - 20, cellY + jitterY));
 
-      // Initial zero velocity (cards sit still floating in space until repelled)
-      const vx = 0;
-      const vy = 0;
+      const body = poolRef.current[i];
+      body.active = true;
+      body.src = src;
+      body.x = x;
+      body.y = y;
+      body.vx = 0;
+      body.vy = 0;
+      body.rotation = (Math.random() - 0.5) * 16;
+      body.vSpin = 0;
+      body.bounces = 0;
+      body.opacity = 1;
+      body.scale = 1.0;
+      body.settled = true;
+      body.age = 0;
+      body.maxAge = 99999;
 
-      initialBodies.push({
-        id,
-        src,
-        x,
-        y,
-        vx,
-        vy,
-        rotation: (Math.random() - 0.5) * 16,
-        vSpin: 0,
-        bounces: 0,
-        opacity: 1,
-        scale: 1.0,
-        settled: true,
-        age: 0,
-        maxAge: 99999, // Persistent floating images
-      });
+      const imgEl = imgRefs.current[i];
+      if (imgEl) {
+        imgEl.src = src;
+        imgEl.style.opacity = "1";
+        imgEl.style.transform = `translate3d(${x}px, ${y}px, 0px) rotate(${body.rotation}deg) scale(1)`;
+      }
     }
+  }, [currentMode, imageSize, poolSize, updateBounds]);
 
-    bodiesRef.current = initialBodies;
-    setRenderTrigger((v) => v + 1);
-  }, [currentMode, imageSize]);
-
-  // Mouse Move & Mouse Down Event Handlers
+  // Mouse & Resize Event Handlers with Cached Bounds
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
 
+    updateBounds();
+
+    const handleResize = () => updateBounds();
+
     const handleMouseMove = (e: MouseEvent) => {
-      const rect = container.getBoundingClientRect();
+      if (!boundsRef.current) updateBounds();
+      const rect = boundsRef.current!;
       const x = e.clientX - rect.left;
       const y = e.clientY - rect.top;
 
@@ -255,13 +283,14 @@ export default function ApparatusGravityCursor({
 
     const handleMouseDown = (e: MouseEvent) => {
       isMouseDownRef.current = true;
-      const rect = container.getBoundingClientRect();
+      if (!boundsRef.current) updateBounds();
+      const rect = boundsRef.current!;
       const x = e.clientX - rect.left;
       const y = e.clientY - rect.top;
       mousePosRef.current = { x, y };
 
       if (currentMode !== "magnetic-repulsor") {
-        lastSpawnTimeRef.current = 0; // Force immediate spawn on click
+        lastSpawnTimeRef.current = 0;
         spawnBody(x, y);
       }
     };
@@ -270,54 +299,67 @@ export default function ApparatusGravityCursor({
       isMouseDownRef.current = false;
     };
 
-    container.addEventListener("mousemove", handleMouseMove);
+    container.addEventListener("mousemove", handleMouseMove, { passive: true });
     container.addEventListener("mousedown", handleMouseDown);
     window.addEventListener("mouseup", handleMouseUp);
+    window.addEventListener("resize", handleResize, { passive: true });
 
     return () => {
       container.removeEventListener("mousemove", handleMouseMove);
       container.removeEventListener("mousedown", handleMouseDown);
       window.removeEventListener("mouseup", handleMouseUp);
+      window.removeEventListener("resize", handleResize);
     };
-  }, [spawnBody, interactionMode, currentMode]);
+  }, [spawnBody, interactionMode, currentMode, updateBounds]);
 
-  // 60FPS High-Performance Physics Simulation & GPU Transform Loop
+  // 120FPS High-Performance Physics Simulation & GPU Transform Loop
   useEffect(() => {
     let animId: number;
+    let lastTime = performance.now();
+    const fpsInterval = 1000 / 120; // 120FPS frame throttle (8.33ms)
+
+    const repelRadiusSq = repelRadius * repelRadius;
+    const minSep = imageSize * 0.95;
+    const minSepSq = minSep * minSep;
 
     const updatePhysics = () => {
-      const container = containerRef.current;
-      if (!container) {
-        animId = requestAnimationFrame(updatePhysics);
-        return;
-      }
+      animId = requestAnimationFrame(updatePhysics);
 
-      const rect = container.getBoundingClientRect();
-      const floorY = rect.height - imageSize - 20; // 20px padding above floor
+      const now = performance.now();
+      const elapsed = now - lastTime;
+      if (elapsed < fpsInterval) return;
+      lastTime = now - (elapsed % fpsInterval);
+
+      const container = containerRef.current;
+      if (!container) return;
+
+      if (!boundsRef.current) boundsRef.current = container.getBoundingClientRect();
+      const rect = boundsRef.current;
+      const floorY = rect.height - imageSize - 20;
       const rightWallX = rect.width - imageSize - 20;
       const bottomWallY = rect.height - imageSize * 1.25 - 20;
 
-      const activeBodies = bodiesRef.current;
-      const bodiesToRemove: number[] = [];
+      const pool = poolRef.current;
 
-      for (let i = 0; i < activeBodies.length; i++) {
-        const body = activeBodies[i];
+      for (let i = 0; i < pool.length; i++) {
+        const body = pool[i];
+        if (!body.active) continue;
+
         body.age += 1;
 
-        // Pop-in scale expansion animation
         if (body.scale < 1.0) {
           body.scale = Math.min(body.scale + 0.18, 1.0);
         }
 
         if (currentMode === "magnetic-repulsor") {
-          // MAGNETIC REPULSOR MODE: Floating images sit still, repelled smoothly when cursor comes near
           const centerBodyX = body.x + imageSize / 2;
           const centerBodyY = body.y + (imageSize * 1.25) / 2;
           const dx = centerBodyX - mousePosRef.current.x;
           const dy = centerBodyY - mousePosRef.current.y;
-          const dist = Math.hypot(dx, dy);
+          const distSq = dx * dx + dy * dy;
 
-          if (dist < repelRadius && dist > 1) {
+          if (distSq < repelRadiusSq && distSq > 1) {
+            const dist = Math.sqrt(distSq);
             const pushFactor = Math.pow((repelRadius - dist) / repelRadius, 1.2) * repelForce;
             const angle = Math.atan2(dy, dx);
 
@@ -326,17 +368,19 @@ export default function ApparatusGravityCursor({
             body.vSpin += (Math.random() - 0.5) * 0.7;
           }
 
-          // Mutual Body-to-Body Anti-Overlap Collision Repulsion
-          for (let j = i + 1; j < activeBodies.length; j++) {
-            const other = activeBodies[j];
+          // Anti-overlap collision pre-checked with squared distance
+          for (let j = i + 1; j < pool.length; j++) {
+            const other = pool[j];
+            if (!other.active) continue;
+
             const otherCenterX = other.x + imageSize / 2;
             const otherCenterY = other.y + (imageSize * 1.25) / 2;
             const bdx = centerBodyX - otherCenterX;
             const bdy = centerBodyY - otherCenterY;
-            const bdist = Math.hypot(bdx, bdy);
-            const minSep = imageSize * 0.95;
+            const bdistSq = bdx * bdx + bdy * bdy;
 
-            if (bdist < minSep && bdist > 0.1) {
+            if (bdistSq < minSepSq && bdistSq > 0.01) {
+              const bdist = Math.sqrt(bdistSq);
               const overlapPower = ((minSep - bdist) / minSep) * 1.4;
               const bAngle = Math.atan2(bdy, bdx);
               const pushX = Math.cos(bAngle) * overlapPower;
@@ -349,12 +393,10 @@ export default function ApparatusGravityCursor({
             }
           }
 
-          // Smooth customizable friction so pushed cards glide softly and return to rest
           body.vx *= friction;
           body.vy *= friction;
           body.vSpin *= friction * 0.98;
 
-          // Micro ambient bobbing when nearly still
           if (Math.abs(body.vx) < 0.1 && Math.abs(body.vy) < 0.1) {
             body.vy += Math.sin(body.age * 0.02 + body.id) * 0.008;
           }
@@ -363,7 +405,6 @@ export default function ApparatusGravityCursor({
           body.y += body.vy;
           body.rotation += body.vSpin;
 
-          // Boundary bounce to keep floating images within screen bounds
           if (body.x < 15) {
             body.x = 15;
             body.vx = Math.abs(body.vx) * 0.85;
@@ -380,15 +421,13 @@ export default function ApparatusGravityCursor({
             body.vy = -Math.abs(body.vy) * 0.85;
           }
         } else if (currentMode === "heavy-gravity") {
-          // HEAVY GRAVITY MODE: High G-force acceleration + low elasticity crash
           if (!body.settled) {
-            body.vy += Math.abs(gravity) * 3.4; // 3.4x G-Force acceleration!
+            body.vy += Math.abs(gravity) * 3.4;
 
             body.x += body.vx;
             body.y += body.vy;
             body.rotation += body.vSpin;
 
-            // Side boundary bounce (left/right walls)
             if (body.x < 10) {
               body.x = 10;
               body.vx = -body.vx * 0.5;
@@ -397,12 +436,11 @@ export default function ApparatusGravityCursor({
               body.vx = -body.vx * 0.5;
             }
 
-            // Heavy Floor Impact Crash (Low elasticity bounce)
             if (body.y >= floorY) {
               body.y = floorY;
               if (Math.abs(body.vy) > 2.0) {
-                body.vy = -body.vy * (bounceDamping * 0.35); // Low bounce thud!
-                body.vx *= 0.6; // Heavy friction
+                body.vy = -body.vy * (bounceDamping * 0.35);
+                body.vx *= 0.6;
                 body.vSpin *= 0.5;
                 body.bounces += 1;
               } else {
@@ -414,7 +452,6 @@ export default function ApparatusGravityCursor({
             }
           }
         } else if (currentMode === "zero-gravity") {
-          // ZERO GRAVITY MODE: Pure weightless upward float
           body.vy += -0.035;
           body.vx += Math.sin(body.age * 0.06 + body.id) * 0.06;
 
@@ -427,7 +464,6 @@ export default function ApparatusGravityCursor({
             body.opacity = Math.min(body.opacity, topFade);
           }
         } else {
-          // NORMAL GRAVITY MODE: Downward Earth gravity + floor bounce collision
           if (!body.settled) {
             body.vy += Math.abs(gravity);
 
@@ -460,34 +496,24 @@ export default function ApparatusGravityCursor({
           }
         }
 
-        // Dissolve phase near end of life
         if (body.age > body.maxAge - 35) {
           const dissolveProgress = (body.age - (body.maxAge - 35)) / 35;
           body.opacity = Math.min(body.opacity, Math.max(1 - dissolveProgress, 0));
           body.scale = Math.max(1 - dissolveProgress * 0.25, 0.7);
         }
 
-        // Flag for removal if fully dissolved
-        if (body.age >= body.maxAge) {
-          bodiesToRemove.push(body.id);
-        }
-
-        // Direct GPU Transform updates to DOM node (zero React render overhead)
-        const domNode = domNodesRef.current.get(body.id);
+        const domNode = imgRefs.current[i];
         if (domNode) {
-          domNode.style.transform = `translate3d(${body.x}px, ${body.y}px, 0px) rotate(${body.rotation}deg) scale(${body.scale})`;
-          domNode.style.opacity = `${body.opacity}`;
+          if (body.age >= body.maxAge) {
+            body.active = false;
+            domNode.style.opacity = "0";
+            domNode.style.transform = "translate3d(-9999px, -9999px, 0px) scale(0)";
+          } else {
+            domNode.style.transform = `translate3d(${body.x}px, ${body.y}px, 0px) rotate(${body.rotation}deg) scale(${body.scale})`;
+            domNode.style.opacity = `${body.opacity}`;
+          }
         }
       }
-
-      // Garbage collection for dissolved bodies
-      if (bodiesToRemove.length > 0) {
-        bodiesRef.current = activeBodies.filter((b) => !bodiesToRemove.includes(b.id));
-        bodiesToRemove.forEach((id) => domNodesRef.current.delete(id));
-        setRenderTrigger((v) => v + 1);
-      }
-
-      animId = requestAnimationFrame(updatePhysics);
     };
 
     animId = requestAnimationFrame(updatePhysics);
@@ -495,7 +521,7 @@ export default function ApparatusGravityCursor({
     return () => {
       cancelAnimationFrame(animId);
     };
-  }, [gravity, bounceDamping, imageSize, currentMode]);
+  }, [gravity, bounceDamping, imageSize, currentMode, repelRadius, repelForce, friction]);
 
   return (
     <div
@@ -503,10 +529,8 @@ export default function ApparatusGravityCursor({
       className={`relative w-full h-screen bg-[#060608] overflow-hidden select-none cursor-default ${className}`}
       style={style}
     >
-      {/* Floor Indicator Line (Always visible across all gravity modes) */}
       <div className="absolute bottom-5 left-8 right-8 h-[1px] bg-gradient-to-r from-transparent via-white/15 to-transparent pointer-events-none" />
 
-      {/* Clean Aesthetic Center Text */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none text-center font-['Syne',sans-serif] z-0 select-none">
         <h1 className="text-4xl md:text-7xl font-extrabold uppercase tracking-tight text-zinc-700/60 drop-shadow-sm">
           {currentMode === "magnetic-repulsor"
@@ -528,22 +552,20 @@ export default function ApparatusGravityCursor({
         </p>
       </div>
 
-      {/* Render Active Physics Image Bodies (Raw images without card containers) */}
-      {bodiesRef.current.map((body) => (
+      {/* Pre-allocated DOM Pool (Zero React re-renders during continuous hold-drag!) */}
+      {poolRef.current.map((_, i) => (
         <img
-          key={body.id}
+          key={i}
           ref={(el) => {
-            if (el) domNodesRef.current.set(body.id, el as unknown as HTMLDivElement);
-            else domNodesRef.current.delete(body.id);
+            imgRefs.current[i] = el;
           }}
-          src={body.src}
           alt="Gravity Item"
-          className="absolute top-0 left-0 transform-gpu will-change-transform pointer-events-none rounded-lg drop-shadow-2xl object-cover select-none"
+          className="absolute top-0 left-0 transform-gpu will-change-transform pointer-events-none rounded-lg shadow-xl object-cover select-none"
           style={{
             width: `${imageSize}px`,
             height: `${imageSize * 1.25}px`,
-            transform: `translate3d(${body.x}px, ${body.y}px, 0px) rotate(${body.rotation}deg) scale(${body.scale})`,
-            opacity: body.opacity,
+            opacity: 0,
+            transform: "translate3d(-9999px, -9999px, 0px) scale(0)",
           }}
         />
       ))}

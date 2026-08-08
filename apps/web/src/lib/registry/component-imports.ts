@@ -40,5 +40,7 @@ export const COMPONENT_IMPORTS: Record<string, React.ComponentType<VesselCompone
   "apparatus-3d-shatter-sphere": dynamic(() => import("../../../../../packages/core/src/components/apparatus-3d-shatter-sphere"), { ssr: false }),
   "apparatus-origin-expand": dynamic(() => import("../../../../../packages/core/src/components/apparatus-origin-expand"), { ssr: false }),
   "apparatus-turbulence-lens": dynamic(() => import("../../../../../packages/core/src/components/apparatus-turbulence-lens"), { ssr: false }),
-  "apparatus-ripple-scramble": dynamic(() => import("../../../../../packages/core/src/components/apparatus-ripple-scramble"), { ssr: false })
+  "apparatus-ripple-scramble": dynamic(() => import("../../../../../packages/core/src/components/apparatus-ripple-scramble"), { ssr: false }),
+  "apparatus-arc-drift-gallery": dynamic(() => import("../../../../../packages/core/src/components/apparatus-arc-drift-gallery"), { ssr: false })
 };
+

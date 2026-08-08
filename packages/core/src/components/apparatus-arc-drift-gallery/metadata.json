@@ -1,0 +1,16 @@
+{
+  "name": "Apparatus Arc Drift Gallery",
+  "slug": "apparatus-arc-drift-gallery",
+  "pitch": "A quiet horizon gallery where photographs drift across an atmospheric curve.",
+  "family": "aesthetic",
+  "energy": "calm",
+  "triggers": ["scroll"],
+  "tech": ["react", "gsap"],
+  "lifecycle": {
+    "idle": "Desaturated ambient background with small thumbnails resting along a quiet horizon curve.",
+    "discovery": "Thumbnails glide along the curve path.",
+    "buildUp": "Approaching center peak.",
+    "peak": "Center image activates background bleed.",
+    "recovery": "Continuous flow."
+  }
+}

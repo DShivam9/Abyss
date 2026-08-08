@@ -816,5 +816,33 @@ export const COMPONENT_DETAILS: Record<string, ComponentDetail> = {
       { type: "slider", key: "staticOpacity", label: "Resting Field Opacity", default: 0.32, min: 0.10, max: 0.80, step: 0.02, unit: "" },
       { type: "slider", key: "wakeRadius", label: "Cursor Wake Radius", default: 40, min: 15, max: 100, step: 5, unit: "px" }
     ]
+  },
+  "apparatus-arc-drift-gallery": {
+    id: "42",
+    label: "APPARATUS ARC DRIFT GALLERY",
+    filename: "scroll/p1_hq.webp",
+    desc: "A slow procession of photographs drifting along an invisible horizon arc where background landscapes dissolve to match the centered image.",
+    slug: "apparatus-arc-drift-gallery",
+    category: "scroll",
+    subtype: "gallery",
+    tags: ["Gallery", "Arc Drift", "ScrollTrigger", "Background Crossfade", "Editorial"],
+    controls: [
+      {
+        type: "select",
+        key: "motionVariant",
+        label: "Motion Trajectory Variant",
+        default: "classic-arc",
+        options: [
+          { label: "Classic Horizon Arc (Default)", value: "classic-arc" },
+          { label: "Panoramic Film Ribbon", value: "panoramic-ribbon" }
+        ]
+      },
+      { type: "slider", key: "scrollSpeed", label: "Scroll Speed", default: 0.5, min: 0.1, max: 2.0, step: 0.1, unit: "x" },
+      { type: "slider", key: "arcHeight", label: "Arc Height", default: 45, min: 10, max: 50, step: 5, unit: "vh" },
+      { type: "slider", key: "bgOpacity", label: "Background Opacity", default: 0.80, min: 0.1, max: 1.0, step: 0.05, unit: "" },
+      { type: "slider", key: "crossfadeDuration", label: "Crossfade Duration", default: 0.6, min: 0.2, max: 1.5, step: 0.1, unit: "s" },
+      { type: "slider", key: "thumbnailWidth", label: "Thumbnail Width", default: 180, min: 120, max: 280, step: 10, unit: "px" }
+    ]
   }
 };
+
