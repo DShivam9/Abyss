@@ -76,7 +76,7 @@ export function ScrambleHeaderTrigger({
   );
 }
 
-export function TactileSlidersIcon({ isHovered }: { isHovered: boolean }) {
+export function TactileSlidersIcon({ isHovered = false }: { isHovered?: boolean }) {
   return (
     <svg
       viewBox="0 0 24 24"
@@ -109,7 +109,7 @@ export function TactileSlidersIcon({ isHovered }: { isHovered: boolean }) {
   );
 }
 
-export function TactileEyeIcon({ isHovered }: { isHovered: boolean }) {
+export function TactileEyeIcon({ isHovered = false }: { isHovered?: boolean }) {
   return (
     <svg
       viewBox="0 0 24 24"

@@ -697,16 +697,16 @@ export const COMPONENT_DETAILS: Record<string, ComponentDetail> = {
     tags: ["Cursor", "Gravity", "Physics", "Gallery", "Interactive", "Bounce"],
     previewType: "gallery",
     controls: [
-      { type: "select", key: "gravityMode", label: "GRAVITY PHYSICS MODE", default: "normal", options: [{ label: "Normal Gravity", value: "normal" }, { label: "Zero-Gravity Float", value: "zero-gravity" }, { label: "Heavy Gravity Sink", value: "heavy-gravity" }, { label: "Magnetic Forcefield Shield", value: "magnetic-repulsor" }] },
+      { type: "select", key: "gravityMode", label: "GRAVITY PHYSICS MODE", default: "normal", options: [{ label: "Normal Gravity", value: "normal" }, { label: "Zero-Gravity Float", value: "zero-gravity" }, { label: "Magnetic Forcefield Shield", value: "magnetic-repulsor" }] },
+      { type: "select", key: "interactionMode", label: "SPAWN TRIGGER", default: "hold-drag", options: [{ label: "Click / Hold & Drag", value: "hold-drag" }, { label: "Continuous Cursor Trail", value: "cursor-trail" }], dependsOn: { key: "gravityMode", value: ["normal", "zero-gravity"] } },
+      { type: "slider", key: "gravity", label: "Gravitational Acceleration", default: 0.55, min: 0.1, max: 2.5, step: 0.05, dependsOn: { key: "gravityMode", value: "normal" } },
+      { type: "slider", key: "bounceDamping", label: "Floor Elasticity / Bounce", default: 0.62, min: 0.05, max: 0.95, step: 0.05, dependsOn: { key: "gravityMode", value: "normal" } },
+      { type: "slider", key: "spawnInterval", label: "Hold Stream Rate", default: 55, min: 20, max: 200, step: 5, unit: "ms", dependsOn: { key: "gravityMode", value: ["normal", "zero-gravity"] } },
       { type: "slider", key: "repelRadius", label: "Forcefield Repel Radius", default: 350, min: 150, max: 600, step: 10, unit: "px", dependsOn: { key: "gravityMode", value: "magnetic-repulsor" } },
       { type: "slider", key: "repelForce", label: "Repulsion Shockwave Power", default: 9.2, min: 1.0, max: 25.0, step: 0.5, dependsOn: { key: "gravityMode", value: "magnetic-repulsor" } },
       { type: "slider", key: "friction", label: "Space Slide Damping", default: 0.92, min: 0.80, max: 0.99, step: 0.01, dependsOn: { key: "gravityMode", value: "magnetic-repulsor" } },
-      { type: "select", key: "interactionMode", label: "SPAWN INTERACTION TRIGGER", default: "hold-drag", options: [{ label: "Click / Hold & Drag", value: "hold-drag" }, { label: "Continuous Cursor Trail", value: "cursor-trail" }], dependsOn: { key: "gravityMode", value: "normal" } },
-      { type: "slider", key: "gravity", label: "Gravitational Acceleration", default: 0.55, min: 0.1, max: 2.5, step: 0.05, dependsOn: { key: "gravityMode", value: "normal" } },
-      { type: "slider", key: "bounceDamping", label: "Floor Elasticity / Bounce", default: 0.62, min: 0.05, max: 0.95, step: 0.05, dependsOn: { key: "gravityMode", value: "normal" } },
-      { type: "slider", key: "spawnInterval", label: "Hold Stream Rate", default: 55, min: 20, max: 200, step: 5, unit: "ms", dependsOn: { key: "gravityMode", value: "normal" } },
-      { type: "slider", key: "maxItems", label: "Memory Pool Cap", default: 45, min: 10, max: 100, step: 5, dependsOn: { key: "gravityMode", value: "normal" } },
-      { type: "slider", key: "imageSize", label: "Image Scale Width", default: 140, min: 70, max: 300, step: 5, unit: "px" }
+      { type: "slider", key: "maxItems", label: "Memory Pool Cap", default: 45, min: 10, max: 100, step: 5 },
+      { type: "slider", key: "imageSize", label: "Shape Scale Width", default: 140, min: 70, max: 300, step: 5, unit: "px" }
     ]
   },
   "apparatus-3d-shatter-sphere": {
@@ -842,6 +842,21 @@ export const COMPONENT_DETAILS: Record<string, ComponentDetail> = {
       { type: "slider", key: "bgOpacity", label: "Background Opacity", default: 0.80, min: 0.1, max: 1.0, step: 0.05, unit: "" },
       { type: "slider", key: "crossfadeDuration", label: "Crossfade Duration", default: 0.6, min: 0.2, max: 1.5, step: 0.1, unit: "s" },
       { type: "slider", key: "thumbnailWidth", label: "Thumbnail Width", default: 180, min: 120, max: 280, step: 10, unit: "px" }
+    ]
+  },
+  "apparatus-curved-scroll-wipe": {
+    id: "68",
+    label: "CURVED SCROLL WIPE",
+    filename: "",
+    desc: "A scroll-driven multi-section website transition using dynamic SVG curved path clip masks that morph elastically on scroll progress.",
+    slug: "apparatus-curved-scroll-wipe",
+    category: "transition",
+    subtype: "curved-wipe",
+    tags: ["Scroll", "SVG Path", "Clip Path", "Transition", "Multi-Section"],
+    previewType: "transition",
+    controls: [
+      { type: "slider", key: "curveDepth", label: "Elastic Curve Sag Depth", default: 0.28, min: 0.05, max: 0.50, step: 0.01 },
+      { type: "slider", key: "scrollSpeed", label: "Scroll Inertia Sensitivity", default: 1.0, min: 0.5, max: 2.0, step: 0.1, unit: "x" }
     ]
   }
 };

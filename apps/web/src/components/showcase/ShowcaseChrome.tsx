@@ -3,7 +3,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import Lenis from "lenis";
+import { useScrollLock } from "@/lib/useScrollLock";
 import { Search, ArrowLeft, ArrowRight, X, EyeOff } from "lucide-react";
 import { ComponentDetail, COMPONENT_DETAILS } from "@/lib/component-registry";
 import { cleanLabel } from "./showcase-utils";
@@ -128,26 +128,7 @@ export function ShowcaseChrome({
   }, []);
 
   // Lock body scroll and pause root Lenis when drawer is open
-  useEffect(() => {
-    const getLenis = () => (window as unknown as { lenis?: { stop: () => void; start: () => void } }).lenis;
-
-    if (drawerOpen) {
-      document.body.style.overflow = "hidden";
-      document.documentElement.style.overflow = "hidden";
-      getLenis()?.stop();
-    } else {
-      document.body.style.overflow = "";
-      document.documentElement.style.overflow = "";
-      document.body.style.pointerEvents = "";
-      getLenis()?.start();
-    }
-    return () => {
-      document.body.style.overflow = "";
-      document.documentElement.style.overflow = "";
-      document.body.style.pointerEvents = "";
-      getLenis()?.start();
-    };
-  }, [drawerOpen]);
+  useScrollLock(drawerOpen);
 
 
 
@@ -258,7 +239,14 @@ export function ShowcaseChrome({
       </header>
 
       {/* Top Architectural Drawer Sheet */}
-      <AnimatePresence>
+      <AnimatePresence
+        onExitComplete={() => {
+          const lenis = (window as unknown as { lenis?: { start: () => void } }).lenis;
+          lenis?.start();
+          document.body.style.overflow = "";
+          document.documentElement.style.overflow = "";
+        }}
+      >
         {drawerOpen && (
           <motion.div
             id="showcase-drawer-sheet"
@@ -266,13 +254,11 @@ export function ShowcaseChrome({
             data-lenis-prevent
             initial={{ opacity: 0, y: -24 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -18 }}
+            exit={{ opacity: 0, y: -18, pointerEvents: "none" }}
             transition={{
               duration: 0.32,
               ease: [0.16, 1, 0.3, 1],
             }}
-            onWheel={(e) => e.stopPropagation()}
-            onTouchMove={(e) => e.stopPropagation()}
             className="fixed top-0 bottom-0 inset-x-0 z-[100] bg-[#060608]/65 backdrop-blur-2xl backdrop-saturate-180 border-b border-white/10 shadow-[0_32px_80px_rgba(0,0,0,0.7)] p-6 lg:p-8 overflow-y-auto overscroll-contain touch-pan-y custom-scrollbar"
           >
             <motion.div

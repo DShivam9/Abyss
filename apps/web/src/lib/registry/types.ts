@@ -8,7 +8,7 @@ export interface ControlConfig {
   step?: number;
   unit?: string;
   options?: { label: string; value: string }[];
-  dependsOn?: { key: string; value: string | number | boolean };
+  dependsOn?: { key: string; value: string | number | boolean | (string | number | boolean)[] };
 }
 
 export interface ComponentDetail {

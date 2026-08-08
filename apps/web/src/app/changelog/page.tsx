@@ -18,6 +18,21 @@ interface CommitEntry {
 
 const CHANGELOG_DATA: CommitEntry[] = [
   {
+    id: "commit-0c",
+    date: "2026-08-08",
+    displayDate: "Aug 08, 2026",
+    tag: "FIX",
+    title: "Global Showcase Scroll Lock & Arc Drift Physics",
+    summary: "Fixed global showcase drawer scroll lock race conditions and tuned Arc Drift Gallery scroll physics.",
+    items: [
+      "Created centralized ref-counted useScrollLock hook to fix drawer menu scroll locking",
+      "Fixed invisible drawer DOM overlay swallowing pointer and scroll events on exit",
+      "Routed Arc Drift Gallery to self-contained scroll layout for true infinite drift",
+      "Implemented direct wheel velocity impulse with frame-rate independent spring interpolation",
+      "Unified Arc Drift entry animation into single 120 FPS RAF loop eliminating frame stutter",
+    ],
+  },
+  {
     id: "commit-0a",
     date: "2026-08-08",
     displayDate: "Aug 08, 2026",

@@ -240,8 +240,14 @@ export function VesselControls({
   const renderControl = (ctrl: ControlConfig) => {
     if (ctrl.dependsOn) {
       const parentVal = values[ctrl.dependsOn.key];
-      if (parentVal !== undefined && String(parentVal) !== String(ctrl.dependsOn.value)) {
-        return null;
+      if (parentVal !== undefined) {
+        if (Array.isArray(ctrl.dependsOn.value)) {
+          if (!ctrl.dependsOn.value.map(String).includes(String(parentVal))) {
+            return null;
+          }
+        } else if (String(parentVal) !== String(ctrl.dependsOn.value)) {
+          return null;
+        }
       }
     }
 

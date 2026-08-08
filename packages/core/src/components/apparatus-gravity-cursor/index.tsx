@@ -1,36 +1,42 @@
 import { useRef, useEffect, useCallback } from "react";
 import { VesselComponentProps } from "../../engine/types";
 
-// Dedicated Gallery Images from Gallary & Scroll folders (28 unique images)
-const GALLERY_IMAGES = [
-  "/images/components%20images/Gallary/cosmos_1110264921.webp",
-  "/images/components%20images/Gallary/cosmos_1309943729.webp",
-  "/images/components%20images/Gallary/cosmos_140351120.webp",
-  "/images/components%20images/Gallary/cosmos_1441380570.webp",
-  "/images/components%20images/Gallary/cosmos_145253936.webp",
-  "/images/components%20images/Gallary/cosmos_1578342658.webp",
-  "/images/components%20images/Gallary/cosmos_1724531036.webp",
-  "/images/components%20images/Gallary/cosmos_1948095192.webp",
-  "/images/components%20images/Gallary/cosmos_2046923474.webp",
-  "/images/components%20images/Gallary/cosmos_623139356.webp",
-  "/images/components%20images/Gallary/cosmos_842932938.webp",
-  "/images/components%20images/Gallary/cosmos_854490082.webp",
-  "/images/components%20images/scroll/cosmos_1207399578.webp",
-  "/images/components%20images/scroll/cosmos_1309660817.webp",
-  "/images/components%20images/scroll/cosmos_1994819013.webp",
-  "/images/components%20images/scroll/cosmos_1859262512.webp",
-  "/images/components%20images/scroll/cosmos_2063063057.webp",
-  "/images/components%20images/scroll/cosmos_1067833670.webp",
-  "/images/components%20images/scroll/cosmos_1215932660.webp",
-  "/images/components%20images/scroll/cosmos_1292975902.webp",
-  "/images/components%20images/scroll/cosmos_1452408749.webp",
-  "/images/components%20images/scroll/cosmos_1591705408.webp",
-  "/images/components%20images/scroll/cosmos_1244425812.webp",
-  "/images/components%20images/scroll/cosmos_2086495860.webp",
-  "/images/components%20images/scroll/cosmos_51259133.webp",
-  "/images/components%20images/scroll/cosmos_1298955025.webp",
-  "/images/components%20images/scroll/cosmos_2093433371.webp",
-  "/images/components%20images/scroll/cosmos_520815919.webp",
+// 20 Vector Shape SVGs
+const SHAPE_SVGS = [
+  "/images/shapes/Shape%201.svg",
+  "/images/shapes/Shape%202.svg",
+  "/images/shapes/Shape%203.svg",
+  "/images/shapes/Shape%204.svg",
+  "/images/shapes/Shape%205.svg",
+  "/images/shapes/Shape%206.svg",
+  "/images/shapes/Shape%207.svg",
+  "/images/shapes/Shape%208.svg",
+  "/images/shapes/Shape%209.svg",
+  "/images/shapes/Shape%2010.svg",
+  "/images/shapes/Shape%2011.svg",
+  "/images/shapes/Shape%2012.svg",
+  "/images/shapes/Shape%2013.svg",
+  "/images/shapes/Shape%2014.svg",
+  "/images/shapes/Shape%2015.svg",
+  "/images/shapes/Shape%2016.svg",
+  "/images/shapes/Shape%2017.svg",
+  "/images/shapes/Shape%2018.svg",
+  "/images/shapes/Shape%2019.svg",
+  "/images/shapes/Shape%2020.svg",
+];
+
+// Bright & Hard High-Contrast Colors
+const VIBRANT_PALETTE = [
+  "#FF0033", // Hard Neon Red
+  "#00FF66", // Hard Electric Lime
+  "#00E5FF", // Hard Laser Cyan
+  "#FF00FF", // Hard Pure Magenta
+  "#FFE600", // Hard Solar Yellow
+  "#FF5500", // Hard Blaze Orange
+  "#9900FF", // Hard Ultra Purple
+  "#0066FF", // Hard Electric Blue
+  "#FF0080", // Hard Hot Pink
+  "#00FFCC", // Hard Bright Turquoise
 ];
 
 export interface ApparatusGravityCursorProps extends VesselComponentProps {
@@ -40,7 +46,7 @@ export interface ApparatusGravityCursorProps extends VesselComponentProps {
   imageSize?: number; // Image box width in px (80 - 240)
   maxItems?: number; // Maximum active DOM bodies in memory (10 - 80)
   zeroGravity?: boolean; // Zero-gravity mode flag
-  gravityMode?: "normal" | "zero-gravity" | "heavy-gravity" | "magnetic-repulsor"; // Gravity physics variant
+  gravityMode?: "normal" | "zero-gravity" | "magnetic-repulsor"; // Gravity physics variant
   interactionMode?: "hold-drag" | "cursor-trail"; // Mouse interaction mode
   repelRadius?: number; // Magnetic repeller field radius in px (150 - 600)
   repelForce?: number; // Repulsion shockwave power multiplier (1.0 - 25.0)
@@ -51,6 +57,7 @@ interface PhysicsBody {
   active: boolean;
   id: number;
   src: string;
+  color: string;
   x: number;
   y: number;
   vx: number;
@@ -61,6 +68,7 @@ interface PhysicsBody {
   opacity: number;
   scale: number;
   settled: boolean;
+  settledAge: number;
   age: number;
   maxAge: number;
 }
@@ -94,6 +102,7 @@ export default function ApparatusGravityCursor({
       active: false,
       id: i,
       src: "",
+      color: "",
       x: -9999,
       y: -9999,
       vx: 0,
@@ -104,11 +113,12 @@ export default function ApparatusGravityCursor({
       opacity: 0,
       scale: 0,
       settled: true,
+      settledAge: 0,
       age: 0,
       maxAge: 0,
     }))
   );
-  const imgRefs = useRef<(HTMLImageElement | null)[]>([]);
+  const imgRefs = useRef<(HTMLDivElement | null)[]>([]);
   const nextSlotRef = useRef<number>(0);
 
   // Mouse & interaction state
@@ -119,7 +129,7 @@ export default function ApparatusGravityCursor({
   // Pick next image in pool
   const imgIndexRef = useRef<number>(0);
   const getNextImage = useCallback(() => {
-    const src = GALLERY_IMAGES[imgIndexRef.current % GALLERY_IMAGES.length];
+    const src = SHAPE_SVGS[imgIndexRef.current % SHAPE_SVGS.length];
     imgIndexRef.current += 1;
     return src;
   }, []);
@@ -143,16 +153,13 @@ export default function ApparatusGravityCursor({
 
       const body = poolRef.current[slotIdx];
       const src = getNextImage();
+      const color = VIBRANT_PALETTE[slotIdx % VIBRANT_PALETTE.length];
 
       let vx = 0;
       let vy = 0;
       let vSpin = 0;
 
-      if (currentMode === "heavy-gravity") {
-        vx = (Math.random() - 0.5) * 4.0;
-        vy = Math.random() * 2.0 + 1.0;
-        vSpin = (Math.random() - 0.5) * 0.8;
-      } else if (currentMode === "zero-gravity") {
+      if (currentMode === "zero-gravity") {
         vx = (Math.random() - 0.5) * 2.8;
         vy = -(Math.random() * 2.0 + 1.2);
         vSpin = (Math.random() - 0.5) * 1.5;
@@ -164,6 +171,7 @@ export default function ApparatusGravityCursor({
 
       body.active = true;
       body.src = src;
+      body.color = color;
       body.x = x - imageSize / 2;
       body.y = y - imageSize / 2;
       body.vx = vx;
@@ -171,19 +179,20 @@ export default function ApparatusGravityCursor({
       body.rotation = (Math.random() - 0.5) * 12;
       body.vSpin = vSpin;
       body.bounces = 0;
-      body.opacity = 1;
-      body.scale = 0.1;
+      body.opacity = 0;
+      body.scale = 0.25;
       body.settled = false;
+      body.settledAge = 0;
       body.age = 0;
-      body.maxAge = currentMode === "heavy-gravity" ? 140 + Math.random() * 30 : 170 + Math.random() * 50;
+      body.maxAge = 170 + Math.random() * 50;
 
       const imgEl = imgRefs.current[slotIdx];
       if (imgEl) {
-        if (imgEl.src !== window.location.origin + src && !imgEl.src.endsWith(src)) {
-          imgEl.src = src;
-        }
-        imgEl.style.opacity = "1";
-        imgEl.style.transform = `translate3d(${body.x}px, ${body.y}px, 0px) rotate(${body.rotation}deg) scale(0.1)`;
+        imgEl.style.backgroundColor = color;
+        imgEl.style.webkitMaskImage = `url("${src}")`;
+        imgEl.style.maskImage = `url("${src}")`;
+        imgEl.style.opacity = "0";
+        imgEl.style.transform = `translate3d(${body.x}px, ${body.y}px, 0px) rotate(${body.rotation}deg) scale(0.25)`;
       }
 
       if (onLifecycleChange) onLifecycleChange("buildUp");
@@ -212,7 +221,7 @@ export default function ApparatusGravityCursor({
     const canvasWidth = rect && rect.width > 0 ? rect.width : window.innerWidth;
     const canvasHeight = rect && rect.height > 0 ? rect.height : window.innerHeight;
 
-    const uniqueImages = [...GALLERY_IMAGES];
+    const uniqueImages = [...SHAPE_SVGS];
     const cols = 7;
     const rows = 4;
     const cellW = Math.max((canvasWidth - 80) / cols, imageSize * 0.9);
@@ -220,6 +229,7 @@ export default function ApparatusGravityCursor({
 
     for (let i = 0; i < Math.min(uniqueImages.length, poolSize); i++) {
       const src = uniqueImages[i];
+      const color = VIBRANT_PALETTE[i % VIBRANT_PALETTE.length];
       const c = i % cols;
       const r = Math.floor(i / cols);
 
@@ -230,11 +240,12 @@ export default function ApparatusGravityCursor({
       const jitterY = (Math.random() - 0.5) * (cellH * 0.25);
 
       const x = Math.max(20, Math.min(canvasWidth - imageSize - 20, cellX + jitterX));
-      const y = Math.max(20, Math.min(canvasHeight - imageSize * 1.25 - 20, cellY + jitterY));
+      const y = Math.max(20, Math.min(canvasHeight - imageSize - 20, cellY + jitterY));
 
       const body = poolRef.current[i];
       body.active = true;
       body.src = src;
+      body.color = color;
       body.x = x;
       body.y = y;
       body.vx = 0;
@@ -245,12 +256,15 @@ export default function ApparatusGravityCursor({
       body.opacity = 1;
       body.scale = 1.0;
       body.settled = true;
+      body.settledAge = 0;
       body.age = 0;
       body.maxAge = 99999;
 
       const imgEl = imgRefs.current[i];
       if (imgEl) {
-        imgEl.src = src;
+        imgEl.style.backgroundColor = color;
+        imgEl.style.webkitMaskImage = `url("${src}")`;
+        imgEl.style.maskImage = `url("${src}")`;
         imgEl.style.opacity = "1";
         imgEl.style.transform = `translate3d(${x}px, ${y}px, 0px) rotate(${body.rotation}deg) scale(1)`;
       }
@@ -337,7 +351,7 @@ export default function ApparatusGravityCursor({
       const rect = boundsRef.current;
       const floorY = rect.height - imageSize - 20;
       const rightWallX = rect.width - imageSize - 20;
-      const bottomWallY = rect.height - imageSize * 1.25 - 20;
+      const bottomWallY = rect.height - imageSize - 20;
 
       const pool = poolRef.current;
 
@@ -347,13 +361,16 @@ export default function ApparatusGravityCursor({
 
         body.age += 1;
 
+        if (body.opacity < 1.0 && !body.settled) {
+          body.opacity = Math.min(body.opacity + 0.25, 1.0);
+        }
         if (body.scale < 1.0) {
-          body.scale = Math.min(body.scale + 0.18, 1.0);
+          body.scale = Math.min(body.scale + 0.15, 1.0);
         }
 
         if (currentMode === "magnetic-repulsor") {
           const centerBodyX = body.x + imageSize / 2;
-          const centerBodyY = body.y + (imageSize * 1.25) / 2;
+          const centerBodyY = body.y + imageSize / 2;
           const dx = centerBodyX - mousePosRef.current.x;
           const dy = centerBodyY - mousePosRef.current.y;
           const distSq = dx * dx + dy * dy;
@@ -374,7 +391,7 @@ export default function ApparatusGravityCursor({
             if (!other.active) continue;
 
             const otherCenterX = other.x + imageSize / 2;
-            const otherCenterY = other.y + (imageSize * 1.25) / 2;
+            const otherCenterY = other.y + imageSize / 2;
             const bdx = centerBodyX - otherCenterX;
             const bdy = centerBodyY - otherCenterY;
             const bdistSq = bdx * bdx + bdy * bdy;
@@ -420,37 +437,6 @@ export default function ApparatusGravityCursor({
             body.y = bottomWallY;
             body.vy = -Math.abs(body.vy) * 0.85;
           }
-        } else if (currentMode === "heavy-gravity") {
-          if (!body.settled) {
-            body.vy += Math.abs(gravity) * 3.4;
-
-            body.x += body.vx;
-            body.y += body.vy;
-            body.rotation += body.vSpin;
-
-            if (body.x < 10) {
-              body.x = 10;
-              body.vx = -body.vx * 0.5;
-            } else if (body.x > rightWallX) {
-              body.x = rightWallX;
-              body.vx = -body.vx * 0.5;
-            }
-
-            if (body.y >= floorY) {
-              body.y = floorY;
-              if (Math.abs(body.vy) > 2.0) {
-                body.vy = -body.vy * (bounceDamping * 0.35);
-                body.vx *= 0.6;
-                body.vSpin *= 0.5;
-                body.bounces += 1;
-              } else {
-                body.vy = 0;
-                body.vx = 0;
-                body.vSpin = 0;
-                body.settled = true;
-              }
-            }
-          }
         } else if (currentMode === "zero-gravity") {
           body.vy += -0.035;
           body.vx += Math.sin(body.age * 0.06 + body.id) * 0.06;
@@ -464,6 +450,7 @@ export default function ApparatusGravityCursor({
             body.opacity = Math.min(body.opacity, topFade);
           }
         } else {
+          // DEFAULT VARIANT ("normal")
           if (!body.settled) {
             body.vy += Math.abs(gravity);
 
@@ -487,16 +474,27 @@ export default function ApparatusGravityCursor({
                 body.vSpin *= 0.6;
                 body.bounces += 1;
               } else {
+                // Done bouncing: rests on floor right where it landed
                 body.vy = 0;
                 body.vx = 0;
                 body.vSpin = 0;
                 body.settled = true;
+                body.settledAge = 0;
               }
+            }
+          } else {
+            // Rests on floor for 24 frames (~0.4s), then smoothly accelerates downward starting from 0
+            body.settledAge = (body.settledAge || 0) + 1;
+            if (body.settledAge > 24) {
+              body.vy += 0.12;
+              body.y += body.vy;
+              body.x += body.vx * 0.95;
+              body.rotation += body.vSpin * 0.3;
             }
           }
         }
 
-        if (body.age > body.maxAge - 35) {
+        if (currentMode !== "normal" && body.age > body.maxAge - 35) {
           const dissolveProgress = (body.age - (body.maxAge - 35)) / 35;
           body.opacity = Math.min(body.opacity, Math.max(1 - dissolveProgress, 0));
           body.scale = Math.max(1 - dissolveProgress * 0.25, 0.7);
@@ -504,7 +502,8 @@ export default function ApparatusGravityCursor({
 
         const domNode = imgRefs.current[i];
         if (domNode) {
-          if (body.age >= body.maxAge) {
+          const isOffBottom = currentMode === "normal" && body.settled && body.y > rect.height + 40;
+          if (isOffBottom || (currentMode !== "normal" && body.age >= body.maxAge)) {
             body.active = false;
             domNode.style.opacity = "0";
             domNode.style.transform = "translate3d(-9999px, -9999px, 0px) scale(0)";
@@ -535,37 +534,38 @@ export default function ApparatusGravityCursor({
         <h1 className="text-4xl md:text-7xl font-extrabold uppercase tracking-tight text-zinc-700/60 drop-shadow-sm">
           {currentMode === "magnetic-repulsor"
             ? "MAGNETIC REPULSOR"
-            : currentMode === "heavy-gravity"
-            ? "HEAVY GRAVITY"
             : currentMode === "zero-gravity"
             ? "ZERO GRAVITY"
             : "GRAVITY CURSOR"}
         </h1>
         <p className="mt-3 font-mono text-xs tracking-[0.3em] text-zinc-500 uppercase">
           {currentMode === "magnetic-repulsor"
-            ? "MOVE CURSOR TO REPEL & DRIFT FLOATING IMAGES"
-            : currentMode === "heavy-gravity"
-            ? "CLICK OR HOLD & DRAG TO CRASH IMAGES"
+            ? "MOVE CURSOR TO REPEL & DRIFT FLOATING SHAPES"
             : currentMode === "zero-gravity"
-            ? "CLICK OR HOLD & DRAG TO FLOAT IMAGES"
-            : "CLICK OR HOLD & DRAG TO DROP IMAGES"}
+            ? "CLICK OR HOLD & DRAG TO FLOAT SHAPES"
+            : "CLICK OR HOLD & DRAG TO DROP SHAPES"}
         </p>
       </div>
 
       {/* Pre-allocated DOM Pool (Zero React re-renders during continuous hold-drag!) */}
       {poolRef.current.map((_, i) => (
-        <img
+        <div
           key={i}
           ref={(el) => {
             imgRefs.current[i] = el;
           }}
-          alt="Gravity Item"
-          className="absolute top-0 left-0 transform-gpu will-change-transform pointer-events-none rounded-lg shadow-xl object-cover select-none"
+          className="absolute top-0 left-0 transform-gpu will-change-transform pointer-events-none select-none"
           style={{
             width: `${imageSize}px`,
-            height: `${imageSize * 1.25}px`,
+            height: `${imageSize}px`,
             opacity: 0,
             transform: "translate3d(-9999px, -9999px, 0px) scale(0)",
+            WebkitMaskSize: "contain",
+            maskSize: "contain",
+            WebkitMaskRepeat: "no-repeat",
+            maskRepeat: "no-repeat",
+            WebkitMaskPosition: "center",
+            maskPosition: "center",
           }}
         />
       ))}

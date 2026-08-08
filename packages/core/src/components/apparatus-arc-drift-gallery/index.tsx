@@ -5,7 +5,7 @@ import { useGSAP } from "@gsap/react";
 import { ApparatusArcDriftGalleryProps } from "./types";
 
 if (typeof window !== "undefined") {
-  gsap.registerPlugin(ScrollTrigger, useGSAP);
+  gsap.registerPlugin(ScrollTrigger);
 }
 
 const A_IMAGES: string[] = [
@@ -39,7 +39,7 @@ export const ApparatusArcDriftGallery: React.FC<ApparatusArcDriftGalleryProps> =
   const activeBgRef = useRef<"A" | "B">("A");
   const currentBgIdxRef = useRef<number>(-1);
 
-  const accumValRef = useRef<number>(-1.5);
+  const accumValRef = useRef<number>(-0.15);
   const isIntroFinishedRef = useRef<boolean>(false);
 
   const propsRef = useRef({ thumbnailWidth, scrollSpeed, arcHeight, bgOpacity, crossfadeDuration, motionVariant });
@@ -71,9 +71,6 @@ export const ApparatusArcDriftGallery: React.FC<ApparatusArcDriftGalleryProps> =
         }
       }
 
-      let scrollOffset = 0;
-      let currentDriftSpeed = 95;
-      let targetDriftSpeed = 95;
       let lastTime = performance.now();
 
       const updateMotion = () => {
@@ -81,7 +78,7 @@ export const ApparatusArcDriftGallery: React.FC<ApparatusArcDriftGalleryProps> =
         const vh = window.innerHeight;
         const currentProps = propsRef.current;
 
-        const globalProgress = (accumValRef.current + scrollOffset * 0.0003) * currentProps.scrollSpeed;
+        const globalProgress = accumValRef.current * currentProps.scrollSpeed;
 
         let closestCenterDist = Infinity;
         let peakImageIdx = -1;
@@ -110,9 +107,9 @@ export const ApparatusArcDriftGallery: React.FC<ApparatusArcDriftGalleryProps> =
             const focusFactor = Math.max(0, 1 - distFromCenter * 3.2);
             scale = 0.85 + focusFactor * 0.5; // Expands to 1.35x at center peak
           } else {
-            // Default Classic Horizon Arc (100% untouched)
-            const startX = -vw * 0.06;
-            const endX = vw * 1.06;
+            // Default Classic Horizon Arc (smooth off-screen entry & exit)
+            const startX = -vw * 0.15;
+            const endX = vw * 1.15;
             x = startX + normT * (endX - startX) - currentProps.thumbnailWidth / 2;
 
             const angle = Math.PI * (1 - normT);
@@ -123,11 +120,11 @@ export const ApparatusArcDriftGallery: React.FC<ApparatusArcDriftGalleryProps> =
 
           let opacity = Math.sin(normT * Math.PI);
 
-          if (!isIntroFinishedRef.current && rawT < 0) {
-            opacity = 0;
-          } else if (!isIntroFinishedRef.current && rawT >= 0 && rawT < 0.15) {
-            const entryProgress = rawT / 0.15;
-            scale *= 0.95 + entryProgress * 0.05;
+          // Feather opacity smoothly to zero as images reach far viewport bounds (normT < 0.08 and normT > 0.92)
+          if (normT < 0.08) {
+            opacity *= Math.max(0, normT / 0.08);
+          } else if (normT > 0.92) {
+            opacity *= Math.max(0, (1 - normT) / 0.92);
           }
 
           if (opacity > 0.05) {
@@ -147,8 +144,8 @@ export const ApparatusArcDriftGallery: React.FC<ApparatusArcDriftGalleryProps> =
           });
         }
 
-        // Active background crossfade
-        if (peakImageIdx !== -1 && peakImageIdx !== currentBgIdxRef.current) {
+        // Active background crossfade — ONLY after intro animation has fully completed
+        if (isIntroFinishedRef.current && peakImageIdx !== -1 && peakImageIdx !== currentBgIdxRef.current) {
           const newSrc = galleryImages[peakImageIdx];
           currentBgIdxRef.current = peakImageIdx;
 
@@ -180,46 +177,42 @@ export const ApparatusArcDriftGallery: React.FC<ApparatusArcDriftGalleryProps> =
         }
       };
 
-      let introTween: gsap.core.Tween | null = null;
-      if (!isIntroFinishedRef.current) {
-        introTween = gsap.to(accumValRef, {
-          current: 0.0,
-          duration: 2.0,
-          ease: EMIL_EASE,
-          onUpdate: () => {
-            updateMotion();
-          },
-          onComplete: () => {
-            isIntroFinishedRef.current = true;
-          },
-        });
-      }
+      let introProgress = 0;
+      let targetVelocity = 0;
+      let currentVelocity = 0;
 
-      const trigger = ScrollTrigger.create({
-        trigger: containerRef.current,
-        start: "top top",
-        end: "+=500000",
-        pin: true,
-        scrub: 1.0,
-        onUpdate: (self) => {
-          scrollOffset = self.scroll();
-
-          if (self.direction === 1) {
-            targetDriftSpeed = 95;
-          } else if (self.direction === -1) {
-            targetDriftSpeed = -95;
-          }
-        },
-      });
+      const handleWheel = (e: WheelEvent) => {
+        targetVelocity += e.deltaY * 0.008 * (propsRef.current.scrollSpeed || 1);
+      };
+      window.addEventListener("wheel", handleWheel, { passive: true });
 
       let animId: number;
       const render = (now: number) => {
-        const dt = (now - lastTime) / 1000;
+        const dt = Math.min((now - lastTime) / 1000, 0.05);
         lastTime = now;
 
-        if (isIntroFinishedRef.current) {
-          currentDriftSpeed += (targetDriftSpeed - currentDriftSpeed) * 0.05;
-          accumValRef.current += dt * currentDriftSpeed * 0.0003;
+        if (!isIntroFinishedRef.current) {
+          introProgress += dt / 2.4;
+          if (introProgress >= 1.0) {
+            introProgress = 1.0;
+            isIntroFinishedRef.current = true;
+          }
+          // Smooth 120 FPS cubic ease-out
+          const easedT = 1 - Math.pow(1 - introProgress, 3);
+          accumValRef.current = -0.15 + easedT * (0.95 - (-0.15));
+          updateMotion();
+        } else {
+          // Frame-rate independent spring interpolation (GEMINI 6.1 rule)
+          const smooth = 1 - Math.pow(1 - 0.22, dt * 60);
+          currentVelocity += (targetVelocity - currentVelocity) * smooth;
+
+          const ambientDrift = dt * 0.02 * (propsRef.current.scrollSpeed || 1);
+          accumValRef.current += ambientDrift + currentVelocity * dt;
+
+          // Exponential friction decay for natural physical coast and settle
+          targetVelocity *= Math.pow(0.93, dt * 60);
+          if (Math.abs(targetVelocity) < 0.00001) targetVelocity = 0;
+
           updateMotion();
         }
 
@@ -230,8 +223,7 @@ export const ApparatusArcDriftGallery: React.FC<ApparatusArcDriftGalleryProps> =
 
       return () => {
         cancelAnimationFrame(animId);
-        if (introTween) introTween.kill();
-        trigger.kill();
+        window.removeEventListener("wheel", handleWheel);
       };
     },
     { scope: containerRef }

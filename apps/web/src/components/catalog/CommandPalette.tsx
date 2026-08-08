@@ -3,6 +3,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Lenis from "lenis";
+import { useScrollLock } from "@/lib/useScrollLock";
 import { ComponentDetail } from "@/lib/component-registry";
 
 interface CommandPaletteProps {
@@ -22,24 +23,17 @@ export function CommandPalette({
   const [selectedIndex, setSelectedIndex] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Auto-focus input and lock body scroll when opened
+  useScrollLock(isOpen);
+
+  // Auto-focus input when opened
   useEffect(() => {
     if (isOpen) {
       setQuery("");
       setSelectedIndex(0);
-      document.body.style.overflow = "hidden";
-      document.documentElement.style.overflow = "hidden";
       setTimeout(() => {
         inputRef.current?.focus();
       }, 50);
-    } else {
-      document.body.style.overflow = "";
-      document.documentElement.style.overflow = "";
     }
-    return () => {
-      document.body.style.overflow = "";
-      document.documentElement.style.overflow = "";
-    };
   }, [isOpen]);
 
   const cleanLabel = (label: string) => {
@@ -117,7 +111,14 @@ export function CommandPalette({
   }, [isOpen]);
 
   return (
-    <AnimatePresence>
+    <AnimatePresence
+      onExitComplete={() => {
+        const lenis = (window as unknown as { lenis?: { start: () => void } }).lenis;
+        lenis?.start();
+        document.body.style.overflow = "";
+        document.documentElement.style.overflow = "";
+      }}
+    >
       {isOpen && (
         <div className="fixed inset-0 z-50 flex items-start justify-center pt-24 px-4 sm:px-6 font-sans">
           {/* Backdrop Blur Overlay */}

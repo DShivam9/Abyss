@@ -42,6 +42,7 @@ export * from "./components/apparatus-gravity-cursor";
 export * from "./components/apparatus-3d-shatter-sphere";
 export * from "./components/apparatus-turbulence-lens";
 export * from "./components/apparatus-ripple-scramble";
+export * from "./components/apparatus-curved-scroll-wipe";
 
 
 

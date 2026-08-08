@@ -82,6 +82,8 @@ export default function ShowcasePageClient({ slug }: { slug: string }) {
     "apparatus-3d-typography-grid",
     "apparatus-cinematic-unstack",
     "apparatus-parallax-bleed",
+    "apparatus-curved-scroll-wipe",
+    "apparatus-arc-drift-gallery",
   ]);
   const isSelfContainedScroll = SELF_CONTAINED_SCROLL.has(slug);
 
@@ -89,7 +91,7 @@ export default function ShowcasePageClient({ slug }: { slug: string }) {
   const isText = meta.category === "text" || previewType === "text";
   const isScroll = !isText && !isSelfContainedScroll && (previewType === "scroll" || meta.category === "scroll");
   const isGallery = !isText && !isScroll && (isSelfContainedScroll || meta.category === "gallary" || meta.category === "svg" || previewType === "gallery" || (meta.category !== "scroll" && (meta.subtype === "gallery" || meta.subtype === "ring")));
-  const isTransition = !isText && (meta.category === "transition" || previewType === "transition");
+  const isTransition = !isText && !isSelfContainedScroll && (meta.category === "transition" || previewType === "transition");
 
 
   const renderComponent = () => {
