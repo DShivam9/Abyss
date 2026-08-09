@@ -858,6 +858,44 @@ export const COMPONENT_DETAILS: Record<string, ComponentDetail> = {
       { type: "slider", key: "curveDepth", label: "Elastic Curve Sag Depth", default: 0.28, min: 0.05, max: 0.50, step: 0.01 },
       { type: "slider", key: "scrollSpeed", label: "Scroll Inertia Sensitivity", default: 1.0, min: 0.5, max: 2.0, step: 0.1, unit: "x" }
     ]
+  },
+  "apparatus-image-snake-trail": {
+    id: "69",
+    label: "IMAGE SNAKE TRAIL",
+    filename: "Gallary/gallery-1.webp",
+    desc: "Serpentine image chain following cursor with physics momentum and scale decay.",
+    slug: "apparatus-image-snake-trail",
+    category: "gallary",
+    subtype: "snake-trail",
+    tags: ["Gallery", "Cursor Trail", "Physics", "Snake", "GSAP"],
+    controls: [
+      { type: "slider", key: "worldSize", label: "World Map Size", default: 12000, min: 4000, max: 20000, step: 500, unit: "px" },
+      { type: "slider", key: "initialLength", label: "Initial Trail Length", default: 5, min: 3, max: 12, step: 1 },
+      { type: "slider", key: "collectibleCount", label: "World Food Count", default: 60, min: 15, max: 150, step: 5 },
+      { type: "slider", key: "segmentSize", label: "Image Size", default: 160, min: 80, max: 280, step: 10, unit: "px" },
+      { type: "slider", key: "speed", label: "Snake Speed", default: 220, min: 80, max: 600, step: 20, unit: "px/s" },
+      { type: "slider", key: "damping", label: "Motion Damping", default: 0.15, min: 0.05, max: 0.45, step: 0.01 },
+      { type: "slider", key: "stepDistance", label: "Step Distance", default: 40, min: 0, max: 120, step: 5, unit: "px" },
+      { type: "slider", key: "zoom", label: "Camera Zoom", default: 1.0, min: 0.45, max: 1.35, step: 0.05, unit: "x" }
+    ]
+  },
+  "apparatus-3d-cursor-trail": {
+    id: "70",
+    label: "ABYSS CURSOR FALL",
+    filename: "Gallary/gallery-1.webp",
+    desc: "Kinetic 3D image spawner plunging floating WebP & SVG cards into a deep atmospheric 3D void on cursor movement.",
+    slug: "apparatus-3d-cursor-trail",
+    category: "gallary",
+    subtype: "3d-spawner",
+    tags: ["Gallery", "Cursor Spawner", "3D", "Three.js", "WebGL", "Physics"],
+    controls: [
+      { type: "slider", key: "spawnDistance", label: "Spawn Distance", default: 50, min: 15, max: 180, step: 5, unit: "px" },
+      { type: "slider", key: "spawnInterval", label: "Spawn Cooldown", default: 110, min: 30, max: 400, step: 10, unit: "ms" },
+      { type: "slider", key: "imageSize", label: "3D Image Size", default: 2.4, min: 0.5, max: 4.5, step: 0.1 },
+      { type: "slider", key: "lifespan", label: "Card Lifespan", default: 3.0, min: 1.0, max: 6.0, step: 0.2, unit: "s" },
+      { type: "slider", key: "fallSpeed", label: "Void Fall Speed", default: 2.4, min: 0.5, max: 8.0, step: 0.5 },
+      { type: "slider", key: "cameraParallax", label: "3D Camera Parallax", default: 2.8, min: 0.5, max: 6.0, step: 0.2 },
+      { type: "slider", key: "spinSpeed", label: "3D Spin Velocity", default: 1.0, min: 0.2, max: 4.0, step: 0.1 }
+    ]
   }
 };
-

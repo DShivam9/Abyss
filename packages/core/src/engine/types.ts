@@ -49,4 +49,5 @@ export interface VesselComponentProps {
   className?: string;
   style?: React.CSSProperties;
   onLifecycleChange?: (state: "idle" | "discovery" | "buildUp" | "peak" | "recovery") => void;
+  onControlChange?: (key: string, value: number | boolean | string) => void;
 }

@@ -95,7 +95,7 @@ export default function ShowcasePageClient({ slug }: { slug: string }) {
 
 
   const renderComponent = () => {
-    return <Component imageSrc={defaultImageSrc} {...controlValues} />;
+    return <Component imageSrc={defaultImageSrc} {...controlValues} onControlChange={handleControlChange} />;
   };
 
   const renderLayout = () => {

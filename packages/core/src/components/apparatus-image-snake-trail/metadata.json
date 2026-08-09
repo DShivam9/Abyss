@@ -1,0 +1,16 @@
+{
+  "name": "Apparatus Image Snake Trail",
+  "slug": "apparatus-image-snake-trail",
+  "pitch": "Serpentine image chain following cursor with physics momentum and scale decay.",
+  "family": "aesthetic",
+  "energy": "responsive",
+  "triggers": ["proximity", "velocity"],
+  "tech": ["react", "gsap"],
+  "lifecycle": {
+    "idle": "Segments remain condensed around rest anchor position.",
+    "discovery": "First mouse pointer movement wakes snake chain.",
+    "buildUp": "Rapid pointer movement stretches image segments into wide serpentine arc.",
+    "peak": "Max pointer velocity creates undulating trailing gallery wave.",
+    "recovery": "Pointer stops; trail nodes coast softly and contract back into rest cluster."
+  }
+}

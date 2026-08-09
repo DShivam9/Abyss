@@ -92,7 +92,7 @@ export function TactileSlidersIcon({ isHovered = false }: { isHovered?: boolean 
         cx="8"
         cy="8"
         r="2.2"
-        animate={{ cx: isHovered ? 16 : 8 }}
+        animate={{ x: isHovered ? 8 : 0 }}
         transition={{ type: "spring", stiffness: 380, damping: 26 }}
         className="fill-[#070708] stroke-current text-white"
       />
@@ -101,7 +101,7 @@ export function TactileSlidersIcon({ isHovered = false }: { isHovered?: boolean 
         cx="16"
         cy="16"
         r="2.2"
-        animate={{ cx: isHovered ? 8 : 16 }}
+        animate={{ x: isHovered ? -8 : 0 }}
         transition={{ type: "spring", stiffness: 380, damping: 26 }}
         className="fill-[#070708] stroke-current text-white"
       />
@@ -131,6 +131,7 @@ export function TactileEyeIcon({ isHovered = false }: { isHovered?: boolean }) {
       />
       <motion.path
         d="M2 12c3-4 7-6 10-6s7 2 10 6"
+        initial={{ opacity: 0, y: -2 }}
         animate={{ opacity: isHovered ? 1 : 0, y: isHovered ? 2 : -2 }}
         transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
         className="stroke-white"

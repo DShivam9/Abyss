@@ -18,9 +18,27 @@ interface CommitEntry {
 
 const CHANGELOG_DATA: CommitEntry[] = [
   {
+    id: "commit-0d",
+    date: "2026-08-09",
+    displayDate: "Aug 09, 2026 • 21:55 IST",
+    tag: "ADDITION",
+    title: "Abyss Cursor Fall & Image Snake Trail Components",
+    summary: "Built two new high-craft gallery components: Abyss Cursor Fall featuring kinetic cards plunging into a deep atmospheric 3D void and 2D Toroidal Image Snake Trail with Peristalsis recoil.",
+    items: [
+      "Added Abyss Cursor Fall component (apparatus-3d-cursor-trail) featuring WebGL perspective camera orbit, 120 FPS high-refresh rate physics engine, FPV drone banking roll, and volumetric Z-depth fog (FogExp2)",
+      "Engineered 3 Z-Depth spawn layers (+1.2, 0, -1.8) for multi-plane 3D volume and dynamic throw velocity momentum on fast cursor flicks",
+      "Built SVG XML white-mask pre-processor and 8-color vivid electric neon palette (Blue, Red, Green, Lime, Purple, Violet, Cyan, Magenta) with zero plain white",
+      "Implemented dynamic monochrome desaturation lerp as cards plunge deep into the dark volumetric 3D void",
+      "Added Image Snake Trail component (apparatus-image-snake-trail) with 2D toroidal infinite world wrap, physical GSAP push-back recoil shockwave on eat, and 65ms Gaussian peristalsis wave propagation",
+      "Registered 'gallary' category in core engine types and mapped both components (ID 69 & 70) into central showcase registry",
+      "Integrated 7 live tuning sliders in showcase inspector (Spawn Distance, Spawn Cooldown, Image Size, Lifespan, Fall Speed, Parallax, Spin Velocity) with zero-GC hot-ref updates",
+      "Fixed Framer Motion SVG <circle> transform warnings and explicit opacity initial props in ShowcaseTriggers",
+    ],
+  },
+  {
     id: "commit-0c",
     date: "2026-08-08",
-    displayDate: "Aug 08, 2026",
+    displayDate: "Aug 08, 2026 • 21:05 IST",
     tag: "FIX",
     title: "Global Showcase Scroll Lock & Arc Drift Physics",
     summary: "Fixed global showcase drawer scroll lock race conditions and tuned Arc Drift Gallery scroll physics.",
@@ -35,7 +53,7 @@ const CHANGELOG_DATA: CommitEntry[] = [
   {
     id: "commit-0a",
     date: "2026-08-08",
-    displayDate: "Aug 08, 2026",
+    displayDate: "Aug 08, 2026 • 16:38 IST",
     tag: "ADDITION",
     title: "Arc Drift Gallery Component",
     summary: "Built the new Arc Drift Gallery with curved thumbnail motion and background image crossfading.",
@@ -48,7 +66,7 @@ const CHANGELOG_DATA: CommitEntry[] = [
   {
     id: "commit-0b",
     date: "2026-08-08",
-    displayDate: "Aug 08, 2026",
+    displayDate: "Aug 08, 2026 • 16:38 IST",
     tag: "FIX",
     title: "Gravity Cursor 120FPS & Smooth Hold-Click",
     summary: "Fixed lag when holding down click to spawn images and capped physics to a smooth 120FPS.",
@@ -61,7 +79,7 @@ const CHANGELOG_DATA: CommitEntry[] = [
   {
     id: "commit-1",
     date: "2026-08-07",
-    displayDate: "Aug 07, 2026",
+    displayDate: "Aug 07, 2026 • 19:09 IST",
     tag: "MAJOR",
     title: "Catalog Search & Documentation Updates",
     summary: "Added a full search bar to the catalog sidebar and built out the new documentation page.",
@@ -76,7 +94,7 @@ const CHANGELOG_DATA: CommitEntry[] = [
   {
     id: "commit-2",
     date: "2026-08-07",
-    displayDate: "Aug 07, 2026",
+    displayDate: "Aug 07, 2026 • 14:10 IST",
     tag: "FIX",
     title: "Catalog Drawer Scroll Fix",
     summary: "Fixed an issue where scrolling inside side drawers would trigger page scroll instead.",
@@ -89,7 +107,7 @@ const CHANGELOG_DATA: CommitEntry[] = [
   {
     id: "commit-3",
     date: "2026-08-07",
-    displayDate: "Aug 07, 2026",
+    displayDate: "Aug 07, 2026 • 14:03 IST",
     tag: "MINOR",
     title: "Code Cleanup & Speed Improvements",
     summary: "Cleaned up old unused files and improved component load times across the app.",
@@ -102,7 +120,7 @@ const CHANGELOG_DATA: CommitEntry[] = [
   {
     id: "commit-4",
     date: "2026-07-29",
-    displayDate: "Jul 29, 2026",
+    displayDate: "Jul 29, 2026 • 20:25 IST",
     tag: "ADDITION",
     title: "3D Shatter Sphere & Monolith Components",
     summary: "Added new 3D Cuboid and Monolith component variations with updated HUD designs.",
@@ -115,7 +133,7 @@ const CHANGELOG_DATA: CommitEntry[] = [
   {
     id: "commit-5",
     date: "2026-07-28",
-    displayDate: "Jul 28, 2026",
+    displayDate: "Jul 28, 2026 • 21:33 IST",
     tag: "ADDITION",
     title: "Apparatus Dual Wave Updates",
     summary: "Updated default settings, reset controls, and smoothed out wave animations.",
@@ -128,7 +146,7 @@ const CHANGELOG_DATA: CommitEntry[] = [
   {
     id: "commit-6",
     date: "2026-07-25",
-    displayDate: "Jul 25, 2026",
+    displayDate: "Jul 25, 2026 • 00:20 IST",
     tag: "MINOR",
     title: "Kinetic Hover Physics & UI Polish",
     summary: "Polished mouse hover physics and fixed build warnings.",
@@ -141,7 +159,7 @@ const CHANGELOG_DATA: CommitEntry[] = [
   {
     id: "commit-7",
     date: "2026-07-23",
-    displayDate: "Jul 23, 2026",
+    displayDate: "Jul 23, 2026 • 23:30 IST",
     tag: "MAJOR",
     title: "Text Components & Header Redesign",
     summary: "Added new text component category and redesigned the showcase top bar.",
@@ -154,7 +172,7 @@ const CHANGELOG_DATA: CommitEntry[] = [
   {
     id: "commit-8",
     date: "2026-07-16",
-    displayDate: "Jul 16, 2026",
+    displayDate: "Jul 16, 2026 • 18:15 IST",
     tag: "ADDITION",
     title: "Clip Morph & Kinetic Scroll Components",
     summary: "Added the clip morph component and kinetic inertia scrolling.",
@@ -167,7 +185,7 @@ const CHANGELOG_DATA: CommitEntry[] = [
   {
     id: "commit-9",
     date: "2026-07-14",
-    displayDate: "Jul 14, 2026",
+    displayDate: "Jul 14, 2026 • 16:40 IST",
     tag: "ADDITION",
     title: "Parallax Column & Venetian Blinds Components",
     summary: "Added Parallax Column component and added backlight flare to Venetian Blinds.",
@@ -180,7 +198,7 @@ const CHANGELOG_DATA: CommitEntry[] = [
   {
     id: "commit-10",
     date: "2026-07-13",
-    displayDate: "Jul 13, 2026",
+    displayDate: "Jul 13, 2026 • 14:20 IST",
     tag: "MAJOR",
     title: "Project Renamed to Abyss & Orbit Ring Gallery",
     summary: "Renamed the project to Abyss and added the Orbit Ring Gallery component.",
@@ -193,7 +211,7 @@ const CHANGELOG_DATA: CommitEntry[] = [
   {
     id: "commit-11",
     date: "2026-07-07",
-    displayDate: "Jul 07, 2026",
+    displayDate: "Jul 07, 2026 • 19:10 IST",
     tag: "ADDITION",
     title: "Home Page Navigation & Deepwood Glimmer",
     summary: "Added Enter Stage button on the homepage and built the Deepwood Glimmer component.",
