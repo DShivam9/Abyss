@@ -82,11 +82,11 @@ export const ApparatusCylinderScroll: React.FC<ApparatusCylinderScrollProps & {
   const mountProgressRef = useRef(0);
 
   const rawImages = (() => {
-    const baseList = images && images.length > 0
+    const baseList = (images && images.length > 0
       ? images
       : imageSrc
         ? [imageSrc, ...DEFAULT_IMAGES.slice(1)]
-        : DEFAULT_IMAGES;
+        : DEFAULT_IMAGES).map((src) => encodeURI(src));
 
     let expanded = [...baseList];
     while (expanded.length < 35) {

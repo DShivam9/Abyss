@@ -369,7 +369,7 @@ export const ApparatusPhaseDrift: React.FC<ApparatusPhaseDriftProps & {
             {/* Inner image wrapper */}
             <div className="w-full h-full origin-center [transform-style:preserve-3d]">
               <img
-                src={img}
+                src={encodeURI(img)}
                 alt={`Specimen ${idx + 1}`}
                 className="w-full h-full object-cover select-none pointer-events-none"
                 style={{

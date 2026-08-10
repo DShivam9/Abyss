@@ -102,7 +102,7 @@ export default function ShowcasePageClient({ slug }: { slug: string }) {
   const renderLayout = () => {
     if (isSelfContainedScroll) {
       return (
-        <div className="relative w-full bg-[#070708]">
+        <div className="relative w-full min-h-screen h-screen bg-[#070708] overflow-hidden">
           {renderComponent()}
         </div>
       );

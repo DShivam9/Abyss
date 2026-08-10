@@ -225,7 +225,8 @@ export const ApparatusDepthSwim: React.FC<ApparatusDepthSwimProps & {
   // Process images into full DepthSwimImage structures
   const swimItems = React.useMemo<DepthSwimImage[]>(() => {
     return rawImages.map((img, i) => {
-      const src = typeof img === "string" ? img : img.src;
+      const rawSrc = typeof img === "string" ? img : img.src;
+      const src = encodeURI(rawSrc);
       const coords = getDeterministicCoords(i, totalCount);
 
       // Add a randomized organic offset to each card initialized once on mount

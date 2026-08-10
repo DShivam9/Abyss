@@ -610,7 +610,7 @@ export const ApparatusDualWave: React.FC<ApparatusDualWaveProps & {
               className="absolute inset-0 w-full h-full"
             >
               <img
-                src={activeImage}
+                src={encodeURI(activeImage)}
                 alt={displayItems[activeImageIdx]?.name}
                 className="w-full h-full object-cover select-none pointer-events-none"
               />
