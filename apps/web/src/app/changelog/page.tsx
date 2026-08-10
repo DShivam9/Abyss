@@ -18,6 +18,23 @@ interface CommitEntry {
 
 const CHANGELOG_DATA: CommitEntry[] = [
   {
+    id: "commit-0e",
+    date: "2026-08-10",
+    displayDate: "Aug 10, 2026 • 21:24 IST",
+    tag: "ADDITION",
+    title: "Apparatus 3D Reel Text Component",
+    summary: "Added the Apparatus 3D Reel Text component with smooth 3D rolling text animations, 12 direction variants, and clean line dividers on scroll.",
+    items: [
+      "Added 3D text roll animation with 3D perspective and depth shading",
+      "Added 12 cascade variants (center-outward, left-to-right, right-to-left, edges-inward, alternating wave, and random chaos)",
+      "Added automated hero section loop featuring 'ABYSS 3D REEL' with 3-second delay holds",
+      "Placed 12 hoverable text variants directly on the dark canvas in a 3x4 grid",
+      "Added scroll-triggered horizontal line dividers with alternating wipe animations between rows",
+      "Added clean rolling number counter indicator without brackets",
+      "Optimized scroll rendering for smooth 60fps performance",
+    ],
+  },
+  {
     id: "commit-0d",
     date: "2026-08-09",
     displayDate: "Aug 09, 2026 • 21:55 IST",

@@ -1,0 +1,16 @@
+{
+  "name": "Apparatus Scroll Text Reveal",
+  "slug": "apparatus-scroll-text-reveal",
+  "pitch": "Kinetic per-character scroll reveal text section transitioning smoothly from muted depth to high clarity.",
+  "family": "brutalist",
+  "energy": "cinematic",
+  "triggers": ["scroll"],
+  "tech": ["react", "gsap"],
+  "lifecycle": {
+    "idle": "Initial section loaded with headline and scroll indicator.",
+    "discovery": "First scroll down enters section 2 reveal region.",
+    "buildUp": "Text characters illuminate and lift gradually as scroll progresses.",
+    "peak": "Paragraph is fully crisp, unmasked, and aligned at maximum readability.",
+    "recovery": "Scrolling up gently recedes text depth back to initial state."
+  }
+}

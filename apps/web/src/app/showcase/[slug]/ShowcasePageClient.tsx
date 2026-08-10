@@ -83,8 +83,9 @@ export default function ShowcasePageClient({ slug }: { slug: string }) {
     "apparatus-cinematic-unstack",
     "apparatus-parallax-bleed",
     "apparatus-curved-scroll-wipe",
-    "apparatus-arc-drift-gallery",
+    "apparatus-arc-drift-gallery"
   ]);
+
   const isSelfContainedScroll = SELF_CONTAINED_SCROLL.has(slug);
 
   const previewType = meta.previewType || (meta.category === "scroll" ? "scroll" : meta.category === "text" ? "text" : "shader");
@@ -99,7 +100,17 @@ export default function ShowcasePageClient({ slug }: { slug: string }) {
   };
 
   const renderLayout = () => {
+    if (isSelfContainedScroll) {
+      return (
+        <div className="relative w-full bg-[#070708]">
+          {renderComponent()}
+        </div>
+      );
+    }
+
+
     if (isText) {
+
       return (
         <div className="relative w-full bg-[#070708] min-h-screen">
           {renderComponent()}

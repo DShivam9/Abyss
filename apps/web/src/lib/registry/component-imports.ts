@@ -44,6 +44,6 @@ export const COMPONENT_IMPORTS: Record<string, React.ComponentType<VesselCompone
   "apparatus-arc-drift-gallery": dynamic(() => import("../../../../../packages/core/src/components/apparatus-arc-drift-gallery"), { ssr: false }),
   "apparatus-curved-scroll-wipe": dynamic(() => import("../../../../../packages/core/src/components/apparatus-curved-scroll-wipe"), { ssr: false }),
   "apparatus-image-snake-trail": dynamic(() => import("../../../../../packages/core/src/components/apparatus-image-snake-trail"), { ssr: false }),
-  "apparatus-3d-cursor-trail": dynamic(() => import("../../../../../packages/core/src/components/apparatus-3d-cursor-trail"), { ssr: false })
+  "apparatus-3d-cursor-trail": dynamic(() => import("../../../../../packages/core/src/components/apparatus-3d-cursor-trail"), { ssr: false }),
+  "apparatus-scroll-text-reveal": dynamic(() => import("../../../../../packages/core/src/components/apparatus-scroll-text-reveal"), { ssr: false }) // v29-no-square-brackets
 };
-

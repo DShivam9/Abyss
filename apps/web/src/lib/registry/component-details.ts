@@ -894,8 +894,26 @@ export const COMPONENT_DETAILS: Record<string, ComponentDetail> = {
       { type: "slider", key: "imageSize", label: "3D Image Size", default: 2.4, min: 0.5, max: 4.5, step: 0.1 },
       { type: "slider", key: "lifespan", label: "Card Lifespan", default: 3.0, min: 1.0, max: 6.0, step: 0.2, unit: "s" },
       { type: "slider", key: "fallSpeed", label: "Void Fall Speed", default: 2.4, min: 0.5, max: 8.0, step: 0.5 },
-      { type: "slider", key: "cameraParallax", label: "3D Camera Parallax", default: 2.8, min: 0.5, max: 6.0, step: 0.2 },
-      { type: "slider", key: "spinSpeed", label: "3D Spin Velocity", default: 1.0, min: 0.2, max: 4.0, step: 0.1 }
+      { type: "slider", key: "cameraParallax", label: "3D Camera Parallax", default: 2.8, min: 0.5, max: 6.0, step: 0.2 }
+    ]
+  },
+  "apparatus-scroll-text-reveal": {
+    id: "71",
+    label: "3D REEL TEXT",
+    filename: "",
+    desc: "Two-section text component shell with header hero and active component canvas.",
+    slug: "apparatus-scroll-text-reveal",
+    category: "text",
+    subtype: "reveal",
+    tags: ["Text", "Scroll", "GSAP", "Typography"],
+    controls: [
+      { type: "slider", key: "speed", label: "Speed", default: 1.0, min: 0.2, max: 3.0, step: 0.1 },
+      { type: "slider", key: "stagger", label: "Center Stagger", default: 0.20, min: 0.05, max: 0.5, step: 0.01, unit: "s" },
+      { type: "slider", key: "fontSize", label: "Line 1 Size", default: 96, min: 48, max: 140, step: 4, unit: "px" },
+      { type: "slider", key: "letterSpacing", label: "Letter Spacing", default: -2, min: -10, max: 10, step: 1, unit: "px" },
+      { type: "slider", key: "lineHeight", label: "Line Height", default: 1.0, min: 0.8, max: 1.8, step: 0.05 },
+      { type: "slider", key: "scrubSmoothness", label: "Scrub Weight", default: 0.8, min: 0.1, max: 2.0, step: 0.1, unit: "s" }
     ]
   }
 };
+
