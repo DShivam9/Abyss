@@ -14,15 +14,15 @@ export async function GET(req: NextRequest) {
   // Resolve placeholder slugs to their actual implementation folders
   const SLUG_TO_FOLDER: Record<string, string> = {
     // Placeholders mapping to merlin-knights
-    "apparatus-fblf": "merlin-knights",
+    "depth-silhouette": "merlin-knights",
     "stippled-dark": "merlin-knights",
-    "apparatus-dajd": "merlin-knights",
-    "apparatus-jjjj": "merlin-knights",
-    "apparatus-hoqnl": "merlin-knights",
-    "apparatus-underscore": "merlin-knights",
-    "apparatus-stshsh": "merlin-knights",
-    "apparatus-merged-v3": "merlin-knights",
-    "apparatus-ldhad": "merlin-knights",
+    "dajd": "merlin-knights",
+    "jjjj": "merlin-knights",
+    "procedural-atlas": "merlin-knights",
+    "underscore": "merlin-knights",
+    "stshsh": "merlin-knights",
+    "merged-v3": "merlin-knights",
+    "ldhad": "merlin-knights",
   };
 
   const resolvedSlug = SLUG_TO_FOLDER[slug] || slug;

@@ -12,9 +12,7 @@ const CATEGORIES = [
   { id: "gallary", label: "Gallery", color: "#c4719d" },
   { id: "transition", label: "Transition", color: "#6ec49a" },
   { id: "text", label: "Text", color: "#e88034" },
-  { id: "svg", label: "SVG", color: "#00f0ff" },
   { id: "image", label: "Image", color: "#e05b5b" },
-  { id: "hybrid", label: "Hybrid", color: "#5b9cdf" },
 ];
 
 const ALL_COMPONENTS = Object.values(COMPONENT_DETAILS);
@@ -41,12 +39,12 @@ function CatalogContent() {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
 
-  // Group components by category
+  // Group components by category (hiding empty categories)
   const categoryGroups = useMemo(() => {
     return CATEGORIES.map((cat) => ({
       ...cat,
       components: ALL_COMPONENTS.filter((c) => c.category === cat.id),
-    }));
+    })).filter((group) => group.components.length > 0);
   }, []);
 
   // Selected component object

@@ -435,7 +435,7 @@ export default function MorphShowcasePage() {
 
         <div className="absolute top-6 left-6 z-[9999] pointer-events-auto">
           <Link
-            href="/components/apparatus-layout-morph"
+            href="/components"
             className="font-mono text-[10px] font-bold tracking-widest text-neutral-400 hover:text-white hover:border-[rgba(180,160,140,0.4)] transition-all bg-[#0d0d0f]/80 border border-neutral-900 px-5 py-2.5 rounded-full backdrop-blur-md"
           >
             ← BACK

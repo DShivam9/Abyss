@@ -1,8 +1,0 @@
-{
-  "name": "apparatus-3d-typography-grid",
-  "displayName": "Apparatus 3D Typography Grid",
-  "description": "A 3x3 specimen grid featuring editorial headlines and giant 3D extruded wireframe letterforms that rotate in 3D spatial depth on scroll and hover.",
-  "category": "text",
-  "tags": ["GSAP", "Typography", "3D", "Wireframe", "Editorial"],
-  "author": "vessel"
-}

@@ -30,7 +30,7 @@ export default function ShowcasePageClient({ slug }: { slug: string }) {
   const [controlValues, setControlValues] = useState<Record<string, number | boolean | string>>(initialValues);
 
   const handleControlChange = (key: string, value: number | boolean | string) => {
-    if (slug === "apparatus-depth-swim" && key === "selectedVariant") {
+    if (slug === "depth-swim" && key === "selectedVariant") {
       const presets: Record<string, Record<string, number>> = {
         tunnel: { depthRange: 1600, maxBlur: 18, cursorParallaxPower: 40, cardScale: 1.0, hoverTiltMax: 8, ambientOpacity: 0.35, ambientBlur: 5 },
         matrix: { depthRange: 700, maxBlur: 6, cursorParallaxPower: 55, cardScale: 1.05, hoverTiltMax: 14, ambientOpacity: 0.20, ambientBlur: 40 },
@@ -74,16 +74,13 @@ export default function ShowcasePageClient({ slug }: { slug: string }) {
   // and don't consume the scrollProgress prop from ScrollShowcaseLayout.
   // Route them to GalleryShowcaseLayout to avoid black-screen scroll conflicts.
   const SELF_CONTAINED_SCROLL = new Set([
-    "apparatus-dual-wave",
-    "apparatus-phase-drift",
-    "apparatus-depth-swim",
-    "apparatus-cylinder-scroll",
-    "apparatus-layout-morph",
-    "apparatus-3d-typography-grid",
-    "apparatus-cinematic-unstack",
-    "apparatus-parallax-bleed",
-    "apparatus-curved-scroll-wipe",
-    "apparatus-arc-drift-gallery"
+    "dual-wave",
+    "phase-drift",
+    "depth-swim",
+    "cylinder-scroll",
+    "parallax-bleed",
+    "curved-scroll-wipe",
+    "arc-drift-gallery"
   ]);
 
   const isSelfContainedScroll = SELF_CONTAINED_SCROLL.has(slug);

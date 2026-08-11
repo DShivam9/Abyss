@@ -79,7 +79,7 @@ export function ComponentCanvas({
       e.stopPropagation();
 
       const clampedDeltaY = Math.max(-80, Math.min(80, e.deltaY));
-      const factor = previewType === "gallery" ? 0.0001 : slug === "apparatus-erosion-map" ? 0.00018 : 0.00015; // Perfect 1-2 flicks pace
+      const factor = previewType === "gallery" ? 0.0001 : slug === "erosion-map" ? 0.00018 : 0.00015; // Perfect 1-2 flicks pace
       const nextUnclamped = targetProgress.current + clampedDeltaY * factor;
 
       // Absorbs rapid wheel spikes: limit target distance queue from current progress
@@ -116,7 +116,7 @@ export function ComponentCanvas({
     };
   }, [previewType, slug]);
 
-  // Gallery drag state (for apparatus-ribbon and gallery previews)
+  // Gallery drag state (for ribbon and gallery previews)
   const [isDragging, setIsDragging] = useState(false);
   const dragStartXRef = useRef(0);
   const progressAtDragStartRef = useRef(0);

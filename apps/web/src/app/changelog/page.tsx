@@ -18,6 +18,35 @@ interface CommitEntry {
 
 const CHANGELOG_DATA: CommitEntry[] = [
   {
+    id: "commit-14",
+    date: "2026-08-11",
+    displayDate: "Aug 11, 2026 • 13:35 IST",
+    tag: "MAJOR",
+    title: "Library Refactor & Quality Standard Overhaul",
+    summary: "Renamed product library to Abyss, purged legacy Apparatus prefixes, standardized asset thumbnails, and refined component quality standards.",
+    items: [
+      "Renamed core library to Abyss and updated technical documentation",
+      "Purged legacy 'apparatus-' prefix across component paths, registry keys, and exports",
+      "Standardized component preview thumbnails with curated high-resolution WebP graphics",
+      "Retired initial components (Elastic Membrane, Turbulence Lens, Page Fade Shift, Venetian Blinds, Page Overlay Wipe, Origin Expand, Layout Morph, Cinematic Unstack, 3D Typography Grid) for redesign — these concepts will return in future releases with elevated interaction models",
+      "Refined canvas layout framing for Procedural Atlas and filtered empty catalog categories",
+    ],
+  },
+  {
+    id: "commit-13",
+    date: "2026-08-11",
+    displayDate: "Aug 11, 2026 • 13:30 IST",
+    tag: "FIX",
+    title: "Abyss Cursor Fall Camera Orbit & Viewport Expansion",
+    summary: "Expanded camera perspective and refined edge-tracking stability for Abyss Cursor Fall.",
+    items: [
+      "Expanded 3D camera perspective for a spacious, un-congested void environment",
+      "Stabilized camera target tracking across extreme screen boundaries",
+      "Smoothed camera roll tilt motion during high-velocity cursor gestures",
+      "Enhanced scroll wheel response for continuous camera zoom adjustments",
+    ],
+  },
+  {
     id: "commit-0f",
     date: "2026-08-10",
     displayDate: "Aug 10, 2026 • 21:37 IST",
