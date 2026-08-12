@@ -206,10 +206,91 @@
     transition: transform 0.25s cubic-bezier(0.0, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
   .transition-drop {
-    transition: transform 0.2s cubic-bezier(0.4, 0, 1, 1);
+    transition: transform 0.25s cubic-bezier(0.4, 0, 1, 1);
   }
   .active-press {
     transition: transform 0.08s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  /* ─── Back Button Arrow Roll Effect ─── */
+  .back-btn-arrow-1,
+  .back-btn-arrow-2 {
+    position: absolute;
+    inset: 0;
+    width: 1.25rem;
+    height: 1.25rem;
+    color: #666666;
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), color 0.25s ease;
+  }
+  .back-btn-arrow-1 {
+    transform: translateX(0);
+  }
+  .back-btn-arrow-2 {
+    transform: translateX(100%);
+  }
+  .back-btn-link:hover .back-btn-arrow-1,
+  .back-btn-link:hover .back-btn-arrow-2 {
+    color: #a3e635;
+  }
+  .back-btn-link:hover .back-btn-arrow-1 {
+    transform: translateX(-100%);
+  }
+  .back-btn-link:hover .back-btn-arrow-2 {
+    transform: translateX(0);
+  }
+
+  /* ─── Docs Sidebar List Rules ─── */
+  .docs-sidebar-list {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+  }
+  .docs-sidebar-row {
+    display: flex;
+    align-items: center;
+    height: 10px;
+  }
+  .docs-sidebar-row.interactive {
+    cursor: pointer;
+  }
+  .docs-sidebar-row.placeholder {
+    pointer-events: none;
+  }
+  .docs-sidebar-line-wrapper {
+    width: 48px;
+    display: flex;
+    justify-content: flex-start;
+    margin-right: 10px;
+    flex-shrink: 0;
+    pointer-events: none;
+  }
+  .docs-sidebar-line {
+    width: 24px;
+    height: 1px;
+    background-color: #222222;
+    transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.25s ease;
+  }
+  .docs-sidebar-row.vernier-tick .docs-sidebar-line {
+    width: 32px;
+    background-color: #383838;
+  }
+  .docs-sidebar-text {
+    font-size: 0.85rem;
+    white-space: nowrap;
+    letter-spacing: -0.01em;
+    color: #666666;
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), color 0.25s ease;
+  }
+  
+  .docs-sidebar-row.interactive:hover .docs-sidebar-line,
+  .docs-sidebar-row.interactive.is-selected .docs-sidebar-line {
+    width: 48px !important;
+    background-color: #a3e635 !important;
+  }
+  .docs-sidebar-row.interactive:hover .docs-sidebar-text,
+  .docs-sidebar-row.interactive.is-selected .docs-sidebar-text {
+    transform: translateX(16px);
+    color: #a3e635;
   }
 }
 

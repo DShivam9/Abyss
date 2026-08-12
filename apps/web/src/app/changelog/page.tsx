@@ -18,6 +18,36 @@ interface CommitEntry {
 
 const CHANGELOG_DATA: CommitEntry[] = [
   {
+    id: "commit-16",
+    date: "2026-08-12",
+    displayDate: "Aug 12, 2026 • 13:46 IST",
+    tag: "ADDITION",
+    title: "Tracklist Gallery Component & Audio Integration",
+    summary: "Introduced the Tracklist Gallery component featuring kinetic album artwork transitions, synchronized audio previews, and ambient background color crossfading.",
+    items: [
+      "Added Tracklist Gallery component with kinetic album artwork motion and interactive track selection",
+      "Added ambient background color crossfading tuned to track art color palettes",
+      "Added synchronized audio preview scrubbing on active track change",
+      "Streamlined main project documentation and overview presentation",
+    ],
+  },
+  {
+    id: "commit-15",
+    date: "2026-08-11",
+    displayDate: "Aug 11, 2026 • 22:20 IST",
+    tag: "MAJOR",
+    title: "Initial Hero Section & 3D Shatter Motion",
+    summary: "Built the initial hero section featuring 3D rolling typography, interactive shatter globe backdrop, and stark lime CTA hover interaction.",
+    items: [
+      "Built initial hero section with top navigation and 3D rolling text typography",
+      "Added staggered 3D photo tile assembly build sequence for the hero globe",
+      "Added pre-shatter anticipation tremor with micro-vibrations and scale contraction",
+      "Added hero action button with hover-reveal stark lime arrow circle",
+      "Optimized 3D WebGL render loop for smooth 60fps performance",
+      "Prevented sphere from re-assembling on click once shattered",
+    ],
+  },
+  {
     id: "commit-14",
     date: "2026-08-11",
     displayDate: "Aug 11, 2026 • 13:35 IST",
@@ -293,20 +323,6 @@ export default function ChangelogPage() {
     <div className="min-h-screen bg-[#0A0A0A] text-white font-sans selection:bg-white selection:text-black">
       {/* Top Bar Header */}
       <header className="sticky top-0 z-40 w-full bg-[#0A0A0A]/90 backdrop-blur-md border-b border-neutral-900 h-14 flex items-center justify-between px-6 lg:px-12">
-        <div className="flex items-center gap-3 font-mono text-xs">
-          <Link
-            href="/components"
-            className="flex items-center gap-2 font-bold tracking-widest text-white hover:text-neutral-300 transition-colors uppercase group"
-          >
-            <span className="text-white group-hover:rotate-45 transition-transform duration-300">✦</span>
-            <span>ABYSS</span>
-          </Link>
-          <span className="text-neutral-800">/</span>
-          <span className="text-neutral-400 font-medium tracking-wider uppercase">
-            CHANGELOG
-          </span>
-        </div>
-
         <Link
           href="/components"
           className="flex items-center gap-2 font-mono text-xs text-neutral-400 hover:text-white transition-colors py-1.5 px-3 rounded-lg hover:bg-neutral-900 border border-transparent hover:border-neutral-800 active:scale-[0.98]"

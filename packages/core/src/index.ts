@@ -37,6 +37,10 @@ export * from "./components/gravity-cursor";
 export * from "./components/3d-shatter-sphere";
 export * from "./components/ripple-scramble";
 export * from "./components/curved-scroll-wipe";
+export * from "./components/apparatus-tracklist-gallery";
+
+
+
 
 
 

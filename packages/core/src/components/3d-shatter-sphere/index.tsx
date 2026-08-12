@@ -35,6 +35,9 @@ export interface Apparatus3DShatterSphereProps extends VesselComponentProps {
   autoRotateSpeed?: number; // Idle 3D spin speed (0 - 2.5)
   itemCount?: number; // Number of cards on 3D sphere (20 - 60)
   shapeMode?: "sphere" | "cuboid" | "cuboid-grid"; // 3D Geometry variant
+  showCenterText?: boolean; // Control visibility of center text overlay
+  autoShatterDelay?: number; // Delay in ms to automatically shatter on mount
+  disableRebuildOnClick?: boolean; // Prevent clicking from re-assembling once shattered
 }
 
 interface MeshData {
@@ -51,6 +54,9 @@ export default function Apparatus3DShatterSphere({
   autoRotateSpeed = 0.5,
   itemCount = 42,
   shapeMode = "sphere",
+  showCenterText = true,
+  autoShatterDelay = 0,
+  disableRebuildOnClick = false,
   className = "",
   style = {},
   onLifecycleChange,
@@ -75,7 +81,8 @@ export default function Apparatus3DShatterSphere({
     shapeModeRef.current = shapeMode;
   }, [sphereRadius, shatterForce, cardScale, autoRotateSpeed, itemCount, shapeMode]);
 
-  // 3D Shatter State
+  // 3D Shatter & Assembly State
+  const mountTimeRef = useRef<number>(performance.now());
   const [, setIsShattered] = useState<boolean>(false);
   const isShatteredRef = useRef<boolean>(false);
   const shatterProgressRef = useRef<number>(0);
@@ -100,6 +107,18 @@ export default function Apparatus3DShatterSphere({
       onLifecycleChange(nextState ? "peak" : "idle");
     }
   }, [onLifecycleChange]);
+
+  // Optional Auto Shatter on Mount Delay
+  useEffect(() => {
+    if (autoShatterDelay && autoShatterDelay > 0) {
+      const timer = setTimeout(() => {
+        if (!isShatteredRef.current) {
+          triggerShatter();
+        }
+      }, autoShatterDelay);
+      return () => clearTimeout(timer);
+    }
+  }, [autoShatterDelay, triggerShatter]);
 
   // Intuitive Pointer Drag & Click Disambiguation Handlers (Drag Right -> Move Right)
   useEffect(() => {
@@ -134,7 +153,9 @@ export default function Apparatus3DShatterSphere({
         const duration = performance.now() - pointerStartRef.current.time;
 
         if (dist < 6 && duration < 350) {
-          triggerShatter();
+          if (!disableRebuildOnClick || !isShatteredRef.current) {
+            triggerShatter();
+          }
         }
       }
     };
@@ -231,6 +252,7 @@ export default function Apparatus3DShatterSphere({
     });
     const textMesh = new THREE.Mesh(textGeo, textMat);
     textMesh.position.set(0, 0, 0);
+    textMesh.visible = showCenterText;
     scene.add(textMesh);
 
     // 5. Load Texture Pool & Create Vibrant 3D Image Planes
@@ -465,6 +487,9 @@ export default function Apparatus3DShatterSphere({
       const tiltX = velXRef.current * 1.6;
       const tiltY = velYRef.current * 1.6;
 
+      // Assembly Build Animation Progress (3.5s Staggered Entrance)
+      const elapsedSec = (time - mountTimeRef.current) / 1000;
+
       meshesData.forEach((data, i) => {
         // Micro Stagger + Spring Elastic Overshoot
         const staggerRatio = i / totalItems;
@@ -472,11 +497,33 @@ export default function Apparatus3DShatterSphere({
         const elasticBounce = Math.sin(tileSP * Math.PI) * 0.05;
         const progress = tileSP + elasticBounce;
 
+        // Assembly Build Calculation (7.0s total window, 4.0s stagger spread)
+        const staggerDelay = (i / totalItems) * 4.0;
+        const tileElapsed = Math.max(0, elapsedSec - staggerDelay);
+        const tileDuration = 3.0;
+        const rawBuildProgress = Math.min(1, tileElapsed / tileDuration);
+        const buildProgress = 1 - Math.pow(1 - rawBuildProgress, 3); // cubic ease out
+        const buildDisplacement = (1 - buildProgress) * 2.2;
+        let buildScale = currentCardScale * (0.3 + buildProgress * 0.7);
+        const buildOpacity = Math.min(1, buildProgress * 1.5);
+
+        // Pre-Shatter Anticipation Tremor & Compression (750ms right before auto-shatter)
+        let anticipationDisplace = 0;
+        if (autoShatterDelay > 0 && !isShatteredRef.current) {
+          const shatterTimeSec = autoShatterDelay / 1000;
+          const anticipStart = shatterTimeSec - 0.75;
+          if (elapsedSec >= anticipStart && elapsedSec < shatterTimeSec) {
+            const ratio = (elapsedSec - anticipStart) / 0.75;
+            anticipationDisplace = Math.sin(time * 0.045 + i * 1.5) * ratio * 0.05;
+            buildScale *= 1.0 - Math.sin(ratio * Math.PI) * 0.07;
+          }
+        }
+
         if (activeShapeMode === "cuboid") {
           // Monolith Cube: 6 Monolith Vault Wall Unfold & Sliding Displacement
-          const pushDist = 1 + progress * currentShatterForce * 1.25;
-          const scaledPos = data.unitPos.clone().multiplyScalar(effectiveDistance * pushDist);
-          data.mesh.position.copy(scaledPos);
+          const pushDist = (1 + buildDisplacement + anticipationDisplace) + progress * currentShatterForce * 1.25;
+          const dist = effectiveDistance * pushDist;
+          data.mesh.position.set(data.unitPos.x * dist, data.unitPos.y * dist, data.unitPos.z * dist);
 
           // Hinge unfold tilt on shatter
           const hAngle = progress * 0.65 * (i % 2 === 0 ? 1 : -1);
@@ -485,12 +532,12 @@ export default function Apparatus3DShatterSphere({
             data.baseRot.y + tiltY + hAngle * 0.5,
             data.baseRot.z
           );
-          data.material.opacity = 1.0;
+          data.material.opacity = buildOpacity;
         } else if (activeShapeMode === "cuboid-grid") {
           // Cuboid Grid: Deconstructed Matrix Blueprint Dispersal
-          const matrixDisplace = 1 + progress * currentShatterForce * 1.1;
-          const scaledPos = data.unitPos.clone().multiplyScalar(effectiveDistance * matrixDisplace);
-          data.mesh.position.copy(scaledPos);
+          const matrixDisplace = (1 + buildDisplacement + anticipationDisplace) + progress * currentShatterForce * 1.1;
+          const dist = effectiveDistance * matrixDisplace;
+          data.mesh.position.set(data.unitPos.x * dist, data.unitPos.y * dist, data.unitPos.z * dist);
 
           // Z-axis matrix panel rotation on shatter
           const zSpin = progress * Math.PI * (i % 2 === 0 ? 0.4 : -0.4);
@@ -499,22 +546,22 @@ export default function Apparatus3DShatterSphere({
             data.baseRot.y + tiltY,
             data.baseRot.z + zSpin
           );
-          data.material.opacity = 1.0;
+          data.material.opacity = buildOpacity;
         } else {
           // Default Sphere: Spherical Radial Burst
-          const burstDist = 1 + progress * currentShatterForce * 0.85;
-          const scaledPos = data.unitPos.clone().multiplyScalar(effectiveDistance * burstDist);
-          data.mesh.position.copy(scaledPos);
+          const burstDist = (1 + buildDisplacement + anticipationDisplace) + progress * currentShatterForce * 0.85;
+          const dist = effectiveDistance * burstDist;
+          data.mesh.position.set(data.unitPos.x * dist, data.unitPos.y * dist, data.unitPos.z * dist);
 
           data.mesh.rotation.set(
             data.baseRot.x + tiltX,
             data.baseRot.y + tiltY,
             data.baseRot.z
           );
-          data.material.opacity = 1.0;
+          data.material.opacity = buildOpacity;
         }
 
-        data.mesh.scale.set(currentCardScale, currentCardScale, currentCardScale);
+        data.mesh.scale.set(buildScale, buildScale, buildScale);
       });
 
       // Render WebGL Frame

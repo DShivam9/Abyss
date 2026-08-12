@@ -16,3 +16,12 @@ diff.txt
 graphify-out/
 MEMORY.md
 skills-lock.json
+
+# Local audio and thumbnail assets ignored for apparatus-tracklist-gallery
+apps/web/public/audio/apparatus-tracklist-gallery/*.mp3
+apps/web/public/images/apparatus-tracklist-gallery/*
+!apps/web/public/images/apparatus-tracklist-gallery/.gitkeep
+
+# Ignore prototype HTML pages
+apps/web/public/*.html
+

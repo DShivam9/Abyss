@@ -673,6 +673,25 @@ export const COMPONENT_DETAILS: Record<string, ComponentDetail> = {
       { type: "slider", key: "lineHeight", label: "Line Height", default: 1.0, min: 0.8, max: 1.8, step: 0.05 },
       { type: "slider", key: "scrubSmoothness", label: "Scrub Weight", default: 0.8, min: 0.1, max: 2.0, step: 0.1, unit: "s" }
     ]
+  },
+  "apparatus-tracklist-gallery": {
+    id: "73",
+    label: "Tracklist Gallery",
+    filename: "Gallary/cosmos_140351120.webp",
+    desc: "Minimalist editorial tracklist gallery mapping scroll progression to album artwork crossfades and audio metadata.",
+    slug: "apparatus-tracklist-gallery",
+    category: "gallary",
+    subtype: "audio-index",
+    tags: ["Gallery", "Tracklist", "Audio", "Scroll", "GSAP", "Typography"],
+    controls: [
+      { type: "slider", key: "scrubSmoothness", label: "Scrub Weight", default: 0.8, min: 0.1, max: 2.0, step: 0.1, unit: "s" },
+      { type: "slider", key: "titleSize", label: "Title Size", default: 48, min: 24, max: 96, step: 2, unit: "px" },
+      { type: "slider", key: "artworkCrossfade", label: "Artwork Crossfade", default: 0.5, min: 0.1, max: 1.5, step: 0.1, unit: "s" },
+      { type: "slider", key: "itemScrollDistance", label: "Track Height", default: 400, min: 200, max: 800, step: 50, unit: "px" }
+    ]
   }
 };
+
+
+
 
