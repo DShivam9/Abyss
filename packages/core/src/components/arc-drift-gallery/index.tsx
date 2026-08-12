@@ -18,8 +18,6 @@ const A_IMAGES: string[] = [
   "/images/components images/scroll/a7.webp",
 ];
 
-const EMIL_EASE = "cubic-bezier(0.32, 0.72, 0, 1)";
-
 export const ApparatusArcDriftGallery: React.FC<ApparatusArcDriftGalleryProps> = ({
   images = [],
   thumbnailWidth = 180,

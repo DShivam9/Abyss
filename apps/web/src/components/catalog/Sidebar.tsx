@@ -553,7 +553,12 @@ function ResourceLinkItem({ href, label, icon, isExternal = false }: ResourceLin
   );
 
   return (
-    <a href={href} target="_blank" rel="noopener noreferrer" className="block w-full">
+    <a
+      href={href}
+      target={isExternal ? "_blank" : undefined}
+      rel={isExternal ? "noopener noreferrer" : undefined}
+      className="block w-full"
+    >
       {content}
     </a>
   );

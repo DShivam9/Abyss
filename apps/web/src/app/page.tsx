@@ -102,7 +102,7 @@ export default function HomePage() {
         const steps = getStepIndices(chars.length, mode);
         const stepDelay = staggerVal * 0.4;
 
-        const tweens: { topFrom: any; topTo: any; botFrom: any; botTo: any; delay: number; duration: number; topEl: Element; botEl: Element }[] = [];
+        const tweens: { topFrom: Record<string, unknown>; topTo: Record<string, unknown>; botFrom: Record<string, unknown>; botTo: Record<string, unknown>; delay: number; duration: number; topEl: Element; botEl: Element }[] = [];
 
         wrappers.forEach((wrapperEl, idx) => {
           const trackTop = wrapperEl.querySelector(".track-top");
