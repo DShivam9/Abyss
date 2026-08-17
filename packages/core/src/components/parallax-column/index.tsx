@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
+import Lenis from "lenis";
 import { ApparatusParallaxColumnProps } from "./types";
 
 // Default premium images from Abyss assets — ultra-optimized, no repeats across columns
@@ -19,22 +20,18 @@ const DEFAULT_RIGHT_IMAGES = [
   "/images/components%20images/scroll/Glowing%20White%20Horse.webp"
 ];
 
-export const ApparatusParallaxColumn: React.FC<ApparatusParallaxColumnProps & {
-  speedFactor?: number;
-  splitRatio?: number;
-  cropAmount?: number;
-  bgScale?: number;
-  inertia?: number;
-  autoScrollSpeed?: number;
-  columnGap?: number;
-  imageGap?: number;
-  motionVariant?: "classic" | "cylinder" | "convex";
-  borderRadius?: number;
-  concaveDepth?: number;
-  concaveTilt?: number;
-  convexBulge?: number;
-  convexTilt?: number;
-}> = ({
+// Baked constants for refined motion and geometry
+const BAKED_SPLIT_RATIO = 50;
+const BAKED_SPEED_FACTOR = 1.0;
+const BAKED_BG_SCALE = 40;
+const BAKED_INERTIA = 4;
+const BAKED_AUTO_SCROLL_SPEED = 25;
+const BAKED_CONCAVE_DEPTH = 520;
+const BAKED_CONCAVE_TILT = 42;
+const BAKED_CONVEX_BULGE = 480;
+const BAKED_CONVEX_TILT = 38;
+
+export const ApparatusParallaxColumn: React.FC<ApparatusParallaxColumnProps> = ({
   leftImages,
   rightImages,
   imageSrc,
@@ -42,21 +39,11 @@ export const ApparatusParallaxColumn: React.FC<ApparatusParallaxColumnProps & {
   style,
   onLifecycleChange,
   scrollProgress = 0,
-  speedFactor: propSpeedFactor,
-  splitRatio: propSplitRatio,
-  cropAmount: propCropAmount,
-  bgScale: propBgScale,
-  inertia: propInertia,
-  autoScrollSpeed: propAutoScrollSpeed,
-  columnGap: propColumnGap,
-  imageGap: propImageGap,
+  columnGap = 4,
+  imageGap = 4,
   motionVariant = "classic",
-  borderRadius: propBorderRadius,
-  concaveDepth: propConcaveDepth,
-  concaveTilt: propConcaveTilt,
-  convexBulge: propConvexBulge,
-  convexTilt: propConvexTilt,
-  parallaxIntensity: propParallaxIntensity,
+  borderRadius = 8,
+  parallaxIntensity = 60,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const leftColRef = useRef<HTMLDivElement>(null);
@@ -69,78 +56,46 @@ export const ApparatusParallaxColumn: React.FC<ApparatusParallaxColumnProps & {
   // Custom height state determined dynamically
   const [viewportHeight, setViewportHeight] = useState(600);
 
-  // Interactive controls values from props or defaults
-  const splitRatio = propSplitRatio ?? 50;
-  const speedFactor = propSpeedFactor ?? 1.0;
-  const cropAmount = propCropAmount ?? 15;
-  const dividerEnabled = false;
-  const bgScale = propBgScale ?? 40;
-  const inertia = propInertia ?? 4;
-  const autoScrollSpeed = propAutoScrollSpeed ?? 25;
-  const columnGap = propColumnGap ?? 4;
-  const imageGap = propImageGap ?? 4;
-  const borderRadius = propBorderRadius ?? 8;
-  const concaveDepth = propConcaveDepth ?? 500;
-  const concaveTilt = propConcaveTilt ?? 40;
-  const convexBulge = propConvexBulge ?? 500;
-  const convexTilt = propConvexTilt ?? 40;
-  const parallaxIntensity = propParallaxIntensity ?? 60;
-
   const configRef = useRef({
-    splitRatio,
-    speedFactor,
-    cropAmount,
-    dividerEnabled,
-    bgScale,
-    inertia,
-    autoScrollSpeed,
+    splitRatio: BAKED_SPLIT_RATIO,
+    speedFactor: BAKED_SPEED_FACTOR,
+    bgScale: BAKED_BG_SCALE,
+    inertia: BAKED_INERTIA,
+    autoScrollSpeed: BAKED_AUTO_SCROLL_SPEED,
     columnGap,
     imageGap,
     motionVariant,
     borderRadius,
-    concaveDepth,
-    concaveTilt,
-    convexBulge,
-    convexTilt,
-    parallaxIntensity
+    concaveDepth: BAKED_CONCAVE_DEPTH,
+    concaveTilt: BAKED_CONCAVE_TILT,
+    convexBulge: BAKED_CONVEX_BULGE,
+    convexTilt: BAKED_CONVEX_TILT,
+    parallaxIntensity,
   });
 
   useEffect(() => {
     configRef.current = {
-      splitRatio,
-      speedFactor,
-      cropAmount,
-      dividerEnabled,
-      bgScale,
-      inertia,
-      autoScrollSpeed,
+      splitRatio: BAKED_SPLIT_RATIO,
+      speedFactor: BAKED_SPEED_FACTOR,
+      bgScale: BAKED_BG_SCALE,
+      inertia: BAKED_INERTIA,
+      autoScrollSpeed: BAKED_AUTO_SCROLL_SPEED,
       columnGap,
       imageGap,
       motionVariant,
       borderRadius,
-      concaveDepth,
-      concaveTilt,
-      convexBulge,
-      convexTilt,
-      parallaxIntensity
+      concaveDepth: BAKED_CONCAVE_DEPTH,
+      concaveTilt: BAKED_CONCAVE_TILT,
+      convexBulge: BAKED_CONVEX_BULGE,
+      convexTilt: BAKED_CONVEX_TILT,
+      parallaxIntensity,
     };
   }, [
-    splitRatio,
-    speedFactor,
-    cropAmount,
-    dividerEnabled,
-    bgScale,
-    inertia,
-    autoScrollSpeed,
     columnGap,
     imageGap,
     motionVariant,
     borderRadius,
-    concaveDepth,
-    concaveTilt,
-    convexBulge,
-    convexTilt,
-    parallaxIntensity
+    parallaxIntensity,
   ]);
 
   // Image fallbacks
@@ -194,17 +149,25 @@ export const ApparatusParallaxColumn: React.FC<ApparatusParallaxColumnProps & {
 
       if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
 
-      // Very small delay (120ms) to detect scroll stop and resume drift
+      // Very small delay to detect scroll stop and resume drift smoothly
       scrollTimeoutRef.current = setTimeout(() => {
         isScrollingRef.current = false;
-      }, 120);
+      }, 400);
     }
   }, [scrollProgress]);
 
-  // Direct wheel & touch gesture interceptors for infinite scroll support
+  // Direct wheel & touch gesture interceptors with Lenis smooth scroll integration
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
+
+    const lenis = new Lenis({
+      duration: 1.2,
+      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      smoothWheel: true,
+      wheelMultiplier: 1.0,
+      touchMultiplier: 1.5,
+    });
 
     let touchStartY = 0;
 
@@ -212,14 +175,14 @@ export const ApparatusParallaxColumn: React.FC<ApparatusParallaxColumnProps & {
       // Prevent default browser/page scrolling
       e.preventDefault();
 
-      const wheelDelta = e.deltaY * 0.0015;
+      const wheelDelta = e.deltaY * 0.0009;
       accumulatedProgress.current += wheelDelta;
       isScrollingRef.current = true;
 
       if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
       scrollTimeoutRef.current = setTimeout(() => {
         isScrollingRef.current = false;
-      }, 150);
+      }, 500);
     };
 
     const handleTouchStart = (e: TouchEvent) => {
@@ -235,14 +198,14 @@ export const ApparatusParallaxColumn: React.FC<ApparatusParallaxColumnProps & {
         touchStartY = touchY;
 
         // Smooth touch velocity scaling
-        const touchDelta = deltaY * 0.005;
+        const touchDelta = deltaY * 0.0028;
         accumulatedProgress.current += touchDelta;
         isScrollingRef.current = true;
 
         if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
         scrollTimeoutRef.current = setTimeout(() => {
           isScrollingRef.current = false;
-        }, 150);
+        }, 500);
       }
     };
 
@@ -251,6 +214,7 @@ export const ApparatusParallaxColumn: React.FC<ApparatusParallaxColumnProps & {
     el.addEventListener("touchmove", handleTouchMove, { passive: true });
 
     return () => {
+      lenis.destroy();
       el.removeEventListener("wheel", handleWheel);
       el.removeEventListener("touchstart", handleTouchStart);
       el.removeEventListener("touchmove", handleTouchMove);
@@ -258,12 +222,12 @@ export const ApparatusParallaxColumn: React.FC<ApparatusParallaxColumnProps & {
   }, []);
 
   // Compute card and item dimensions dynamically based on height, scale, and splitRatio
-  const baseCardHeight = viewportHeight * (bgScale / 100) * 0.7;
+  const baseCardHeight = viewportHeight * (BAKED_BG_SCALE / 100) * 0.7;
   const baseCardWidth = baseCardHeight * 0.75; // 3:4 portrait card aspect ratio
   const itemHeight = baseCardHeight + imageGap;
 
-  const leftCardWidth = baseCardWidth * (splitRatio / 50);
-  const rightCardWidth = baseCardWidth * ((100 - splitRatio) / 50);
+  const leftCardWidth = baseCardWidth * (BAKED_SPLIT_RATIO / 50);
+  const rightCardWidth = baseCardWidth * ((100 - BAKED_SPLIT_RATIO) / 50);
 
   const smoothProgressRef = useRef(0);
   const smoothVelocityRef = useRef(0);
@@ -279,11 +243,11 @@ export const ApparatusParallaxColumn: React.FC<ApparatusParallaxColumnProps & {
         accumulatedProgress.current += configRef.current.autoScrollSpeed * 0.00003;
       }
 
-      // 2. Silky 60fps locked inertia momentum
+      // 2. Silky exponential ease dampening with natural inertia
       const diff = accumulatedProgress.current - smoothProgressRef.current;
-      const inertiaFactor = configRef.current.inertia * 0.012;
+      const inertiaFactor = 0.042;
       smoothProgressRef.current += diff * inertiaFactor;
-      smoothVelocityRef.current += (diff - smoothVelocityRef.current) * 0.1;
+      smoothVelocityRef.current += (diff - smoothVelocityRef.current) * 0.06;
 
       const N = displayLeft.length;
       const M = displayRight.length;

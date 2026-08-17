@@ -35,12 +35,14 @@ const DEFAULT_BLEED_SECTIONS = [
   },
 ];
 
+// Baked defaults for smooth physics & kinetic drift
+const BAKED_SCROLL_SPEED = 1.0;
+const BAKED_INERTIAL_DAMPING = 6.0;
+const BAKED_MOUSE_DRIFT = 4;
+
 export interface ApparatusParallaxBleedProps extends VesselComponentProps {
   sections?: typeof DEFAULT_BLEED_SECTIONS;
   parallaxIntensity?: number;
-  scrollSpeed?: number;
-  inertialDamping?: number;
-  mouseDrift?: number;
   blurDepth?: number;
   indicatorStyle?: "dashes" | "dots" | "hidden";
   imageBrightness?: number;
@@ -50,11 +52,8 @@ export interface ApparatusParallaxBleedProps extends VesselComponentProps {
 export default function ApparatusParallaxBleed({
   sections = DEFAULT_BLEED_SECTIONS,
   parallaxIntensity = 45, // 0% - 100% intensity
-  scrollSpeed = 1.0,
-  inertialDamping = 6.0,
-  mouseDrift = 6,
   blurDepth = 280,
-  indicatorStyle = "dashes",
+  indicatorStyle = "dots",
   imageBrightness = 90,
   className = "",
   style = {},
@@ -81,21 +80,15 @@ export default function ApparatusParallaxBleed({
   // ponytail: keeps scroll engine 100% stable when dropdown controls update
   const propsRef = useRef({
     parallaxIntensity,
-    scrollSpeed,
-    inertialDamping,
-    mouseDrift,
     indicatorStyle,
   });
 
   useEffect(() => {
     propsRef.current = {
       parallaxIntensity,
-      scrollSpeed,
-      inertialDamping,
-      mouseDrift,
       indicatorStyle,
     };
-  }, [parallaxIntensity, scrollSpeed, inertialDamping, mouseDrift, indicatorStyle]);
+  }, [parallaxIntensity, indicatorStyle]);
 
   // Parallax ratio calculation (% shift)
   const parallaxOffsetRatio = useMemo(() => {
@@ -146,7 +139,7 @@ export default function ApparatusParallaxBleed({
 
     const handleWheel = (e: WheelEvent) => {
       e.preventDefault();
-      const delta = e.deltaY * 0.00045 * propsRef.current.scrollSpeed;
+      const delta = e.deltaY * 0.00045 * BAKED_SCROLL_SPEED;
       targetProgressRef.current += delta;
     };
 
@@ -157,7 +150,7 @@ export default function ApparatusParallaxBleed({
     const handleTouchMove = (e: TouchEvent) => {
       const deltaY = touchStartY - e.touches[0].clientY;
       touchStartY = e.touches[0].clientY;
-      targetProgressRef.current += deltaY * 0.001 * propsRef.current.scrollSpeed;
+      targetProgressRef.current += deltaY * 0.001 * BAKED_SCROLL_SPEED;
     };
 
     container.addEventListener("wheel", handleWheel, { passive: false });
@@ -181,7 +174,9 @@ export default function ApparatusParallaxBleed({
         const dt = Math.min((time - lastTime) / 1000, 0.1);
         lastTime = time;
 
-        const { inertialDamping: lerpSpeed, mouseDrift: drift, indicatorStyle: indStyle } = propsRef.current;
+        const { indicatorStyle: indStyle } = propsRef.current;
+        const lerpSpeed = BAKED_INERTIAL_DAMPING;
+        const drift = BAKED_MOUSE_DRIFT;
         smoothProgressRef.current += (targetProgressRef.current - smoothProgressRef.current) * (1 - Math.exp(-lerpSpeed * dt));
 
         const p = smoothProgressRef.current;

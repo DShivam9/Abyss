@@ -10,7 +10,7 @@ export function getComponent(slug: string) {
   if (!previewType) {
     const typeMap: Record<string, ComponentDetail["previewType"]> = {
       scroll: "scroll",
-      gallary: "gallery",
+      gallery: "gallery",
       transition: "transition",
       text: "text",
       svg: "svg",

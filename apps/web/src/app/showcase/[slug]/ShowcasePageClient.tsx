@@ -1,31 +1,29 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
-import { AnimatePresence } from "framer-motion";
-import { getComponent } from "@/lib/component-registry";
-import { VesselControls } from "@/components/ui/VesselControls";
-import { getCategoryDefaults } from "@/lib/controls/category-defaults";
+import React, { useState, useMemo, useEffect } from "react";
+import { getComponent } from "@/lib/registry";
 import { ShowcaseChrome } from "@/components/showcase/ShowcaseChrome";
+import { ControlsDrawer } from "@/components/showcase/ControlsDrawer";
 import { ShaderShowcaseLayout } from "@/components/showcase/ShaderShowcaseLayout";
 import { ScrollShowcaseLayout } from "@/components/showcase/ScrollShowcaseLayout";
 import { GalleryShowcaseLayout } from "@/components/showcase/GalleryShowcaseLayout";
 import { TransitionShowcaseLayout } from "@/components/showcase/TransitionShowcaseLayout";
 import { ComponentErrorBoundary } from "@/components/showcase/ComponentErrorBoundary";
+import { GrainOverlay } from "@/components/shared/GrainOverlay";
 
 export default function ShowcasePageClient({ slug }: { slug: string }) {
   const { Component, meta } = getComponent(slug);
   const [controlsOpen, setControlsOpen] = useState(false);
 
-  const categoryDefaults = useMemo(() => (meta ? getCategoryDefaults(meta.category) : []), [meta]);
   const componentControls = useMemo(() => meta?.controls || [], [meta]);
 
   const initialValues = useMemo(() => {
     const init: Record<string, number | boolean | string> = {};
-    [...categoryDefaults, ...componentControls].forEach((ctrl) => {
+    componentControls.forEach((ctrl) => {
       init[ctrl.key] = ctrl.default;
     });
     return init;
-  }, [categoryDefaults, componentControls]);
+  }, [componentControls]);
 
   const [controlValues, setControlValues] = useState<Record<string, number | boolean | string>>(initialValues);
 
@@ -44,18 +42,6 @@ export default function ShowcasePageClient({ slug }: { slug: string }) {
     setControlValues((prev) => ({ ...prev, [key]: value }));
   };
 
-  const handleReset = () => {
-    // Globally preserve active variant/pattern selections when resetting parameters
-    const activeVariantKeys = ["wavePattern", "motionVariant", "selectedVariant", "layoutPattern", "variant", "pattern", "fontFamily"];
-    const preservedVariants: Record<string, string | number | boolean> = {};
-    activeVariantKeys.forEach((key) => {
-      if (controlValues[key] !== undefined) {
-        preservedVariants[key] = controlValues[key];
-      }
-    });
-    setControlValues({ ...initialValues, ...preservedVariants });
-  };
-
   if (!meta || !Component) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-[#070708] font-sans text-sm text-neutral-400">
@@ -71,8 +57,6 @@ export default function ShowcasePageClient({ slug }: { slug: string }) {
     : "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1200&q=80";
 
   // Self-contained scroll components handle their own wheel events internally
-  // and don't consume the scrollProgress prop from ScrollShowcaseLayout.
-  // Route them to GalleryShowcaseLayout to avoid black-screen scroll conflicts.
   const SELF_CONTAINED_SCROLL = new Set([
     "dual-wave",
     "phase-drift",
@@ -88,9 +72,8 @@ export default function ShowcasePageClient({ slug }: { slug: string }) {
   const previewType = meta.previewType || (meta.category === "scroll" ? "scroll" : meta.category === "text" ? "text" : "shader");
   const isText = meta.category === "text" || previewType === "text";
   const isScroll = !isText && !isSelfContainedScroll && (previewType === "scroll" || meta.category === "scroll");
-  const isGallery = !isText && !isScroll && (isSelfContainedScroll || meta.category === "gallary" || meta.category === "svg" || previewType === "gallery" || (meta.category !== "scroll" && (meta.subtype === "gallery" || meta.subtype === "ring")));
+  const isGallery = !isText && !isScroll && (isSelfContainedScroll || meta.category === "gallery" || meta.category === "svg" || previewType === "gallery" || (meta.category !== "scroll" && (meta.subtype === "gallery" || meta.subtype === "ring")));
   const isTransition = !isText && !isSelfContainedScroll && (meta.category === "transition" || previewType === "transition");
-
 
   const renderComponent = () => {
     return <Component imageSrc={defaultImageSrc} {...controlValues} onControlChange={handleControlChange} />;
@@ -105,9 +88,7 @@ export default function ShowcasePageClient({ slug }: { slug: string }) {
       );
     }
 
-
     if (isText) {
-
       return (
         <div className="relative w-full bg-[#070708] min-h-screen">
           {renderComponent()}
@@ -144,28 +125,38 @@ export default function ShowcasePageClient({ slug }: { slug: string }) {
     );
   };
 
-  return (
-    <ShowcaseChrome
-      component={meta}
-      onToggleControls={() => setControlsOpen(!controlsOpen)}
-      controlsOpen={controlsOpen}
-    >
-      <ComponentErrorBoundary fallbackSlug={slug}>
-        {renderLayout()}
-      </ComponentErrorBoundary>
+  const handleReset = () => {
+    const activeVariantKeys = ["wavePattern", "motionVariant", "selectedVariant", "layoutPattern", "variant", "pattern", "fontFamily"];
+    const preservedVariants: Record<string, string | number | boolean> = {};
+    activeVariantKeys.forEach((key) => {
+      if (controlValues[key] !== undefined) {
+        preservedVariants[key] = controlValues[key];
+      }
+    });
+    setControlValues({ ...initialValues, ...preservedVariants });
+  };
 
-      <AnimatePresence>
-        {controlsOpen && (
-          <VesselControls
-            categoryDefaults={categoryDefaults}
-            componentControls={componentControls}
-            values={controlValues}
-            onChange={handleControlChange}
-            onReset={handleReset}
-            onClose={() => setControlsOpen(false)}
-          />
-        )}
-      </AnimatePresence>
-    </ShowcaseChrome>
+  return (
+    <>
+      <GrainOverlay />
+      <ShowcaseChrome
+        component={meta}
+        onToggleControls={() => setControlsOpen((prev) => !prev)}
+        controlsOpen={controlsOpen}
+      >
+        <ComponentErrorBoundary fallbackSlug={slug}>
+          {renderLayout()}
+        </ComponentErrorBoundary>
+
+        <ControlsDrawer
+          controls={componentControls}
+          values={controlValues}
+          onChange={handleControlChange}
+          onReset={handleReset}
+          isOpen={controlsOpen}
+          onClose={() => setControlsOpen(false)}
+        />
+      </ShowcaseChrome>
+    </>
   );
 }

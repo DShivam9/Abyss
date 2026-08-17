@@ -5,7 +5,7 @@
   "family": "transition",
   "energy": "cinematic",
   "triggers": ["scroll"],
-  "tech": ["react", "gsap"],
+  "tech": ["react", "gsap", "lenis"],
   "lifecycle": {
     "idle": "Columns are stationary, with centered images fully unclipped and focused",
     "discovery": "First scroll triggers counter-directional movements in both columns",

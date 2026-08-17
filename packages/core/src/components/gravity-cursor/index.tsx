@@ -39,18 +39,20 @@ const VIBRANT_PALETTE = [
   "#00FFCC", // Hard Bright Turquoise
 ];
 
+// Baked constants for high-performance physics engine
+const BAKED_SPAWN_INTERVAL = 55; // ms between stream spawns
+const BAKED_FRICTION = 0.92; // space friction / slide damping
+const BAKED_MAX_ITEMS = 45; // pre-allocated pool cap
+
 export interface ApparatusGravityCursorProps extends VesselComponentProps {
   gravity?: number; // Gravitational acceleration magnitude (px/frame^2)
   bounceDamping?: number; // Elasticity coefficient (0.1 - 0.95)
-  spawnInterval?: number; // Stream spawn throttle in ms (30ms - 150ms)
   imageSize?: number; // Image box width in px (80 - 240)
-  maxItems?: number; // Maximum active DOM bodies in memory (10 - 80)
   zeroGravity?: boolean; // Zero-gravity mode flag
   gravityMode?: "normal" | "zero-gravity" | "magnetic-repulsor"; // Gravity physics variant
   interactionMode?: "hold-drag" | "cursor-trail"; // Mouse interaction mode
   repelRadius?: number; // Magnetic repeller field radius in px (150 - 600)
   repelForce?: number; // Repulsion shockwave power multiplier (1.0 - 25.0)
-  friction?: number; // Space friction / slide damping (0.80 - 0.99)
 }
 
 interface PhysicsBody {
@@ -76,15 +78,12 @@ interface PhysicsBody {
 export default function ApparatusGravityCursor({
   gravity = 0.55,
   bounceDamping = 0.62,
-  spawnInterval = 55,
   imageSize = 140,
-  maxItems = 45,
   zeroGravity = false,
   gravityMode = "normal",
   interactionMode = "hold-drag",
   repelRadius = 350,
   repelForce = 9.2,
-  friction = 0.92,
   className = "",
   style = {},
   onLifecycleChange,
@@ -96,7 +95,7 @@ export default function ApparatusGravityCursor({
   const currentMode = zeroGravity ? "zero-gravity" : gravityMode;
 
   // Pre-allocated object pool & DOM ref array (Zero React re-render overhead!)
-  const poolSize = Math.max(maxItems, 50);
+  const poolSize = BAKED_MAX_ITEMS;
   const poolRef = useRef<PhysicsBody[]>(
     Array.from({ length: poolSize }, (_, i) => ({
       active: false,
@@ -145,7 +144,7 @@ export default function ApparatusGravityCursor({
   const spawnBody = useCallback(
     (x: number, y: number) => {
       const now = performance.now();
-      if (now - lastSpawnTimeRef.current < spawnInterval) return;
+      if (now - lastSpawnTimeRef.current < BAKED_SPAWN_INTERVAL) return;
       lastSpawnTimeRef.current = now;
 
       const slotIdx = nextSlotRef.current;
@@ -197,7 +196,7 @@ export default function ApparatusGravityCursor({
 
       if (onLifecycleChange) onLifecycleChange("buildUp");
     },
-    [spawnInterval, poolSize, imageSize, currentMode, getNextImage, onLifecycleChange]
+    [poolSize, imageSize, currentMode, getNextImage, onLifecycleChange]
   );
 
   // Pre-populate unique floating images for magnetic-repulsor mode
@@ -410,9 +409,9 @@ export default function ApparatusGravityCursor({
             }
           }
 
-          body.vx *= friction;
-          body.vy *= friction;
-          body.vSpin *= friction * 0.98;
+          body.vx *= BAKED_FRICTION;
+          body.vy *= BAKED_FRICTION;
+          body.vSpin *= BAKED_FRICTION * 0.98;
 
           if (Math.abs(body.vx) < 0.1 && Math.abs(body.vy) < 0.1) {
             body.vy += Math.sin(body.age * 0.02 + body.id) * 0.008;
@@ -520,7 +519,7 @@ export default function ApparatusGravityCursor({
     return () => {
       cancelAnimationFrame(animId);
     };
-  }, [gravity, bounceDamping, imageSize, currentMode, repelRadius, repelForce, friction]);
+  }, [gravity, bounceDamping, imageSize, currentMode, repelRadius, repelForce]);
 
   return (
     <div

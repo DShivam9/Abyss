@@ -136,7 +136,7 @@ export const COMPONENT_DETAILS: Record<string, ComponentDetail> = {
     filename: "Gallary/cosmos_145253936.webp",
     desc: "Scroll to revolve through an immersive 3D ring of images, with the active hero image scaling dynamically at the forefront.",
     slug: "orbit-ring-gallery",
-    category: "gallary",
+    category: "gallery",
     subtype: "ring",
     tags: ["Three.js", "R3F", "GSAP ScrollTrigger", "Framer Motion"],
     previewType: "scroll",
@@ -156,7 +156,7 @@ export const COMPONENT_DETAILS: Record<string, ComponentDetail> = {
     filename: "Transitions/luca-bravo-ii5JY_46xH0-unsplash.webp",
     desc: "A tactile vertical image accordion that unfolds like a folding screen divider, collapsing neighbor panels while revealing title text and folding shadows.",
     slug: "accordion-wall",
-    category: "gallary",
+    category: "gallery",
     subtype: "accordion",
     tags: ["GSAP", "Flexbox", "Crease Shadows"],
     previewType: "transition",
@@ -183,73 +183,13 @@ export const COMPONENT_DETAILS: Record<string, ComponentDetail> = {
         label: "Motion Variant",
         default: "classic",
         options: [
-          { label: "Classic Window Parallax", value: "classic" },
-          { label: "3D Concave Cylinder (Inward)", value: "cylinder" },
-          { label: "3D Convex Cylinder (Outward)", value: "convex" }
+          { label: "Classic", value: "classic" },
+          { label: "Concave", value: "cylinder" },
+          { label: "Convex", value: "convex" }
         ]
       },
-      {
-        type: "slider",
-        key: "cropAmount",
-        label: "Image Framing Crop",
-        default: 15,
-        min: 5,
-        max: 25,
-        step: 1,
-        unit: "%",
-        dependsOn: { key: "motionVariant", value: "classic" }
-      },
-      {
-        type: "slider",
-        key: "concaveDepth",
-        label: "Inward Z-Depth",
-        default: 520,
-        min: 200,
-        max: 800,
-        step: 10,
-        unit: "px",
-        dependsOn: { key: "motionVariant", value: "cylinder" }
-      },
-      {
-        type: "slider",
-        key: "concaveTilt",
-        label: "Inward Pitch Angle",
-        default: 42,
-        min: 10,
-        max: 60,
-        step: 1,
-        unit: "°",
-        dependsOn: { key: "motionVariant", value: "cylinder" }
-      },
-      {
-        type: "slider",
-        key: "convexBulge",
-        label: "Outward Z-Bulge",
-        default: 480,
-        min: 200,
-        max: 800,
-        step: 10,
-        unit: "px",
-        dependsOn: { key: "motionVariant", value: "convex" }
-      },
-      {
-        type: "slider",
-        key: "convexTilt",
-        label: "Outward Pitch Angle",
-        default: 38,
-        min: 10,
-        max: 60,
-        step: 1,
-        unit: "°",
-        dependsOn: { key: "motionVariant", value: "convex" }
-      },
-      { type: "slider", key: "parallaxIntensity", label: "Parallax Intensity", default: 70, min: 0, max: 100, step: 5, unit: "%" },
+      { type: "slider", key: "parallaxIntensity", label: "Parallax Intensity", default: 60, min: 0, max: 100, step: 5, unit: "%" },
       { type: "slider", key: "borderRadius", label: "Corner Radius", default: 8, min: 0, max: 32, step: 1, unit: "px" },
-      { type: "slider", key: "speedFactor", label: "Parallax Speed", default: 1.0, min: 0.5, max: 2.0, step: 0.1 },
-      { type: "slider", key: "splitRatio", label: "Column Split Ratio", default: 50, min: 25, max: 75, step: 1, unit: "%" },
-      { type: "slider", key: "bgScale", label: "Image Scale", default: 40, min: 20, max: 90, step: 5, unit: "%" },
-      { type: "slider", key: "inertia", label: "Motion Smoothness", default: 4, min: 1, max: 15, step: 1 },
-      { type: "slider", key: "autoScrollSpeed", label: "Drift Speed", default: 25, min: 0, max: 60, step: 5 },
       { type: "slider", key: "columnGap", label: "Column Gap Spacing", default: 4, min: 0, max: 48, step: 2, unit: "px" },
       { type: "slider", key: "imageGap", label: "Vertical Image Gap", default: 4, min: 0, max: 48, step: 2, unit: "px" }
     ]
@@ -302,39 +242,20 @@ export const COMPONENT_DETAILS: Record<string, ComponentDetail> = {
       {
         type: "select",
         key: "wavePattern",
-        label: "Wave Path Pattern",
+        label: "Wave Pattern",
         default: "iris",
         options: [
-          { label: "Lens Focus", value: "iris" },
-          { label: "Split Horizon", value: "horizon" },
-          { label: "Center Pinch", value: "hourglass" },
-          { label: "Sine Wave", value: "dualSine" },
-          { label: "Spiral Funnel", value: "vortex" },
-          { label: "Diagonal Slant", value: "shear" }
+          { label: "Lens", value: "iris" },
+          { label: "Horizon", value: "horizon" },
+          { label: "Pinch", value: "hourglass" },
+          { label: "Sine", value: "dualSine" }
         ]
       },
       { type: "slider", key: "scrollDamping", label: "Scroll Damping", default: 0.08, min: 0.01, max: 0.30, step: 0.005 },
-      { type: "slider", key: "spacing", label: "Text Item Spacing", default: 72, min: 35, max: 150, step: 1, unit: "px" },
-      { type: "slider", key: "maxBlur", label: "Depth Blur", default: 2.5, min: 0, max: 10, step: 0.1, unit: "px" },
-      { type: "slider", key: "amplitude", label: "Lens Flare Range", default: 90, min: 20, max: 200, step: 1, unit: "px", dependsOn: { key: "wavePattern", value: "iris" } },
-      { type: "slider", key: "curvature", label: "Lens Curve Softness", default: 0.50, min: 0.1, max: 1.0, step: 0.01, dependsOn: { key: "wavePattern", value: "iris" } },
-      { type: "slider", key: "maxRotation", label: "Lens Tilt Angle", default: 7.5, min: 0, max: 30, step: 0.1, unit: "°", dependsOn: { key: "wavePattern", value: "iris" } },
-      { type: "slider", key: "amplitude", label: "Horizon Spread", default: 85, min: 10, max: 180, step: 1, unit: "px", dependsOn: { key: "wavePattern", value: "horizon" } },
-      { type: "slider", key: "curvature", label: "Slope Angle", default: 0.60, min: 0.1, max: 1.5, step: 0.01, dependsOn: { key: "wavePattern", value: "horizon" } },
-      { type: "slider", key: "maxRotation", label: "Horizon Tilt", default: 7.0, min: 0, max: 25, step: 0.1, unit: "°", dependsOn: { key: "wavePattern", value: "horizon" } },
-      { type: "slider", key: "amplitude", label: "Pinch Width Range", default: 75, min: 10, max: 150, step: 1, unit: "px", dependsOn: { key: "wavePattern", value: "hourglass" } },
-      { type: "slider", key: "curvature", label: "Curvature Profile", default: 0.35, min: 0.0, max: 1.0, step: 0.01, dependsOn: { key: "wavePattern", value: "hourglass" } },
-      { type: "slider", key: "maxRotation", label: "Tilt Angle", default: 6.5, min: 0, max: 30, step: 0.1, unit: "°", dependsOn: { key: "wavePattern", value: "hourglass" } },
-      { type: "slider", key: "cornerAlignment", label: "Corner Alignment", default: 1.0, min: 0, max: 1.0, step: 0.01, dependsOn: { key: "wavePattern", value: "hourglass" } },
-      { type: "slider", key: "frequency", label: "Sine Frequency", default: 1.8, min: 0.5, max: 5.0, step: 0.1, dependsOn: { key: "wavePattern", value: "dualSine" } },
-      { type: "slider", key: "amplitude", label: "Sine Amplitude", default: 70, min: 10, max: 150, step: 1, unit: "px", dependsOn: { key: "wavePattern", value: "dualSine" } },
-      { type: "slider", key: "waveNum", label: "Wave Density", default: 0.45, min: 0.1, max: 1.0, step: 0.01, dependsOn: { key: "wavePattern", value: "dualSine" } },
-      { type: "slider", key: "maxRotation", label: "Tangential Tilt", default: 6.5, min: 0, max: 30, step: 0.1, unit: "°", dependsOn: { key: "wavePattern", value: "dualSine" } },
-      { type: "slider", key: "curvature", label: "Funnel Curve Power", default: 0.85, min: 0.2, max: 2.5, step: 0.05, dependsOn: { key: "wavePattern", value: "vortex" } },
-      { type: "slider", key: "amplitude", label: "Funnel Depth Range", default: 90, min: 20, max: 200, step: 1, unit: "px", dependsOn: { key: "wavePattern", value: "vortex" } },
-      { type: "slider", key: "maxRotation", label: "Funnel Twist Angle", default: 12.0, min: 0, max: 45, step: 0.5, unit: "°", dependsOn: { key: "wavePattern", value: "vortex" } },
-      { type: "slider", key: "maxRotation", label: "Slant Angle", default: 10.0, min: 0, max: 35, step: 0.5, unit: "°", dependsOn: { key: "wavePattern", value: "shear" } },
-      { type: "slider", key: "amplitude", label: "Corridor Width", default: 70, min: 10, max: 150, step: 1, unit: "px", dependsOn: { key: "wavePattern", value: "shear" } }
+      { type: "slider", key: "spacing", label: "Text Spacing", default: 72, min: 35, max: 150, step: 1, unit: "px" },
+      { type: "slider", key: "maxBlur", label: "Progressive Blur", default: 2.5, min: 0, max: 10, step: 0.1, unit: "px" },
+      { type: "slider", key: "amplitude", label: "Wave Amplitude", default: 55, min: 10, max: 200, step: 1, unit: "px" },
+      { type: "slider", key: "maxRotation", label: "Tilt Angle", default: 7.0, min: 0, max: 30, step: 0.1, unit: "°" }
     ]
   },
   "clip-morph": {
@@ -450,7 +371,7 @@ export const COMPONENT_DETAILS: Record<string, ComponentDetail> = {
     filename: "scroll/cosmos_1309660817.webp",
     desc: "Images arranged in a 2D elliptical path. The ring rotates via horizontal dragging, wheel, or arrow keys, bringing the active image to full scale, opacity, and sharp focus.",
     slug: "focus-ring",
-    category: "gallary",
+    category: "gallery",
     subtype: "gallery",
     tags: ["GSAP", "Physics", "Tactile", "Focus Gradient"],
     previewType: "scroll",
@@ -468,7 +389,7 @@ export const COMPONENT_DETAILS: Record<string, ComponentDetail> = {
     filename: "scroll/cosmos_1215932660.webp",
     desc: "Images in a structured grid. Moving your cursor leaves a trailing wake of scale, opacity, and saturation that slowly decays over time, tracing exploration history.",
     slug: "cursor-wake",
-    category: "gallary",
+    category: "gallery",
     subtype: "gallery",
     tags: ["React", "Viscosity", "Performance", "SVG Path Tracing"],
     previewType: "scroll",
@@ -490,13 +411,9 @@ export const COMPONENT_DETAILS: Record<string, ComponentDetail> = {
     tags: ["GSAP", "ScrollTrigger", "Parallax", "Full Bleed", "Cinematic", "Physics"],
     previewType: "scroll",
     controls: [
-      { type: "slider", key: "parallaxIntensity", label: "Internal Parallax Intensity", default: 45, min: 10, max: 100, step: 5, unit: "%" },
-      { type: "slider", key: "scrollSpeed", label: "Scroll Momentum Sensitivity", default: 1.0, min: 0.2, max: 3.0, step: 0.1, unit: "x" },
-      { type: "slider", key: "inertialDamping", label: "Scroll Damping Smoothness", default: 6.0, min: 1.5, max: 12.0, step: 0.5 },
-      { type: "slider", key: "mouseDrift", label: "Cursor Lag Drift Distance", default: 6, min: 0, max: 30, step: 2, unit: "px" },
-      { type: "slider", key: "blurDepth", label: "Bottom Progressive Blur Depth", default: 280, min: 120, max: 400, step: 20, unit: "px" },
-      { type: "select", key: "indicatorStyle", label: "Side Progress Indicator", default: "dashes", options: [{ label: "Precision Segmented Dashes", value: "dashes" }, { label: "Micro Radar Dots", value: "dots" }, { label: "Hidden / Pure Minimalist", value: "hidden" }] },
-      { type: "slider", key: "imageBrightness", label: "Image Brightness Balance", default: 90, min: 50, max: 120, step: 5, unit: "%" }
+      { type: "slider", key: "parallaxIntensity", label: "Internal Parallax", default: 45, min: 10, max: 100, step: 5, unit: "%" },
+      { type: "slider", key: "blurDepth", label: "Progressive Blur", default: 280, min: 120, max: 400, step: 20, unit: "px" },
+      { type: "slider", key: "imageBrightness", label: "Image Brightness", default: 90, min: 50, max: 120, step: 5, unit: "%" }
     ]
   },
   "gravity-cursor": {
@@ -505,21 +422,18 @@ export const COMPONENT_DETAILS: Record<string, ComponentDetail> = {
     filename: "Gallary/cosmos_1110264921.webp",
     desc: "Interactive physics-driven cursor gallery where clicking or hold-dragging stream-spawns image bodies that fall with gravity, bounce elastically on the spatial floor, and dissolve cleanly.",
     slug: "gravity-cursor",
-    category: "gallary",
+    category: "gallery",
     subtype: "interactive-physics",
     tags: ["Cursor", "Gravity", "Physics", "Gallery", "Interactive", "Bounce"],
     previewType: "gallery",
     controls: [
-      { type: "select", key: "gravityMode", label: "Gravity Physics Mode", default: "normal", options: [{ label: "Normal Gravity", value: "normal" }, { label: "Zero-Gravity Float", value: "zero-gravity" }, { label: "Magnetic Forcefield Shield", value: "magnetic-repulsor" }] },
-      { type: "select", key: "interactionMode", label: "Spawn Trigger", default: "hold-drag", options: [{ label: "Click / Hold & Drag", value: "hold-drag" }, { label: "Continuous Cursor Trail", value: "cursor-trail" }], dependsOn: { key: "gravityMode", value: ["normal", "zero-gravity"] } },
-      { type: "slider", key: "gravity", label: "Gravitational Acceleration", default: 0.55, min: 0.1, max: 2.5, step: 0.05, dependsOn: { key: "gravityMode", value: "normal" } },
-      { type: "slider", key: "bounceDamping", label: "Floor Elasticity / Bounce", default: 0.62, min: 0.05, max: 0.95, step: 0.05, dependsOn: { key: "gravityMode", value: "normal" } },
-      { type: "slider", key: "spawnInterval", label: "Hold Stream Rate", default: 55, min: 20, max: 200, step: 5, unit: "ms", dependsOn: { key: "gravityMode", value: ["normal", "zero-gravity"] } },
-      { type: "slider", key: "repelRadius", label: "Forcefield Repel Radius", default: 350, min: 150, max: 600, step: 10, unit: "px", dependsOn: { key: "gravityMode", value: "magnetic-repulsor" } },
-      { type: "slider", key: "repelForce", label: "Repulsion Shockwave Power", default: 9.2, min: 1.0, max: 25.0, step: 0.5, dependsOn: { key: "gravityMode", value: "magnetic-repulsor" } },
-      { type: "slider", key: "friction", label: "Space Slide Damping", default: 0.92, min: 0.80, max: 0.99, step: 0.01, dependsOn: { key: "gravityMode", value: "magnetic-repulsor" } },
-      { type: "slider", key: "maxItems", label: "Memory Pool Cap", default: 45, min: 10, max: 100, step: 5 },
-      { type: "slider", key: "imageSize", label: "Shape Scale Width", default: 140, min: 70, max: 300, step: 5, unit: "px" }
+      { type: "select", key: "gravityMode", label: "Gravity Mode", default: "normal", options: [{ label: "Normal", value: "normal" }, { label: "Zero-G", value: "zero-gravity" }, { label: "Magnetic", value: "magnetic-repulsor" }] },
+      { type: "select", key: "interactionMode", label: "Spawn Trigger", default: "hold-drag", options: [{ label: "Hold & Drag", value: "hold-drag" }, { label: "Cursor Trail", value: "cursor-trail" }], dependsOn: { key: "gravityMode", value: ["normal", "zero-gravity"] } },
+      { type: "slider", key: "imageSize", label: "Shape Size", default: 140, min: 70, max: 300, step: 5, unit: "px" },
+      { type: "slider", key: "gravity", label: "Gravity Acceleration", default: 0.55, min: 0.1, max: 2.5, step: 0.05, dependsOn: { key: "gravityMode", value: "normal" } },
+      { type: "slider", key: "bounceDamping", label: "Bounce Elasticity", default: 0.62, min: 0.05, max: 0.95, step: 0.05, dependsOn: { key: "gravityMode", value: "normal" } },
+      { type: "slider", key: "repelRadius", label: "Repel Radius", default: 350, min: 150, max: 600, step: 10, unit: "px", dependsOn: { key: "gravityMode", value: "magnetic-repulsor" } },
+      { type: "slider", key: "repelForce", label: "Repulsion Power", default: 9.2, min: 1.0, max: 25.0, step: 0.5, dependsOn: { key: "gravityMode", value: "magnetic-repulsor" } }
     ]
   },
   "3d-shatter-sphere": {
@@ -528,7 +442,7 @@ export const COMPONENT_DETAILS: Record<string, ComponentDetail> = {
     filename: "Gallary/cosmos_1441380570.webp",
     desc: "Interactive 3D gallery sphere distributed in Fibonacci spatial bounds. Drag to rotate in 3D perspective space, click to trigger a 3D explosion shatter into spatial tile fragments.",
     slug: "3d-shatter-sphere",
-    category: "gallary",
+    category: "gallery",
     subtype: "3d-interactive",
     tags: ["3D", "Sphere", "Shatter", "Explosion", "Gallery", "WebGL"],
     previewType: "gallery",
@@ -555,25 +469,20 @@ export const COMPONENT_DETAILS: Record<string, ComponentDetail> = {
       {
         type: "select",
         key: "variant",
-        label: "Acoustic Field Variant",
+        label: "Acoustic Variant",
         default: "classic",
         options: [
-          { label: "Classic — Pristine 360° Water Wave", value: "classic" },
-          { label: "Singularity — Gravitational Lensing Quadrupole", value: "singularity" },
-          { label: "Editorial — Vessel Monolith Warm Gold Scanline", value: "editorial" },
-          { label: "Matrix — Cyberpunk Phosphor Rain", value: "matrix" },
-          { label: "Quantum — Field Interference Rays", value: "quantum" },
-          { label: "Nebula — Hyper-Cosmic Diamond Lattice", value: "nebula" }
+          { label: "Classic", value: "classic" },
+          { label: "Editorial", value: "editorial" },
+          { label: "Matrix", value: "matrix" },
+          { label: "Nebula", value: "nebula" }
         ]
       },
-      { type: "slider", key: "waveSpeed", label: "Wave Propagation Speed", default: 950, min: 400, max: 2000, step: 50, unit: "px/s" },
-      { type: "slider", key: "ringWidth", label: "Shockwave Band Width", default: 60, min: 20, max: 160, step: 5, unit: "px" },
-      { type: "slider", key: "ripplePower", label: "Vertical Crest Lift", default: 4, min: 0, max: 16, step: 1, unit: "px" },
-      { type: "slider", key: "scrambleDuration", label: "Decode Hold Duration", default: 340, min: 80, max: 800, step: 20, unit: "ms" },
-      { type: "slider", key: "fontSize", label: "Base Typography Size", default: 16, min: 12, max: 26, step: 1, unit: "px" },
-      { type: "slider", key: "lineHeightScale", label: "Line Rhythm Multiplier", default: 1.65, min: 1.3, max: 2.2, step: 0.05, unit: "x" },
-      { type: "slider", key: "staticOpacity", label: "Resting Field Opacity", default: 0.32, min: 0.10, max: 0.80, step: 0.02, unit: "" },
-      { type: "slider", key: "wakeRadius", label: "Cursor Wake Radius", default: 40, min: 15, max: 100, step: 5, unit: "px" }
+      { type: "slider", key: "fontSize", label: "Font Size", default: 20, min: 12, max: 28, step: 1, unit: "px" },
+      { type: "slider", key: "staticOpacity", label: "Resting Opacity", default: 0.32, min: 0.10, max: 0.80, step: 0.02 },
+      { type: "slider", key: "waveSpeed", label: "Wave Speed", default: 950, min: 400, max: 2000, step: 50, unit: "px/s" },
+      { type: "slider", key: "scrambleDuration", label: "Decode Duration", default: 340, min: 80, max: 800, step: 20, unit: "ms" },
+      { type: "slider", key: "lineHeightScale", label: "Line Rhythm", default: 1.65, min: 1.3, max: 2.2, step: 0.05, unit: "x" }
     ]
   },
   "arc-drift-gallery": {
@@ -624,7 +533,7 @@ export const COMPONENT_DETAILS: Record<string, ComponentDetail> = {
     filename: "Gallary/cosmos_1309943729.webp",
     desc: "Serpentine image chain following cursor with physics momentum and scale decay.",
     slug: "image-snake-trail",
-    category: "gallary",
+    category: "gallery",
     subtype: "snake-trail",
     tags: ["Gallery", "Cursor Trail", "Physics", "Snake", "GSAP"],
     controls: [
@@ -644,7 +553,7 @@ export const COMPONENT_DETAILS: Record<string, ComponentDetail> = {
     filename: "Gallary/cosmos_140351120.webp",
     desc: "Kinetic 3D image spawner plunging floating WebP & SVG cards into a deep atmospheric 3D void on cursor movement.",
     slug: "3d-cursor-trail",
-    category: "gallary",
+    category: "gallery",
     subtype: "3d-spawner",
     tags: ["Gallery", "Cursor Spawner", "3D", "Three.js", "WebGL", "Physics"],
     controls: [
@@ -680,12 +589,12 @@ export const COMPONENT_DETAILS: Record<string, ComponentDetail> = {
     filename: "Gallary/cosmos_140351120.webp",
     desc: "Minimalist editorial tracklist gallery mapping scroll progression to album artwork crossfades and audio metadata.",
     slug: "apparatus-tracklist-gallery",
-    category: "gallary",
+    category: "gallery",
     subtype: "audio-index",
     tags: ["Gallery", "Tracklist", "Audio", "Scroll", "GSAP", "Typography"],
     controls: [
       { type: "slider", key: "scrubSmoothness", label: "Scrub Weight", default: 0.8, min: 0.1, max: 2.0, step: 0.1, unit: "s" },
-      { type: "slider", key: "titleSize", label: "Title Size", default: 48, min: 24, max: 96, step: 2, unit: "px" },
+      { type: "slider", key: "titleSize", label: "Title Size", default: 72, min: 36, max: 120, step: 2, unit: "px" },
       { type: "slider", key: "artworkCrossfade", label: "Artwork Crossfade", default: 0.5, min: 0.1, max: 1.5, step: 0.1, unit: "s" },
       { type: "slider", key: "itemScrollDistance", label: "Track Height", default: 400, min: 200, max: 800, step: 50, unit: "px" }
     ]

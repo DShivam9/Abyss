@@ -4,7 +4,7 @@ import { ApparatusDualWaveProps, DualWaveItem } from "./types";
 
 // 24 unique single-word aesthetic visual, motion, color, and optics titles (zero duplicates)
 const DEFAULT_ITEMS: DualWaveItem[] = [
-  { id: "01", name: "LUMINESCENCE", imageSrc: "/images/components images/scroll/cosmos_1309660817.webp" },
+  { id: "01", name: "LUSTER", imageSrc: "/images/components images/scroll/cosmos_1309660817.webp" },
   { id: "02", name: "RADIANCE", imageSrc: "/images/components images/scroll/cosmos_1859262512.webp" },
   { id: "03", name: "SPECTRUM", imageSrc: "/images/components images/scroll/cosmos_2063063057.webp" },
   { id: "04", name: "ROTATION", imageSrc: "/images/components images/scroll/cosmos_679994644.webp" },
@@ -30,34 +30,31 @@ const DEFAULT_ITEMS: DualWaveItem[] = [
   { id: "24", name: "CELESTIAL", imageSrc: "/images/components images/scroll/cosmos_1872135509.webp" },
 ];
 
+// Baked defaults for refined wave path optics
+const BAKED_IRIS_CURVATURE = 0.50;
+const BAKED_HORIZON_CURVATURE = 0.60;
+const BAKED_HOURGLASS_CURVATURE = 0.35;
+const BAKED_CORNER_ALIGNMENT = 1.0;
+const BAKED_DUAL_SINE_WAVENUM = 0.45;
+const BAKED_COLUMN_LAG = 0.40;
+const BAKED_VELOCITY_SQUEEZE = 0.85;
+
 export const ApparatusDualWave: React.FC<ApparatusDualWaveProps & {
   fontFamily?: string;
-  frequency?: number;
   amplitude?: number;
-  waveNum?: number;
   spacing?: number;
   maxBlur?: number;
   maxRotation?: number;
-  cornerAlignment?: number;
-  curvature?: number;
-  columnLag?: number;
-  velocitySqueeze?: number;
   scrollDamping?: number;
-  wavePattern?: "iris" | "horizon" | "hourglass" | "dualSine" | "vortex" | "shear";
+  wavePattern?: "iris" | "horizon" | "hourglass" | "dualSine";
 }> = ({
   items,
   imageSrc,
   fontFamily: propFontFamily,
-  frequency,
   amplitude,
-  waveNum: propWaveNum,
   spacing: propSpacing,
   maxBlur: propMaxBlur,
   maxRotation: propMaxRotation,
-  cornerAlignment: propCornerAlignment,
-  curvature: propCurvature,
-  columnLag: propColumnLag,
-  velocitySqueeze: propVelocitySqueeze,
   scrollDamping: propScrollDamping,
   wavePattern: propWavePattern = "iris",
   className = "",
@@ -72,14 +69,8 @@ export const ApparatusDualWave: React.FC<ApparatusDualWaveProps & {
   const activeIdxRef = useRef(0);
   
   // Interactive tuning controls derived from props
-  const cornerAlignment = propCornerAlignment !== undefined ? propCornerAlignment : 1.0;
   const waveRange = amplitude !== undefined ? (amplitude / 60) * 100 : 125;
-  const waveSpeed = frequency !== undefined ? frequency / 2 : 0.9;
-  const waveNum = propWaveNum !== undefined ? propWaveNum : 0.45;
   const spacing = propSpacing !== undefined ? Math.max(35, propSpacing) : 72;
-  const curvature = propCurvature !== undefined ? propCurvature : 0.35;
-  const columnLag = propColumnLag !== undefined ? propColumnLag : 0.40;
-  const velocitySqueeze = propVelocitySqueeze !== undefined ? propVelocitySqueeze : 0.85;
   const scrollDamping = propScrollDamping !== undefined ? propScrollDamping : 0.08;
   const maxBlur = propMaxBlur !== undefined ? propMaxBlur : 2.5;
   const maxRotation = propMaxRotation !== undefined ? propMaxRotation : 6.5;
@@ -98,15 +89,8 @@ export const ApparatusDualWave: React.FC<ApparatusDualWaveProps & {
   const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
   
   const dimensionsRef = useRef({ width: 800, height: 600 });
-  const cornerAlignmentRef = useRef(cornerAlignment);
   const waveRangeRef = useRef(waveRange);
-  const waveSpeedRef = useRef(waveSpeed);
-  const waveNumRef = useRef(waveNum);
-  const frequencyRef = useRef(frequency !== undefined ? frequency : 2.5);
   const spacingRef = useRef(spacing);
-  const curvatureRef = useRef(curvature);
-  const columnLagRef = useRef(columnLag);
-  const velocitySqueezeRef = useRef(velocitySqueeze);
   const scrollDampingRef = useRef(scrollDamping);
   const wavePatternRef = useRef(propWavePattern);
   const maxBlurRef = useRef(maxBlur);
@@ -117,20 +101,13 @@ export const ApparatusDualWave: React.FC<ApparatusDualWaveProps & {
   }, [dimensions]);
 
   useEffect(() => {
-    cornerAlignmentRef.current = cornerAlignment;
     waveRangeRef.current = waveRange;
-    waveSpeedRef.current = waveSpeed;
-    waveNumRef.current = waveNum;
-    frequencyRef.current = frequency !== undefined ? frequency : 2.5;
     spacingRef.current = spacing;
-    curvatureRef.current = curvature;
-    columnLagRef.current = columnLag;
-    velocitySqueezeRef.current = velocitySqueeze;
     scrollDampingRef.current = scrollDamping;
     wavePatternRef.current = propWavePattern;
     maxBlurRef.current = maxBlur;
     maxRotationRef.current = maxRotation;
-  }, [cornerAlignment, waveRange, waveSpeed, waveNum, frequency, spacing, curvature, columnLag, velocitySqueeze, scrollDamping, propWavePattern, maxBlur, maxRotation]);
+  }, [waveRange, spacing, scrollDamping, propWavePattern, maxBlur, maxRotation]);
   
   // Animation frame reference to cancel active transitions
   const presetAnimRef = useRef<number | null>(null);
@@ -314,7 +291,7 @@ export const ApparatusDualWave: React.FC<ApparatusDualWaveProps & {
       }
 
       // Right column interpolation with generous velocity cap
-      const rightRate = Math.max(0.001, effectiveRate * (1.0 - columnLagRef.current * 0.5));
+      const rightRate = Math.max(0.001, effectiveRate * (1.0 - BAKED_COLUMN_LAG * 0.5));
       const diffRight = scrollOffsetRef.current - smoothOffsetRightRef.current;
       if (Math.abs(diffRight) < 0.05) {
         smoothOffsetRightRef.current = scrollOffsetRef.current;
@@ -334,14 +311,14 @@ export const ApparatusDualWave: React.FC<ApparatusDualWaveProps & {
 
       // Apply physical velocity squeeze and mouse parallax on center image frame
       const velMag = Math.min(1.0, Math.abs(scrollVelocityRef.current) / 2500);
-      const velScale = 1.0 - velMag * 0.035 * velocitySqueezeRef.current;
+      const velScale = 1.0 - velMag * 0.035 * BAKED_VELOCITY_SQUEEZE;
       if (centerImageFrameRef.current) {
         centerImageFrameRef.current.style.transform = `translate3d(calc(-50% + ${mouseXPx.toFixed(1)}px), calc(-50% + ${mouseYPx.toFixed(1)}px), 0) scale(${velScale.toFixed(4)})`;
       }
 
       const H = dimensionsRef.current.height;
       const W = dimensionsRef.current.width;
-      const computedWaveRange = (170 + (Math.max(170, W / 2 - pinchX - 120) - 170) * cornerAlignmentRef.current) * (waveRangeRef.current / 100);
+      const computedWaveRange = (170 + (Math.max(170, W / 2 - pinchX - 120) - 170) * BAKED_CORNER_ALIGNMENT) * (waveRangeRef.current / 100);
 
       const mouseContainerX = (smoothMouseRef.current.x * W / 2) + W / 2;
       const mouseContainerY = (smoothMouseRef.current.y * H / 2) + H / 2;
@@ -386,39 +363,29 @@ export const ApparatusDualWave: React.FC<ApparatusDualWaveProps & {
         let baseHorizontalOffset = 0;
         let baseAngle = 0;
 
-        if (wavePatternRef.current === "vortex") {
-          // 1. Vortex Funnel: Spiral acceleration inward toward central image with funnel tilt
-          const funnelFactor = Math.pow(normalizedDist, 1.4);
-          baseHorizontalOffset = pinchX + funnelFactor * computedWaveRange;
-          baseAngle = normY * maxRotationRef.current * 1.8 * (isLeft ? 1 : -1);
-        } else if (wavePatternRef.current === "iris") {
+        if (wavePatternRef.current === "iris") {
           // 1. Aperture Iris: Spherical lens gate expanding around central cover image
           const irisLens = Math.sin(normalizedDist * Math.PI * 0.5);
-          const irisOffset = (1.0 - irisLens * curvatureRef.current) * computedWaveRange * 0.9;
+          const irisOffset = (1.0 - irisLens * BAKED_IRIS_CURVATURE) * computedWaveRange * 0.9;
           baseHorizontalOffset = pinchX + irisOffset;
           baseAngle = normY * maxRotationRef.current * (isLeft ? -1 : 1);
         } else if (wavePatternRef.current === "horizon") {
-          // Option C: Split Horizon — Inverted asymmetrical diagonal slope framing center photo
-          const leftSlope = (1.0 - normY) * curvatureRef.current * 0.5;
-          const rightSlope = (1.0 + normY) * curvatureRef.current * 0.5;
+          // 2. Split Horizon: Inverted asymmetrical diagonal slope framing center photo
+          const leftSlope = (1.0 - normY) * BAKED_HORIZON_CURVATURE * 0.5;
+          const rightSlope = (1.0 + normY) * BAKED_HORIZON_CURVATURE * 0.5;
           baseHorizontalOffset = pinchX + (isLeft ? leftSlope : rightSlope) * computedWaveRange * 0.9;
           baseAngle = (isLeft ? -1 : 1) * normY * maxRotationRef.current * 0.8;
-        } else if (wavePatternRef.current === "shear") {
-          // 4. Diagonal Shear: Inverted diagonal stream corridor (X-pattern)
-          const shearOffset = normY * computedWaveRange * 0.8;
-          baseHorizontalOffset = pinchX + (isLeft ? shearOffset : -shearOffset);
-          baseAngle = (isLeft ? -12 : 12); // Constant diagonal stream slant
         } else if (wavePatternRef.current === "dualSine") {
-          // Valentin Descombes Codrops Dual Wave Sine Path Formula
-          const sineWaveVal = Math.sin(normY * waveNumRef.current * Math.PI * 2.0);
+          // 3. Sine Wave: Valentin Descombes Codrops Dual Wave Sine Path Formula
+          const sineWaveVal = Math.sin(normY * BAKED_DUAL_SINE_WAVENUM * Math.PI * 2.0);
           const waveOffset = sineWaveVal * waveRangeRef.current;
           baseHorizontalOffset = pinchX + (isLeft ? -waveOffset : waveOffset);
-          baseAngle = Math.cos(normY * waveNumRef.current * Math.PI * 2.0) * maxRotationRef.current * (isLeft ? -1 : 1);
+          baseAngle = Math.cos(normY * BAKED_DUAL_SINE_WAVENUM * Math.PI * 2.0) * maxRotationRef.current * (isLeft ? -1 : 1);
         } else {
-          // Hourglass Pinch (MAIN ORIGINAL VARIANT - DEFAULT)
+          // 4. Hourglass Pinch: Clean ergonomic center focus
           const triangleProfile = normalizedDist;
           const hemisphereProfile = 1.0 - Math.sqrt(Math.max(0, 1.0 - normalizedDist * normalizedDist));
-          const blendedProfile = (1.0 - curvatureRef.current) * triangleProfile + curvatureRef.current * hemisphereProfile;
+          const blendedProfile = (1.0 - BAKED_HOURGLASS_CURVATURE) * triangleProfile + BAKED_HOURGLASS_CURVATURE * hemisphereProfile;
           baseHorizontalOffset = pinchX + blendedProfile * computedWaveRange;
           baseAngle = (isLeft ? -1 : 1) * (y - H / 2) / (H / 2 || 1) * maxRotationRef.current;
         }
@@ -454,8 +421,9 @@ export const ApparatusDualWave: React.FC<ApparatusDualWaveProps & {
         const edgeFade = normalizedDist > 0.85 ? Math.max(0, (1.0 - normalizedDist) / 0.15) : 1.0;
         const opacity = Math.min(1.0, (0.05 + centerWeight * 0.95 + gaussianFocus * 0.35) * edgeFade);
         
-        // Continuous depth blur (clears at center focus and near cursor hover)
-        const blurAmount = Math.max(0, (1.0 - totalHighlight) * maxBlurRef.current);
+        // Smooth progressive blur ramping up with distance from center
+        const blurFactor = Math.pow(normalizedDist, 1.5) * (1.0 - gaussianFocus * 0.8);
+        const blurAmount = Math.max(0, blurFactor * maxBlurRef.current);
 
         // Kinetic velocity shear: slants text along scroll vector during rapid movement
         const velShear = (scrollVelocityRef.current / 2000) * (isLeft ? -1 : 1);
@@ -651,6 +619,169 @@ export const ApparatusDualWave: React.FC<ApparatusDualWaveProps & {
             </div>
           );
         })}
+
+        {/* TOP & BOTTOM EXACT PROGRESSIVE BLUR OVERLAYS */}
+        {maxBlur > 0.1 && (
+          <>
+            {/* Top Progressive Blur (Masked to bottom) */}
+            <div
+              className="absolute inset-x-0 top-0 pointer-events-none z-30 overflow-hidden"
+              style={{ height: `${Math.max(60, Math.min(220, maxBlur * 36))}px` }}
+            >
+              <div
+                className="absolute inset-0 pointer-events-none z-[1]"
+                style={{
+                  backdropFilter: `blur(${0.078125 * (maxBlur / 2.5)}px)`,
+                  WebkitBackdropFilter: `blur(${0.078125 * (maxBlur / 2.5)}px)`,
+                  maskImage: "linear-gradient(to bottom, transparent 87.5%, #000 100%)",
+                  WebkitMaskImage: "linear-gradient(to bottom, transparent 87.5%, #000 100%)",
+                }}
+              />
+              <div
+                className="absolute inset-0 pointer-events-none z-[2]"
+                style={{
+                  backdropFilter: `blur(${0.15625 * (maxBlur / 2.5)}px)`,
+                  WebkitBackdropFilter: `blur(${0.15625 * (maxBlur / 2.5)}px)`,
+                  maskImage: "linear-gradient(to bottom, transparent 75%, #000 87.5% 100%)",
+                  WebkitMaskImage: "linear-gradient(to bottom, transparent 75%, #000 87.5% 100%)",
+                }}
+              />
+              <div
+                className="absolute inset-0 pointer-events-none z-[3]"
+                style={{
+                  backdropFilter: `blur(${0.3125 * (maxBlur / 2.5)}px)`,
+                  WebkitBackdropFilter: `blur(${0.3125 * (maxBlur / 2.5)}px)`,
+                  maskImage: "linear-gradient(to bottom, transparent 62.5%, #000 75% 87.5%, transparent 100%)",
+                  WebkitMaskImage: "linear-gradient(to bottom, transparent 62.5%, #000 75% 87.5%, transparent 100%)",
+                }}
+              />
+              <div
+                className="absolute inset-0 pointer-events-none z-[4]"
+                style={{
+                  backdropFilter: `blur(${0.625 * (maxBlur / 2.5)}px)`,
+                  WebkitBackdropFilter: `blur(${0.625 * (maxBlur / 2.5)}px)`,
+                  maskImage: "linear-gradient(to bottom, transparent 50%, #000 62.5% 75%, transparent 87.5%)",
+                  WebkitMaskImage: "linear-gradient(to bottom, transparent 50%, #000 62.5% 75%, transparent 87.5%)",
+                }}
+              />
+              <div
+                className="absolute inset-0 pointer-events-none z-[5]"
+                style={{
+                  backdropFilter: `blur(${1.25 * (maxBlur / 2.5)}px)`,
+                  WebkitBackdropFilter: `blur(${1.25 * (maxBlur / 2.5)}px)`,
+                  maskImage: "linear-gradient(to bottom, transparent 37.5%, #000 50% 62.5%, transparent 75%)",
+                  WebkitMaskImage: "linear-gradient(to bottom, transparent 37.5%, #000 50% 62.5%, transparent 75%)",
+                }}
+              />
+              <div
+                className="absolute inset-0 pointer-events-none z-[6]"
+                style={{
+                  backdropFilter: `blur(${2.5 * (maxBlur / 2.5)}px)`,
+                  WebkitBackdropFilter: `blur(${2.5 * (maxBlur / 2.5)}px)`,
+                  maskImage: "linear-gradient(to bottom, transparent 25%, #000 37.5% 50%, transparent 62.5%)",
+                  WebkitMaskImage: "linear-gradient(to bottom, transparent 25%, #000 37.5% 50%, transparent 62.5%)",
+                }}
+              />
+              <div
+                className="absolute inset-0 pointer-events-none z-[7]"
+                style={{
+                  backdropFilter: `blur(${5.0 * (maxBlur / 2.5)}px)`,
+                  WebkitBackdropFilter: `blur(${5.0 * (maxBlur / 2.5)}px)`,
+                  maskImage: "linear-gradient(to bottom, transparent 12.5%, #000 25% 37.5%, transparent 50%)",
+                  WebkitMaskImage: "linear-gradient(to bottom, transparent 12.5%, #000 25% 37.5%, transparent 50%)",
+                }}
+              />
+              <div
+                className="absolute inset-0 pointer-events-none z-[8]"
+                style={{
+                  backdropFilter: `blur(${10.0 * (maxBlur / 2.5)}px)`,
+                  WebkitBackdropFilter: `blur(${10.0 * (maxBlur / 2.5)}px)`,
+                  maskImage: "linear-gradient(to bottom, transparent 0%, #000 12.5% 25%, transparent 37.5%)",
+                  WebkitMaskImage: "linear-gradient(to bottom, transparent 0%, #000 12.5% 25%, transparent 37.5%)",
+                }}
+              />
+            </div>
+
+            {/* Bottom Progressive Blur (Masked to top) */}
+            <div
+              className="absolute inset-x-0 bottom-0 pointer-events-none z-30 overflow-hidden"
+              style={{ height: `${Math.max(60, Math.min(220, maxBlur * 36))}px` }}
+            >
+              <div
+                className="absolute inset-0 pointer-events-none z-[1]"
+                style={{
+                  backdropFilter: `blur(${0.078125 * (maxBlur / 2.5)}px)`,
+                  WebkitBackdropFilter: `blur(${0.078125 * (maxBlur / 2.5)}px)`,
+                  maskImage: "linear-gradient(to top, transparent 87.5%, #000 100%)",
+                  WebkitMaskImage: "linear-gradient(to top, transparent 87.5%, #000 100%)",
+                }}
+              />
+              <div
+                className="absolute inset-0 pointer-events-none z-[2]"
+                style={{
+                  backdropFilter: `blur(${0.15625 * (maxBlur / 2.5)}px)`,
+                  WebkitBackdropFilter: `blur(${0.15625 * (maxBlur / 2.5)}px)`,
+                  maskImage: "linear-gradient(to top, transparent 75%, #000 87.5% 100%)",
+                  WebkitMaskImage: "linear-gradient(to top, transparent 75%, #000 87.5% 100%)",
+                }}
+              />
+              <div
+                className="absolute inset-0 pointer-events-none z-[3]"
+                style={{
+                  backdropFilter: `blur(${0.3125 * (maxBlur / 2.5)}px)`,
+                  WebkitBackdropFilter: `blur(${0.3125 * (maxBlur / 2.5)}px)`,
+                  maskImage: "linear-gradient(to top, transparent 62.5%, #000 75% 87.5%, transparent 100%)",
+                  WebkitMaskImage: "linear-gradient(to top, transparent 62.5%, #000 75% 87.5%, transparent 100%)",
+                }}
+              />
+              <div
+                className="absolute inset-0 pointer-events-none z-[4]"
+                style={{
+                  backdropFilter: `blur(${0.625 * (maxBlur / 2.5)}px)`,
+                  WebkitBackdropFilter: `blur(${0.625 * (maxBlur / 2.5)}px)`,
+                  maskImage: "linear-gradient(to top, transparent 50%, #000 62.5% 75%, transparent 87.5%)",
+                  WebkitMaskImage: "linear-gradient(to top, transparent 50%, #000 62.5% 75%, transparent 87.5%)",
+                }}
+              />
+              <div
+                className="absolute inset-0 pointer-events-none z-[5]"
+                style={{
+                  backdropFilter: `blur(${1.25 * (maxBlur / 2.5)}px)`,
+                  WebkitBackdropFilter: `blur(${1.25 * (maxBlur / 2.5)}px)`,
+                  maskImage: "linear-gradient(to top, transparent 37.5%, #000 50% 62.5%, transparent 75%)",
+                  WebkitMaskImage: "linear-gradient(to top, transparent 37.5%, #000 50% 62.5%, transparent 75%)",
+                }}
+              />
+              <div
+                className="absolute inset-0 pointer-events-none z-[6]"
+                style={{
+                  backdropFilter: `blur(${2.5 * (maxBlur / 2.5)}px)`,
+                  WebkitBackdropFilter: `blur(${2.5 * (maxBlur / 2.5)}px)`,
+                  maskImage: "linear-gradient(to top, transparent 25%, #000 37.5% 50%, transparent 62.5%)",
+                  WebkitMaskImage: "linear-gradient(to top, transparent 25%, #000 37.5% 50%, transparent 62.5%)",
+                }}
+              />
+              <div
+                className="absolute inset-0 pointer-events-none z-[7]"
+                style={{
+                  backdropFilter: `blur(${5.0 * (maxBlur / 2.5)}px)`,
+                  WebkitBackdropFilter: `blur(${5.0 * (maxBlur / 2.5)}px)`,
+                  maskImage: "linear-gradient(to top, transparent 12.5%, #000 25% 37.5%, transparent 50%)",
+                  WebkitMaskImage: "linear-gradient(to top, transparent 12.5%, #000 25% 37.5%, transparent 50%)",
+                }}
+              />
+              <div
+                className="absolute inset-0 pointer-events-none z-[8]"
+                style={{
+                  backdropFilter: `blur(${10.0 * (maxBlur / 2.5)}px)`,
+                  WebkitBackdropFilter: `blur(${10.0 * (maxBlur / 2.5)}px)`,
+                  maskImage: "linear-gradient(to top, transparent 0%, #000 12.5% 25%, transparent 37.5%)",
+                  WebkitMaskImage: "linear-gradient(to top, transparent 0%, #000 12.5% 25%, transparent 37.5%)",
+                }}
+              />
+            </div>
+          </>
+        )}
 
       </div>
     </div>

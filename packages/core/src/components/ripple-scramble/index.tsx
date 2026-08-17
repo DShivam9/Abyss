@@ -2,10 +2,8 @@ import React, { useRef, useEffect, useCallback } from "react";
 import {
   ALPHA_CHARS,
   MATRIX_CHARS,
-  QUANTUM_CHARS,
   EDITORIAL_CHARS,
   NEBULA_CHARS,
-  SINGULARITY_CHARS,
   CONTINUOUS_TEXT_WALL,
 } from "./constants";
 
@@ -13,20 +11,20 @@ export type ApparatusRippleVariant =
   | "classic"
   | "editorial"
   | "matrix"
-  | "quantum"
-  | "nebula"
-  | "singularity";
+  | "nebula";
+
+// Baked defaults for optimal wave physics and high-frame-rate rendering
+const BAKED_RING_WIDTH = 60; // px wave band width
+const BAKED_RIPPLE_POWER = 4; // px vertical displacement
+const BAKED_WAKE_RADIUS = 40; // px cursor wake interaction radius
 
 export interface ApparatusRippleScrambleProps {
   variant?: ApparatusRippleVariant;
   waveSpeed?: number; // Radial expansion speed in px/s (e.g. 950)
-  ringWidth?: number; // Active wave ring thickness in px (e.g. 60)
-  ripplePower?: number; // Max vertical translateY lift in px (e.g. 4)
   scrambleDuration?: number; // Scramble hold duration in ms (e.g. 340)
-  fontSize?: number; // Base typographic font size in px (e.g. 16)
+  fontSize?: number; // Base typographic font size in px (e.g. 20)
   lineHeightScale?: number; // Line height scale multiplier (e.g. 1.65)
   staticOpacity?: number; // Resting text field opacity (e.g. 0.32)
-  wakeRadius?: number; // Cursor hover wake radius in px (e.g. 40)
   className?: string;
 }
 
@@ -53,19 +51,6 @@ function getVariantSpecs(variant: ApparatusRippleVariant, staticOpacity: number)
   const alphaStr = ALPHA_STR_TABLE[opIdx];
 
   switch (variant) {
-    case "singularity":
-      return {
-        bg: "#05030a",
-        rgbBg: [5, 3, 10],
-        staticColor: `rgba(168, 85, 247, ${alphaStr})`,
-        decayColor: (alphaStr: string) => `rgba(216, 180, 254, ${alphaStr})`,
-        flareColor: (intensity: number) => {
-          const idx = Math.min(100, Math.max(0, Math.floor((0.8 + intensity * 0.2) * 100)));
-          return `rgba(251, 191, 36, ${ALPHA_STR_TABLE[idx]})`;
-        },
-        chars: SINGULARITY_CHARS,
-        fontFamily: "Geist, system-ui, -apple-system, sans-serif",
-      };
     case "editorial":
       return {
         bg: "#0a0a0c",
@@ -92,19 +77,6 @@ function getVariantSpecs(variant: ApparatusRippleVariant, staticOpacity: number)
         },
         chars: MATRIX_CHARS,
         fontFamily: "ui-monospace, SFMono-Regular, Consolas, monospace",
-      };
-    case "quantum":
-      return {
-        bg: "#050512",
-        rgbBg: [5, 5, 18],
-        staticColor: `rgba(129, 140, 248, ${alphaStr})`,
-        decayColor: (alphaStr: string) => `rgba(165, 180, 252, ${alphaStr})`,
-        flareColor: (intensity: number) => {
-          const idx = Math.min(100, Math.max(0, Math.floor((0.75 + intensity * 0.25) * 100)));
-          return `rgba(34, 211, 238, ${ALPHA_STR_TABLE[idx]})`;
-        },
-        chars: QUANTUM_CHARS,
-        fontFamily: "Geist, system-ui, -apple-system, sans-serif",
       };
     case "nebula":
       return {
@@ -136,12 +108,9 @@ function getVariantSpecs(variant: ApparatusRippleVariant, staticOpacity: number)
   }
 }
 
-// Pure helper function for 6 distinct wave propagation geometries
+// Pure helper function for distinct wave propagation geometries
 function getWaveDistance(dx: number, dy: number, variant: ApparatusRippleVariant): number {
   switch (variant) {
-    case "singularity":
-      const angle = Math.atan2(dy, dx);
-      return Math.hypot(dx * 1.1, dy * 0.9) + Math.sin(angle * 3.0) * 14.0;
     case "editorial":
       const edDx = Math.abs(dx);
       if (edDx > 480) return 999999;
@@ -151,8 +120,6 @@ function getWaveDistance(dx: number, dy: number, variant: ApparatusRippleVariant
       if (colDist > 260) return 999999;
       const colOffset = Math.pow(colDist / 260, 1.6) * 120;
       return dy < -colOffset ? 999999 : (dy + colOffset) * 1.15;
-    case "quantum":
-      return Math.sqrt(Math.abs(dx * dy)) * 0.85 + Math.hypot(dx, dy) * 0.45;
     case "nebula":
       return Math.abs(dx) + Math.abs(dy);
     case "classic":
@@ -164,13 +131,10 @@ function getWaveDistance(dx: number, dy: number, variant: ApparatusRippleVariant
 export const ApparatusRippleScramble: React.FC<ApparatusRippleScrambleProps> = ({
   variant = "classic",
   waveSpeed = 950,
-  ringWidth = 60,
-  ripplePower = 4,
   scrambleDuration = 340,
-  fontSize = 16,
+  fontSize = 20,
   lineHeightScale = 1.65,
   staticOpacity = 0.32,
-  wakeRadius = 40,
   className = "",
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -300,7 +264,7 @@ export const ApparatusRippleScramble: React.FC<ApparatusRippleScrambleProps> = (
       ctx.textBaseline = "middle";
 
       const maxRadius = Math.hypot(width, height) + 160;
-      const halfRing = ringWidth / 2;
+      const halfRing = BAKED_RING_WIDTH / 2;
       const variantChars = specs.chars;
       const alphaLen = variantChars.length;
 
@@ -324,7 +288,7 @@ export const ApparatusRippleScramble: React.FC<ApparatusRippleScrambleProps> = (
       ctx.fillStyle = staticColor;
       currentStyle = staticColor;
 
-      const safeRipplePower = Math.min(ripplePower, 20);
+      const safeRipplePower = Math.min(BAKED_RIPPLE_POWER, 20);
       const nowInt = Math.floor(now);
 
       for (let i = 0; i < nodes.length; i++) {
@@ -402,7 +366,7 @@ export const ApparatusRippleScramble: React.FC<ApparatusRippleScrambleProps> = (
         }
       }
     },
-    [variant, ringWidth, ripplePower, scrambleDuration, waveSpeed, fontSize, staticOpacity]
+    [variant, scrambleDuration, waveSpeed, fontSize, staticOpacity]
   );
 
   // Continuous rAF animation ticker with Automatic 5.5s - 7.5s Idle Pulse Engine
@@ -415,8 +379,6 @@ export const ApparatusRippleScramble: React.FC<ApparatusRippleScrambleProps> = (
       if (isIdle && activeWaveCount < 2) {
         const interval =
           variant === "matrix" ? 5500 :
-          variant === "quantum" ? 6000 :
-          variant === "singularity" ? 6800 :
           variant === "editorial" ? 7200 : 6500;
 
         if (now - lastAmbientPulseRef.current > interval) {
@@ -446,15 +408,6 @@ export const ApparatusRippleScramble: React.FC<ApparatusRippleScrambleProps> = (
                 radius: 0,
                 startTime: now + 750,
               });
-            } else if (variant === "quantum") {
-              idleCx = (0.2 + Math.random() * 0.6) * width;
-              idleCy = (0.2 + Math.random() * 0.6) * height;
-              wavesRef.current.push({
-                cx: idleCx,
-                cy: idleCy,
-                radius: 0,
-                startTime: now,
-              });
             } else if (variant === "editorial") {
               idleCx = width / 2;
               idleCy = 0;
@@ -465,9 +418,14 @@ export const ApparatusRippleScramble: React.FC<ApparatusRippleScrambleProps> = (
                 startTime: now,
               });
             } else {
+              // Randomly pick 1 of 4 viewport corners (Top-Left, Top-Right, Bottom-Left, Bottom-Right)
+              const cornerIdx = Math.floor(Math.random() * 4);
+              const cornerX = cornerIdx % 2 === 0 ? 0 : width;
+              const cornerY = cornerIdx < 2 ? 0 : height;
+
               wavesRef.current.push({
-                cx: idleCx,
-                cy: idleCy,
+                cx: cornerX,
+                cy: cornerY,
                 radius: 0,
                 startTime: now,
               });
@@ -545,7 +503,7 @@ export const ApparatusRippleScramble: React.FC<ApparatusRippleScrambleProps> = (
 
     const now = performance.now();
     const nodes = nodesRef.current;
-    const activeWakeRadius = wakeRadius;
+    const activeWakeRadius = BAKED_WAKE_RADIUS;
 
     if (variant === "matrix") {
       for (let i = 0; i < nodes.length; i++) {

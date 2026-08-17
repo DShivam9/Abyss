@@ -23,7 +23,7 @@ export interface ApparatusTracklistGalleryProps extends VesselComponentProps {
   scrubSmoothness?: number;
   /**
    * Active title font size in pixels.
-   * @default 48
+   * @default 72
    */
   titleSize?: number;
   /**

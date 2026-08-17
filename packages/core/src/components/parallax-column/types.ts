@@ -36,26 +36,14 @@ export interface ApparatusParallaxColumnProps extends VesselComponentProps {
   borderRadius?: number;
 
   /**
-   * Inward Z-recession depth in pixels for Concave Cylinder variant.
-   * @default 500
+   * Column Gap Spacing in pixels.
+   * @default 4
    */
-  concaveDepth?: number;
+  columnGap?: number;
 
   /**
-   * Inward pitch angle in degrees for Concave Cylinder variant.
-   * @default 40
+   * Vertical Image Gap in pixels.
+   * @default 4
    */
-  concaveTilt?: number;
-
-  /**
-   * Outward Z-bulge depth in pixels for Convex Cylinder variant.
-   * @default 500
-   */
-  convexBulge?: number;
-
-  /**
-   * Outward pitch angle in degrees for Convex Cylinder variant.
-   * @default 40
-   */
-  convexTilt?: number;
+  imageGap?: number;
 }

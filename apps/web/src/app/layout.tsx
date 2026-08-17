@@ -47,8 +47,14 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Abyss",
+  title: {
+    default: "Abyss",
+    template: "%s ✶ Abyss",
+  },
   description: "An open-source React component library for immersive, physics-driven image interactions.",
+  icons: {
+    icon: "/favicon.svg",
+  },
 };
 
 export default function RootLayout({
@@ -58,7 +64,14 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning className={cn("h-full", "antialiased", satoshi.variable, jetbrainsMono.variable, "font-sans", editorialNew.variable)}>
-      <body suppressHydrationWarning className="min-h-full flex flex-col bg-vessel-base text-vessel-text-primary font-sans">
+      <head>
+        <link rel="preconnect" href="https://api.fontshare.com" />
+        <link href="https://api.fontshare.com/v2/css?f[]=switzer@400,500,600,700&f[]=ranade@400,500,600,700,900&display=swap" rel="stylesheet" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&display=swap" rel="stylesheet" />
+      </head>
+      <body suppressHydrationWarning className="min-h-full flex flex-col bg-[#0d0d0f] text-[#ffffff] font-sans">
         <div className="noise-bg" />
         <SmoothScrollProvider>
           <CursorProvider>

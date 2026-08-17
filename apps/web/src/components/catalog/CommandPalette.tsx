@@ -1,228 +1,387 @@
 "use client";
 
-import React, { useEffect, useState, useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import Lenis from "lenis";
+import React, { useEffect, useState, useRef, useDeferredValue } from "react";
+import { useRouter } from "next/navigation";
+import {
+  FileText,
+  LayoutGrid,
+  BookOpen,
+  ArrowUpRight,
+  ArrowRight,
+  CornerDownLeft,
+} from "lucide-react";
 import { useScrollLock } from "@/lib/useScrollLock";
-import { ComponentDetail } from "@/lib/component-registry";
+import { useSmoothScroll } from "@/lib/useSmoothScroll";
+import { ComponentDetail } from "@/lib/registry";
 
 interface CommandPaletteProps {
   isOpen: boolean;
   onClose: () => void;
   components: ComponentDetail[];
-  onSelectComponent: (slug: string) => void;
+  onSelectComponent?: (slug: string) => void;
 }
+
+const STATIC_PAGES = [
+  { name: "Home", path: "/", icon: FileText },
+  { name: "Collection Grid", path: "/components", icon: LayoutGrid },
+  { name: "Documentation Specs", path: "/docs", icon: BookOpen },
+];
+
+const TYPEWRITER_PHRASES = [
+  "Type to filter components...",
+  "Type 'Dual Wave'...",
+  "Type 'Raymarching'...",
+  "Type '3D Shatter'...",
+  "Type 'Kinetic Typo'...",
+  "Type 'Bronze Patina'...",
+];
 
 export function CommandPalette({
   isOpen,
   onClose,
   components,
-  onSelectComponent,
 }: CommandPaletteProps) {
+  const router = useRouter();
   const [query, setQuery] = useState("");
+  const deferredQuery = useDeferredValue(query);
   const [selectedIndex, setSelectedIndex] = useState(0);
+  const [placeholder, setPlaceholder] = useState(TYPEWRITER_PHRASES[0]);
+  const [cursorPos, setCursorPos] = useState(0);
+  const [caretOffset, setCaretOffset] = useState(0);
+  const [isFocused, setIsFocused] = useState(false);
+
   const inputRef = useRef<HTMLInputElement>(null);
+  const mirrorRef = useRef<HTMLSpanElement>(null);
+  const listRef = useSmoothScroll<HTMLDivElement>();
+  const activeItemRef = useRef<HTMLButtonElement | null>(null);
 
   useScrollLock(isOpen);
+
+  // Measure caret offset whenever query or cursorPos changes
+  useEffect(() => {
+    if (mirrorRef.current) {
+      setCaretOffset(mirrorRef.current.offsetWidth);
+    }
+  }, [query, cursorPos]);
+
+  const updateCursorPosition = () => {
+    if (inputRef.current) {
+      setCursorPos(inputRef.current.selectionStart ?? query.length);
+    }
+  };
+
+  // Dynamic Typewriter Effect for placeholder
+  useEffect(() => {
+    if (!isOpen) return;
+
+    let phraseIdx = 0;
+    let charIdx = 0;
+    let isDeleting = false;
+    let timeoutId: NodeJS.Timeout;
+
+    const tick = () => {
+      const currentPhrase = TYPEWRITER_PHRASES[phraseIdx];
+
+      if (!isDeleting) {
+        charIdx++;
+        setPlaceholder(currentPhrase.slice(0, charIdx));
+
+        if (charIdx === currentPhrase.length) {
+          isDeleting = true;
+          timeoutId = setTimeout(tick, 1800);
+          return;
+        }
+        timeoutId = setTimeout(tick, 55);
+      } else {
+        charIdx--;
+        setPlaceholder(currentPhrase.slice(0, charIdx));
+
+        if (charIdx === 0) {
+          isDeleting = false;
+          phraseIdx = (phraseIdx + 1) % TYPEWRITER_PHRASES.length;
+          timeoutId = setTimeout(tick, 280);
+          return;
+        }
+        timeoutId = setTimeout(tick, 25);
+      }
+    };
+
+    timeoutId = setTimeout(tick, 800);
+    return () => clearTimeout(timeoutId);
+  }, [isOpen]);
 
   // Auto-focus input when opened
   useEffect(() => {
     if (isOpen) {
       setQuery("");
+      setCursorPos(0);
+      setCaretOffset(0);
       setSelectedIndex(0);
-      setTimeout(() => {
+      const timer = setTimeout(() => {
         inputRef.current?.focus();
+        setIsFocused(true);
       }, 50);
+      return () => clearTimeout(timer);
     }
   }, [isOpen]);
 
-  const cleanLabel = (label: string) => {
-    let clean = label.replace(/^APPARATUS\s+/i, "");
-    if (clean === clean.toUpperCase()) {
-      clean = clean
-        .toLowerCase()
-        .replace(/(?:^|\s|-)\S/g, (m) => m.toUpperCase());
-    }
-    return clean;
-  };
+  const cleanQuery = deferredQuery.toLowerCase().trim();
 
-  const filteredComponents = components.filter((comp) => {
-    const q = query.toLowerCase().trim();
-    if (!q) return true;
-    const labelMatch = comp.label.toLowerCase().includes(q);
-    const descMatch = comp.desc.toLowerCase().includes(q);
-    const catMatch = comp.category.toLowerCase().includes(q);
-    const tagMatch = comp.tags?.some((t) => t.toLowerCase().includes(q));
-    return labelMatch || descMatch || catMatch || tagMatch;
+  // Filtered pages
+  const filteredPages = STATIC_PAGES.filter((p) => {
+    if (!cleanQuery) return true;
+    return p.name.toLowerCase().includes(cleanQuery);
   });
 
-  // Handle keyboard navigation inside search modal
+  // Filtered components
+  const filteredComponents = components.filter((c) => {
+    if (!cleanQuery) return true;
+    const nameMatch = c.label.toLowerCase().includes(cleanQuery);
+    const descMatch = c.desc ? c.desc.toLowerCase().includes(cleanQuery) : false;
+    const tagMatch = c.tags?.some((t) => t.toLowerCase().includes(cleanQuery));
+    return nameMatch || descMatch || tagMatch;
+  });
+
+  const allItems = [
+    ...filteredPages.map((p) => ({ type: "page" as const, item: p })),
+    ...filteredComponents.map((c) => ({ type: "comp" as const, item: c })),
+  ];
+
+  // Auto scroll active item into view
+  useEffect(() => {
+    if (activeItemRef.current) {
+      activeItemRef.current.scrollIntoView({
+        block: "nearest",
+        behavior: "smooth",
+      });
+    }
+  }, [selectedIndex]);
+
+  // Navigate selection
+  const handleSelect = (path: string) => {
+    onClose();
+    router.push(path);
+  };
+
+  // Keyboard navigation
   useEffect(() => {
     if (!isOpen) return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "ArrowDown") {
-        e.preventDefault();
-        setSelectedIndex((prev) => (prev < filteredComponents.length - 1 ? prev + 1 : 0));
-      } else if (e.key === "ArrowUp") {
-        e.preventDefault();
-        setSelectedIndex((prev) => (prev > 0 ? prev - 1 : filteredComponents.length - 1));
-      } else if (e.key === "Enter") {
-        e.preventDefault();
-        if (filteredComponents[selectedIndex]) {
-          onSelectComponent(filteredComponents[selectedIndex].slug);
-          onClose();
-        }
-      } else if (e.key === "Escape") {
+      if (e.key === "Escape") {
         e.preventDefault();
         onClose();
+      } else if (e.key === "ArrowDown") {
+        e.preventDefault();
+        setSelectedIndex((prev) =>
+          allItems.length === 0 ? 0 : (prev + 1) % allItems.length
+        );
+      } else if (e.key === "ArrowUp") {
+        e.preventDefault();
+        setSelectedIndex((prev) =>
+          allItems.length === 0 ? 0 : (prev - 1 + allItems.length) % allItems.length
+        );
+      } else if (e.key === "Enter") {
+        e.preventDefault();
+        const selected = allItems[selectedIndex];
+        if (selected) {
+          if (selected.type === "page") {
+            handleSelect(selected.item.path);
+          } else {
+            handleSelect(`/showcase/${selected.item.slug}`);
+          }
+        }
       }
     };
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isOpen, filteredComponents, selectedIndex, onSelectComponent, onClose]);
+  }, [isOpen, selectedIndex, allItems, onClose, router]);
 
-  const scrollRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!isOpen) return;
-    const el = scrollRef.current;
-    if (!el) return;
-
-    const lenis = new Lenis({
-      wrapper: el,
-      duration: 1.0,
-      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-      smoothWheel: true,
-    });
-
-    let rafId: number;
-    function raf(time: number) {
-      lenis.raf(time);
-      rafId = requestAnimationFrame(raf);
-    }
-    rafId = requestAnimationFrame(raf);
-
-    return () => {
-      cancelAnimationFrame(rafId);
-      lenis.destroy();
-    };
-  }, [isOpen]);
+  let flatIndex = 0;
 
   return (
-    <AnimatePresence
-      onExitComplete={() => {
-        const lenis = (window as unknown as { lenis?: { start: () => void } }).lenis;
-        lenis?.start();
-        document.body.style.overflow = "";
-        document.documentElement.style.overflow = "";
+    <div
+      className={`modal-overlay ${isOpen ? "open" : ""}`}
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
       }}
+      aria-modal="true"
+      aria-hidden={!isOpen}
+      role="dialog"
     >
-      {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-start justify-center pt-24 px-4 sm:px-6 font-sans">
-          {/* Backdrop Blur Overlay */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-            onClick={onClose}
-            className="fixed inset-0 bg-black/75 backdrop-blur-md"
-          />
-
-          {/* Modal Dialog */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.94, y: -16 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.94, y: -16 }}
-            transition={{ type: "spring", stiffness: 220, damping: 24, mass: 1.2 }}
-            className="relative z-10 w-full max-w-xl overflow-hidden rounded-xl bg-[#0A0A0A] border border-white/10 shadow-[0_25px_50px_-12px_rgba(0,0,0,0.9),inset_0_1px_1px_rgba(255,255,255,0.1)] text-white font-sans antialiased transform-gpu"
+      <div
+        className="search-modal"
+        onWheel={(e) => e.stopPropagation()}
+        onTouchMove={(e) => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div className="search-header">
+          <div
+            className="abyss-celestial-logo"
+            aria-hidden="true"
+            style={{ cursor: "default" }}
           >
-            {/* Search Input Bar */}
-            <div className="flex items-center gap-3 px-4 border-b border-neutral-800/80 bg-neutral-900/40">
-              <svg
-                className="w-4 h-4 text-neutral-400 shrink-0"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={2}
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                />
-              </svg>
-              <input
-                ref={inputRef}
-                type="text"
-                value={query}
-                onChange={(e) => {
-                  setQuery(e.target.value);
-                  setSelectedIndex(0);
-                }}
-                placeholder="Search components, categories, or tags... (Esc to close)"
-                className="w-full bg-transparent py-4 text-sm text-white placeholder-neutral-500 focus:outline-none font-sans"
-              />
-            </div>
-
-            {/* Results List */}
-            <div
-              ref={scrollRef}
-              data-lenis-prevent
-              className="max-h-[360px] overflow-y-auto p-2 space-y-1 custom-scrollbar"
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 100 100"
+              fill="currentColor"
             >
-              {filteredComponents.length === 0 ? (
-                <div className="py-8 text-center text-xs text-neutral-500 font-mono">
-                  No matching components found.
-                </div>
-              ) : (
-                filteredComponents.map((comp, idx) => {
-                  const isSelected = idx === selectedIndex;
-                  return (
-                    <button
-                      key={comp.slug}
-                      onClick={() => {
-                        onSelectComponent(comp.slug);
-                        onClose();
-                      }}
-                      onMouseEnter={() => setSelectedIndex(idx)}
-                      className={`w-full text-left px-3 py-2.5 rounded-lg flex items-center justify-between transition-all duration-250 ease-[cubic-bezier(0.16,1,0.3,1)] active:scale-[0.98] ${
-                        isSelected
-                          ? "bg-white/[0.09] text-white translate-x-1"
-                          : "text-neutral-300 hover:bg-white/[0.04]"
-                      }`}
-                    >
-                      <div className="flex flex-col gap-0.5">
-                        <span className="text-sm font-medium">
-                          {cleanLabel(comp.label)}
-                        </span>
-                        <span className="text-xs text-neutral-500 line-clamp-1">
-                          {comp.desc}
-                        </span>
-                      </div>
-                      <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-neutral-900 text-neutral-400 border border-neutral-800 shrink-0 ml-3">
-                        {comp.category}
-                      </span>
-                    </button>
-                  );
-                })
-              )}
-            </div>
+              <path
+                d="m50 7.5234 2.2461 29.645 5.9648-15.68-5.2891 24.566 0.089844 1.0898 37.09-22.633-27.855 22.355 20.266-5.3906-24.645 10.09 42.133 11.113-39.566-5.5469 21.109 12.812-25.188-11.445 15.898 34.777-19.363-30.055 3.1523 22.242-7.2656-24.844-21.031 32.656 14.41-31.531-16.945 14.586 17.043-19.578-42.254 5.9141 36.457-9.6016-24.191-3.6328 29.801 0.89844-32.168-25.82 28.945 17.656-11.887-17.145 19.934 22.055 0.097656 0.066406z"
+                fillRule="evenodd"
+              />
+            </svg>
+          </div>
 
-            {/* Footer shortcuts helper */}
-            <div className="flex items-center justify-between px-4 py-2 border-t border-neutral-800/80 bg-[#070708] text-[10px] text-neutral-500 font-mono">
-              <div className="flex items-center gap-3">
-                <span>↑↓ Navigate</span>
-                <span>↵ Select</span>
-              </div>
-              <span>ESC Close</span>
-            </div>
-          </motion.div>
+          <div className="search-input-wrap">
+            <span ref={mirrorRef} className="search-input-mirror" aria-hidden="true">
+              {query.slice(0, cursorPos)}
+            </span>
+            {isFocused && (
+              <span
+                className="smooth-caret"
+                style={{ transform: `translateX(${caretOffset}px)` }}
+                aria-hidden="true"
+              />
+            )}
+            <input
+              ref={inputRef}
+              type="text"
+              className="search-input"
+              placeholder={placeholder}
+              value={query}
+              onChange={(e) => {
+                setQuery(e.target.value);
+                setCursorPos(e.target.selectionStart ?? e.target.value.length);
+                setSelectedIndex(0);
+              }}
+              onSelect={updateCursorPosition}
+              onKeyUp={updateCursorPosition}
+              onFocus={() => {
+                setIsFocused(true);
+                updateCursorPosition();
+              }}
+              onBlur={() => setIsFocused(false)}
+              autoComplete="off"
+              spellCheck={false}
+            />
+          </div>
+
+          <kbd className="kbd-esc" onClick={onClose}>
+            ESC
+          </kbd>
         </div>
-      )}
-    </AnimatePresence>
+
+        {/* Results List */}
+        <div
+          ref={listRef}
+          className="results-list"
+          onWheel={(e) => e.stopPropagation()}
+          onTouchMove={(e) => e.stopPropagation()}
+        >
+          {filteredPages.length > 0 && (
+            <div className="category-group">
+              <div className="category-title">PAGES</div>
+              {filteredPages.map((page) => {
+                const currentIndex = flatIndex++;
+                const isSelected = selectedIndex === currentIndex;
+                const IconComponent = page.icon;
+
+                return (
+                  <button
+                    key={page.path}
+                    ref={isSelected ? activeItemRef : null}
+                    type="button"
+                    className={`result-item ${isSelected ? "selected" : ""}`}
+                    onClick={() => handleSelect(page.path)}
+                    onMouseEnter={() => setSelectedIndex(currentIndex)}
+                  >
+                    <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                      <IconComponent size={14} style={{ color: "var(--text-muted)", flexShrink: 0 }} />
+                      <span className="item-name">{page.name}</span>
+                    </div>
+                    <ArrowUpRight size={14} style={{ color: "var(--text-muted)", flexShrink: 0 }} />
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
+          {filteredComponents.length > 0 && (
+            <div className="category-group" style={{ marginTop: filteredPages.length > 0 ? "10px" : "0" }}>
+              <div className="category-title">COMPONENTS</div>
+              {filteredComponents.map((comp) => {
+                const currentIndex = flatIndex++;
+                const isSelected = selectedIndex === currentIndex;
+
+                return (
+                  <button
+                    key={comp.slug}
+                    ref={isSelected ? activeItemRef : null}
+                    type="button"
+                    className={`result-item ${isSelected ? "selected" : ""}`}
+                    onClick={() => handleSelect(`/showcase/${comp.slug}`)}
+                    onMouseEnter={() => setSelectedIndex(currentIndex)}
+                  >
+                    <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                      <svg
+                        width="14"
+                        height="14"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        style={{ color: "var(--text-muted)", flexShrink: 0 }}
+                      >
+                        <path d="M5.5 8.5 9 12l-3.5 3.5L2 12l3.5-3.5Z" />
+                        <path d="m12 2 3.5 3.5L12 9 8.5 5.5 12 2Z" />
+                        <path d="M18.5 8.5 22 12l-3.5 3.5L15 12l3.5-3.5Z" />
+                        <path d="m12 15 3.5 3.5L12 22l-3.5-3.5L12 15Z" />
+                      </svg>
+                      <span className="item-name">{comp.label}</span>
+                    </div>
+                    <ArrowRight size={14} style={{ color: "var(--text-muted)", flexShrink: 0 }} />
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
+          {allItems.length === 0 && (
+            <div
+              className="no-results-box"
+              style={{
+                padding: "32px 14px",
+                textAlign: "center",
+                color: "var(--text-muted)",
+                fontSize: "14px",
+              }}
+            >
+              No matches found for &quot;{query}&quot;.
+            </div>
+          )}
+        </div>
+
+        {/* Footer */}
+        <div className="search-footer">
+          <span
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "6px",
+              fontSize: "12px",
+              color: "var(--text-muted)",
+            }}
+          >
+            Go to page
+            <CornerDownLeft size={12} style={{ color: "var(--text-muted)" }} />
+          </span>
+        </div>
+      </div>
+    </div>
   );
 }
-

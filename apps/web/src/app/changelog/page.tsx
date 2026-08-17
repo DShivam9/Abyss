@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { ArrowLeft, Github, ExternalLink } from "lucide-react";
@@ -17,6 +17,23 @@ interface CommitEntry {
 }
 
 const CHANGELOG_DATA: CommitEntry[] = [
+  {
+    id: "commit-17",
+    date: "2026-08-18",
+    displayDate: "Aug 18, 2026 • 00:48 IST",
+    tag: "MAJOR",
+    title: "Showcase Architecture Overhaul & Component Motion Polish",
+    summary: "Overhauled the Tracklist Gallery with robust audio lifecycles, tactile mechanical haptics, and refined editorial typography, alongside a modernized Vibe Collection showcase architecture.",
+    items: [
+      "Overhauled Tracklist Gallery with unmount audio cleanup, tab-visibility volume fading, and instant autoplay playback",
+      "Added synthesized mechanical ratchet audio feedback on scroll wheel navigation and track switches",
+      "Switched Tracklist Gallery typography to Ranade with dynamic layout measurement and stationary text transitions",
+      "Enlarged cover artwork with organic rounded corners and synced palette illuminations",
+      "Introduced live tuning controls and visual refinements for Dual Wave, Gravity Cursor, Ripple Scramble, and Parallax components",
+      "Re-architected the showcase collection into streamlined Vibe Sections with interactive Specimen Ledgers",
+      "Purged legacy catalog navigation and unified component registry state management",
+    ],
+  },
   {
     id: "commit-16",
     date: "2026-08-12",
@@ -313,6 +330,10 @@ const FILTERS = ["All", "Major", "Addition", "Minor", "Fix"];
 
 export default function ChangelogPage() {
   const [filter, setFilter] = useState<string>("All");
+
+  useEffect(() => {
+    document.title = "Changelog ✶ Abyss";
+  }, []);
 
   const filtered = CHANGELOG_DATA.filter((entry) => {
     if (filter === "All") return true;
