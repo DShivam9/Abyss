@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo } from "react";
 import { getComponent } from "@/lib/registry";
 import { ShowcaseChrome } from "@/components/showcase/ShowcaseChrome";
 import { ControlsDrawer } from "@/components/showcase/ControlsDrawer";

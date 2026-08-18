@@ -164,7 +164,7 @@ export const ApparatusTracklistGallery: React.FC<ApparatusTracklistGalleryProps>
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const tracklistRef = useRef<HTMLDivElement>(null);
-  const [hasInteracted, setHasInteracted] = useState(false);
+  const hasInteractedRef = useRef(false);
 
   const baseTracks = useMemo(() => {
     return tracks.length > 0 ? (tracks as ExtendedTrackItem[]) : DEFAULT_TRACKS;
@@ -467,7 +467,7 @@ export const ApparatusTracklistGallery: React.FC<ApparatusTracklistGalleryProps>
     };
 
     const handleWheel = (e: WheelEvent) => {
-      setHasInteracted(true);
+      hasInteractedRef.current = true;
       if (globalAudioInstance && globalAudioInstance.paused) {
         globalAudioInstance.play().catch(() => {});
       }
@@ -480,7 +480,7 @@ export const ApparatusTracklistGallery: React.FC<ApparatusTracklistGalleryProps>
 
     let touchStartY = 0;
     const handleTouchStart = (e: TouchEvent) => {
-      setHasInteracted(true);
+      hasInteractedRef.current = true;
       if (globalAudioInstance && globalAudioInstance.paused) {
         globalAudioInstance.play().catch(() => {});
       }
@@ -618,7 +618,7 @@ export const ApparatusTracklistGallery: React.FC<ApparatusTracklistGalleryProps>
             <div
               key={`${track.id}-${idx}`}
               onClick={() => {
-                setHasInteracted(true);
+                hasInteractedRef.current = true;
                 jumpToTrack(idx);
               }}
               className={`w-full razor-text-render transition-opacity duration-300 flex items-center justify-end cursor-pointer ${

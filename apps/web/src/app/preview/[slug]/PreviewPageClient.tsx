@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { getComponent } from "@/lib/registry";
 import { ShaderShowcaseLayout } from "@/components/showcase/ShaderShowcaseLayout";
 import { ScrollShowcaseLayout } from "@/components/showcase/ScrollShowcaseLayout";
@@ -25,6 +25,22 @@ const SELF_CONTAINED_SCROLL = new Set([
 export default function PreviewPageClient({ slug }: PreviewPageClientProps) {
   const { Component, meta } = getComponent(slug);
 
+  const initialValues = useMemo(() => {
+    const init: Record<string, string | number | boolean> = {};
+    if (meta?.controls) {
+      meta.controls.forEach((ctrl) => {
+        init[ctrl.key] = ctrl.default;
+      });
+    }
+    return init;
+  }, [meta]);
+
+  const [controlValues, setControlValues] = useState<Record<string, string | number | boolean>>(initialValues);
+
+  const handleControlChange = (key: string, value: string | number | boolean) => {
+    setControlValues((prev) => ({ ...prev, [key]: value }));
+  };
+
   if (!Component || !meta) {
     return (
       <div className="flex h-screen w-full items-center justify-center bg-[#070708] text-neutral-400">
@@ -36,19 +52,6 @@ export default function PreviewPageClient({ slug }: PreviewPageClientProps) {
   const defaultImageSrc = meta.filename.startsWith("/")
     ? meta.filename
     : `/images/components images/${meta.filename}`;
-
-  const initialValues: Record<string, string | number | boolean> = {};
-  if (meta.controls) {
-    meta.controls.forEach((ctrl) => {
-      initialValues[ctrl.key] = ctrl.default;
-    });
-  }
-
-  const [controlValues, setControlValues] = useState<Record<string, string | number | boolean>>(initialValues);
-
-  const handleControlChange = (key: string, value: string | number | boolean) => {
-    setControlValues((prev) => ({ ...prev, [key]: value }));
-  };
 
   const isSelfContainedScroll = SELF_CONTAINED_SCROLL.has(slug);
   const previewType = meta.previewType || (meta.category === "scroll" ? "scroll" : meta.category === "text" ? "text" : "shader");

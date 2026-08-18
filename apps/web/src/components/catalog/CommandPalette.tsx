@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState, useRef, useDeferredValue } from "react";
+import React, { useEffect, useState, useRef, useDeferredValue, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import {
   FileText,
@@ -128,24 +128,28 @@ export function CommandPalette({
   const cleanQuery = deferredQuery.toLowerCase().trim();
 
   // Filtered pages
-  const filteredPages = STATIC_PAGES.filter((p) => {
-    if (!cleanQuery) return true;
-    return p.name.toLowerCase().includes(cleanQuery);
-  });
+  const filteredPages = useMemo(() => {
+    return STATIC_PAGES.filter((p) => {
+      if (!cleanQuery) return true;
+      return p.name.toLowerCase().includes(cleanQuery);
+    });
+  }, [cleanQuery]);
 
   // Filtered components
-  const filteredComponents = components.filter((c) => {
-    if (!cleanQuery) return true;
-    const nameMatch = c.label.toLowerCase().includes(cleanQuery);
-    const descMatch = c.desc ? c.desc.toLowerCase().includes(cleanQuery) : false;
-    const tagMatch = c.tags?.some((t) => t.toLowerCase().includes(cleanQuery));
-    return nameMatch || descMatch || tagMatch;
-  });
+  const filteredComponents = useMemo(() => {
+    return components.filter((c) => {
+      if (!cleanQuery) return true;
+      const nameMatch = c.label.toLowerCase().includes(cleanQuery);
+      const descMatch = c.desc ? c.desc.toLowerCase().includes(cleanQuery) : false;
+      const tagMatch = c.tags?.some((t) => t.toLowerCase().includes(cleanQuery));
+      return nameMatch || descMatch || tagMatch;
+    });
+  }, [components, cleanQuery]);
 
-  const allItems = [
+  const allItems = useMemo(() => [
     ...filteredPages.map((p) => ({ type: "page" as const, item: p })),
     ...filteredComponents.map((c) => ({ type: "comp" as const, item: c })),
-  ];
+  ], [filteredPages, filteredComponents]);
 
   // Auto scroll active item into view
   useEffect(() => {
@@ -158,10 +162,10 @@ export function CommandPalette({
   }, [selectedIndex]);
 
   // Navigate selection
-  const handleSelect = (path: string) => {
+  const handleSelect = useCallback((path: string) => {
     onClose();
     router.push(path);
-  };
+  }, [onClose, router]);
 
   // Keyboard navigation
   useEffect(() => {
@@ -196,7 +200,7 @@ export function CommandPalette({
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isOpen, selectedIndex, allItems, onClose, router]);
+  }, [isOpen, selectedIndex, allItems, onClose, handleSelect]);
 
   let flatIndex = 0;
 

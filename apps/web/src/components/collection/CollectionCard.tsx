@@ -18,6 +18,7 @@ export function CollectionCard({ slug, title, filename }: CollectionCardProps) {
   return (
     <Link href={`/showcase/${slug}`} className="skiper-card">
       <div className="card-preview">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={imageSrc}
           alt={title}

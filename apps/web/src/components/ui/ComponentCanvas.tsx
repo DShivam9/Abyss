@@ -32,6 +32,8 @@ export function ComponentCanvas({
     setScrollProgress(0);
   }, [previewType, slug]);
 
+  const scrollDamping = typeof controlValues.scrollDamping === "number" ? controlValues.scrollDamping : 0.08;
+
   // LERP interpolation loop (60fps smooth physics scroll)
   useEffect(() => {
     if (previewType !== "scroll" && previewType !== "gallery" && previewType !== "transition") return;
@@ -43,8 +45,7 @@ export function ComponentCanvas({
       const diff = targetProgress.current - currentProgress.current;
       // Interpolate when there is meaningful delta to prevent infinite CPU wake lock
       if (Math.abs(diff) > 0.0001) {
-        const customDamp = typeof controlValues.scrollDamping === "number" ? controlValues.scrollDamping : 0.08;
-        const rate = Math.min(0.50, Math.max(0.005, customDamp));
+        const rate = Math.min(0.50, Math.max(0.005, scrollDamping));
 
         // VELOCITY CEILING: Generous per-frame step cap for responsive butter-smooth motion
         const maxStepPerFrame = Math.max(0.008, rate * 0.15);
@@ -67,7 +68,7 @@ export function ComponentCanvas({
     return () => {
       active = false;
     };
-  }, [previewType]);
+  }, [previewType, scrollDamping]);
 
   // Wheel tracking (input listener)
   useEffect(() => {

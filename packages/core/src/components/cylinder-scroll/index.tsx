@@ -21,24 +21,7 @@ const DEFAULT_IMAGES = [
   "/images/components images/scroll/cosmos_1556080729.webp"
 ];
 
-// Content Satoshi text mock bank
-const LABELS = [
-  "Cosmic Aperture",
-  "Phase Shift",
-  "Tectonic Depth",
-  "Vector Expansion",
-  "Spectral Drift",
-  "Erosion Wave",
-  "Gilded Patina",
-  "Molten Core",
-  "Chronos Nebula",
-  "Event Horizon",
-  "Quantum Horizon",
-  "Galactic Horizon",
-  "Nova Aperture",
-  "Stellar Drift",
-  "Solar Core"
-];
+
 
 
 
@@ -76,7 +59,6 @@ export const ApparatusCylinderScroll: React.FC<ApparatusCylinderScrollProps & {
   const pathBend = propPathBend ?? 0; // 3D cylindrical bend factor
 
   const targetScrollRef = useRef(-0.08);
-  const [activeIdx, setActiveIdx] = useState(0);
   const activeIdxRef = useRef(0);
   const lastScrollTimeRef = useRef(performance.now());
   const mountProgressRef = useRef(0);
@@ -238,7 +220,6 @@ export const ApparatusCylinderScroll: React.FC<ApparatusCylinderScrollProps & {
       const currentActive = ((centerVirtualIndex % totalCount) + totalCount) % totalCount;
       if (currentActive !== activeIdxRef.current) {
         activeIdxRef.current = currentActive;
-        setActiveIdx(currentActive);
       }
 
       const startV = centerVirtualIndex - Math.floor(totalCount / 2);
