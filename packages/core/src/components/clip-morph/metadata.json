@@ -1,5 +1,5 @@
 {
-  "name": "Apparatus Clip Morph",
+  "name": "Clip Morph",
   "slug": "clip-morph",
   "pitch": "Outgoing image is clipped by a shape. The shape morphs — shrinking inward while simultaneously transforming geometry (circle → diamond → thin vertical line → nothing) to reveal the next image.",
   "family": "transition",

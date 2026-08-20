@@ -21,7 +21,6 @@ export * from "./components/merlin-knights";
 export * from "./components/static-image";
 export * from "./components/bronze-transmutation";
 export * from "./components/bas-relief-shadow";
-export * from "./components/orbit-ring-gallery";
 export * from "./components/accordion-wall";
 export * from "./components/parallax-column";
 export * from "./components/erosion-map";
@@ -31,13 +30,14 @@ export * from "./components/phase-drift";
 export * from "./components/depth-swim";
 export * from "./components/cylinder-scroll";
 export * from "./components/focus-ring";
-export * from "./components/cursor-wake";
 export * from "./components/parallax-bleed";
 export * from "./components/gravity-cursor";
 export * from "./components/3d-shatter-sphere";
 export * from "./components/ripple-scramble";
 export * from "./components/curved-scroll-wipe";
-export * from "./components/apparatus-tracklist-gallery";
+export * from "./components/tracklist-gallery";
+export * from "./components/abyss-cursor-fall";
+export * from "./components/hover-media-stream";
 
 
 

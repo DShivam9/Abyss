@@ -29,22 +29,21 @@ export const VIBE_SECTIONS: VibeSection[] = [
     headlineClass: "headline-s3", // indigo
     count: 8,
     slugs: [
-      "orbit-ring-gallery",
       "3d-shatter-sphere",
       "gravity-cursor",
       "focus-ring",
-      "cursor-wake",
       "image-snake-trail",
-      "3d-cursor-trail",
-      "apparatus-tracklist-gallery",
+      "abyss-cursor-fall",
+      "tracklist-gallery",
     ],
   },
   {
     id: "type-and-motion",
     title: "Type and Motion",
     headlineClass: "headline-s4", // red
-    count: 5,
+    count: 6,
     slugs: [
+      "hover-media-stream",
       "accordion-wall",
       "curved-scroll-wipe",
       "clip-morph",
@@ -68,7 +67,7 @@ export const VIBE_SECTIONS: VibeSection[] = [
       "core-shell-b",
       "kinetic-portal",
       "gilding-transmutation",
-      "apparatus-steel-intaglio",
+      "steel-intaglio",
       "depth-silhouette",
       "procedural-atlas",
     ],

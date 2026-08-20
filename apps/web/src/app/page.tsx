@@ -6,7 +6,7 @@ import dynamic from "next/dynamic";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 
-const Apparatus3DShatterSphere = dynamic(
+const ShatterSphere = dynamic(
   () => import("../../../../packages/core/src/components/3d-shatter-sphere"),
   { ssr: false }
 );
@@ -203,7 +203,7 @@ export default function HomePage() {
         <main ref={heroContainerRef} className="relative flex-1 flex flex-col items-center justify-center px-6 text-center gap-1 -mt-24">
           {/* Interactive 3D Shatter Sphere Backdrop (Sphere Mode Only) */}
           <div className="absolute inset-0 z-0 pointer-events-auto opacity-60 hover:opacity-100 transition-opacity duration-700 overflow-hidden">
-            <Apparatus3DShatterSphere
+            <ShatterSphere
               shapeMode="sphere"
               showCenterText={false}
               sphereRadius={540}

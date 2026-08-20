@@ -1,17 +1,31 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { Search } from "lucide-react";
 
 interface DockNavbarProps {
   onOpenSearch?: () => void;
+  threshold?: number;
 }
 
-export function DockNavbar({ onOpenSearch }: DockNavbarProps) {
+export function DockNavbar({ onOpenSearch, threshold = 40 }: DockNavbarProps) {
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  useEffect(() => {
+    // ponytail: native passive scroll listener for pill condensation
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > threshold);
+    };
+
+    handleScroll();
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [threshold]);
+
   return (
     <div className="dock-wrapper" id="dockWrapper">
-      <header className="dock-nav">
+      <header className={`dock-nav ${isScrolled ? "dock-pill" : "dock-flush"}`}>
         {/* Brand */}
         <Link href="/" className="dock-brand">
           <div

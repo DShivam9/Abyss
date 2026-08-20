@@ -51,7 +51,9 @@ export default function PreviewPageClient({ slug }: PreviewPageClientProps) {
 
   const defaultImageSrc = meta.filename.startsWith("/")
     ? meta.filename
-    : `/images/components images/${meta.filename}`;
+    : meta.filename.startsWith("components/")
+      ? `/images/${meta.filename}`
+      : `/images/components images/${meta.filename}`;
 
   const isSelfContainedScroll = SELF_CONTAINED_SCROLL.has(slug);
   const previewType = meta.previewType || (meta.category === "scroll" ? "scroll" : meta.category === "text" ? "text" : "shader");

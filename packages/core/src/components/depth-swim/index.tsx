@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useMemo, useRef } from "react";
 import { gsap } from "gsap";
 import { useGSAP } from "@gsap/react";
 import { CustomEase } from "gsap/CustomEase";
@@ -48,86 +48,44 @@ const DEFAULT_IMAGES = [
   "/images/components images/scroll/cosmos_961582572.webp"
 ];
 
-const getDeterministicCoords = (index: number, total: number): { x: number; y: number; z: number } => {
-  const z = index / (total - 1 || 1);
-  
-  // 5 columns covering full widescreen width: -40vw to 40vw
-  const colIndex = index % 5;
-  const baseCols = [-40, -20, 0, 20, 40];
-  const baseX = baseCols[colIndex];
-  
-  // 6 rows covering vertical space: -30vh to 30vh
-  const rowIndex = (index * 2) % 6;
-  const baseRows = [-30, -18, -6, 6, 18, 30];
-  const baseY = baseRows[rowIndex];
-  
-  // Add subtle deterministic jitter to avoid rigid grid alignment
-  // ponytail: subtle jitter to make it look scattered but highly structured
-  const jitterX = Math.sin(index * 4.3) * 4; // ±4vw
-  const jitterY = Math.cos(index * 2.9) * 3; // ±3vh
-  
-  const x = baseX + jitterX;
-  const y = baseY + jitterY;
-  
-  return { x, y, z };
+// 42-Point Organic Constellation Matrix with Tightened Vertical & Cluster Gaps
+const generateOrganicConstellation = (): { x: number; y: number; z: number }[] => {
+  const cols = 7;
+  const rows = 6;
+  const total = cols * rows; // 42
+  const coords: { x: number; y: number; z: number }[] = [];
+
+  for (let i = 0; i < total; i++) {
+    const c = i % cols;
+    const r = Math.floor(i / cols);
+    const staggerX = r % 2 === 1 ? 6.5 : -6.5;
+    const jitterX = Math.sin(i * 3.7 + 1.2) * 1.4;
+    const jitterY = Math.cos(i * 2.9 + 0.8) * 1.2;
+
+    const x = -42 + c * 14.0 + staggerX + jitterX;
+    const y = -28 + r * 11.2 + (c % 2 === 1 ? 2.2 : -2.2) + jitterY;
+    const z = ((i * 13) % total) / total;
+    coords.push({ x, y, z });
+  }
+
+  return coords;
 };
 
-const getVariantDefaults = (variant: "tunnel" | "matrix" | "cinematic" | "micro") => {
-  if (variant === "tunnel") {
-    return {
-      smoothFactor: 0.08,
-      depthRange: 1600,
-      scrollSpeed: 140,
-      cursorParallaxPower: 40,
-      maxBlur: 18,
-      cardScale: 1.0,
-      hoverTiltMax: 8,
-      ambientOpacity: 0.35,
-      ambientBlur: 5
-    };
-  }
-  if (variant === "matrix") {
-    return {
-      smoothFactor: 0.10,
-      depthRange: 700,
-      scrollSpeed: 90,
-      cursorParallaxPower: 55,
-      maxBlur: 6,
-      cardScale: 1.05,
-      hoverTiltMax: 14,
-      ambientOpacity: 0.20,
-      ambientBlur: 40
-    };
-  }
-  if (variant === "cinematic") {
-    return {
-      smoothFactor: 0.04,
-      depthRange: 2400,
-      scrollSpeed: 110,
-      cursorParallaxPower: 25,
-      maxBlur: 32,
-      cardScale: 0.85,
-      hoverTiltMax: 8,
-      ambientOpacity: 0.60,
-      ambientBlur: 110
-    };
-  }
-  // micro
-  return {
-    smoothFactor: 0.08,
-    depthRange: 1300,
-    scrollSpeed: 70,
-    cursorParallaxPower: 30,
-    maxBlur: 12,
-    cardScale: 0.65,
-    hoverTiltMax: 6,
-    ambientOpacity: 0.30,
-    ambientBlur: 5
-  };
+const HONEYCOMB_COORDS = generateOrganicConstellation();
+
+const DEFAULT_CONFIG = {
+  smoothFactor: 0.065,
+  depthRange: 6500,
+  scrollSpeed: 120,
+  cursorParallaxPower: 35,
+  maxBlur: 14,
+  cardScale: 1.0,
+  hoverTiltMax: 12,
+  ambientOpacity: 0.45,
+  ambientBlur: 80
 };
 
 export const ApparatusDepthSwim: React.FC<ApparatusDepthSwimProps & {
-  selectedVariant?: "tunnel" | "matrix" | "cinematic" | "micro";
   depthRange?: number;
   maxBlur?: number;
   cursorParallaxPower?: number;
@@ -139,14 +97,13 @@ export const ApparatusDepthSwim: React.FC<ApparatusDepthSwimProps & {
   imageSrc,
   images,
   scrollProgress,
-  selectedVariant: propSelectedVariant = "tunnel",
-  depthRange: propDepthRange = 1600,
-  maxBlur: propMaxBlur = 18,
-  cursorParallaxPower: propCursorParallaxPower = 40,
-  cardScale: propCardScale = 1.0,
-  hoverTiltMax: propHoverTiltMax = 15,
-  ambientOpacity: propAmbientOpacity = 0.45,
-  ambientBlur: propAmbientBlur = 75,
+  depthRange: propDepthRange = DEFAULT_CONFIG.depthRange,
+  maxBlur: propMaxBlur = DEFAULT_CONFIG.maxBlur,
+  cursorParallaxPower: propCursorParallaxPower = DEFAULT_CONFIG.cursorParallaxPower,
+  cardScale: propCardScale = DEFAULT_CONFIG.cardScale,
+  hoverTiltMax: propHoverTiltMax = DEFAULT_CONFIG.hoverTiltMax,
+  ambientOpacity: propAmbientOpacity = DEFAULT_CONFIG.ambientOpacity,
+  ambientBlur: propAmbientBlur = DEFAULT_CONFIG.ambientBlur,
   className = "",
   style,
   onLifecycleChange
@@ -157,46 +114,41 @@ export const ApparatusDepthSwim: React.FC<ApparatusDepthSwimProps & {
   const imgRefs = useRef<(HTMLImageElement | null)[]>([]);
   const lastStateRef = useRef<"idle" | "discovery" | "buildUp" | "peak" | "recovery">("idle");
 
-  // Config derived from props
-  const variantDefaults = getVariantDefaults(propSelectedVariant);
-  const smoothFactor = variantDefaults.smoothFactor;
   const depthRange = propDepthRange;
-  const scrollSpeed = variantDefaults.scrollSpeed;
   const cursorParallaxPower = propCursorParallaxPower;
   const maxBlur = propMaxBlur;
   const cardScale = propCardScale;
   const hoverTiltMax = propHoverTiltMax;
   const ambientOpacity = propAmbientOpacity;
   const ambientBlur = propAmbientBlur;
-  const scrollDirection = "vertical";
 
-
-
-
-
-  const scrollOffsetRef = useRef(0);
-  const scrollVelocityRef = useRef(0);
-  const isScrollingRef = useRef(false);
+  const targetScrollZRef = useRef(0);
   const mouseRef = useRef({ x: 0, y: 0, targetX: 0, targetY: 0 });
+
+  // 2D Infinite Canvas Pan Drag with Momentum
+  const panOffsetRef = useRef({ x: 0, y: 0 });
+  const panVelocityRef = useRef({ x: 0, y: 0 });
+  const smoothVelocityRef = useRef({ x: 0, y: 0 });
+  const isDraggingRef = useRef(false);
+  const dragStartRef = useRef({ x: 0, y: 0 });
 
   const bg1Ref = useRef<HTMLDivElement>(null);
   const bg2Ref = useRef<HTMLDivElement>(null);
-  const currentBgToggleRef = useRef(true); // true = bg1 active, false = bg2 active
+  const currentBgToggleRef = useRef(true);
   const lastActiveIndexRef = useRef<number>(-1);
 
   const hoveredIndexRef = useRef<number>(-1);
   const hoverProgressRef = useRef<number[]>([]);
 
-
-  // Global mouse tracking for volumetric parallax field
+  // Smooth mouse tracking for volumetric parallax
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
 
     const handleMouseMoveGlobal = (e: MouseEvent) => {
       const rect = container.getBoundingClientRect();
-      const x = (e.clientX - rect.left) / rect.width - 0.5; // -0.5 to 0.5
-      const y = (e.clientY - rect.top) / rect.height - 0.5; // -0.5 to 0.5
+      const x = (e.clientX - rect.left) / rect.width - 0.5;
+      const y = (e.clientY - rect.top) / rect.height - 0.5;
       mouseRef.current.targetX = x;
       mouseRef.current.targetY = y;
     };
@@ -220,28 +172,20 @@ export const ApparatusDepthSwim: React.FC<ApparatusDepthSwimProps & {
     : imageSrc
       ? [imageSrc, ...DEFAULT_IMAGES.slice(1)]
       : DEFAULT_IMAGES;
-  const totalCount = rawImages.length;
 
-  // Process images into full DepthSwimImage structures
-  const swimItems = React.useMemo<DepthSwimImage[]>(() => {
-    return rawImages.map((img, i) => {
-      const rawSrc = typeof img === "string" ? img : img.src;
-      const src = encodeURI(rawSrc);
-      const coords = getDeterministicCoords(i, totalCount);
-
-      // Add a randomized organic offset to each card initialized once on mount
-      // ponytail: randomized X/Y offset to prevent predictable patterns
-      const randX = (Math.random() - 0.5) * 16; // ±8vw
-      const randY = (Math.random() - 0.5) * 14; // ±7vh
-
+  // Process images into full 42-node organic constellation depth lattice
+  const swimItems = useMemo<DepthSwimImage[]>(() => {
+    return HONEYCOMB_COORDS.map((coords, i) => {
+      const raw = rawImages[i % rawImages.length];
+      const src = encodeURI(typeof raw === "string" ? raw : raw.src);
       return {
         src,
-        x: coords.x + randX,
-        y: coords.y + randY,
+        x: coords.x,
+        y: coords.y,
         z: coords.z
       };
     });
-  }, [rawImages, totalCount]);
+  }, [rawImages]);
 
   // Initialize initial background image
   useEffect(() => {
@@ -252,14 +196,12 @@ export const ApparatusDepthSwim: React.FC<ApparatusDepthSwimProps & {
     }
   }, [swimItems, ambientOpacity]);
 
-  // Virtual Scroll Mouse/Touch Bindings (fallback if scrollProgress prop is undefined)
+  // Silky Spring-Damped Scroll Bindings
   useEffect(() => {
     if (scrollProgress !== undefined) return;
 
     const handleWheel = (e: WheelEvent) => {
-      // scroll camera Z depth (0.0 to 1.0)
-      scrollVelocityRef.current = Math.max(-0.08, Math.min(0.08, scrollVelocityRef.current + e.deltaY * 0.00035));
-      isScrollingRef.current = true;
+      targetScrollZRef.current += e.deltaY * 0.00045;
     };
 
     let lastTouchY = 0;
@@ -271,9 +213,7 @@ export const ApparatusDepthSwim: React.FC<ApparatusDepthSwimProps & {
       const touchY = e.touches[0].clientY;
       const deltaY = lastTouchY - touchY;
       lastTouchY = touchY;
-
-      scrollVelocityRef.current = Math.max(-0.08, Math.min(0.08, scrollVelocityRef.current + deltaY * 0.0007));
-      isScrollingRef.current = true;
+      targetScrollZRef.current += deltaY * 0.00075;
     };
 
     const container = containerRef.current;
@@ -292,213 +232,247 @@ export const ApparatusDepthSwim: React.FC<ApparatusDepthSwimProps & {
     };
   }, [scrollProgress]);
 
-  // Sync prop parameters to refs for use inside animation loop
-  const smoothRef = useRef(smoothFactor);
-  useEffect(() => {
-    smoothRef.current = smoothFactor;
-  }, [smoothFactor]);
+  // 2D Omnidirectional Pan Drag Handlers
+  const handlePointerDown = (e: React.PointerEvent) => {
+    isDraggingRef.current = true;
+    dragStartRef.current = { x: e.clientX, y: e.clientY };
+    panVelocityRef.current = { x: 0, y: 0 };
+    if (containerRef.current) {
+      containerRef.current.setPointerCapture(e.pointerId);
+    }
+  };
 
+  const handlePointerMove = (e: React.PointerEvent) => {
+    if (!isDraggingRef.current) return;
+    const dx = e.clientX - dragStartRef.current.x;
+    const dy = e.clientY - dragStartRef.current.y;
+    dragStartRef.current = { x: e.clientX, y: e.clientY };
+
+    panOffsetRef.current.x += dx;
+    panOffsetRef.current.y += dy;
+    panVelocityRef.current.x = dx * 0.85;
+    panVelocityRef.current.y = dy * 0.85;
+  };
+
+  const handlePointerUp = (e: React.PointerEvent) => {
+    isDraggingRef.current = false;
+    if (containerRef.current) {
+      try {
+        containerRef.current.releasePointerCapture(e.pointerId);
+      } catch {}
+    }
+  };
+
+  // Props sync refs
   const depthRangeRef = useRef(depthRange);
-  useEffect(() => {
-    depthRangeRef.current = depthRange;
-  }, [depthRange]);
-
-  const scrollSpeedRef = useRef(scrollSpeed);
-  useEffect(() => {
-    scrollSpeedRef.current = scrollSpeed;
-  }, [scrollSpeed]);
+  useEffect(() => { depthRangeRef.current = depthRange; }, [depthRange]);
 
   const cursorParallaxPowerRef = useRef(cursorParallaxPower);
-  useEffect(() => {
-    cursorParallaxPowerRef.current = cursorParallaxPower;
-  }, [cursorParallaxPower]);
+  useEffect(() => { cursorParallaxPowerRef.current = cursorParallaxPower; }, [cursorParallaxPower]);
 
   const maxBlurRef = useRef(maxBlur);
-  useEffect(() => {
-    maxBlurRef.current = maxBlur;
-  }, [maxBlur]);
+  useEffect(() => { maxBlurRef.current = maxBlur; }, [maxBlur]);
 
   const ambientOpacityRef = useRef(ambientOpacity);
-  useEffect(() => {
-    ambientOpacityRef.current = ambientOpacity;
-  }, [ambientOpacity]);
+  useEffect(() => { ambientOpacityRef.current = ambientOpacity; }, [ambientOpacity]);
 
-  const ambientBlurRef = useRef(ambientBlur);
-  useEffect(() => {
-    ambientBlurRef.current = ambientBlur;
-  }, [ambientBlur]);
-
-  const scrollDirectionRef = useRef(scrollDirection);
-  useEffect(() => {
-    scrollDirectionRef.current = scrollDirection;
-  }, [scrollDirection]);
-
-  // Main animation tick loop
+  // Main 60FPS Render & Optical Physics Loop
   useGSAP(() => {
     let lastFrameTime = performance.now() / 1000;
     let cameraZ = 0;
     let animFrame: number;
 
+    const handleVisibility = () => {
+      lastFrameTime = performance.now() / 1000;
+    };
+    document.addEventListener("visibilitychange", handleVisibility);
+
     const tick = () => {
       const now = performance.now() / 1000;
-      const dt = Math.min(0.1, now - lastFrameTime);
+      const rawDt = now - lastFrameTime;
       lastFrameTime = now;
 
+      const dt = Math.min(rawDt, 0.033);
+
       const range = 1.0;
-      const minZ = -0.35;
+      const minZ = -0.15;
 
-      // Lerp mouse positions for smooth springy inertia
-      // ponytail: smooth lerping based on frame time delta
-      mouseRef.current.x += (mouseRef.current.targetX - mouseRef.current.x) * (1 - Math.pow(1 - 0.08, dt * 60));
-      mouseRef.current.y += (mouseRef.current.targetY - mouseRef.current.y) * (1 - Math.pow(1 - 0.08, dt * 60));
+      // Silky mouse lerp
+      mouseRef.current.x += (mouseRef.current.targetX - mouseRef.current.x) * (1 - Math.exp(-7.5 * dt));
+      mouseRef.current.y += (mouseRef.current.targetY - mouseRef.current.y) * (1 - Math.exp(-7.5 * dt));
 
-      // Update hover progress values with smooth easing
-      // ponytail: smooth easing for hover lift states
+      // Hover progress per tile
       for (let i = 0; i < swimItems.length; i++) {
         if (hoverProgressRef.current[i] === undefined) hoverProgressRef.current[i] = 0;
         const target = hoveredIndexRef.current === i ? 1.0 : 0.0;
-        hoverProgressRef.current[i] += (target - hoverProgressRef.current[i]) * (1 - Math.pow(1 - 0.1, dt * 60));
+        hoverProgressRef.current[i] += (target - hoverProgressRef.current[i]) * (1 - Math.exp(-9.0 * dt));
       }
 
-      // Calculate cameraZ position
+      // Camera Z calculation with continuous spring damping
       if (scrollProgress !== undefined) {
-        // Direct sync with page scroll progress
-        const targetZ = scrollProgress;
-        cameraZ += (targetZ - cameraZ) * (1 - Math.pow(1 - smoothRef.current, dt * 60));
+        cameraZ += (scrollProgress - cameraZ) * (1 - Math.exp(-9.0 * dt));
       } else {
-        // Fallback virtual physics velocity scroll (infinite loop wrap)
-        const friction = 1.0 - smoothRef.current;
-        scrollOffsetRef.current = (scrollOffsetRef.current + scrollVelocityRef.current + 1.0) % 1.0;
-        scrollVelocityRef.current *= Math.pow(friction, dt * 60);
-        cameraZ = scrollOffsetRef.current;
-
-        // Reset scroll state
-        if (Math.abs(scrollVelocityRef.current) < 0.0001) {
-          isScrollingRef.current = false;
-        }
+        cameraZ += (targetScrollZRef.current - cameraZ) * (1 - Math.exp(-6.5 * dt));
       }
 
-      // Update transforms of each scattered card
+      // Dynamic Active Lead Card Tracking
+      let activeIndex = 0;
+      let minFocalDist = 999;
+
+      // 2D Omnidirectional pan velocity inertia decay & silky velocity smoothing
+      smoothVelocityRef.current.x += (panVelocityRef.current.x - smoothVelocityRef.current.x) * (1 - Math.exp(-14.0 * dt));
+      smoothVelocityRef.current.y += (panVelocityRef.current.y - smoothVelocityRef.current.y) * (1 - Math.exp(-14.0 * dt));
+
+      if (!isDraggingRef.current) {
+        panOffsetRef.current.x += panVelocityRef.current.x;
+        panOffsetRef.current.y += panVelocityRef.current.y;
+        panVelocityRef.current.x *= Math.exp(-3.2 * dt);
+        panVelocityRef.current.y *= Math.exp(-3.2 * dt);
+      }
+
+      // Update transforms of each card in 3D perspective space
       for (let i = 0; i < swimItems.length; i++) {
         const el = itemRefs.current[i];
         if (!el) continue;
 
         const item = swimItems[i];
-        
-        // Map cameraZ: when scrollProgress is provided, map [0, 1] to [-0.15, 1.15]
-        const adjustedCameraZ = scrollProgress !== undefined
-          ? scrollProgress * 1.3 - 0.15
-          : cameraZ;
+        const adjustedCameraZ = scrollProgress !== undefined ? scrollProgress * 1.25 - 0.08 : cameraZ;
 
         let relativeZ = item.z - adjustedCameraZ;
-
-        // Infinite Z wrap: cards wrap seamlessly when out of view
-        // ponytail: wrap relativeZ to stay in a continuous range [-0.35, 0.65]
         relativeZ = ((relativeZ - minZ) % range + range) % range + minZ;
+
+        // Dynamic infinite image swap when wrapped in complete invisible void
+        const img = imgRefs.current[i];
+        if (img && (relativeZ > 0.80 || relativeZ < -0.12)) {
+          const cycle = Math.floor(cameraZ - item.z + 0.5);
+          const nextRaw = rawImages[Math.abs(i + cycle * 42) % rawImages.length];
+          const nextSrc = encodeURI(typeof nextRaw === "string" ? nextRaw : nextRaw.src);
+          if (img.getAttribute("data-src") !== nextSrc) {
+            img.setAttribute("data-src", nextSrc);
+            img.src = nextSrc;
+            item.src = nextSrc;
+          }
+        }
+
+        // Track closest item to optical sweet spot (0.10 ahead of camera)
+        const focalDist = Math.abs(relativeZ - 0.10);
+        if (focalDist < minFocalDist) {
+          minFocalDist = focalDist;
+          activeIndex = i;
+        }
 
         const hoverProgress = hoverProgressRef.current[i] || 0;
 
-        // Perspective-correct translateZ
+        // Perspective translate Z
         const baseTranslateZ = relativeZ * -depthRangeRef.current;
-        const hoverZOffset = hoverProgress * 40; // lift card 40px closer on hover
+        const hoverZOffset = hoverProgress * 80;
         const translateZ = baseTranslateZ + hoverZOffset;
-        
-        // Depth-based scroll parallax factor: closer cards (low z) scroll faster
-        const parallaxFactor = 1.5 - item.z * 0.8;
-        const scrollAmount = relativeZ * scrollSpeedRef.current * parallaxFactor;
-        
-        let finalX = item.x;
-        let finalY = item.y;
 
-        const direction = scrollDirectionRef.current;
-        if (direction === "vertical") {
-          finalY = item.y + scrollAmount;
-        } else if (direction === "horizontal") {
-          finalX = item.x + scrollAmount;
-        } else if (direction === "diagonal") {
-          finalX = item.x + scrollAmount * 0.7;
-          finalY = item.y + scrollAmount * 0.7;
-        } else if (direction === "creative") {
-          // Vortex spiral rotation + expansion
-          const baseAngle = Math.atan2(item.y, item.x);
-          const baseDist = Math.sqrt(item.x * item.x + item.y * item.y);
-          const rotationAngle = relativeZ * Math.PI * 0.6;
-          const expansionFactor = 1.0 + relativeZ * 0.3;
-          
-          const angle = baseAngle + rotationAngle;
-          const dist = baseDist * expansionFactor;
-          
-          finalX = Math.cos(angle) * dist;
-          finalY = Math.sin(angle) * dist;
-        } else if (direction === "radial") {
-          // Radial explosion outward along card's angle
-          const angle = Math.atan2(item.y, item.x);
-          finalX = item.x + Math.cos(angle) * scrollAmount * 0.6;
-          finalY = item.y + Math.sin(angle) * scrollAmount * 0.6;
-        } else if (direction === "zigzag") {
-          // Criss-cross diagonal lanes
-          const zigzagFactor = i % 2 === 0 ? 0.6 : -0.6;
-          finalX = item.x + scrollAmount * zigzagFactor;
-          finalY = item.y + scrollAmount * 0.75;
-        }
+        // Optical Focal Sharpness & Smoothstep Z-Depth Envelopes (Zero Z-Popping)
+        let opacity = 1.0;
+        let blurPx = 0;
+        let brightness = 1.0;
+        let saturation = 1.1;
 
-        // Dynamic opacity fade:
-        // Approaching: Fades in from distance 0.45 to 0.0
-        // Departing / Passing Camera: Fades out smoothly to 0 as relativeZ approaches -0.26
-        let opacity = 0;
-        if (relativeZ > 0) {
-          opacity = Math.max(0, 1.0 - relativeZ * 2.2);
+        if (relativeZ > 0.15) {
+          // Distant field lighting attenuation
+          const depthDist = Math.min(1.0, (relativeZ - 0.15) / 0.70);
+          blurPx = Math.min(1.5, depthDist * 1.5);
+          brightness = Math.max(0.45, 1.0 - depthDist * 0.55);
+          saturation = Math.max(0.70, 1.1 - depthDist * 0.40);
+
+          if (relativeZ > 0.55) {
+            // Smooth horizon fade to EXACT 0.0 at Z=0.85
+            const horizonT = Math.min(1.0, (relativeZ - 0.55) / 0.30);
+            const smoothT = horizonT * horizonT * (3 - 2 * horizonT);
+            opacity = Math.max(0, 1.0 - smoothT);
+          } else {
+            // Mid-distant visibility
+            opacity = Math.max(0.70, 1.0 - depthDist * 0.30);
+          }
+        } else if (relativeZ < -0.02) {
+          // Near-camera fly-by exit: smooth fade to EXACT 0.0 at Z=-0.15
+          const nearT = Math.min(1.0, (-0.02 - relativeZ) / 0.13);
+          const smoothT = nearT * nearT * (3 - 2 * nearT);
+          opacity = Math.max(0, 1.0 - smoothT);
+          blurPx = Math.min(4.0, nearT * 4.0);
         } else {
-          opacity = Math.max(0, 1.0 - Math.abs(relativeZ) * 3.8);
+          // Crisp focal sweet spot
+          opacity = 1.0;
+          blurPx = 0;
+          brightness = 1.0;
+          saturation = 1.1;
         }
-        
-        // If card is invisible, skip GPU layer rendering entirely
-        if (opacity <= 0.01) {
+
+        const winW = window.innerWidth;
+        const winH = window.innerHeight;
+
+        // True 2D Orthogonal Pan Translation (Decoupled from Z-depth so scroll never drifts sideways)
+        const panShiftX = panOffsetRef.current.x;
+        const panShiftY = panOffsetRef.current.y;
+
+        // Seamless 2D Toroidal Wrapping (1.35x field domain)
+        const fieldW = winW * 1.35;
+        const minFieldX = -fieldW / 2;
+        const rawX = (winW * item.x) / 100 + panShiftX;
+        const wrappedX = ((rawX - minFieldX) % fieldW + fieldW) % fieldW + minFieldX;
+
+        const fieldH = winH * 1.35;
+        const minFieldY = -fieldH / 2;
+        const rawY = (winH * item.y) / 100 + panShiftY;
+        const wrappedY = ((rawY - minFieldY) % fieldH + fieldH) % fieldH + minFieldY;
+
+        // Smooth 2D Edge-Fade Envelope
+        const normEdgeX = Math.abs(wrappedX) / (fieldW * 0.5);
+        const edgeFadeX = normEdgeX > 0.82 ? Math.max(0, 1.0 - (normEdgeX - 0.82) / 0.18) : 1.0;
+
+        const normEdgeY = Math.abs(wrappedY) / (fieldH * 0.5);
+        const edgeFadeY = normEdgeY > 0.82 ? Math.max(0, 1.0 - (normEdgeY - 0.82) / 0.18) : 1.0;
+
+        opacity *= (edgeFadeX * edgeFadeY);
+
+        if (opacity <= 0.005) {
           el.style.opacity = "0";
           el.style.pointerEvents = "none";
           continue;
         }
 
-        // Volumetric cursor parallax offset: closer cards shift more to cursor position
-        const mouseParallaxFactor = (1.5 - item.z) * cursorParallaxPowerRef.current;
+        // Volumetric cursor parallax
+        const mouseParallaxFactor = (1.4 - item.z) * cursorParallaxPowerRef.current;
         const mouseShiftX = mouseRef.current.x * mouseParallaxFactor;
         const mouseShiftY = mouseRef.current.y * mouseParallaxFactor;
 
-        const winW = window.innerWidth;
-        const winH = window.innerHeight;
-        const posX = (winW * finalX) / 100 + mouseShiftX;
-        const posY = (winH * finalY) / 100 + mouseShiftY;
+        // Zero-G harmonic breathing wave
+        const floatY = Math.sin(now * 1.4 + i * 0.8) * 3.5;
+        const floatX = Math.cos(now * 1.1 + i * 0.6) * 2.8;
 
-        // Apply 100% GPU-accelerated hardware transformations
-        el.style.transform = `translate3d(${posX.toFixed(1)}px, ${posY.toFixed(1)}px, ${translateZ.toFixed(1)}px)`;
-        el.style.opacity = opacity.toFixed(2);
-        el.style.pointerEvents = opacity > 0.4 ? "auto" : "none";
+        const posX = wrappedX + mouseShiftX + floatX;
+        const posY = wrappedY + mouseShiftY + floatY;
 
-        // Scroll-based parallax on image inside frame (using cached img ref)
-        const img = imgRefs.current[i];
-        if (img) {
-          const imgY = Math.max(-20, Math.min(20, relativeZ * -50));
-          img.style.transform = `scale(1.2) translateY(${imgY.toFixed(1)}px)`;
-        }
+        // Static Outward Convex Optical Lens (Calibrated Golden Sweet Spot)
+        const screenNormX = posX / (winW * 0.5); // -1.0 on left edge, 0 at center, +1.0 on right edge
+        const screenNormY = posY / (winH * 0.5); // -1.0 on top edge, 0 at center, +1.0 on bottom edge
+
+        // Calibrated outward convex orientation angles (distinct curve, zero distortion)
+        const curvedYaw = screenNormX * 18.0; // right cards face outward right (max ~18 deg)
+        const curvedPitch = -screenNormY * 11.0; // top cards face outward up (max ~11 deg)
+
+        // Refined convex dome depth recession
+        const distSq = Math.min(2.0, screenNormX * screenNormX + screenNormY * screenNormY);
+        const curvedPosZ = -distSq * 65;
+
+        const finalTranslateZ = translateZ + curvedPosZ;
+
+        // Apply hardware GPU transform with straight linear Z-depth flight & calibrated convex lens
+        el.style.transform = `translate3d(${posX.toFixed(1)}px, ${posY.toFixed(1)}px, ${finalTranslateZ.toFixed(1)}px) rotateX(${curvedPitch.toFixed(1)}deg) rotateY(${curvedYaw.toFixed(1)}deg)`;
+        el.style.opacity = opacity.toFixed(3);
+        el.style.filter = blurPx > 0.4
+          ? `blur(${blurPx.toFixed(1)}px) brightness(${brightness.toFixed(2)}) saturate(${saturation.toFixed(2)})`
+          : `brightness(${brightness.toFixed(2)}) saturate(${saturation.toFixed(2)})`;
+        el.style.pointerEvents = opacity > 0.6 ? "auto" : "none";
       }
 
-      // Calculate current active image and active state
-      let activeIndex = 0;
-      let minDistance = 999;
-      for (let i = 0; i < swimItems.length; i++) {
-        const adjustedCameraZ = scrollProgress !== undefined
-          ? scrollProgress * 1.3 - 0.15
-          : cameraZ;
-        let relativeZ = swimItems[i].z - adjustedCameraZ;
-        relativeZ = ((relativeZ - minZ) % range + range) % range + minZ;
-        const dist = Math.abs(relativeZ);
-        if (dist < minDistance) {
-          minDistance = dist;
-          activeIndex = i;
-        }
-      }
-
-      // Handle ambient background crossfade
+      // Dynamic Active Lead Card Background Cross-Fade
       if (activeIndex !== lastActiveIndexRef.current && swimItems[activeIndex]) {
         lastActiveIndexRef.current = activeIndex;
         const newSrc = swimItems[activeIndex].src;
@@ -506,35 +480,25 @@ export const ApparatusDepthSwim: React.FC<ApparatusDepthSwimProps & {
         const bg2 = bg2Ref.current;
         if (bg1 && bg2) {
           if (currentBgToggleRef.current) {
-            // Fade out bg1, fade in bg2
             bg2.style.backgroundImage = `url("${newSrc}")`;
-            gsap.to(bg2, { opacity: ambientOpacityRef.current, duration: 1.2, ease: "power2.out", overwrite: "auto" });
-            gsap.to(bg1, { opacity: 0, duration: 1.2, ease: "power2.out", overwrite: "auto" });
+            gsap.to(bg2, { opacity: ambientOpacityRef.current, duration: 1.4, ease: "power2.out", overwrite: "auto" });
+            gsap.to(bg1, { opacity: 0, duration: 1.4, ease: "power2.out", overwrite: "auto" });
           } else {
-            // Fade out bg2, fade in bg1
             bg1.style.backgroundImage = `url("${newSrc}")`;
-            gsap.to(bg1, { opacity: ambientOpacityRef.current, duration: 1.2, ease: "power2.out", overwrite: "auto" });
-            gsap.to(bg2, { opacity: 0, duration: 1.2, ease: "power2.out", overwrite: "auto" });
+            gsap.to(bg1, { opacity: ambientOpacityRef.current, duration: 1.4, ease: "power2.out", overwrite: "auto" });
+            gsap.to(bg2, { opacity: 0, duration: 1.4, ease: "power2.out", overwrite: "auto" });
           }
           currentBgToggleRef.current = !currentBgToggleRef.current;
         }
       }
 
       let state: "idle" | "discovery" | "buildUp" | "peak" | "recovery" = "idle";
-      const isMoving = scrollProgress !== undefined 
-        ? Math.abs(cameraZ - scrollOffsetRef.current) > 0.001 
-        : isScrollingRef.current;
-
-      if (scrollProgress !== undefined) {
-        scrollOffsetRef.current = cameraZ;
-      }
+      const isMoving = Math.abs(targetScrollZRef.current - cameraZ) > 0.0005 || isDraggingRef.current;
 
       if (!isMoving) {
         state = "idle";
       } else {
-        const adjustedCameraZ = scrollProgress !== undefined
-          ? scrollProgress * 1.3 - 0.15
-          : cameraZ;
+        const adjustedCameraZ = scrollProgress !== undefined ? scrollProgress * 1.25 - 0.12 : cameraZ;
         const relativeZ = swimItems[activeIndex].z - adjustedCameraZ;
         if (Math.abs(relativeZ) <= 0.08) {
           state = "peak";
@@ -554,8 +518,11 @@ export const ApparatusDepthSwim: React.FC<ApparatusDepthSwimProps & {
     };
 
     animFrame = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(animFrame);
-  }, [swimItems, scrollProgress]);
+    return () => {
+      cancelAnimationFrame(animFrame);
+      document.removeEventListener("visibilitychange", handleVisibility);
+    };
+  }, [swimItems, scrollProgress, rawImages]);
 
   // Dynamic cursor parallax tilt on hover
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>, idx: number) => {
@@ -563,8 +530,8 @@ export const ApparatusDepthSwim: React.FC<ApparatusDepthSwimProps & {
     if (!el) return;
 
     const rect = el.getBoundingClientRect();
-    const x = (e.clientX - rect.left) / rect.width - 0.5; // -0.5 to 0.5
-    const y = (e.clientY - rect.top) / rect.height - 0.5; // -0.5 to 0.5
+    const x = (e.clientX - rect.left) / rect.width - 0.5;
+    const y = (e.clientY - rect.top) / rect.height - 0.5;
 
     gsap.to(el, {
       rotateX: -y * hoverTiltMax,
@@ -591,36 +558,46 @@ export const ApparatusDepthSwim: React.FC<ApparatusDepthSwimProps & {
   return (
     <div
       ref={containerRef}
-      className={`relative w-full h-full bg-[#070708] overflow-hidden select-none ${className}`}
+      onPointerDown={handlePointerDown}
+      onPointerMove={handlePointerMove}
+      onPointerUp={handlePointerUp}
+      onPointerCancel={handlePointerUp}
+      className={`relative w-full h-full bg-[#050507] overflow-hidden select-none cursor-grab active:cursor-grabbing touch-none ${className}`}
       style={style}
     >
-      {/* Ambient Volumetric Background Bleed */}
+      {/* Dynamic Ambient Hero Lead Card Atmosphere */}
       <div className="absolute inset-0 w-full h-full overflow-hidden pointer-events-none z-0">
         <div
           ref={bg1Ref}
-          className="absolute inset-0 w-full h-full bg-cover bg-center"
+          className="absolute inset-0 w-full h-full bg-cover bg-center transition-transform duration-1000 ease-out"
           style={{
             opacity: 0,
-            filter: `blur(${ambientBlur}px) saturate(140%) brightness(35%)`,
-            transform: "scale(1.15)",
+            filter: `blur(${ambientBlur}px) saturate(160%) brightness(32%)`,
+            transform: "scale(1.2)",
             willChange: "opacity"
           }}
         />
         <div
           ref={bg2Ref}
-          className="absolute inset-0 w-full h-full bg-cover bg-center"
+          className="absolute inset-0 w-full h-full bg-cover bg-center transition-transform duration-1000 ease-out"
           style={{
             opacity: 0,
-            filter: `blur(${ambientBlur}px) saturate(140%) brightness(35%)`,
-            transform: "scale(1.15)",
+            filter: `blur(${ambientBlur}px) saturate(160%) brightness(32%)`,
+            transform: "scale(1.2)",
             willChange: "opacity"
           }}
         />
-        <div className="absolute inset-0 w-full h-full bg-black/40" />
+        {/* Cinematic Deep Space Vignette */}
+        <div
+          className="absolute inset-0 w-full h-full"
+          style={{
+            background: "radial-gradient(ellipse at center, rgba(5,5,7,0.15) 0%, rgba(5,5,7,0.75) 75%, rgba(5,5,7,0.98) 100%)"
+          }}
+        />
       </div>
 
-      {/* Scattered Parallax Cards */}
-      <div className="absolute inset-0 w-full h-full flex items-center justify-center [perspective:1000px] [transform-style:preserve-3d] pointer-events-none z-10">
+      {/* 3D Depth Field */}
+      <div className="absolute inset-0 w-full h-full flex items-center justify-center [perspective:1200px] [transform-style:preserve-3d] pointer-events-none z-10">
         {swimItems.map((item, idx) => (
           <div
             key={idx}
@@ -629,12 +606,12 @@ export const ApparatusDepthSwim: React.FC<ApparatusDepthSwimProps & {
             }}
             className="absolute left-1/2 top-1/2 pointer-events-auto origin-center"
             style={{
-              width: `${360 * cardScale}px`,
+              width: `${300 * cardScale}px`,
               aspectRatio: "16/10",
               willChange: "transform, opacity, filter"
             }}
           >
-            {/* 3D Inner Wrapper for cursor interactive tilt */}
+            {/* 3D Inner Card with glass highlight & drop-shadow */}
             <div
               ref={(el) => {
                 innerRefs.current[idx] = el;
@@ -647,7 +624,7 @@ export const ApparatusDepthSwim: React.FC<ApparatusDepthSwimProps & {
                 hoveredIndexRef.current = -1;
                 handleMouseLeave(idx);
               }}
-              className="w-full h-full origin-center bg-neutral-900 overflow-hidden cursor-crosshair [transform-style:preserve-3d]"
+              className="group relative w-full h-full origin-center rounded-xl bg-neutral-900 overflow-hidden cursor-crosshair [transform-style:preserve-3d] border border-white/10 shadow-[0_24px_60px_rgba(0,0,0,0.85)] transition-shadow duration-300 hover:border-white/25 hover:shadow-[0_30px_70px_rgba(0,0,0,0.95)]"
               style={{
                 willChange: "transform"
               }}
@@ -657,19 +634,19 @@ export const ApparatusDepthSwim: React.FC<ApparatusDepthSwimProps & {
                   imgRefs.current[idx] = el;
                 }}
                 src={item.src}
+                data-src={item.src}
                 alt={`Specimen ${idx + 1}`}
                 className="w-full h-full object-cover pointer-events-none select-none"
                 style={{
-                  filter: "grayscale(15%) contrast(100%) brightness(95%)",
-                  transform: "scale(1.2)",
-                  willChange: "transform"
+                  filter: "contrast(106%) brightness(100%) saturate(110%)"
                 }}
               />
+              {/* Subtle glass rim highlight reflection */}
+              <div className="absolute inset-0 rounded-xl pointer-events-none border border-white/15 opacity-60 group-hover:opacity-100 transition-opacity duration-300" />
             </div>
           </div>
         ))}
       </div>
-
     </div>
   );
 };

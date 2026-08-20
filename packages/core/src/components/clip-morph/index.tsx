@@ -2,29 +2,12 @@ import React, { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { ApparatusClipMorphProps } from "./types";
 
-// Morph keyframe targets centered at (50, 50) using exactly 12 vertices each
-const SHAPE_KEYFRAMES = {
-  star: [
-    { x: 50, y: 20 }, { x: 56, y: 39.6 }, { x: 76, y: 35 }, { x: 62, y: 50 },
-    { x: 76, y: 65 }, { x: 56, y: 60.4 }, { x: 50, y: 80 }, { x: 44, y: 60.4 },
-    { x: 24, y: 65 }, { x: 38, y: 50 }, { x: 24, y: 35 }, { x: 44, y: 39.6 }
-  ],
-  arch: [
-    { x: 50, y: 20 }, { x: 57.5, y: 35 }, { x: 65, y: 50 }, { x: 65, y: 61.7 },
-    { x: 65, y: 73.3 }, { x: 65, y: 85 }, { x: 50, y: 85 }, { x: 35, y: 85 },
-    { x: 35, y: 73.3 }, { x: 35, y: 61.7 }, { x: 35, y: 50 }, { x: 42.5, y: 35 }
-  ],
-  shield: [
-    { x: 35, y: 18 }, { x: 50, y: 18 }, { x: 65, y: 18 }, { x: 68, y: 32 },
-    { x: 68, y: 48 }, { x: 64, y: 64 }, { x: 58, y: 76 }, { x: 50, y: 85 },
-    { x: 42, y: 76 }, { x: 36, y: 64 }, { x: 32, y: 48 }, { x: 32, y: 32 }
-  ],
-  petal: [
-    { x: 50, y: 15 }, { x: 53, y: 30 }, { x: 56, y: 45 }, { x: 65, y: 45 },
-    { x: 78, y: 52 }, { x: 66, y: 68 }, { x: 50, y: 62 }, { x: 34, y: 68 },
-    { x: 22, y: 52 }, { x: 35, y: 45 }, { x: 44, y: 45 }, { x: 47, y: 30 }
-  ]
-};
+// Morph keyframe target: Kinetic Star centered at (50, 50) using exactly 12 vertices
+const STAR_KEYFRAME = [
+  { x: 50, y: 20 }, { x: 56, y: 39.6 }, { x: 76, y: 35 }, { x: 62, y: 50 },
+  { x: 76, y: 65 }, { x: 56, y: 60.4 }, { x: 50, y: 80 }, { x: 44, y: 60.4 },
+  { x: 24, y: 65 }, { x: 38, y: 50 }, { x: 24, y: 35 }, { x: 44, y: 39.6 }
+];
 
 const DEFAULT_IMAGES = [
   "/images/components images/Transitions/ChatGPT Image Jul 16, 2026, 06_08_32 PM.webp",
@@ -33,24 +16,22 @@ const DEFAULT_IMAGES = [
   "/images/components images/Transitions/ChatGPT Image Jul 16, 2026, 06_12_28 PM.webp"
 ];
 
-// Helper to calculate clip path polygon string by scaling and rotating the target shape
-const getClipPathString = (progress: number, shape: "star" | "arch" | "shield" | "petal", maxRotation: number) => {
+// Helper to calculate clip path polygon string for the kinetic star
+const getClipPathString = (progress: number, maxRotation: number) => {
   const p = Math.max(0, Math.min(1, progress));
   if (p === 0) return "none"; // Full bleed resting state
 
-  // Scale the chosen shape from 4.5 (full bleed outside screen) to 0.0 (collapse to center)
+  // Scale the star from 4.5 (full bleed outside screen) to 0.0 (collapse to center)
   const s = (1 - p) * 4.5;
-  const fromFrame = SHAPE_KEYFRAMES[shape];
 
-  // Rotate shape as it morphs/collapses
+  // Rotate star as it morphs/collapses
   const angleRad = (p * maxRotation) * (Math.PI / 180);
   const cos = Math.cos(angleRad);
   const sin = Math.sin(angleRad);
 
-  const pts = fromFrame.map((pt) => {
+  const pts = STAR_KEYFRAME.map((pt) => {
     const dx = pt.x - 50;
     const dy = pt.y - 50;
-    // Rotate coordinates around center (50, 50)
     const rx = dx * cos - dy * sin;
     const ry = dx * sin + dy * cos;
     return {
@@ -63,7 +44,6 @@ const getClipPathString = (progress: number, shape: "star" | "arch" | "shield" |
 };
 
 export const ApparatusClipMorph: React.FC<ApparatusClipMorphProps & {
-  selectedShapeMode?: "cycle" | "star" | "arch" | "shield" | "petal";
   customRotation?: number;
   customBleed?: number;
   customGrain?: number;
@@ -74,10 +54,9 @@ export const ApparatusClipMorph: React.FC<ApparatusClipMorphProps & {
   style,
   scrollProgress,
   onLifecycleChange,
-  selectedShapeMode: propSelectedShapeMode = "cycle",
-  customRotation: propCustomRotation = 30,
-  customBleed: propCustomBleed = 40,
-  customGrain: propCustomGrain = 25,
+  customRotation = 180,
+  customBleed = 40,
+  customGrain = 25,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -85,14 +64,6 @@ export const ApparatusClipMorph: React.FC<ApparatusClipMorphProps & {
     ? images 
     : (imageSrc ? [imageSrc, ...DEFAULT_IMAGES.slice(1)] : DEFAULT_IMAGES);
   const imageList = rawImages.map(url => encodeURI(url));
-
-  // Motion physics parameters derived from props
-  const customRotation = propCustomRotation;
-  const customBleed = propCustomBleed;
-  const customGrain = propCustomGrain;
-  const selectedShapeMode = propSelectedShapeMode;
-
-
 
   const targetProgressRef = useRef(0);
   const lerpedProgressRef = useRef(0);
@@ -107,7 +78,7 @@ export const ApparatusClipMorph: React.FC<ApparatusClipMorphProps & {
 
     const handleWheel = (e: WheelEvent) => {
       e.preventDefault();
-      targetProgressRef.current = Math.max(0, targetProgressRef.current + e.deltaY * 0.00025);
+      targetProgressRef.current = Math.max(0, targetProgressRef.current + e.deltaY * 0.00010);
     };
 
     el.addEventListener("wheel", handleWheel, { passive: false });
@@ -124,7 +95,7 @@ export const ApparatusClipMorph: React.FC<ApparatusClipMorphProps & {
     const loop = () => {
       const diff = targetProgressRef.current - lerpedProgressRef.current;
       if (Math.abs(diff) > 0.0001) {
-        lerpedProgressRef.current += diff * 0.1;
+        lerpedProgressRef.current += diff * 0.06;
         setSmoothProgress(lerpedProgressRef.current);
       } else {
         lerpedProgressRef.current = targetProgressRef.current;
@@ -170,19 +141,10 @@ export const ApparatusClipMorph: React.FC<ApparatusClipMorphProps & {
     }
   }, [activeProgress]);
 
-  // Determine shape for active morph segment
-  let activeShape: "star" | "arch" | "shield" | "petal" = "star";
-  if (selectedShapeMode === "cycle") {
-    const shapes: ("star" | "arch" | "shield" | "petal")[] = ["star", "arch", "shield", "petal"];
-    activeShape = shapes[activeCurrentIndex % shapes.length];
-  } else {
-    activeShape = selectedShapeMode;
-  }
-
   const showIncoming = activeProgress > 0 && activeProgress < 1;
 
-  // Get clip-path for foreground (active image) with dynamic twist rotation
-  const foregroundClipPath = getClipPathString(activeProgress, activeShape, customRotation);
+  // Get clip-path for foreground with dynamic twist rotation
+  const foregroundClipPath = getClipPathString(activeProgress, customRotation);
 
   return (
     <div

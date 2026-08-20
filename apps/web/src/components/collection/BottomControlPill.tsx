@@ -1,7 +1,15 @@
 "use client";
 
 import React from "react";
-import { Search } from "lucide-react";
+import { 
+  Search, 
+  X, 
+  Grid2x2, 
+  Columns3, 
+  Sparkles, 
+  ArrowDownAZ, 
+  ArrowUpAZ 
+} from "lucide-react";
 
 interface BottomControlPillProps {
   searchQuery: string;
@@ -25,7 +33,7 @@ export function BottomControlPill({
       <div className="control-pill">
         {/* Search input */}
         <div className="pill-search-box">
-          <Search size={14} className="pill-search-icon" />
+          <Search size={14} strokeWidth={1.8} className="pill-search-icon" />
           <input
             type="text"
             className="live-search-input"
@@ -41,7 +49,7 @@ export function BottomControlPill({
               onClick={() => onSearchChange("")}
               aria-label="Clear search"
             >
-              ✕
+              <X size={12} strokeWidth={2} />
             </button>
           )}
         </div>
@@ -53,43 +61,15 @@ export function BottomControlPill({
           {/* Layout Toggle (Grid vs Masonry) */}
           <button
             type="button"
-            className={`sort-icon-btn ${layoutMode === "grid" ? "active" : ""}`}
+            className="sort-icon-btn active"
             onClick={onToggleLayout}
             title={layoutMode === "grid" ? "Layout: Grid (Click for Waterfall Masonry)" : "Layout: Waterfall Masonry (Click for Grid)"}
             aria-label="Switch Layout"
           >
             {layoutMode === "grid" ? (
-              <svg
-                width="15"
-                height="15"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <rect width="7" height="7" x="3" y="3" rx="1" />
-                <rect width="7" height="7" x="14" y="3" rx="1" />
-                <rect width="7" height="7" x="14" y="14" rx="1" />
-                <rect width="7" height="7" x="3" y="14" rx="1" />
-              </svg>
+              <Grid2x2 size={15} strokeWidth={1.4} />
             ) : (
-              <svg
-                width="15"
-                height="15"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <rect width="7" height="11" x="3" y="3" rx="1" />
-                <rect width="7" height="6" x="14" y="3" rx="1" />
-                <rect width="7" height="6" x="3" y="15" rx="1" />
-                <rect width="7" height="11" x="14" y="10" rx="1" />
-              </svg>
+              <Columns3 size={15} strokeWidth={1.4} />
             )}
           </button>
 
@@ -107,22 +87,13 @@ export function BottomControlPill({
             }
             aria-label="Toggle Alphabetical Sort"
           >
-            <svg
-              width="15"
-              height="15"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="m3 16 4 4 4-4" />
-              <path d="M7 20V4" />
-              <path d="M20 8h-5" />
-              <path d="M15 10V6.5a2.5 2.5 0 0 1 5 0V10" />
-              <path d="M15 14h5l-5 6h5" />
-            </svg>
+            {sortMode === "curated" ? (
+              <Sparkles size={14} strokeWidth={1.5} />
+            ) : sortMode === "asc" ? (
+              <ArrowDownAZ size={15} strokeWidth={1.6} />
+            ) : (
+              <ArrowUpAZ size={15} strokeWidth={1.6} />
+            )}
           </button>
         </div>
       </div>

@@ -18,6 +18,38 @@ interface CommitEntry {
 
 const CHANGELOG_DATA: CommitEntry[] = [
   {
+    id: "commit-19",
+    date: "2026-08-20",
+    displayDate: "Aug 20, 2026 • 20:15 IST",
+    tag: "MAJOR",
+    title: "Hover Media Stream Component, Component Pruning & Controls Isolation",
+    summary: "Added the Hover Media Stream component, permanently pruned obsolete cursor and gallery components from the library, and resolved global event bleed across showcase controls.",
+    items: [
+      "Added Hover Media Stream component featuring 100vw horizon baseline lines, Moiré strands, flank video reveals, and full-screen ambient backdrops",
+      "Permanently deleted 3D Cursor Trail, Cursor Wake, and Orbit Ring Gallery from core library packages and catalog registry",
+      "Isolated pointer, touch, and scroll events on ControlsDrawer to prevent slider interaction from bleeding into background 3D canvas scenes",
+      "Added TabVisibilityTitle provider for dynamic window title updates when switching browser tabs",
+      "Registered interactive live parameter sliders for backdrop blur, ambient brightness, line duration, and font sizing",
+      "Standardized media storage pipeline under /audio/components/, /images/components/, and /videos/components/",
+    ],
+  },
+  {
+    id: "commit-18",
+    date: "2026-08-19",
+    displayDate: "Aug 19, 2026 • 21:40 IST",
+    tag: "MAJOR",
+    title: "Tracklist Gallery Overhaul, Catalog Rework & Legacy UI Removal",
+    summary: "Rebuilt Tracklist Gallery with mechanical audio feedback, purged legacy catalog drawer navigation, and introduced modular Vibe Collection architecture with Specimen Ledgers.",
+    items: [
+      "Rebuilt Tracklist Gallery with unmount audio cleanup, tab-visibility volume fading, and mechanical ratchet audio haptics",
+      "Migrated legacy apparatus-tracklist-gallery to clean core package architecture",
+      "Permanently deleted legacy catalog UI components including StoryViewer, ShowcaseDrawer, Sidebar, VesselControls, and ComponentPreview",
+      "Introduced Vibe Section architecture with SpecimenCodeLedger, SpecimenInfoLedger, SpecimenRail, and BottomControlPill",
+      "Replaced catalog navigation with DockNavbar and hardware-accelerated dock materials",
+      "Updated component metadata across all registry files with refined tags and category mappings",
+    ],
+  },
+  {
     id: "commit-17",
     date: "2026-08-18",
     displayDate: "Aug 18, 2026 • 00:48 IST",

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useRef, useState } from "react";
+import { SlidersHorizontal, X } from "lucide-react";
 import { ControlConfig } from "@/lib/registry";
 import { useSmoothScroll } from "@/lib/useSmoothScroll";
 
@@ -29,6 +30,7 @@ export function ControlsDrawer({
 
   // Header dragging logic
   const handleMouseDown = (e: React.MouseEvent) => {
+    e.stopPropagation();
     if ((e.target as HTMLElement).closest(".controls-body") || (e.target as HTMLElement).closest(".drawer-close-btn")) {
       return;
     }
@@ -43,6 +45,7 @@ export function ControlsDrawer({
     const initialTop = rect.top;
 
     const handleMouseMove = (moveEvent: MouseEvent) => {
+      moveEvent.stopPropagation();
       const deltaX = moveEvent.clientX - startX;
       const deltaY = moveEvent.clientY - startY;
 
@@ -52,7 +55,8 @@ export function ControlsDrawer({
       setPosition({ x: newLeft, y: newTop });
     };
 
-    const handleMouseUp = () => {
+    const handleMouseUp = (upEvent: MouseEvent) => {
+      upEvent.stopPropagation();
       window.removeEventListener("mousemove", handleMouseMove);
       window.removeEventListener("mouseup", handleMouseUp);
     };
@@ -77,31 +81,32 @@ export function ControlsDrawer({
       className={`controls-drawer ${isOpen ? "open" : ""}`}
       style={dynamicStyle}
       aria-label="Component Parameters"
+      onClick={(e) => e.stopPropagation()}
+      onMouseDown={(e) => e.stopPropagation()}
+      onMouseUp={(e) => e.stopPropagation()}
+      onPointerDown={(e) => e.stopPropagation()}
+      onPointerUp={(e) => e.stopPropagation()}
+      onPointerMove={(e) => e.stopPropagation()}
+      onMouseMove={(e) => e.stopPropagation()}
+      onMouseEnter={(e) => e.stopPropagation()}
+      onMouseLeave={(e) => e.stopPropagation()}
       onWheel={(e) => e.stopPropagation()}
+      onTouchStart={(e) => e.stopPropagation()}
       onTouchMove={(e) => e.stopPropagation()}
+      onTouchEnd={(e) => e.stopPropagation()}
     >
       {/* Draggable Header */}
       <div className="controls-drawer-header" onMouseDown={handleMouseDown}>
         <span>Parameters</span>
         <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#71717a" strokeWidth="2">
-            <line x1="4" y1="21" x2="4" y2="14" />
-            <line x1="4" y1="10" x2="4" y2="3" />
-            <line x1="12" y1="21" x2="12" y2="12" />
-            <line x1="12" y1="8" x2="12.01" y2="8" />
-            <line x1="20" y1="21" x2="20" y2="16" />
-            <line x1="20" y1="12" x2="20" y2="3" />
-            <line x1="1" y1="14" x2="7" y2="14" />
-            <line x1="9" y1="8" x2="15" y2="8" />
-            <line x1="17" y1="16" x2="23" y2="16" />
-          </svg>
+          <SlidersHorizontal size={13} strokeWidth={2} color="#71717a" />
           <button
             type="button"
             className="drawer-close-btn"
             onClick={onClose}
             aria-label="Close Controls"
           >
-            &times;
+            <X size={13} strokeWidth={2} />
           </button>
         </div>
       </div>

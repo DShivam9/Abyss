@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useRef, useState } from "react";
-import { Code, Sliders } from "lucide-react";
+import { FileText, Code2, Scan, SlidersHorizontal } from "lucide-react";
 
 interface SpecimenRailProps {
   currentSlug?: string;
@@ -99,11 +99,7 @@ export function SpecimenRail({
         title={infoOpen ? "Close Information Ledger" : "Open Information Ledger"}
         aria-label="Component Information"
       >
-        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-          <circle cx="12" cy="12" r="10" />
-          <line x1="12" y1="16" x2="12" y2="12" />
-          <line x1="12" y1="8" x2="12.01" y2="8" />
-        </svg>
+        <FileText size={19} strokeWidth={1.75} />
       </button>
 
       {/* 2. Code Ledger Toggle */}
@@ -114,7 +110,7 @@ export function SpecimenRail({
         title={codeOpen ? "Close Code Ledger" : "Open Code & Usage Ledger"}
         aria-label="Component Code"
       >
-        <Code size={19} strokeWidth={2.2} />
+        <Code2 size={19} strokeWidth={1.75} />
       </button>
 
       {/* 3. Fullscreen / Isolate Toggle */}
@@ -125,9 +121,7 @@ export function SpecimenRail({
         title="Open Fullscreen Isolated Specimen (New Tab)"
         aria-label="Toggle Fullscreen"
       >
-        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3" />
-        </svg>
+        <Scan size={19} strokeWidth={1.75} />
       </button>
 
       <div className="rail-separator" aria-hidden="true" />
@@ -140,7 +134,7 @@ export function SpecimenRail({
         title={controlsOpen ? "Close Parameters (P)" : "Open Parameters (P)"}
         aria-label="Component Parameters"
       >
-        <Sliders size={19} strokeWidth={2.2} />
+        <SlidersHorizontal size={19} strokeWidth={1.75} />
       </button>
     </nav>
   );

@@ -18,7 +18,7 @@ const SECTIONS = [
     numberColor: "#00E5FF",
     title: "KINETIC BOUNDARY",
     desc: "A spatial transition engine driven by continuous Bezier vector morphing and hardware-accelerated 120 FPS physics.",
-    image: "/images/components%20images/scroll/p2_hq.webp",
+    image: "/images/components/curved-scroll-wipe/slide-02.webp",
     shapeLeft: "/images/shapes/Shape%203.svg",
     shapeRight: "/images/shapes/Shape%2015.svg",
   },
@@ -30,8 +30,8 @@ const SECTIONS = [
     numberColor: "#0055FF",
     title: "TACTILE SPATIAL FLOW",
     desc: "Seamless visual handoffs where sections glide physically across the viewport, bridging typography and photography.",
-    imageMain: "/images/components%20images/scroll/p1_hq.webp",
-    imageSecondary: "/images/components%20images/scroll/p3_hq.webp",
+    imageMain: "/images/components/curved-scroll-wipe/slide-01.webp",
+    imageSecondary: "/images/components/curved-scroll-wipe/slide-03.webp",
     shapeAccent: "/images/shapes/Shape%208.svg",
   },
   {
@@ -42,7 +42,7 @@ const SECTIONS = [
     numberColor: "#00FF66",
     title: "MONOLITHIC RESONANCE",
     desc: "Built with zero-allocation RAF engines and normalized SVG objectBoundingBox path coordinates for 100% responsive scaling.",
-    heroImage: "/images/components%20images/scroll/p4_hq.webp",
+    heroImage: "/images/components/curved-scroll-wipe/slide-04.webp",
     cards: [
       {
         icon: "/images/shapes/Shape%205.svg",
@@ -67,9 +67,9 @@ const SECTIONS = [
     title: "ABYSS CANVAS STAGE",
     desc: "Elevating component interfaces with taste, physical momentum, and unseen details that compound.",
     gallery: [
-      "/images/components%20images/scroll/p1_hq.webp",
-      "/images/components%20images/scroll/p2_hq.webp",
-      "/images/components%20images/scroll/p3_hq.webp",
+      "/images/components/curved-scroll-wipe/slide-01.webp",
+      "/images/components/curved-scroll-wipe/slide-02.webp",
+      "/images/components/curved-scroll-wipe/slide-03.webp",
     ],
     cta: "EXPLORE SHOWCASE",
     shapeLeft: "/images/shapes/Shape%2018.svg",
@@ -481,14 +481,14 @@ export function ApparatusCurvedScrollWipe({
                       <div className="lg:col-span-6 grid grid-cols-2 gap-4">
                         <div className="group relative aspect-[3/4] rounded-2xl overflow-hidden shadow-2xl border border-black/10 transition-all duration-500 ease-[cubic-bezier(0.23,1,0.32,1)] hover:scale-[1.025] hover:-translate-y-1.5 hover:shadow-2xl cursor-pointer">
                           <img
-                            src={sec.gallery?.[0] || "/images/components%20images/scroll/p1_hq.webp"}
+                            src={sec.gallery?.[0] || "/images/components/curved-scroll-wipe/slide-01.webp"}
                             alt="Showcase main 1"
                             className="w-full h-full object-cover transition-transform duration-700 ease-[cubic-bezier(0.23,1,0.32,1)] group-hover:scale-105"
                           />
                         </div>
                         <div className="group relative aspect-[3/4] rounded-2xl overflow-hidden shadow-2xl border border-black/10 translate-y-6 transition-all duration-500 ease-[cubic-bezier(0.23,1,0.32,1)] hover:scale-[1.025] hover:translate-y-4 hover:shadow-2xl cursor-pointer">
                           <img
-                            src={sec.gallery?.[1] || "/images/components%20images/scroll/p2_hq.webp"}
+                            src={sec.gallery?.[1] || "/images/components/curved-scroll-wipe/slide-02.webp"}
                             alt="Showcase main 2"
                             className="w-full h-full object-cover transition-transform duration-700 ease-[cubic-bezier(0.23,1,0.32,1)] group-hover:scale-105"
                           />

@@ -1,5 +1,5 @@
 {
-  "name": "Apparatus Parallax Column",
+  "name": "Parallax Column",
   "slug": "parallax-column",
   "pitch": "A split-screen vertical runway where left and right columns travel in opposite directions, revealing unclipped images as they cross the viewport center.",
   "family": "transition",

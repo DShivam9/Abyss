@@ -1,5 +1,5 @@
 {
-  "name": "Apparatus Image Snake Trail",
+  "name": "Image Snake Trail",
   "slug": "image-snake-trail",
   "pitch": "Serpentine image chain following cursor with physics momentum and scale decay.",
   "family": "aesthetic",

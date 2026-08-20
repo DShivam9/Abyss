@@ -4,28 +4,28 @@ import { VesselComponentProps } from "../../engine/types";
 
 // Expanded Dedicated Image Pool (22 Unique High-Res Assets)
 const GALLERY_IMAGES = [
-  "/images/components%20images/Gallary/cosmos_1110264921.webp",
-  "/images/components%20images/Gallary/cosmos_1309943729.webp",
-  "/images/components%20images/Gallary/cosmos_140351120.webp",
-  "/images/components%20images/Gallary/cosmos_1441380570.webp",
-  "/images/components%20images/Gallary/cosmos_145253936.webp",
-  "/images/components%20images/Gallary/cosmos_1578342658.webp",
-  "/images/components%20images/Gallary/cosmos_1724531036.webp",
-  "/images/components%20images/Gallary/cosmos_1948095192.webp",
-  "/images/components%20images/Gallary/cosmos_2046923474.webp",
-  "/images/components%20images/Gallary/cosmos_623139356.webp",
-  "/images/components%20images/Gallary/cosmos_842932938.webp",
-  "/images/components%20images/Gallary/cosmos_854490082.webp",
-  "/images/components%20images/Transitions/ChatGPT%20Image%20Jul%2015,%202026,%2005_26_02%20PM.webp",
-  "/images/components%20images/Transitions/ChatGPT%20Image%20Jul%2015,%202026,%2005_29_20%20PM.webp",
-  "/images/components%20images/Transitions/ChatGPT%20Image%20Jul%2015,%202026,%2005_37_33%20PM.webp",
-  "/images/components%20images/Transitions/ChatGPT%20Image%20Jul%2015,%202026,%2005_44_29%20PM.webp",
-  "/images/components%20images/Transitions/ChatGPT%20Image%20Jul%2015,%202026,%2005_45_55%20PM.webp",
-  "/images/components%20images/Transitions/ChatGPT%20Image%20Jul%2015,%202026,%2005_54_47%20PM.webp",
-  "/images/components%20images/Transitions/ChatGPT%20Image%20Jul%2016,%202026,%2006_08_32%20PM.webp",
-  "/images/components%20images/Transitions/ChatGPT%20Image%20Jul%2016,%202026,%2006_10_44%20PM.webp",
-  "/images/components%20images/Transitions/ChatGPT%20Image%20Jul%2016,%202026,%2006_11_21%20PM.webp",
-  "/images/components%20images/Transitions/ChatGPT%20Image%20Jul%2016,%202026,%2006_12_28%20PM.webp",
+  "/images/components/3d-shatter-sphere/tile-01.webp",
+  "/images/components/3d-shatter-sphere/tile-02.webp",
+  "/images/components/3d-shatter-sphere/tile-03.webp",
+  "/images/components/3d-shatter-sphere/tile-04.webp",
+  "/images/components/3d-shatter-sphere/tile-05.webp",
+  "/images/components/3d-shatter-sphere/tile-06.webp",
+  "/images/components/3d-shatter-sphere/tile-07.webp",
+  "/images/components/3d-shatter-sphere/tile-08.webp",
+  "/images/components/3d-shatter-sphere/tile-09.webp",
+  "/images/components/3d-shatter-sphere/tile-10.webp",
+  "/images/components/3d-shatter-sphere/tile-11.webp",
+  "/images/components/3d-shatter-sphere/tile-12.webp",
+  "/images/components/3d-shatter-sphere/art-01.webp",
+  "/images/components/3d-shatter-sphere/art-02.webp",
+  "/images/components/3d-shatter-sphere/art-03.webp",
+  "/images/components/3d-shatter-sphere/art-04.webp",
+  "/images/components/3d-shatter-sphere/art-05.webp",
+  "/images/components/3d-shatter-sphere/art-06.webp",
+  "/images/components/3d-shatter-sphere/art-07.webp",
+  "/images/components/3d-shatter-sphere/art-08.webp",
+  "/images/components/3d-shatter-sphere/art-09.webp",
+  "/images/components/3d-shatter-sphere/art-10.webp",
 ];
 
 export interface Apparatus3DShatterSphereProps extends VesselComponentProps {
@@ -45,13 +45,14 @@ interface MeshData {
   unitPos: THREE.Vector3; // Position normalized at unit radius 1.0
   baseRot: THREE.Euler;
   material: THREE.MeshBasicMaterial;
+  currentProx?: number;
 }
 
 export default function Apparatus3DShatterSphere({
   sphereRadius = 420,
   shatterForce = 1.8,
   cardScale = 1.05,
-  autoRotateSpeed = 0.5,
+  autoRotateSpeed = 0.18,
   itemCount = 42,
   shapeMode = "sphere",
   showCenterText = true,
@@ -88,11 +89,16 @@ export default function Apparatus3DShatterSphere({
   const shatterProgressRef = useRef<number>(0);
   const updateTextRef = useRef<(() => void) | null>(null);
 
-  // 3D Drag Rotation & Momentum State
-  const isDraggingRef = useRef<boolean>(false);
+  // 3D Dual-Mode State: Left-Drag (Translation) & Right-Drag (Rotation)
+  const isDraggingPosRef = useRef<boolean>(false);
+  const isRotatingRef = useRef<boolean>(false);
   const lastMouseRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
-  const velXRef = useRef<number>(0);
-  const velYRef = useRef<number>(0);
+  const mouseNDCRef = useRef<{ x: number; y: number }>({ x: 9999, y: 9999 });
+  const posRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
+  const posVelRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
+  const rotAngleRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
+  const rotVelRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
+  const momentumTiltRef = useRef<{ x: number; z: number }>({ x: 0, z: 0 });
   const pointerStartRef = useRef<{ x: number; y: number; time: number }>({ x: 0, y: 0, time: 0 });
 
   // Toggle Shatter state
@@ -120,33 +126,63 @@ export default function Apparatus3DShatterSphere({
     }
   }, [autoShatterDelay, triggerShatter]);
 
-  // Intuitive Pointer Drag & Click Disambiguation Handlers (Drag Right -> Move Right)
+  // Dual Interaction Handlers: Left-Drag (Spatial Move) vs Right-Drag (3D Rotation)
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
 
+    const handleContextMenu = (e: MouseEvent) => {
+      e.preventDefault();
+    };
+
     const handlePointerDown = (e: PointerEvent) => {
-      isDraggingRef.current = true;
-      velXRef.current = 0;
-      velYRef.current = 0;
       lastMouseRef.current = { x: e.clientX, y: e.clientY };
-      pointerStartRef.current = { x: e.clientX, y: e.clientY, time: performance.now() };
+
+      if (e.button === 2) {
+        // Right Click: 3D Rotation
+        isRotatingRef.current = true;
+        rotVelRef.current = { x: 0, y: 0 };
+      } else if (e.button === 0) {
+        // Left Click: 3D Spatial Translation
+        isDraggingPosRef.current = true;
+        posVelRef.current = { x: 0, y: 0 };
+        pointerStartRef.current = { x: e.clientX, y: e.clientY, time: performance.now() };
+      }
     };
 
     const handlePointerMove = (e: PointerEvent) => {
-      if (!isDraggingRef.current) return;
       const dx = e.clientX - lastMouseRef.current.x;
       const dy = e.clientY - lastMouseRef.current.y;
       lastMouseRef.current = { x: e.clientX, y: e.clientY };
 
-      // Inverted Y rotation so dragging mouse right rotates the globe rightward intuitively
-      velYRef.current = -dx * 0.0045;
-      velXRef.current = dy * 0.0045;
+      // Update Normalized Device Coordinates for Magnetic Proximity Wave
+      const rect = container.getBoundingClientRect();
+      mouseNDCRef.current.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+      mouseNDCRef.current.y = -(((e.clientY - rect.top) / rect.height) * 2 - 1);
+
+      if (isRotatingRef.current) {
+        rotVelRef.current.y = -dx * 0.005;
+        rotVelRef.current.x = dy * 0.005;
+      }
+
+      if (isDraggingPosRef.current) {
+        const moveX = dx * 2.2;
+        const moveY = -dy * 2.2;
+        posRef.current.x += moveX;
+        posRef.current.y += moveY;
+        posVelRef.current.x = moveX;
+        posVelRef.current.y = moveY;
+      }
     };
 
     const handlePointerUp = (e: PointerEvent) => {
-      if (isDraggingRef.current) {
-        isDraggingRef.current = false;
+      if (e.button === 2) {
+        isRotatingRef.current = false;
+      }
+
+      if (e.button === 0 && isDraggingPosRef.current) {
+        isDraggingPosRef.current = false;
+
         const dx = e.clientX - pointerStartRef.current.x;
         const dy = e.clientY - pointerStartRef.current.y;
         const dist = Math.hypot(dx, dy);
@@ -160,16 +196,25 @@ export default function Apparatus3DShatterSphere({
       }
     };
 
+    const handlePointerLeave = () => {
+      mouseNDCRef.current.x = 9999;
+      mouseNDCRef.current.y = 9999;
+    };
+
+    container.addEventListener("contextmenu", handleContextMenu);
     container.addEventListener("pointerdown", handlePointerDown);
+    container.addEventListener("pointerleave", handlePointerLeave);
     window.addEventListener("pointermove", handlePointerMove);
     window.addEventListener("pointerup", handlePointerUp);
 
     return () => {
+      container.removeEventListener("contextmenu", handleContextMenu);
       container.removeEventListener("pointerdown", handlePointerDown);
+      container.removeEventListener("pointerleave", handlePointerLeave);
       window.removeEventListener("pointermove", handlePointerMove);
       window.removeEventListener("pointerup", handlePointerUp);
     };
-  }, [triggerShatter]);
+  }, [disableRebuildOnClick, triggerShatter]);
 
   // Pure Three.js WebGL Scene Initialization & 60FPS Render Loop
   useEffect(() => {
@@ -180,11 +225,11 @@ export default function Apparatus3DShatterSphere({
     const width = container.clientWidth || window.innerWidth;
     const height = container.clientHeight || window.innerHeight;
 
-    // 1. Scene & Camera Setup
+    // 1. Scene & Camera Setup (Spacious Arena Framing)
     const scene = new THREE.Scene();
 
-    const camera = new THREE.PerspectiveCamera(45, width / height, 1, 10000);
-    camera.position.set(0, 0, 1650);
+    const camera = new THREE.PerspectiveCamera(45, width / height, 1, 12000);
+    camera.position.set(0, 0, 1900);
 
     // 2. WebGL Renderer
     const renderer = new THREE.WebGLRenderer({
@@ -218,7 +263,7 @@ export default function Apparatus3DShatterSphere({
         : mode === "cuboid-grid"
         ? "SHATTER CUBOID"
         : "SHATTER SPHERE";
-      const subtext = `DRAG TO ROTATE 3D ${mode.startsWith("cuboid") ? "CUBOID" : "GLOBE"} · CLICK TO ${
+      const subtext = `LEFT DRAG TO MOVE · RIGHT DRAG TO ROTATE · CLICK TO ${
         isShatteredRef.current ? "REASSEMBLE" : "EXPLODE"
       }`;
 
@@ -253,7 +298,7 @@ export default function Apparatus3DShatterSphere({
     const textMesh = new THREE.Mesh(textGeo, textMat);
     textMesh.position.set(0, 0, 0);
     textMesh.visible = showCenterText;
-    scene.add(textMesh);
+    structureGroup.add(textMesh);
 
     // 5. Load Texture Pool & Create Vibrant 3D Image Planes
     const textureLoader = new THREE.TextureLoader();
@@ -419,7 +464,7 @@ export default function Apparatus3DShatterSphere({
 
     rebuildMeshes();
 
-    // 6. Window Resize Handler
+    // 6. Window Resize & Tab Visibility Handlers
     const handleResize = () => {
       if (!container) return;
       const w = container.clientWidth || window.innerWidth;
@@ -430,13 +475,30 @@ export default function Apparatus3DShatterSphere({
     };
     window.addEventListener("resize", handleResize);
 
+    const handleVisibilityChange = () => {
+      lastTime = performance.now();
+      posVelRef.current = { x: 0, y: 0 };
+      rotVelRef.current = { x: 0, y: 0 };
+      mouseNDCRef.current = { x: 9999, y: 9999 };
+    };
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
     // 7. 60FPS High-Performance WebGL Animation Loop
     let animId: number;
     let lastTime = performance.now();
 
     const animate = (time: number) => {
-      const dt = Math.min((time - lastTime) / 1000, 0.1);
+      const rawDt = (time - lastTime) / 1000;
       lastTime = time;
+
+      // Handle tab-out / frame drop pause cleanly (prevents velocity spikes)
+      if (rawDt > 0.08) {
+        posVelRef.current.x = 0;
+        posVelRef.current.y = 0;
+        rotVelRef.current.x = 0;
+        rotVelRef.current.y = 0;
+      }
+      const dt = Math.min(rawDt, 0.033);
 
       // Rebuild mesh geometry structure if shape mode or item count changes
       if (
@@ -449,19 +511,92 @@ export default function Apparatus3DShatterSphere({
         if (updateTextRef.current) updateTextRef.current();
       }
 
-      // Inertial 3D Drag Rotation & Idle Momentum Spin
-      const speed = autoRotateSpeedRef.current;
-      if (!isDraggingRef.current) {
-        velYRef.current *= 0.94;
-        velXRef.current *= 0.94;
-        structureGroup.rotation.y += speed * 0.5 * dt + velYRef.current;
-        structureGroup.rotation.x += velXRef.current;
-      } else {
-        structureGroup.rotation.y += velYRef.current;
-        structureGroup.rotation.x += velXRef.current;
-        velYRef.current *= 0.8;
-        velXRef.current *= 0.8;
+      // Inertial translation coasting when left-click released
+      if (!isDraggingPosRef.current) {
+        posRef.current.x += posVelRef.current.x;
+        posRef.current.y += posVelRef.current.y;
+        posVelRef.current.x *= 0.92;
+        posVelRef.current.y *= 0.92;
       }
+
+      // Spacious Soft World Viewport Bounds
+      const boundX = 1600;
+      const boundY = 1100;
+      posRef.current.x = Math.max(-boundX, Math.min(boundX, posRef.current.x));
+      posRef.current.y = Math.max(-boundY, Math.min(boundY, posRef.current.y));
+
+      // Cinematic Multi-Harmonic Bio-Levitation (Alien species breathing/floating)
+      const bioFloatX = Math.sin(time * 0.00072) * 18 + Math.cos(time * 0.00038) * 12;
+      const bioFloatY = Math.sin(time * 0.00095) * 36 + Math.cos(time * 0.00052) * 20;
+      const bioFloatZ = Math.sin(time * 0.00082) * 28 + Math.cos(time * 0.00044) * 14;
+      const bioRoll = Math.sin(time * 0.00065) * 0.04;
+      const bioPitch = Math.cos(time * 0.00058) * 0.035;
+
+      // Track previous position to compute motion velocity
+      const prevX = structureGroup.position.x;
+      const prevY = structureGroup.position.y;
+
+      // Ultra-fluid 60fps translation follow with bio-levitation drift
+      const targetX = posRef.current.x + bioFloatX;
+      const targetY = posRef.current.y + bioFloatY;
+      structureGroup.position.x += (targetX - structureGroup.position.x) * (1 - Math.exp(-10.0 * dt));
+      structureGroup.position.y += (targetY - structureGroup.position.y) * (1 - Math.exp(-10.0 * dt));
+
+      const moveVx = (structureGroup.position.x - prevX) / (dt || 0.016);
+      const moveVy = (structureGroup.position.y - prevY) / (dt || 0.016);
+      const speedMag = Math.hypot(moveVx, moveVy);
+
+      // Rotational angular velocity magnitude
+      const rotSpeedMag = Math.hypot(rotVelRef.current.x, rotVelRef.current.y);
+
+      // Dynamic High-Velocity Jelly Stretch (Allows up to +28% stretch on hard fast drags)
+      const stretchAmount = Math.min(0.28, speedMag * 0.00016);
+      const squashAmount = stretchAmount * 0.46;
+      const moveAngle = Math.atan2(moveVy, moveVx);
+
+      // Rotational Centrifugal Bulge
+      const spinStretch = Math.min(0.18, rotSpeedMag * 14.0);
+      const spinBulgeX = spinStretch * (Math.abs(rotVelRef.current.y) / (rotSpeedMag || 1));
+      const spinBulgeY = spinStretch * (Math.abs(rotVelRef.current.x) / (rotSpeedMag || 1));
+
+      const targetScaleX = 1.0 + stretchAmount * Math.abs(Math.cos(moveAngle)) - squashAmount * Math.abs(Math.sin(moveAngle)) + spinBulgeX * 0.75;
+      const targetScaleY = 1.0 + stretchAmount * Math.abs(Math.sin(moveAngle)) - squashAmount * Math.abs(Math.cos(moveAngle)) + spinBulgeY * 0.75;
+      const targetScaleZ = 1.0 - (stretchAmount - squashAmount) * 0.5 - spinStretch * 0.6;
+
+      // Spring-loaded viscoelastic recovery
+      structureGroup.scale.x += (targetScaleX - structureGroup.scale.x) * (1 - Math.exp(-8.5 * dt));
+      structureGroup.scale.y += (targetScaleY - structureGroup.scale.y) * (1 - Math.exp(-8.5 * dt));
+      structureGroup.scale.z += (targetScaleZ - structureGroup.scale.z) * (1 - Math.exp(-8.5 * dt));
+
+      // Fluid Momentum Lean + Spin Torsion Wobble
+      const targetTiltZ = -moveVx * 0.00009;
+      const targetTiltX = moveVy * 0.00009;
+      momentumTiltRef.current.z += (targetTiltZ - momentumTiltRef.current.z) * (1 - Math.exp(-8.0 * dt));
+      momentumTiltRef.current.x += (targetTiltX - momentumTiltRef.current.x) * (1 - Math.exp(-8.0 * dt));
+
+      // 3D Rotation with Right-Drag Inertial Momentum + Ambient Spin
+      const speed = autoRotateSpeedRef.current;
+      if (!isRotatingRef.current) {
+        rotVelRef.current.x *= 0.94;
+        rotVelRef.current.y *= 0.94;
+        rotAngleRef.current.y += speed * 0.45 * dt + rotVelRef.current.y;
+        rotAngleRef.current.x += rotVelRef.current.x;
+      } else {
+        rotAngleRef.current.y += rotVelRef.current.y;
+        rotAngleRef.current.x += rotVelRef.current.x;
+        rotVelRef.current.x *= 0.8;
+        rotVelRef.current.y *= 0.8;
+      }
+
+      // Smooth application of full 360-degree rotation + dynamic centrifugal torsion + bio-drift
+      const spinTorsion = Math.sin(time * 0.015) * rotSpeedMag * 0.35;
+      structureGroup.rotation.x = rotAngleRef.current.x + momentumTiltRef.current.x + bioPitch;
+      structureGroup.rotation.y = rotAngleRef.current.y;
+      structureGroup.rotation.z = momentumTiltRef.current.z + spinTorsion + bioRoll;
+
+      // Tactile Depth Plunge on left-click drag + bio depth breathing
+      const targetPosZ = (isDraggingPosRef.current ? -100 : 0) + bioFloatZ;
+      structureGroup.position.z += (targetPosZ - structureGroup.position.z) * (1 - Math.exp(-5.5 * dt));
 
       // Smooth Shatter Explosion Lerp Progress with Elastic Overshoot
       const targetShatter = isShatteredRef.current ? 1 : 0;
@@ -476,16 +611,17 @@ export default function Apparatus3DShatterSphere({
       const layoutMultiplier = Math.max(1.0, 0.5 + currentCardScale * 0.5);
       const effectiveDistance = currentRadius * layoutMultiplier;
 
-      // Dynamic Camera Z Framing: Prevents tile clipping at high radius & max shatter force
+      // Dynamic Camera Z Framing: Spacious arena distance
       const targetCameraZ = Math.max(
-        1650,
-        effectiveDistance * (1 + sP * currentShatterForce * 0.7) * 1.4
+        1900,
+        effectiveDistance * (1 + sP * currentShatterForce * 0.7) * 1.5
       );
       camera.position.z += (targetCameraZ - camera.position.z) * (1 - Math.exp(-8 * dt));
 
       const totalItems = Math.max(1, meshesData.length - 1);
-      const tiltX = velXRef.current * 1.6;
-      const tiltY = velYRef.current * 1.6;
+      const mouseNDC = mouseNDCRef.current;
+      const tempWorldPos = new THREE.Vector3();
+      const tempNDC = new THREE.Vector3();
 
       // Assembly Build Animation Progress (3.5s Staggered Entrance)
       const elapsedSec = (time - mountTimeRef.current) / 1000;
@@ -519,48 +655,64 @@ export default function Apparatus3DShatterSphere({
           }
         }
 
-        if (activeShapeMode === "cuboid") {
-          // Monolith Cube: 6 Monolith Vault Wall Unfold & Sliding Displacement
-          const pushDist = (1 + buildDisplacement + anticipationDisplace) + progress * currentShatterForce * 1.25;
-          const dist = effectiveDistance * pushDist;
-          data.mesh.position.set(data.unitPos.x * dist, data.unitPos.y * dist, data.unitPos.z * dist);
+        // Base layout push distance
+        const pushMultiplier = activeShapeMode === "cuboid" ? 1.25 : activeShapeMode === "cuboid-grid" ? 1.1 : 0.85;
+        const pushDist = (1 + buildDisplacement + anticipationDisplace) + progress * currentShatterForce * pushMultiplier;
+        let dist = effectiveDistance * pushDist;
 
-          // Hinge unfold tilt on shatter
-          const hAngle = progress * 0.65 * (i % 2 === 0 ? 1 : -1);
-          data.mesh.rotation.set(
-            data.baseRot.x + tiltX + hAngle,
-            data.baseRot.y + tiltY + hAngle * 0.5,
-            data.baseRot.z
-          );
-          data.material.opacity = buildOpacity;
-        } else if (activeShapeMode === "cuboid-grid") {
-          // Cuboid Grid: Deconstructed Matrix Blueprint Dispersal
-          const matrixDisplace = (1 + buildDisplacement + anticipationDisplace) + progress * currentShatterForce * 1.1;
-          const dist = effectiveDistance * matrixDisplace;
-          data.mesh.position.set(data.unitPos.x * dist, data.unitPos.y * dist, data.unitPos.z * dist);
+        // 3D Magnetic Proximity Wave with Per-Tile Smoothstep & Viscous Momentum
+        tempWorldPos.copy(data.unitPos).multiplyScalar(dist).applyMatrix4(structureGroup.matrixWorld);
+        tempNDC.copy(tempWorldPos).project(camera);
 
-          // Z-axis matrix panel rotation on shatter
-          const zSpin = progress * Math.PI * (i % 2 === 0 ? 0.4 : -0.4);
-          data.mesh.rotation.set(
-            data.baseRot.x + tiltX,
-            data.baseRot.y + tiltY,
-            data.baseRot.z + zSpin
-          );
-          data.material.opacity = buildOpacity;
-        } else {
-          // Default Sphere: Spherical Radial Burst
-          const burstDist = (1 + buildDisplacement + anticipationDisplace) + progress * currentShatterForce * 0.85;
-          const dist = effectiveDistance * burstDist;
-          data.mesh.position.set(data.unitPos.x * dist, data.unitPos.y * dist, data.unitPos.z * dist);
-
-          data.mesh.rotation.set(
-            data.baseRot.x + tiltX,
-            data.baseRot.y + tiltY,
-            data.baseRot.z
-          );
-          data.material.opacity = buildOpacity;
+        let targetProx = 0;
+        if (tempNDC.z > 0 && tempNDC.z < 1.0) {
+          const distScreen = Math.hypot(tempNDC.x - mouseNDC.x, tempNDC.y - mouseNDC.y);
+          if (distScreen < 0.44) {
+            const t = 1 - distScreen / 0.44;
+            // Cubic Hermite smoothstep for buttery bell-curve
+            targetProx = t * t * (3 - 2 * t);
+          }
         }
 
+        // 60FPS per-card smooth exponential momentum dampening
+        data.currentProx = (data.currentProx ?? 0) + (targetProx - (data.currentProx ?? 0)) * (1 - Math.exp(-7.5 * dt));
+        const proximity = data.currentProx;
+
+        // Soft, fluid physical displacement
+        dist += proximity * 48;
+        buildScale *= (1.0 + proximity * 0.12);
+        const proxTiltX = (mouseNDC.y - tempNDC.y) * proximity * 0.22;
+        const proxTiltY = (mouseNDC.x - tempNDC.x) * proximity * 0.22;
+
+        data.mesh.position.set(data.unitPos.x * dist, data.unitPos.y * dist, data.unitPos.z * dist);
+        const finalOpacity = Math.min(1.0, buildOpacity + proximity * 0.18);
+
+        if (activeShapeMode === "cuboid") {
+          // Monolith Cube: 6 Monolith Vault Wall Unfold & Sliding Displacement
+          const hAngle = progress * 0.65 * (i % 2 === 0 ? 1 : -1);
+          data.mesh.rotation.set(
+            data.baseRot.x + proxTiltX + hAngle,
+            data.baseRot.y + proxTiltY + hAngle * 0.5,
+            data.baseRot.z
+          );
+        } else if (activeShapeMode === "cuboid-grid") {
+          // Cuboid Grid: Deconstructed Matrix Blueprint Dispersal
+          const zSpin = progress * Math.PI * (i % 2 === 0 ? 0.4 : -0.4);
+          data.mesh.rotation.set(
+            data.baseRot.x + proxTiltX,
+            data.baseRot.y + proxTiltY,
+            data.baseRot.z + zSpin
+          );
+        } else {
+          // Default Sphere: Spherical Radial Burst
+          data.mesh.rotation.set(
+            data.baseRot.x + proxTiltX,
+            data.baseRot.y + proxTiltY,
+            data.baseRot.z
+          );
+        }
+
+        data.material.opacity = finalOpacity;
         data.mesh.scale.set(buildScale, buildScale, buildScale);
       });
 
@@ -574,6 +726,7 @@ export default function Apparatus3DShatterSphere({
     return () => {
       cancelAnimationFrame(animId);
       window.removeEventListener("resize", handleResize);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
       renderer.dispose();
       defaultPlaneGeo.dispose();
       textGeo.dispose();

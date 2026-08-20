@@ -67,21 +67,21 @@ class ValueNoise2D {
 }
 
 const DEFAULT_IMAGES = [
-  "/images/components%20images/scroll/cosmos_1207399578.webp",
-  "/images/components%20images/scroll/cosmos_1067833670.webp",
-  "/images/components%20images/scroll/cosmos_1215932660.webp",
-  "/images/components%20images/scroll/cosmos_1225764898.webp",
-  "/images/components%20images/scroll/cosmos_1244425812.webp",
-  "/images/components%20images/scroll/cosmos_1292975902.webp",
-  "/images/components%20images/scroll/cosmos_1298955025.webp",
-  "/images/components%20images/scroll/cosmos_1309660817.webp"
+  "/images/components/erosion-map/layer-01.webp",
+  "/images/components/erosion-map/layer-02.webp",
+  "/images/components/erosion-map/layer-03.webp",
+  "/images/components/erosion-map/layer-04.webp",
+  "/images/components/erosion-map/layer-05.webp",
+  "/images/components/erosion-map/layer-06.webp",
+  "/images/components/erosion-map/layer-07.webp",
+  "/images/components/erosion-map/layer-08.webp"
 ];
 
 export const ApparatusErosionMap: React.FC<ApparatusErosionMapProps & {
   noiseScale?: number;
   edgeGlow?: number;
   octaves?: number;
-  windPattern?: "linear" | "radial" | "vortex" | "wave" | "turbulent" | "implosion";
+  windPattern?: "linear" | "vortex" | "wave" | "turbulent";
   windAngle?: number;
   windStretch?: number;
   curvePower?: number;
@@ -147,7 +147,7 @@ export const ApparatusErosionMap: React.FC<ApparatusErosionMapProps & {
   const configRef = useRef<{
     grainScale: number;
     octaves: number;
-    windPattern: "linear" | "radial" | "vortex" | "wave" | "turbulent" | "implosion";
+    windPattern: "linear" | "vortex" | "wave" | "turbulent";
     windAngle: number;
     windStretch: number;
     edgeWidth: number;
@@ -241,16 +241,13 @@ export const ApparatusErosionMap: React.FC<ApparatusErosionMapProps & {
     if (!el) return;
 
     const handleWheel = (e: WheelEvent) => {
-      const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
-      if (maxScroll <= 10) {
-        e.preventDefault();
-        setLocalScrollProgress((prev) => {
-          const step = 0.00015;
-          const next = Math.max(0, Math.min(1, prev + (e.deltaY > 0 ? step : -step)));
-          onLifecycleChange?.(next > 0 && next < 1 ? "buildUp" : "idle");
-          return next;
-        });
-      }
+      e.preventDefault();
+      setLocalScrollProgress((prev) => {
+        const delta = e.deltaY * 0.00015;
+        const next = Math.max(0, Math.min(1, prev + delta));
+        onLifecycleChange?.(next > 0 && next < 1 ? "buildUp" : "idle");
+        return next;
+      });
     };
 
     el.addEventListener("wheel", handleWheel, { passive: false });
@@ -293,14 +290,7 @@ export const ApparatusErosionMap: React.FC<ApparatusErosionMapProps & {
         let nx = x;
         let ny = y;
 
-        if (windPattern === "radial") {
-          const dx = x - 128;
-          const dy = y - 128;
-          const r = Math.sqrt(dx * dx + dy * dy);
-          const angle = Math.atan2(dy, dx);
-          nx = r * 1.5;
-          ny = Math.sin(angle * 2) * 35.0 + r * 0.8;
-        } else if (windPattern === "vortex") {
+        if (windPattern === "vortex") {
           const dx = x - 128;
           const dy = y - 128;
           const r = Math.sqrt(dx * dx + dy * dy);
@@ -322,14 +312,6 @@ export const ApparatusErosionMap: React.FC<ApparatusErosionMapProps & {
           const shearY = Math.cos(rx * 0.05) * 30.0 + Math.sin(ry * 0.03) * 20.0;
           nx = (rx + shearX) * (1.0 / (1.0 + windStretch)) + 128;
           ny = (ry + shearY) + 128;
-        } else if (windPattern === "implosion") {
-          const dx = x - 128;
-          const dy = y - 128;
-          const r = Math.sqrt(dx * dx + dy * dy);
-          const angle = Math.atan2(dy, dx);
-          const funnelR = 256.0 - r;
-          nx = Math.cos(angle) * funnelR * 0.8 + 128;
-          ny = Math.sin(angle) * funnelR * 0.8 + 128;
         } else {
           // General linear wind pattern
           const rad = (windAngle * Math.PI) / 180;
@@ -380,16 +362,15 @@ export const ApparatusErosionMap: React.FC<ApparatusErosionMapProps & {
       const totalImages = displayImages.length;
       if (totalImages < 2) return;
 
-      // Heavy fluid lerp damping to give momentum & physical weight
+      // Silky fluid lerp damping for smooth physical momentum (scaled by erosionDamper)
       const diff = targetProgress - lerpedProgressRef.current;
       let vel = 0;
-      if (Math.abs(diff) < 0.00005) {
+      if (Math.abs(diff) < 0.00008) {
         lerpedProgressRef.current = targetProgress;
         velocityRef.current = 0;
         isAnimatingRef.current = false;
       } else {
-        const dampFactor = Math.max(0.1, erosionDamper); 
-        const step = diff * (1.0 - Math.exp(-dampFactor * delta));
+        const step = diff * Math.min(0.35, 0.095 * (erosionDamper || 1.0));
         lerpedProgressRef.current += step;
         vel = step / (delta || 0.016);
         velocityRef.current = vel;
@@ -476,20 +457,27 @@ export const ApparatusErosionMap: React.FC<ApparatusErosionMapProps & {
         }
         ctx.restore();
 
-        // Generate threshold dither mask for this localProg with dynamic edge glow
-        const edgeColorVal = (edgeColor.b << 16) | (edgeColor.g << 8) | edgeColor.r;
-        for (let i = 0; i < 256 * 256; i++) {
-          const noiseVal = noiseData[i];
+        // Generate threshold dither mask for this localProg with clean cutoff & organic dissolution
+        if (localProg >= 0.98) {
+          maskData32.fill(0);
+        } else if (localProg <= 0.01) {
+          maskData32.fill(0xFF000000);
+        } else {
+          const edgeColorVal = (edgeColor.b << 16) | (edgeColor.g << 8) | edgeColor.r;
+          const dissolveFactor = Math.max(0, 1.0 - Math.pow(localProg, 3));
+          for (let i = 0; i < 256 * 256; i++) {
+            const noiseVal = noiseData[i];
 
-          if (noiseVal < localProg) {
-            maskData32[i] = 0;
-          } else if (edgeWidth > 0 && noiseVal < localProg + edgeWidth) {
-            const edgeAlpha = Math.floor(
-              255 * (1.0 - (noiseVal - localProg) / edgeWidth)
-            );
-            maskData32[i] = (edgeAlpha << 24) | edgeColorVal;
-          } else {
-            maskData32[i] = 0xFF000000;
+            if (noiseVal < localProg) {
+              maskData32[i] = 0;
+            } else if (edgeWidth > 0 && noiseVal < localProg + edgeWidth) {
+              const edgeAlpha = Math.floor(
+                255 * (1.0 - (noiseVal - localProg) / edgeWidth) * dissolveFactor
+              );
+              maskData32[i] = (edgeAlpha << 24) | edgeColorVal;
+            } else {
+              maskData32[i] = 0xFF000000;
+            }
           }
         }
 
@@ -572,19 +560,27 @@ export const ApparatusErosionMap: React.FC<ApparatusErosionMapProps & {
           drawImageCover(imgNext, ctx);
         }
 
-        const edgeColorVal = (edgeColor.b << 16) | (edgeColor.g << 8) | edgeColor.r;
-        for (let i = 0; i < 256 * 256; i++) {
-          const noiseVal = noiseData[i];
+        // Clean cutoff with organic dissolution fade
+        if (localProg >= 0.98) {
+          maskData32.fill(0);
+        } else if (localProg <= 0.01) {
+          maskData32.fill(0xFF000000);
+        } else {
+          const edgeColorVal = (edgeColor.b << 16) | (edgeColor.g << 8) | edgeColor.r;
+          const dissolveFactor = Math.max(0, 1.0 - Math.pow(localProg, 3));
+          for (let i = 0; i < 256 * 256; i++) {
+            const noiseVal = noiseData[i];
 
-          if (noiseVal < localProg) {
-            maskData32[i] = 0;
-          } else if (edgeWidth > 0 && noiseVal < localProg + edgeWidth) {
-            const edgeAlpha = Math.floor(
-              255 * (1.0 - (noiseVal - localProg) / edgeWidth)
-            );
-            maskData32[i] = (edgeAlpha << 24) | edgeColorVal;
-          } else {
-            maskData32[i] = 0xFF000000;
+            if (noiseVal < localProg) {
+              maskData32[i] = 0;
+            } else if (edgeWidth > 0 && noiseVal < localProg + edgeWidth) {
+              const edgeAlpha = Math.floor(
+                255 * (1.0 - (noiseVal - localProg) / edgeWidth) * dissolveFactor
+              );
+              maskData32[i] = (edgeAlpha << 24) | edgeColorVal;
+            } else {
+              maskData32[i] = 0xFF000000;
+            }
           }
         }
 

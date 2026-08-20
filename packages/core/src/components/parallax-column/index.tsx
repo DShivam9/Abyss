@@ -5,19 +5,19 @@ import { ApparatusParallaxColumnProps } from "./types";
 
 // Default premium images from Abyss assets — ultra-optimized, no repeats across columns
 const DEFAULT_LEFT_IMAGES = [
-  "/images/components%20images/scroll/cosmos_1309660817.webp",
-  "/images/components%20images/scroll/cosmos_2063063057.webp",
-  "/images/components%20images/scroll/cosmos_1244425812.webp",
-  "/images/components%20images/scroll/cosmos_2086495860.webp",
-  "/images/components%20images/scroll/cosmos_51259133.webp"
+  "/images/components/parallax-column/left-01.webp",
+  "/images/components/parallax-column/left-02.webp",
+  "/images/components/parallax-column/left-03.webp",
+  "/images/components/parallax-column/left-04.webp",
+  "/images/components/parallax-column/left-05.webp"
 ];
 
 const DEFAULT_RIGHT_IMAGES = [
-  "/images/components%20images/scroll/cosmos_1452408749.webp",
-  "/images/components%20images/scroll/cosmos_1298955025.webp",
-  "/images/components%20images/scroll/cosmos_2093433371.webp",
-  "/images/components%20images/scroll/cosmos_520815919.webp",
-  "/images/components%20images/scroll/Glowing%20White%20Horse.webp"
+  "/images/components/parallax-column/right-01.webp",
+  "/images/components/parallax-column/right-02.webp",
+  "/images/components/parallax-column/right-03.webp",
+  "/images/components/parallax-column/right-04.webp",
+  "/images/components/parallax-column/right-05.webp"
 ];
 
 // Baked constants for refined motion and geometry

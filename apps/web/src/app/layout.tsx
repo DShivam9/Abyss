@@ -4,6 +4,7 @@ import { JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { SmoothScrollProvider } from "@/components/providers/SmoothScrollProvider";
 import { CursorProvider } from "@/components/providers/CursorProvider";
+import { TabVisibilityTitle } from "@/components/providers/TabVisibilityTitle";
 import { cn } from "@/lib/utils";
 
 // Navbar import removed
@@ -73,6 +74,7 @@ export default function RootLayout({
       </head>
       <body suppressHydrationWarning className="min-h-full flex flex-col bg-[#0d0d0f] text-[#ffffff] font-sans">
         <div className="noise-bg" />
+        <TabVisibilityTitle />
         <SmoothScrollProvider>
           <CursorProvider>
             {children}

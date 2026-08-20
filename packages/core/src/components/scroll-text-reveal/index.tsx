@@ -94,6 +94,32 @@ export const ApparatusScrollTextReveal: React.FC<ApparatusScrollTextRevealProps>
 
   const currentHeroVariant = VARIANTS[heroIndex];
 
+  // Interactive Wheel Scroll Driver: advances/rewinds 3D word roll on scroll
+  React.useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+
+    let deltaAccumulator = 0;
+    const threshold = 50;
+    let isLocked = false;
+
+    const handleWheel = (e: WheelEvent) => {
+      deltaAccumulator += e.deltaY;
+      if (Math.abs(deltaAccumulator) >= threshold && !isLocked) {
+        isLocked = true;
+        const direction = deltaAccumulator > 0 ? 1 : -1;
+        setHeroIndex((prev) => (prev + direction + VARIANTS.length) % VARIANTS.length);
+        deltaAccumulator = 0;
+        setTimeout(() => {
+          isLocked = false;
+        }, 320);
+      }
+    };
+
+    el.addEventListener("wheel", handleWheel, { passive: true });
+    return () => el.removeEventListener("wheel", handleWheel);
+  }, []);
+
   // Automated Hero Loop Animation
   useGSAP(
     () => {

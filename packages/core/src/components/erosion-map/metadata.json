@@ -1,5 +1,5 @@
 {
-  "name": "Apparatus Erosion Map",
+  "name": "Erosion Map",
   "slug": "erosion-map",
   "pitch": "Images erode organically based on a Perlin noise field driven by scroll progress, revealing layers below with textured weathering patterns and active edge glowing.",
   "family": "aesthetic",

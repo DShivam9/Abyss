@@ -1,5 +1,5 @@
 {
-  "name": "Apparatus Focus Ring",
+  "name": "Focus Ring",
   "slug": "focus-ring",
   "pitch": "Images arranged in a 2D elliptical path. The ring rotates via horizontal dragging, wheel, or arrow keys, bringing the active image to full scale, full opacity, and sharp focus at center stage.",
   "family": "aesthetic",

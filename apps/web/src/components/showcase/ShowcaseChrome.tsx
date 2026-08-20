@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { LayoutGrid } from "lucide-react";
+import { Menu } from "lucide-react";
 import { ComponentDetail } from "@/lib/registry";
 import { RulerDrawer } from "./RulerDrawer";
 import { SpecimenRail } from "./SpecimenRail";
@@ -75,7 +75,7 @@ export function ShowcaseChrome({
           title={drawerOpen ? "Close Navigator (ESC)" : "Open Component Navigator"}
           aria-label="Component Navigator"
         >
-          <LayoutGrid size={18} />
+          <Menu size={16} strokeWidth={2.4} />
         </button>
       </div>
 

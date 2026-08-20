@@ -1,5 +1,4 @@
 import React, { useEffect, useRef, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
 import { ApparatusDualWaveProps, DualWaveItem } from "./types";
 
 // 24 unique single-word aesthetic visual, motion, color, and optics titles (zero duplicates)
@@ -31,9 +30,7 @@ const DEFAULT_ITEMS: DualWaveItem[] = [
 ];
 
 // Baked defaults for refined wave path optics
-const BAKED_IRIS_CURVATURE = 0.50;
 const BAKED_HORIZON_CURVATURE = 0.60;
-const BAKED_HOURGLASS_CURVATURE = 0.35;
 const BAKED_CORNER_ALIGNMENT = 1.0;
 const BAKED_DUAL_SINE_WAVENUM = 0.45;
 const BAKED_COLUMN_LAG = 0.40;
@@ -46,7 +43,7 @@ export const ApparatusDualWave: React.FC<ApparatusDualWaveProps & {
   maxBlur?: number;
   maxRotation?: number;
   scrollDamping?: number;
-  wavePattern?: "iris" | "horizon" | "hourglass" | "dualSine";
+  wavePattern?: "barrel" | "horizon" | "dualSine";
 }> = ({
   items,
   imageSrc,
@@ -56,7 +53,7 @@ export const ApparatusDualWave: React.FC<ApparatusDualWaveProps & {
   maxBlur: propMaxBlur,
   maxRotation: propMaxRotation,
   scrollDamping: propScrollDamping,
-  wavePattern: propWavePattern = "iris",
+  wavePattern: propWavePattern = "barrel",
   className = "",
   style,
   onLifecycleChange,
@@ -78,14 +75,23 @@ export const ApparatusDualWave: React.FC<ApparatusDualWaveProps & {
   const resolvedFontFamily = propFontFamily || "'Hatton', 'Larken', serif";
   const resolvedFontStyle = "normal";
   
+  const displayItems = items && items.length > 0 ? items : [...DEFAULT_ITEMS, ...DEFAULT_ITEMS];
+  const leftColumnItems = displayItems.filter((_, idx) => idx % 2 === 0);
+  const rightColumnItems = displayItems.filter((_, idx) => idx % 2 !== 0);
+
+  const initialSrc = displayItems[0]?.imageSrc || imageSrc || "";
+  const activeSrcRef = useRef(initialSrc);
+  const prevSrcRef = useRef(initialSrc);
+  const fadeStartTimeRef = useRef(0);
+
   // Animation loop playheads & layout refs
   const smoothOffsetRef = useRef(0);
   const smoothOffsetRightRef = useRef(0);
   const mousePosRef = useRef({ x: 0, y: 0 });
   const smoothMouseRef = useRef({ x: 0, y: 0 });
   const centerImageFrameRef = useRef<HTMLDivElement>(null);
-  const [activeImageIdx, setActiveImageIdx] = useState(0);
-  const activeImageIdxRef = useRef(0);
+  const imgLayerARef = useRef<HTMLImageElement>(null);
+  const imgLayerBRef = useRef<HTMLImageElement>(null);
   const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
   
   const dimensionsRef = useRef({ width: 800, height: 600 });
@@ -309,11 +315,13 @@ export const ApparatusDualWave: React.FC<ApparatusDualWaveProps & {
       const mouseXPx = smoothMouseRef.current.x * 10;
       const mouseYPx = smoothMouseRef.current.y * 10;
 
-      // Apply physical velocity squeeze and mouse parallax on center image frame
+      // Apply physical velocity squeeze, 3D perspective tilt and mouse parallax on center image frame
       const velMag = Math.min(1.0, Math.abs(scrollVelocityRef.current) / 2500);
       const velScale = 1.0 - velMag * 0.035 * BAKED_VELOCITY_SQUEEZE;
+      const tiltX = -smoothMouseRef.current.y * 6.0;
+      const tiltY = smoothMouseRef.current.x * 6.0;
       if (centerImageFrameRef.current) {
-        centerImageFrameRef.current.style.transform = `translate3d(calc(-50% + ${mouseXPx.toFixed(1)}px), calc(-50% + ${mouseYPx.toFixed(1)}px), 0) scale(${velScale.toFixed(4)})`;
+        centerImageFrameRef.current.style.transform = `translate3d(calc(-50% + ${mouseXPx.toFixed(1)}px), calc(-50% + ${mouseYPx.toFixed(1)}px), 0) perspective(1000px) rotateX(${tiltX.toFixed(2)}deg) rotateY(${tiltY.toFixed(2)}deg) scale(${velScale.toFixed(4)})`;
       }
 
       const H = dimensionsRef.current.height;
@@ -322,9 +330,6 @@ export const ApparatusDualWave: React.FC<ApparatusDualWaveProps & {
 
       const mouseContainerX = (smoothMouseRef.current.x * W / 2) + W / 2;
       const mouseContainerY = (smoothMouseRef.current.y * H / 2) + H / 2;
-
-      let minDistance = Infinity;
-      let closestIndex = 0;
 
       // Update DOM position styles directly
       for (let originalIdx = 0; originalIdx < displayItems.length; originalIdx++) {
@@ -343,7 +348,7 @@ export const ApparatusDualWave: React.FC<ApparatusDualWaveProps & {
         }
 
         const wrappedOffset = (((offset + totalSpan / 2) % totalSpan + totalSpan) % totalSpan) - totalSpan / 2;
-        const y = H / 2 - itemHeight / 2 + wrappedOffset;
+        let y = H / 2 - itemHeight / 2 + wrappedOffset;
 
         // Viewport Culling (ponytail performance fix): Hide offscreen DOM items to lock 60-120fps
         if (y < -90 || y > H + 90) {
@@ -356,44 +361,38 @@ export const ApparatusDualWave: React.FC<ApparatusDualWaveProps & {
         const itemCenterY = y + itemHeight / 2;
         const distToCenter = Math.abs(itemCenterY - centerY);
         const normalizedDist = Math.min(1.0, distToCenter / (H / 2 || 1));
-        const centerWeight = Math.pow(Math.cos(normalizedDist * Math.PI * 0.5), 1.8);
 
         const normY = (y - H / 2) / (H / 2 || 1);
         
         let baseHorizontalOffset = 0;
         let baseAngle = 0;
+        let zPos = 0;
+        let pitchX = 0;
 
-        if (wavePatternRef.current === "iris") {
-          // 1. Aperture Iris: Spherical lens gate expanding around central cover image
-          const irisLens = Math.sin(normalizedDist * Math.PI * 0.5);
-          const irisOffset = (1.0 - irisLens * BAKED_IRIS_CURVATURE) * computedWaveRange * 0.9;
-          baseHorizontalOffset = pinchX + irisOffset;
-          baseAngle = normY * maxRotationRef.current * (isLeft ? -1 : 1);
-        } else if (wavePatternRef.current === "horizon") {
-          // 2. Split Horizon: Inverted asymmetrical diagonal slope framing center photo
+        if (wavePatternRef.current === "horizon") {
+          // 1. Split Horizon: Inverted asymmetrical diagonal slope framing center photo
           const leftSlope = (1.0 - normY) * BAKED_HORIZON_CURVATURE * 0.5;
           const rightSlope = (1.0 + normY) * BAKED_HORIZON_CURVATURE * 0.5;
           baseHorizontalOffset = pinchX + (isLeft ? leftSlope : rightSlope) * computedWaveRange * 0.9;
           baseAngle = (isLeft ? -1 : 1) * normY * maxRotationRef.current * 0.8;
         } else if (wavePatternRef.current === "dualSine") {
-          // 3. Sine Wave: Valentin Descombes Codrops Dual Wave Sine Path Formula
+          // 2. Sine Wave: Valentin Descombes Codrops Dual Wave Sine Path Formula
           const sineWaveVal = Math.sin(normY * BAKED_DUAL_SINE_WAVENUM * Math.PI * 2.0);
           const waveOffset = sineWaveVal * waveRangeRef.current;
           baseHorizontalOffset = pinchX + (isLeft ? -waveOffset : waveOffset);
           baseAngle = Math.cos(normY * BAKED_DUAL_SINE_WAVENUM * Math.PI * 2.0) * maxRotationRef.current * (isLeft ? -1 : 1);
         } else {
-          // 4. Hourglass Pinch: Clean ergonomic center focus
-          const triangleProfile = normalizedDist;
-          const hemisphereProfile = 1.0 - Math.sqrt(Math.max(0, 1.0 - normalizedDist * normalizedDist));
-          const blendedProfile = (1.0 - BAKED_HOURGLASS_CURVATURE) * triangleProfile + BAKED_HOURGLASS_CURVATURE * hemisphereProfile;
-          baseHorizontalOffset = pinchX + blendedProfile * computedWaveRange;
-          baseAngle = (isLeft ? -1 : 1) * (y - H / 2) / (H / 2 || 1) * maxRotationRef.current;
-        }
-
-        // Keep track of the item closest to center
-        if (distToCenter < minDistance) {
-          minDistance = distToCenter;
-          closestIndex = originalIdx;
+          // 3. Cylindrical 3D Barrel Drum (Default): Physical mechanical rolling reels flanking center hero card
+          const cylinderRadius = Math.max(340, H * 0.52);
+          const theta = wrappedOffset / cylinderRadius;
+          
+          y = H / 2 - itemHeight / 2 + Math.sin(theta) * cylinderRadius;
+          zPos = (Math.cos(theta) - 1.0) * cylinderRadius * 0.85;
+          pitchX = (-theta * 180 / Math.PI) * (maxRotationRef.current / 9.0);
+          
+          const barrelFlare = (1.0 - Math.cos(theta)) * (waveRangeRef.current * 0.55);
+          baseHorizontalOffset = pinchX + barrelFlare;
+          baseAngle = Math.sin(theta) * maxRotationRef.current * (isLeft ? -0.3 : 0.3);
         }
 
         // Calculate item position relative to cursor for Gravitational Wave Lens
@@ -414,16 +413,17 @@ export const ApparatusDualWave: React.FC<ApparatusDualWaveProps & {
         const mouseTiltAngle = (dy / (distToMouse || 1)) * gaussianFocus * (isLeft ? -8 : 8);
         const totalAngle = baseAngle + mouseTiltAngle;
         
-        // Continuous organic bell-curve weight centered at viewport middle
-        const totalHighlight = Math.min(1.0, centerWeight + gaussianFocus * 0.65);
+        // Sharp center crosshair focus (tight Gaussian curve focused at exact vertical middle)
+        const centerFocus = Math.exp(-Math.pow(distToCenter / 50, 2));
+        const totalHighlight = Math.min(1.0, centerFocus + gaussianFocus * 0.4);
         
-        // Smooth edge fade out at extreme top/bottom bounds so items don't pop
+        // Base opacity: 0.50 for off-center readable items, ramping to 1.0 at center
         const edgeFade = normalizedDist > 0.85 ? Math.max(0, (1.0 - normalizedDist) / 0.15) : 1.0;
-        const opacity = Math.min(1.0, (0.05 + centerWeight * 0.95 + gaussianFocus * 0.35) * edgeFade);
+        const opacity = Math.min(1.0, (0.50 + centerFocus * 0.50 + gaussianFocus * 0.15) * edgeFade);
         
-        // Smooth progressive blur ramping up with distance from center
-        const blurFactor = Math.pow(normalizedDist, 1.5) * (1.0 - gaussianFocus * 0.8);
-        const blurAmount = Math.max(0, blurFactor * maxBlurRef.current);
+        // Progressive blur only at extreme edges (normalizedDist > 0.35)
+        const blurFactor = Math.pow(Math.max(0, (normalizedDist - 0.35) / 0.65), 2.0) * (1.0 - gaussianFocus * 0.8);
+        const blurAmount = Math.max(0, blurFactor * maxBlurRef.current * 1.5);
 
         // Kinetic velocity shear: slants text along scroll vector during rapid movement
         const velShear = (scrollVelocityRef.current / 2000) * (isLeft ? -1 : 1);
@@ -433,8 +433,8 @@ export const ApparatusDualWave: React.FC<ApparatusDualWaveProps & {
 
         // Mutate transform and styles directly on the DOM node for 60fps performance
         el.style.transform = isLeft
-          ? `translate3d(calc(-100% - ${effectiveHorizontalOffset.toFixed(1)}px), ${y.toFixed(1)}px, 0) rotate(${totalAngle.toFixed(1)}deg) skewY(${cappedSkew.toFixed(2)}deg)`
-          : `translate3d(${effectiveHorizontalOffset.toFixed(1)}px, ${y.toFixed(1)}px, 0) rotate(${totalAngle.toFixed(1)}deg) skewY(${cappedSkew.toFixed(2)}deg)`;
+          ? `translate3d(calc(-100% - ${effectiveHorizontalOffset.toFixed(1)}px), ${y.toFixed(1)}px, ${zPos.toFixed(1)}px) rotateX(${pitchX.toFixed(2)}deg) rotate(${totalAngle.toFixed(1)}deg) skewY(${cappedSkew.toFixed(2)}deg)`
+          : `translate3d(${effectiveHorizontalOffset.toFixed(1)}px, ${y.toFixed(1)}px, ${zPos.toFixed(1)}px) rotateX(${pitchX.toFixed(2)}deg) rotate(${totalAngle.toFixed(1)}deg) skewY(${cappedSkew.toFixed(2)}deg)`;
 
         el.style.opacity = opacity.toFixed(3);
         // GPU Shader Pass Bypass: Skip blur filter when negligible to eliminate GPU overhead
@@ -442,32 +442,73 @@ export const ApparatusDualWave: React.FC<ApparatusDualWaveProps & {
 
         const textSpan = el.firstElementChild as HTMLElement;
         if (textSpan) {
-          // Continuous scale, letter-spacing, and luminance interpolation driven by totalHighlight
-          const textLuma = Math.round(115 + totalHighlight * 140);
-          const textScale = 1.0 + totalHighlight * 0.09;
-          const letterSpacing = totalHighlight * 0.065;
+          // Off-center text is readable silver rgb(140, 140, 148), center active text is pure #ffffff rgb(255, 255, 255)
+          const textLuma = Math.round(140 + totalHighlight * 115);
+          const textScale = 1.0 + totalHighlight * 0.12;
+          const letterSpacing = 0.02 + totalHighlight * 0.06;
 
           textSpan.style.color = `rgb(${textLuma}, ${textLuma}, ${textLuma})`;
           textSpan.style.letterSpacing = `${letterSpacing.toFixed(3)}em`;
+          textSpan.style.fontWeight = totalHighlight > 0.55 ? "400" : "200";
           textSpan.style.transform = `scale(${textScale.toFixed(3)})`;
           textSpan.style.display = "inline-block";
           textSpan.style.transformOrigin = isLeft ? "right center" : "left center";
         }
       }
 
-      // Update activeIdxRef ONLY on item boundaries to trigger center image crossfade
-      if (closestIndex !== activeIdxRef.current) {
-        activeIdxRef.current = closestIndex;
+      // Update active center image strictly from primary scroll playhead (zero column collision)
+      const totalItems = displayItems.length;
+      if (totalItems > 0) {
+        const playheadProg = Math.round(smoothOffsetRef.current / spacingRef.current);
+        const playheadIndex = ((playheadProg % totalItems) + totalItems) % totalItems;
+
+        if (playheadIndex !== activeIdxRef.current) {
+          activeIdxRef.current = playheadIndex;
+          const targetSrc = displayItems[playheadIndex]?.imageSrc || imageSrc || "";
+          if (targetSrc && targetSrc !== activeSrcRef.current) {
+            prevSrcRef.current = activeSrcRef.current;
+            activeSrcRef.current = targetSrc;
+            fadeStartTimeRef.current = performance.now();
+          }
+        }
       }
 
-      // Update activeImageIdx state ONLY on image index boundaries to trigger Framer Motion transition
-      const imgCount = displayItems.length;
-      const calculatedImageIdx = (((Math.floor(smoothOffsetRef.current / spacingRef.current) % imgCount) + imgCount) % imgCount);
-      if (calculatedImageIdx !== activeImageIdxRef.current) {
-        activeImageIdxRef.current = calculatedImageIdx;
-        setActiveImageIdx(calculatedImageIdx);
+      // Smooth crossfade animation over 340ms (triggered only on item change)
+      const fadeAge = performance.now() - fadeStartTimeRef.current;
+      const rawFade = Math.min(1.0, fadeAge / 340);
+      const easeFade = rawFade * rawFade * (3 - 2 * rawFade);
+
+      // Physical momentum zoom on the image while scrolling
+      const scrollVelMag = Math.min(1.0, Math.abs(scrollVelocityRef.current) / 2500);
+      const momentumZoom = 1.0 + scrollVelMag * 0.05;
+
+      const currentSrc = activeSrcRef.current;
+      const previousSrc = prevSrcRef.current;
+
+      if (imgLayerARef.current && previousSrc) {
+        if (imgLayerARef.current.getAttribute("data-src") !== previousSrc) {
+          imgLayerARef.current.src = encodeURI(previousSrc);
+          imgLayerARef.current.setAttribute("data-src", previousSrc);
+        }
+        const opacityA = (1.0 - easeFade);
+        const scaleA = momentumZoom * (1.0 + easeFade * 0.06);
+        imgLayerARef.current.style.opacity = opacityA.toFixed(3);
+        imgLayerARef.current.style.transform = `scale(${scaleA.toFixed(4)})`;
+        imgLayerARef.current.style.display = opacityA > 0.01 ? "block" : "none";
       }
-      
+
+      if (imgLayerBRef.current && currentSrc) {
+        if (imgLayerBRef.current.getAttribute("data-src") !== currentSrc) {
+          imgLayerBRef.current.src = encodeURI(currentSrc);
+          imgLayerBRef.current.setAttribute("data-src", currentSrc);
+        }
+        const opacityB = easeFade;
+        const scaleB = momentumZoom * (0.92 + easeFade * 0.08);
+        imgLayerBRef.current.style.opacity = opacityB.toFixed(3);
+        imgLayerBRef.current.style.transform = `scale(${scaleB.toFixed(4)})`;
+        imgLayerBRef.current.style.display = "block";
+      }
+
       animationFrameId = requestAnimationFrame(tick);
     };
     
@@ -476,20 +517,16 @@ export const ApparatusDualWave: React.FC<ApparatusDualWaveProps & {
       cancelAnimationFrame(animationFrameId);
       if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
     };
-  }, []);
-
-  const displayItems = items && items.length > 0 ? items : [...DEFAULT_ITEMS, ...DEFAULT_ITEMS];
-  const leftColumnItems = displayItems.filter((_, idx) => idx % 2 === 0);
-  const rightColumnItems = displayItems.filter((_, idx) => idx % 2 !== 0);
+  }, [displayItems, imageSrc]);
 
   const itemHeight = 36;
   // Center image bounds to calculate precise inward pinch position
-  const imageWidth = isFullscreen ? 240 : 180;
-  const imageHeight = isFullscreen ? 320 : 240;
-  const gapFromImage = 32; // Horizontal padding at the pinch point
+  const imageWidth = isFullscreen
+    ? Math.min(420, Math.max(280, Math.round(dimensions.width * 0.28)))
+    : Math.min(330, Math.max(240, Math.round(dimensions.width * 0.24)));
+  const imageHeight = Math.round(imageWidth * 1.34);
+  const gapFromImage = 36; // Horizontal padding at the pinch point
   const pinchX = imageWidth / 2 + gapFromImage; // Base horizontal distance from container center
-
-  const activeImage = displayItems[activeImageIdx]?.imageSrc || imageSrc || displayItems[0].imageSrc;
 
   const jumpToItem = (originalIdx: number, isLeft: boolean, k: number) => {
     const colCount = isLeft ? leftColumnItems.length : rightColumnItems.length;
@@ -516,8 +553,14 @@ export const ApparatusDualWave: React.FC<ApparatusDualWaveProps & {
         ...style,
       }}
     >
-      {/* ─── HOURGLASS / TRIANGLE LAYOUT VIEWPORT ─── */}
-      <div className="absolute inset-0 w-full h-full pointer-events-none">
+      {/* ─── 3D BARREL & HOURGLASS VIEWPORT ─── */}
+      <div 
+        className="absolute inset-0 w-full h-full pointer-events-none"
+        style={{
+          perspective: "1200px",
+          transformStyle: "preserve-3d",
+        }}
+      >
         
         {/* LEFT COLUMN (Right-aligned relative to center axis) */}
         {leftColumnItems.map((item, k) => {
@@ -553,7 +596,7 @@ export const ApparatusDualWave: React.FC<ApparatusDualWaveProps & {
           );
         })}
 
-        {/* CENTER IMAGE BLOCK (Centered viewport block) */}
+        {/* CENTER IMAGE BLOCK: DUAL-BUFFER CONTINUOUS CINEMATIC ZOOM */}
         <div 
           ref={centerImageFrameRef}
           className="absolute pointer-events-auto overflow-hidden bg-black rounded-[2px]"
@@ -568,22 +611,20 @@ export const ApparatusDualWave: React.FC<ApparatusDualWaveProps & {
             zIndex: 10,
           }}
         >
-          <AnimatePresence mode="popLayout">
-            <motion.div
-              key={activeImageIdx}
-              initial={{ opacity: 0, scale: 0.94, y: scrollVelocityRef.current >= 0 ? 14 : -14 }}
-              animate={{ opacity: 1, scale: 1.0, y: 0 }}
-              exit={{ opacity: 0, scale: 1.04, y: scrollVelocityRef.current >= 0 ? -14 : 14 }}
-              transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-              className="absolute inset-0 w-full h-full"
-            >
-              <img
-                src={encodeURI(activeImage)}
-                alt={displayItems[activeImageIdx]?.name}
-                className="w-full h-full object-cover select-none pointer-events-none"
-              />
-            </motion.div>
-          </AnimatePresence>
+          <img
+            ref={imgLayerARef}
+            src={encodeURI(displayItems[0]?.imageSrc || imageSrc || "")}
+            alt="Layer A"
+            className="absolute inset-0 w-full h-full object-cover select-none pointer-events-none will-change-transform"
+            style={{ transformOrigin: "center center", transform: "scale(1)" }}
+          />
+          <img
+            ref={imgLayerBRef}
+            src={encodeURI(displayItems[1]?.imageSrc || imageSrc || "")}
+            alt="Layer B"
+            className="absolute inset-0 w-full h-full object-cover select-none pointer-events-none will-change-transform"
+            style={{ transformOrigin: "center center", opacity: 0, transform: "scale(0.76)" }}
+          />
         </div>
 
         {/* RIGHT COLUMN (Left-aligned relative to center axis) */}

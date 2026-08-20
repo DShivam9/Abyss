@@ -28,17 +28,6 @@ export default function ShowcasePageClient({ slug }: { slug: string }) {
   const [controlValues, setControlValues] = useState<Record<string, number | boolean | string>>(initialValues);
 
   const handleControlChange = (key: string, value: number | boolean | string) => {
-    if (slug === "depth-swim" && key === "selectedVariant") {
-      const presets: Record<string, Record<string, number>> = {
-        tunnel: { depthRange: 1600, maxBlur: 18, cursorParallaxPower: 40, cardScale: 1.0, hoverTiltMax: 8, ambientOpacity: 0.35, ambientBlur: 5 },
-        matrix: { depthRange: 700, maxBlur: 6, cursorParallaxPower: 55, cardScale: 1.05, hoverTiltMax: 14, ambientOpacity: 0.20, ambientBlur: 40 },
-        cinematic: { depthRange: 2400, maxBlur: 32, cursorParallaxPower: 25, cardScale: 0.85, hoverTiltMax: 8, ambientOpacity: 0.60, ambientBlur: 110 },
-        micro: { depthRange: 1300, maxBlur: 12, cursorParallaxPower: 30, cardScale: 0.65, hoverTiltMax: 6, ambientOpacity: 0.30, ambientBlur: 5 }
-      };
-      const presetDefaults = presets[value as string] || presets.tunnel;
-      setControlValues((prev) => ({ ...prev, selectedVariant: value, ...presetDefaults }));
-      return;
-    }
     setControlValues((prev) => ({ ...prev, [key]: value }));
   };
 
@@ -53,7 +42,9 @@ export default function ShowcasePageClient({ slug }: { slug: string }) {
   const defaultImageSrc = meta.filename
     ? meta.filename.startsWith("http") || meta.filename.startsWith("/")
       ? meta.filename
-      : `/images/components images/${meta.filename}`
+      : meta.filename.startsWith("components/")
+        ? `/images/${meta.filename}`
+        : `/images/components images/${meta.filename}`
     : "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1200&q=80";
 
   // Self-contained scroll components handle their own wheel events internally
@@ -64,7 +55,9 @@ export default function ShowcasePageClient({ slug }: { slug: string }) {
     "cylinder-scroll",
     "parallax-bleed",
     "curved-scroll-wipe",
-    "arc-drift-gallery"
+    "arc-drift-gallery",
+    "erosion-map",
+    "clip-morph"
   ]);
 
   const isSelfContainedScroll = SELF_CONTAINED_SCROLL.has(slug);
@@ -90,7 +83,7 @@ export default function ShowcasePageClient({ slug }: { slug: string }) {
 
     if (isText) {
       return (
-        <div className="relative w-full bg-[#070708] min-h-screen">
+        <div className="relative w-full h-screen overflow-y-auto overflow-x-hidden bg-[#070708]">
           {renderComponent()}
         </div>
       );

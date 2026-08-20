@@ -17,7 +17,6 @@ export const COMPONENT_IMPORTS: Record<string, React.ComponentType<VesselCompone
   "bas-relief-shadow": dynamic(() => import("../../../../../packages/core/src/components/bas-relief-shadow"), { ssr: false }),
   "steel-intaglio": dynamic(() => import("../../../../../packages/core/src/components/steel-intaglio"), { ssr: false }),
   "procedural-atlas": dynamic(() => import("../../../../../packages/core/src/components/procedural-atlas"), { ssr: false }),
-  "orbit-ring-gallery": dynamic(() => import("../../../../../packages/core/src/components/orbit-ring-gallery"), { ssr: false }),
   "accordion-wall": dynamic(() => import("../../../../../packages/core/src/components/accordion-wall"), { ssr: false }),
   "parallax-column": dynamic(() => import("../../../../../packages/core/src/components/parallax-column"), { ssr: false }),
   "erosion-map": dynamic(() => import("../../../../../packages/core/src/components/erosion-map"), { ssr: false }),
@@ -27,7 +26,6 @@ export const COMPONENT_IMPORTS: Record<string, React.ComponentType<VesselCompone
   "depth-swim": dynamic(() => import("../../../../../packages/core/src/components/depth-swim"), { ssr: false }),
   "cylinder-scroll": dynamic(() => import("../../../../../packages/core/src/components/cylinder-scroll"), { ssr: false }),
   "focus-ring": dynamic(() => import("../../../../../packages/core/src/components/focus-ring"), { ssr: false }),
-  "cursor-wake": dynamic(() => import("../../../../../packages/core/src/components/cursor-wake"), { ssr: false }),
   "parallax-bleed": dynamic(() => import("../../../../../packages/core/src/components/parallax-bleed"), { ssr: false }),
   "gravity-cursor": dynamic(() => import("../../../../../packages/core/src/components/gravity-cursor"), { ssr: false }),
   "3d-shatter-sphere": dynamic(() => import("../../../../../packages/core/src/components/3d-shatter-sphere"), { ssr: false }),
@@ -35,9 +33,10 @@ export const COMPONENT_IMPORTS: Record<string, React.ComponentType<VesselCompone
   "arc-drift-gallery": dynamic(() => import("../../../../../packages/core/src/components/arc-drift-gallery"), { ssr: false }),
   "curved-scroll-wipe": dynamic(() => import("../../../../../packages/core/src/components/curved-scroll-wipe"), { ssr: false }),
   "image-snake-trail": dynamic(() => import("../../../../../packages/core/src/components/image-snake-trail"), { ssr: false }),
-  "3d-cursor-trail": dynamic(() => import("../../../../../packages/core/src/components/3d-cursor-trail"), { ssr: false }),
+  "abyss-cursor-fall": dynamic(() => import("../../../../../packages/core/src/components/abyss-cursor-fall"), { ssr: false }),
   "scroll-text-reveal": dynamic(() => import("../../../../../packages/core/src/components/scroll-text-reveal"), { ssr: false }),
-  "apparatus-tracklist-gallery": dynamic(() => import("../../../../../packages/core/src/components/apparatus-tracklist-gallery"), { ssr: false }),
+  "tracklist-gallery": dynamic(() => import("../../../../../packages/core/src/components/tracklist-gallery"), { ssr: false }),
+  "hover-media-stream": dynamic(() => import("../../../../../packages/core/src/components/hover-media-stream"), { ssr: false }),
 };
 
 
