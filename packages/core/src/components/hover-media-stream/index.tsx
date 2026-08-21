@@ -8,36 +8,42 @@ const DEFAULT_ITEMS: StreamMediaItem[] = [
     title: "Tribunes of Copenhagen",
     mediaType: "video",
     src: "/videos/components/hover-media-stream/cosmos_1039988699.mp4",
+    palette: ["#1d4ed8", "#ffffff", "#1d4ed8", "#ffffff"],
   },
   {
     id: "item-1",
     title: "Hangar Nocturne",
     mediaType: "video",
     src: "/videos/components/hover-media-stream/cosmos_1880828127.mp4",
+    palette: ["#ec4899", "#8b5cf6", "#ec4899", "#8b5cf6"],
   },
   {
     id: "item-2",
     title: "It Takes Time",
     mediaType: "video",
     src: "/videos/components/hover-media-stream/cosmos_1982547553.mp4",
+    palette: ["#ea580c", "#ffffff", "#ea580c", "#ffffff"],
   },
   {
     id: "item-3",
     title: "Midnight Commute",
     mediaType: "video",
     src: "/videos/components/hover-media-stream/cosmos_282803736.mp4",
+    palette: ["#f59e0b", "#ffffff", "#f59e0b", "#ffffff"],
   },
   {
     id: "item-4",
     title: "Apex Velocity",
     mediaType: "image",
     src: "/videos/components/hover-media-stream/cosmos_517993684.gif",
+    palette: ["#ef4444", "#eab308", "#ef4444", "#eab308"],
   },
   {
     id: "item-5",
     title: "Glacial Fracture",
     mediaType: "video",
     src: "/videos/components/hover-media-stream/cosmos_616389415.mp4",
+    palette: ["#9333ea", "#ffffff", "#9333ea", "#ffffff"],
   },
 ];
 
@@ -340,11 +346,10 @@ export const HoverMediaStream: React.FC<HoverMediaStreamProps> = ({
         // 1. Spatial Continuity & Optical Lift
         if (item.titleText) {
           gsap.fromTo(item.titleText,
-            { y: 0, letterSpacing: "-0.025em", color: "rgba(255, 255, 255, 0.35)" },
+            { y: 0, letterSpacing: "-0.025em" },
             {
               y: -3,
               letterSpacing: "0.015em",
-              color: "#ffffff",
               duration: 0.85,
               ease: "cubic-bezier(0.16, 1, 0.3, 1)",
               overwrite: "auto",
@@ -571,8 +576,40 @@ export const HoverMediaStream: React.FC<HoverMediaStreamProps> = ({
           white-space: nowrap;
           pointer-events: none;
           color: rgba(255, 255, 255, 0.35);
-          will-change: transform, letter-spacing, color;
+          will-change: transform, letter-spacing;
           backface-visibility: hidden;
+          display: inline-flex;
+          align-items: center;
+        }
+
+        .title-char {
+          display: inline-block;
+          color: rgba(255, 255, 255, 0.35);
+          transition: color 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+          will-change: color;
+        }
+
+        .menu-row.active .title-char {
+          animation: charColorWave 1.6s ease-in-out infinite;
+          animation-delay: calc(var(--char-i, 0) * 0.04s);
+        }
+
+        @keyframes charColorWave {
+          0% {
+            color: var(--c1, #ffffff);
+          }
+          25% {
+            color: var(--c2, #ffffff);
+          }
+          50% {
+            color: var(--c3, #ffffff);
+          }
+          75% {
+            color: var(--c4, #ffffff);
+          }
+          100% {
+            color: var(--c1, #ffffff);
+          }
         }
 
         /* Absolute Out-of-Flow Flank Badge (Zero Layout Shift) */
@@ -798,7 +835,17 @@ export const HoverMediaStream: React.FC<HoverMediaStreamProps> = ({
           const indexFormatted = String(idx + 1).padStart(2, "0");
 
           return (
-            <div key={item.id} className="menu-row" data-index={idx}>
+            <div
+              key={item.id}
+              className="menu-row"
+              data-index={idx}
+              style={{
+                "--c1": item.palette?.[0] || "#ffffff",
+                "--c2": item.palette?.[1] || "#ffffff",
+                "--c3": item.palette?.[2] || item.palette?.[0] || "#ffffff",
+                "--c4": item.palette?.[3] || item.palette?.[1] || "#ffffff",
+              } as React.CSSProperties}
+            >
               {/* Media Stage */}
               <div className={`row-image-stage ${isEven ? "flank-left" : "flank-right"}`}>
                 {item.mediaType === "video" ? (
@@ -821,7 +868,17 @@ export const HoverMediaStream: React.FC<HoverMediaStreamProps> = ({
 
               {/* Spatial Continuity Typography Title with Out-of-Flow Alternating Monospace Index */}
               <div className="title-container">
-                <span className="title-text">{item.title}</span>
+                <span className="title-text">
+                  {item.title.split("").map((char, cIdx) => (
+                    <span
+                      key={cIdx}
+                      className="title-char"
+                      style={{ "--char-i": cIdx } as React.CSSProperties}
+                    >
+                      {char === " " ? "\u00A0" : char}
+                    </span>
+                  ))}
+                </span>
                 <span className={`title-index-badge ${isEven ? "badge-right" : "badge-left"}`}>
                   [{indexFormatted}]
                 </span>
