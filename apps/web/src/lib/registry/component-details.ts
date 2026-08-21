@@ -559,6 +559,33 @@ export const COMPONENT_DETAILS: Record<string, ComponentDetail> = {
       { type: "slider", key: "lineDuration", label: "Line Speed", default: 1.25, min: 0.4, max: 2.5, step: 0.05, unit: "s" },
       { type: "slider", key: "fontSize", label: "Font Size", default: 62, min: 28, max: 96, step: 2, unit: "px" }
     ]
+  },
+  "gimbal-stream": {
+    id: "75",
+    label: "Gimbal Stream",
+    filename: "components/gimbal-stream/hero.webp",
+    desc: "Infinite scrolling zero-g gimbal stream suspended inside a ray-marched obsidian chamber with liquid mercury centerpiece, five gimbal-mounted tilted card rings, subtle curvature vertex displacement, and Lenis-grade virtual scroll inertia.",
+    slug: "gimbal-stream",
+    category: "3d",
+    subtype: "gallery",
+    tags: ["Three.js", "Gimbal Stream", "Obsidian Chamber", "Liquid Mercury", "Lenis Inertia", "3D WebGL", "Orrery Rings"],
+    controls: [
+      {
+        type: "select",
+        key: "gridVariant",
+        label: "Chamber Pattern",
+        default: "plus",
+        options: [
+          { label: "Swiss Plus (+)", value: "plus" },
+          { label: "Ghost Grid", value: "ghost" },
+          { label: "Hex Honeycomb", value: "hex" }
+        ]
+      },
+      { type: "slider", key: "autoRotateSpeed", label: "Auto Drift Speed", default: 0.10, min: 0.0, max: 0.50, step: 0.01 },
+      { type: "slider", key: "scrollSpeed", label: "Scroll Orbit Speed", default: 0.0045, min: 0.001, max: 0.02, step: 0.0005 },
+      { type: "slider", key: "cardBendMultiplier", label: "Card Curvature Bend", default: 6.5, min: 0.0, max: 15.0, step: 0.5 },
+      { type: "slider", key: "waveBrightness", label: "Nebula Wave Brightness", default: 1.0, min: 0.0, max: 2.5, step: 0.05 }
+    ]
   }
 };
 

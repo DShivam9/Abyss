@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Muted List</title>
+  <style>
+    :root {
+      --bg: #090909;
+      --text: #666666;
+      --line: #222222;
+      --accent: #a3e635; /* stark lime */
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 3rem 0;
+    }
+    .list-container {
+      display: flex;
+      flex-direction: column;
+      width: 380px;
+    }
+    .row {
+      display: flex;
+      align-items: center;
+      height: 16px;
+    }
+    .row.interactive {
+      cursor: pointer;
+    }
+    .row.placeholder {
+      pointer-events: none;
+    }
+    .line-wrapper {
+      width: 36px;
+      display: flex;
+      justify-content: flex-start;
+      margin-right: 14px;
+      flex-shrink: 0;
+    }
+    .line {
+      width: 36px;
+      height: 1px;
+      background-color: var(--line);
+      transform-origin: left center;
+      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.25s ease;
+    }
+    .text {
+      font-size: 0.85rem;
+      white-space: nowrap;
+      letter-spacing: -0.01em;
+      color: var(--text);
+      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), color 0.25s ease;
+    }
+    
+    /* Hover: line extends right with larger scale, pushes text right */
+    .row.interactive:hover .line {
+      transform: scaleX(1.6);
+      background-color: var(--accent);
+    }
+    .row.interactive:hover .text {
+      transform: translateX(24px);
+      color: var(--accent);
+    }
+  </style>
+</head>
+<body>
+  <div class="list-container">
+    <div class="row interactive"><div class="line-wrapper"><div class="line"></div></div><span class="text">30 Oliver parallax</span></div>
+    <div class="row placeholder"><div class="line-wrapper"><div class="line"></div></div></div>
+    <div class="row interactive"><div class="line-wrapper"><div class="line"></div></div><span class="text">31 Text Scroll animation</span></div>
+    <div class="row placeholder"><div class="line-wrapper"><div class="line"></div></div></div>
+    <div class="row interactive"><div class="line-wrapper"><div class="line"></div></div><span class="text">32 Scroll images reveal 001</span></div>
+    <div class="row placeholder"><div class="line-wrapper"><div class="line"></div></div></div>
+    <div class="row interactive"><div class="line-wrapper"><div class="line"></div></div><span class="text">33 Scroll images reveal 002</span></div>
+    <div class="row placeholder"><div class="line-wrapper"><div class="line"></div></div></div>
+    <div class="row interactive"><div class="line-wrapper"><div class="line"></div></div><span class="text">34 Scroll images reveal 003</span></div>
+    <div class="row placeholder"><div class="line-wrapper"><div class="line"></div></div></div>
+    <div class="row interactive"><div class="line-wrapper"><div class="line"></div></div><span class="text">35 Hover expand</span></div>
+    <div class="row placeholder"><div class="line-wrapper"><div class="line"></div></div></div>
+    <div class="row interactive"><div class="line-wrapper"><div class="line"></div></div><span class="text">36 Interactive3d Hero</span></div>
+    <div class="row placeholder"><div class="line-wrapper"><div class="line"></div></div></div>
+    <div class="row interactive"><div class="line-wrapper"><div class="line"></div></div><span class="text">37 Animated number</span></div>
+    <div class="row placeholder"><div class="line-wrapper"><div class="line"></div></div></div>
+    <div class="row interactive"><div class="line-wrapper"><div class="line"></div></div><span class="text">38 Apple Navbar V001</span></div>
+    <div class="row placeholder"><div class="line-wrapper"><div class="line"></div></div></div>
+    <div class="row interactive"><div class="line-wrapper"><div class="line"></div></div><span class="text">39 Canvas crowd</span></div>
+    <div class="row placeholder"><div class="line-wrapper"><div class="line"></div></div></div>
+    <div class="row interactive"><div class="line-wrapper"><div class="line"></div></div><span class="text">40 CssLink</span></div>
+    <div class="row placeholder"><div class="line-wrapper"><div class="line"></div></div></div>
+    <div class="row interactive"><div class="line-wrapper"><div class="line"></div></div><span class="text">41 Progressive Blur</span></div>
+    <div class="row placeholder"><div class="line-wrapper"><div class="line"></div></div></div>
+    <div class="row interactive"><div class="line-wrapper"><div class="line"></div></div><span class="text">42 Animated icons 001</span></div>
+    <div class="row placeholder"><div class="line-wrapper"><div class="line"></div></div></div>
+    <div class="row interactive"><div class="line-wrapper"><div class="line"></div></div><span class="text">43 Vercel Tooltip</span></div>
+    <div class="row placeholder"><div class="line-wrapper"><div class="line"></div></div></div>
+    <div class="row interactive"><div class="line-wrapper"><div class="line"></div></div><span class="text">44 Vercel scroll with blur</span></div>
+    <div class="row placeholder"><div class="line-wrapper"><div class="line"></div></div></div>
+    <div class="row interactive"><div class="line-wrapper"><div class="line"></div></div><span class="text">45 Family Receive button</span></div>
+    <div class="row placeholder"><div class="line-wrapper"><div class="line"></div></div></div>
+    <div class="row interactive"><div class="line-wrapper"><div class="line"></div></div><span class="text">46 Nextjs gooey menu</span></div>
+    <div class="row placeholder"><div class="line-wrapper"><div class="line"></div></div></div>
+    <div class="row interactive"><div class="line-wrapper"><div class="line"></div></div><span class="text">47 Perspective carousel</span></div>
+    <div class="row placeholder"><div class="line-wrapper"><div class="line"></div></div></div>
+    <div class="row interactive"><div class="line-wrapper"><div class="line"></div></div><span class="text">48 Card swipe carousel</span></div>
+    <div class="row placeholder"><div class="line-wrapper"><div class="line"></div></div></div>
+    <div class="row interactive"><div class="line-wrapper"><div class="line"></div></div><span class="text">49 Inverted perspective carousel</span></div>
+    <div class="row placeholder"><div class="line-wrapper"><div class="line"></div></div></div>
+    <div class="row interactive"><div class="line-wrapper"><div class="line"></div></div><span class="text">50 Creative carousel 001</span></div>
+    <div class="row placeholder"><div class="line-wrapper"><div class="line"></div></div></div>
+    <div class="row interactive"><div class="line-wrapper"><div class="line"></div></div><span class="text">51 Creative carousel 002</span></div>
+    <div class="row placeholder"><div class="line-wrapper"><div class="line"></div></div></div>
+    <div class="row interactive"><div class="line-wrapper"><div class="line"></div></div><span class="text">52 ExpandOnHover</span></div>
+    <div class="row placeholder"><div class="line-wrapper"><div class="line"></div></div></div>
+    <div class="row interactive"><div class="line-wrapper"><div class="line"></div></div><span class="text">53 ExpandOnHover vertical</span></div>
+    <div class="row placeholder"><div class="line-wrapper"><div class="line"></div></div></div>
+    <div class="row interactive"><div class="line-wrapper"><div class="line"></div></div><span class="text">54 Shadcn clipPath Carousal</span></div>
+    <div class="row placeholder"><div class="line-wrapper"><div class="line"></div></div></div>
+    <div class="row interactive"><div class="line-wrapper"><div class="line"></div></div><span class="text">55 Parallax Image</span></div>
+    <div class="row placeholder"><div class="line-wrapper"><div class="line"></div></div></div>
+    <div class="row interactive"><div class="line-wrapper"><div class="line"></div></div><span class="text">56 Devouring details sign in</span></div>
+    <div class="row placeholder"><div class="line-wrapper"><div class="line"></div></div></div>
+    <div class="row interactive"><div class="line-wrapper"><div class="line"></div></div><span class="text">57 Vercel navigation bar</span></div>
+    <div class="row placeholder"><div class="line-wrapper"><div class="line"></div></div></div>
+    <div class="row interactive"><div class="line-wrapper"><div class="line"></div></div><span class="text">58 Text roll navigation</span></div>
+    <div class="row placeholder"><div class="line-wrapper"><div class="line"></div></div></div>
+    <div class="row interactive"><div class="line-wrapper"><div class="line"></div></div><span class="text">59 Drawing cursor effect</span></div>
+    <div class="row placeholder"><div class="line-wrapper"><div class="line"></div></div></div>
+    <div class="row interactive"><div class="line-wrapper"><div class="line"></div></div><span class="text">60 Side Scroll Navigation</span></div>
+    <div class="row placeholder"><div class="line-wrapper"><div class="line"></div></div></div>
+    <div class="row interactive"><div class="line-wrapper"><div class="line"></div></div><span class="text">61 Mouse follow animations</span></div>
+  </div>
+</body>
+</html>

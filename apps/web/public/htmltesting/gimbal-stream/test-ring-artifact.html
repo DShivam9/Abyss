@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Abyss — The Infinite Tourbillon Voyage (One-Way Unbox & Scale Up)</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body, html {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #020305;
+      cursor: ns-resize;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+    #canvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+    }
+    .hud {
+      position: absolute;
+      top: 24px;
+      left: 28px;
+      color: #ffffff;
+      font-size: 11px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      pointer-events: none;
+      z-index: 10;
+      opacity: 0.95;
+    }
+    .hud span {
+      color: #6b7280;
+      margin-left: 8px;
+    }
+    .footer-info {
+      position: absolute;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      color: #9ca3af;
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      z-index: 10;
+      pointer-events: none;
+    }
+    .footer-info span {
+      color: #4ca3db;
+    }
+  </style>
+</head>
+<body>
+  <div class="hud">ABYSS // <span>THE INFINITE TOURBILLON VOYAGE &bull; ONE-WAY UNBOX</span></div>
+  <div class="footer-info">ZERO-G GIMBAL TIERS &bull; <span id="prompt-text">SCROLL DOWN TO UNBOX AND REVEAL CORE</span></div>
+
+  <canvas id="canvas"></canvas>
+
+  <script>
+    const canvas = document.getElementById('canvas');
+    const scene = new THREE.Scene();
+
+    const camera = new THREE.PerspectiveCamera(65, window.innerWidth / window.innerHeight, 0.1, 6000);
+    camera.position.set(0, 0, 0);
+    scene.add(camera);
+
+    const renderer = new THREE.WebGLRenderer({ 
+      canvas, 
+      antialias: true, 
+      powerPreference: 'high-performance',
+      precision: 'highp'
+    });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.25;
+
+    const camKey = new THREE.DirectionalLight(0xffffff, 2.5);
+    camKey.position.set(0, 4, 7);
+    camera.add(camKey);
+
+    const camRim = new THREE.DirectionalLight(0xffffff, 1.8);
+    camRim.position.set(0, -4, 5);
+    camera.add(camRim);
+
+    const backGlow = new THREE.PointLight(0x4ca3db, 3.2, 700);
+    backGlow.position.set(0, 0, -260);
+    scene.add(backGlow);
+
+    const ambLight = new THREE.AmbientLight(0xffffff, 0.6);
+    scene.add(ambLight);
+
+    function createLiquidMercuryStudioEnvironment() {
+      const envScene = new THREE.Scene();
+      const envGeo = new THREE.SphereGeometry(90, 32, 16);
+      const envMat = new THREE.MeshBasicMaterial({ color: 0x050508, side: THREE.BackSide });
+      envScene.add(new THREE.Mesh(envGeo, envMat));
+
+      const topSoftbox = new THREE.Mesh(
+        new THREE.CircleGeometry(50, 24),
+        new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide })
+      );
+      topSoftbox.position.set(0, 60, 0);
+      topSoftbox.rotation.x = Math.PI / 2;
+      envScene.add(topSoftbox);
+
+      for (let i = 0; i < 6; i++) {
+        const angle = (i / 6) * Math.PI * 2;
+        const bar = new THREE.Mesh(
+          new THREE.PlaneGeometry(28, 95),
+          new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide })
+        );
+        bar.position.set(Math.cos(angle) * 55, (i % 2 === 0 ? 15 : -15), Math.sin(angle) * 55);
+        bar.lookAt(0, 0, 0);
+        envScene.add(bar);
+      }
+
+      const pmremGen = new THREE.PMREMGenerator(renderer);
+      const envMap = pmremGen.fromScene(envScene, 0.04).texture;
+      pmremGen.dispose();
+      return envMap;
+    }
+
+    const studioEnvMap = createLiquidMercuryStudioEnvironment();
+    scene.environment = studioEnvMap;
+
+    function createCleanAbyssLogoShape() {
+      const relCommands = [
+        [50, 7.5234], [2.2461, 29.645], [5.9648, -15.68], [-5.2891, 24.566],
+        [0.089844, 1.0898], [37.09, -22.633], [-27.855, 22.355], [20.266, -5.3906],
+        [-24.645, 10.09], [42.133, 11.113], [-39.566, -5.5469], [21.109, 12.812],
+        [-25.188, -11.445], [15.898, 34.777], [-19.363, -30.055], [3.1523, 22.242],
+        [-7.2656, -24.844], [-21.031, 32.656], [14.41, -31.531], [-16.945, 14.586],
+        [17.043, -19.578], [-42.254, 5.9141], [36.457, -9.6016], [-24.191, -3.6328],
+        [29.801, 0.89844], [-32.168, -25.82], [28.945, 17.656], [-11.887, -17.145],
+        [19.934, 22.055], [0.097656, 0.066406]
+      ];
+
+      const scale = 0.046;
+      const shape = new THREE.Shape();
+      let curX = relCommands[0][0];
+      let curY = relCommands[0][1];
+      shape.moveTo((curX - 50) * scale, -(curY - 50) * scale);
+
+      for (let i = 1; i < relCommands.length; i++) {
+        curX += relCommands[i][0];
+        curY += relCommands[i][1];
+        shape.lineTo((curX - 50) * scale, -(curY - 50) * scale);
+      }
+      shape.closePath();
+      return shape;
+    }
+
+    const logoShape = createCleanAbyssLogoShape();
+    const extrudeSettings = {
+      steps: 1, depth: 0.24, bevelEnabled: true,
+      bevelThickness: 0.22, bevelSize: 0.12, bevelSegments: 14, curveSegments: 24
+    };
+    const logoGeo = new THREE.ExtrudeGeometry(logoShape, extrudeSettings);
+    logoGeo.center();
+    logoGeo.computeVertexNormals();
+
+    const logoGroup = new THREE.Group();
+    logoGroup.position.set(0, 0, -180);
+    logoGroup.scale.set(8, 8, 8);
+    scene.add(logoGroup);
+
+    const customUniforms = { uTime: { value: 0.0 } };
+    const liquidMercuryMat = new THREE.MeshStandardMaterial({
+      color: 0xffffff,
+      metalness: 1.0,
+      roughness: 0.00,
+      envMap: studioEnvMap,
+      envMapIntensity: 2.8
+    });
+
+    liquidMercuryMat.onBeforeCompile = (shader) => {
+      shader.uniforms.uTime = customUniforms.uTime;
+      shader.vertexShader = `
+        varying vec3 vWorldNormal;
+        varying vec3 vWorldPos;
+        ${shader.vertexShader}
+      `;
+      shader.vertexShader = shader.vertexShader.replace(
+        '#include <worldpos_vertex>',
+        `
+        #include <worldpos_vertex>
+        vWorldNormal = normalize((modelMatrix * vec4(normal, 0.0)).xyz);
+        vWorldPos = (modelMatrix * vec4(transformed, 1.0)).xyz;
+        `
+      );
+      shader.fragmentShader = `
+        uniform float uTime;
+        varying vec3 vWorldNormal;
+        varying vec3 vWorldPos;
+        ${shader.fragmentShader}
+      `;
+      shader.fragmentShader = shader.fragmentShader.replace(
+        '#include <dithering_fragment>',
+        `
+        #include <dithering_fragment>
+        vec2 waveCoord = vWorldPos.xy * 0.04 + vec2(uTime * 0.40, -uTime * 0.32);
+        float fluidField = (sin(waveCoord.x) + cos(waveCoord.y) + sin(dot(vWorldPos.xy, vec2(0.03)) + uTime * 0.25)) * 0.333;
+        vec3 iridA = vec3(0.5, 0.5, 0.5);
+        vec3 iridB = vec3(0.5, 0.5, 0.5);
+        vec3 iridC = vec3(1.0, 1.0, 1.0);
+        vec3 iridD = vec3(0.00, 0.33, 0.67);
+        vec3 iridColor = iridA + iridB * cos(6.28318 * (iridC * (fluidField * 2.0 + uTime * 0.12) + iridD));
+        vec3 viewDir = normalize(cameraPosition - vWorldPos);
+        float fresnel = 1.0 - max(0.0, dot(viewDir, vWorldNormal));
+        float iridBlend = (smoothstep(-0.2, 0.7, fluidField) * 0.16 + pow(fresnel, 1.6) * 0.24) * 0.55;
+        gl_FragColor.rgb = mix(gl_FragColor.rgb, gl_FragColor.rgb * iridColor * 1.5, iridBlend);
+        `
+      );
+    };
+
+    const logoMesh = new THREE.Mesh(logoGeo, liquidMercuryMat);
+    logoGroup.add(logoMesh);
+
+    const textureLoader = new THREE.TextureLoader();
+    const imageList = [
+      '/images/components images/Gallary/cosmos_1110264921.webp',
+      '/images/components images/Gallary/cosmos_1309943729.webp',
+      '/images/components images/Gallary/cosmos_140351120.webp',
+      '/images/components images/Gallary/cosmos_1441380570.webp',
+      '/images/components images/Gallary/cosmos_1578342658.webp',
+      '/images/components images/Gallary/cosmos_1724531036.webp',
+      '/images/components images/Gallary/cosmos_1948095192.webp',
+      '/images/components images/Gallary/cosmos_2046923474.webp',
+      '/images/components images/Gallary/cosmos_623139356.webp',
+      '/images/components images/Gallary/cosmos_842932938.webp',
+      '/images/components images/Gallary/cosmos_854490082.webp',
+      '/images/components images/Gallary/cosmos_145253936.webp'
+    ];
+
+    const cardBendUniform = { uCardBend: { value: 0.0 } };
+
+    function injectCurvatureShader(shader) {
+      shader.uniforms.uCardBend = cardBendUniform.uCardBend;
+      shader.vertexShader = `
+        uniform float uCardBend;
+        ${shader.vertexShader}
+      `;
+      shader.vertexShader = shader.vertexShader.replace(
+        '#include <begin_vertex>',
+        `
+        #include <begin_vertex>
+        float normY = position.y / 16.72;
+        float normX = position.x / 12.32;
+        float curveFactor = (1.0 - (normY * normY * 1.6 + normX * normX * 2.8));
+        transformed.z += curveFactor * uCardBend * 6.5;
+        `
+      );
+    }
+
+    const sharedMaterials = imageList.map(url => {
+      const tex = textureLoader.load(url);
+      tex.encoding = THREE.sRGBEncoding;
+      tex.generateMipmaps = true;
+      tex.minFilter = THREE.LinearMipmapLinearFilter;
+      tex.magFilter = THREE.LinearFilter;
+
+      const mat = new THREE.MeshBasicMaterial({
+        map: tex,
+        side: THREE.DoubleSide,
+        transparent: false,
+        opacity: 1.0
+      });
+      mat.onBeforeCompile = injectCurvatureShader;
+      return mat;
+    });
+
+    const voyageRoot = new THREE.Group();
+    voyageRoot.position.set(0, 0, -180);
+    scene.add(voyageRoot);
+
+    const tierSpacingY = 154.0;
+    const uniformCards = 12;
+    const cardWidth = 24.64;
+    const cardHeight = 33.44;
+    const cardGeo = new THREE.PlaneGeometry(cardWidth, cardHeight, 18, 18);
+
+    const closedRadius = 47.60;
+    const openRadius = 118.80;
+
+    const tierConfigs = [
+      { startY: -66.88, baseY: -308.0, speedMultiplier: 1.0, tiltX: 0.44, tiltZ: 0.19, direction: 1 },
+      { startY: -33.44, baseY: -154.0, speedMultiplier: -1.0, tiltX: -0.39, tiltZ: -0.24, direction: -1 },
+      { startY: 0.0,    baseY: 0.0,    speedMultiplier: 1.0, tiltX: 0.24, tiltZ: 0.34, direction: 1 },
+      { startY: 33.44,  baseY: 154.0,  speedMultiplier: -1.0, tiltX: -0.44, tiltZ: 0.19, direction: -1 },
+      { startY: 66.88,  baseY: 308.0,  speedMultiplier: 1.0, tiltX: 0.39, tiltZ: -0.29, direction: 1 }
+    ];
+
+    const totalVoyageHeight = tierSpacingY * tierConfigs.length;
+
+    const tiers = tierConfigs.map((cfg, tierIdx) => {
+      const gimbalAxis = new THREE.Group();
+      voyageRoot.add(gimbalAxis);
+
+      const ringRotator = new THREE.Group();
+      gimbalAxis.add(ringRotator);
+
+      gimbalAxis.rotation.set(0, 0, 0);
+
+      const cardMeshes = [];
+
+      for (let i = 0; i < uniformCards; i++) {
+        const mat = sharedMaterials[(i + tierIdx * 2) % sharedMaterials.length];
+        const mesh = new THREE.Mesh(cardGeo, mat);
+        mesh.userData = {
+          baseAngle: (i / uniformCards) * Math.PI * 2
+        };
+        ringRotator.add(mesh);
+        cardMeshes.push(mesh);
+      }
+
+      return { config: cfg, axis: gimbalAxis, cards: cardMeshes };
+    });
+
+    let targetScroll = 0;
+    let currentScroll = 0;
+    let scrollVelocity = 0;
+    let lastScroll = 0;
+    let isDragging = false;
+    let lastMouseY = 0;
+    let accumulatedAutoTime = 0;
+    let currentBend = 0;
+    let hasFullyUnlocked = false;
+
+    window.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      if (!hasFullyUnlocked) {
+        targetScroll = Math.max(0.0, targetScroll + e.deltaY * 0.14);
+      } else {
+        targetScroll += e.deltaY * 0.14;
+      }
+    }, { passive: false });
+
+    window.addEventListener('mousedown', (e) => {
+      isDragging = true;
+      lastMouseY = e.clientY;
+    });
+
+    window.addEventListener('mousemove', (e) => {
+      if (!isDragging) return;
+      const deltaY = (e.clientY - lastMouseY) * 0.40;
+      if (!hasFullyUnlocked) {
+        targetScroll = Math.max(0.0, targetScroll - deltaY);
+      } else {
+        targetScroll -= deltaY;
+      }
+      lastMouseY = e.clientY;
+    });
+
+    window.addEventListener('mouseup', () => { isDragging = false; });
+    window.addEventListener('mouseleave', () => { isDragging = false; });
+
+    window.addEventListener('touchstart', (e) => {
+      if (e.touches.length === 1) lastMouseY = e.touches[0].clientY;
+    }, { passive: true });
+
+    window.addEventListener('touchmove', (e) => {
+      if (e.touches.length === 1) {
+        const deltaY = (e.touches[0].clientY - lastMouseY) * 0.40;
+        if (!hasFullyUnlocked) {
+          targetScroll = Math.max(0.0, targetScroll - deltaY);
+        } else {
+          targetScroll -= deltaY;
+        }
+        lastMouseY = e.touches[0].clientY;
+      }
+    }, { passive: true });
+
+    let lastNow = performance.now();
+    const halfHeight = totalVoyageHeight * 0.5;
+    const explodeThreshold = 280.0;
+    let currentExplodeProg = 0.0;
+
+    function expDamp(current, target, lambda, dt) {
+      return THREE.MathUtils.lerp(current, target, 1.0 - Math.exp(-lambda * dt));
+    }
+
+    function animate(now) {
+      requestAnimationFrame(animate);
+      const delta = Math.min((now - lastNow) * 0.001, 0.1);
+      lastNow = now;
+      const t = now * 0.001;
+
+      accumulatedAutoTime += delta * 0.14;
+
+      currentScroll = expDamp(currentScroll, targetScroll, 4.5, delta);
+      scrollVelocity = (currentScroll - lastScroll);
+      lastScroll = currentScroll;
+
+      if (!hasFullyUnlocked && currentScroll >= explodeThreshold) {
+        hasFullyUnlocked = true;
+        document.getElementById('prompt-text').innerHTML = 'ORBITAL FLIGHT &bull; <span>SCROLL FREELY UP OR DOWN</span>';
+      }
+
+      if (hasFullyUnlocked) {
+        currentExplodeProg = 1.0;
+      } else {
+        const rawP = THREE.MathUtils.clamp(currentScroll / explodeThreshold, 0.0, 1.0);
+        currentExplodeProg = THREE.MathUtils.smoothstep(rawP, 0.0, 1.0);
+      }
+
+      const currentCoreScale = THREE.MathUtils.lerp(8.0, 22.0, currentExplodeProg);
+      logoGroup.scale.set(currentCoreScale, currentCoreScale, currentCoreScale);
+
+      const restingYaw = 0.24;
+      const restingPitch = 0.14;
+      logoGroup.rotation.y = restingYaw + (accumulatedAutoTime * 1.8) + (currentScroll * 0.03);
+      logoGroup.rotation.x = restingPitch + Math.sin(currentScroll * 0.02) * 0.15;
+      logoGroup.rotation.z = Math.sin(currentScroll * 0.01) * 0.06;
+
+      const targetBend = THREE.MathUtils.clamp(scrollVelocity * 0.18, -0.22, 0.22);
+      const bendRate = Math.abs(targetBend) > Math.abs(currentBend) ? 6.5 : 3.8;
+      currentBend = expDamp(currentBend, targetBend, bendRate, delta);
+      cardBendUniform.uCardBend.value = currentBend;
+
+      const currentRadius = THREE.MathUtils.lerp(closedRadius, openRadius, currentExplodeProg);
+      const corridorScroll = hasFullyUnlocked ? (currentScroll - explodeThreshold) : 0.0;
+
+      for (let tIdx = 0; tIdx < tiers.length; tIdx++) {
+        const { config, axis, cards } = tiers[tIdx];
+
+        const unboxedBaseY = THREE.MathUtils.lerp(config.startY, config.baseY, currentExplodeProg);
+        const rawY = unboxedBaseY + corridorScroll;
+        
+        const wrappedY = (((rawY + halfHeight) % totalVoyageHeight) + totalVoyageHeight) % totalVoyageHeight - halfHeight;
+        axis.position.y = wrappedY;
+
+        const tiltProgress = Math.max(0.0, (currentExplodeProg - 0.10) / 0.90);
+        axis.rotation.x = config.tiltX * tiltProgress;
+        axis.rotation.z = config.tiltZ * tiltProgress;
+
+        const orbitAngle = (accumulatedAutoTime * config.direction) + (currentScroll * config.speedMultiplier * 0.015);
+
+        for (let j = 0; j < cards.length; j++) {
+          const card = cards[j];
+          const theta = card.userData.baseAngle + orbitAngle;
+          card.position.set(Math.cos(theta) * currentRadius, 0, Math.sin(theta) * currentRadius);
+          card.rotation.y = -theta + Math.PI / 2;
+        }
+      }
+
+      customUniforms.uTime.value = t;
+      renderer.render(scene, camera);
+    }
+    requestAnimationFrame(animate);
+
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Abyss Audio Engine — Winning SFX Master Suite</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Syne:wght@500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background-color: #070709;
+      color: #eaeaea;
+      font-family: 'Syne', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 3rem 1.5rem 6rem;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .mono {
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    header {
+      width: 100%;
+      max-width: 1100px;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+      margin-bottom: 2.5rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      padding-bottom: 2rem;
+    }
+
+    .header-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    h1 {
+      font-size: clamp(1.8rem, 3.5vw, 2.5rem);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      color: #fff;
+    }
+
+    .subtitle {
+      font-size: 0.82rem;
+      color: rgba(255, 255, 255, 0.45);
+      letter-spacing: 0.06em;
+    }
+
+    .visualizer-card {
+      width: 100%;
+      height: 70px;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 8px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      margin-top: 0.5rem;
+    }
+
+    .tab-btn {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: rgba(255, 255, 255, 0.6);
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.2s ease;
+    }
+
+    .tab-btn:hover {
+      background: rgba(255, 255, 255, 0.08);
+      color: #fff;
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .tab-btn.active {
+      background: #fff;
+      color: #000;
+      border-color: #fff;
+      font-weight: 600;
+    }
+
+    .sound-grid {
+      width: 100%;
+      max-width: 1100px;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 1.25rem;
+    }
+
+    .sound-card {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      border-radius: 8px;
+      padding: 1.35rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 1.25rem;
+      transition: border-color 0.2s ease, transform 0.15s ease, background-color 0.2s ease;
+    }
+
+    .sound-card:hover {
+      border-color: rgba(255, 255, 255, 0.25);
+      background: rgba(255, 255, 255, 0.04);
+      transform: translateY(-2px);
+    }
+
+    .card-top {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+
+    .card-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.72rem;
+      color: rgba(255, 255, 255, 0.4);
+      letter-spacing: 0.06em;
+    }
+
+    .card-tag {
+      text-transform: uppercase;
+      padding: 2px 7px;
+      border-radius: 4px;
+      background: rgba(255, 255, 255, 0.08);
+      font-size: 0.68rem;
+      font-weight: 600;
+      color: #fff;
+    }
+
+    .sound-title {
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: #fff;
+      letter-spacing: -0.01em;
+    }
+
+    .sound-desc {
+      font-size: 0.8rem;
+      color: rgba(255, 255, 255, 0.45);
+      line-height: 1.4;
+    }
+
+    .card-actions {
+      display: flex;
+      gap: 0.6rem;
+    }
+
+    .play-btn {
+      flex: 1;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      color: #fff;
+      padding: 0.75rem;
+      border-radius: 6px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      user-select: none;
+    }
+
+    .play-btn:hover {
+      background: #fff;
+      color: #000;
+      border-color: #fff;
+    }
+
+    .play-btn:active {
+      transform: scale(0.96);
+    }
+
+    .interactive-zone {
+      padding: 0.75rem 1rem;
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px dashed rgba(255, 255, 255, 0.15);
+      font-size: 0.75rem;
+      color: rgba(255, 255, 255, 0.6);
+      text-align: center;
+      cursor: pointer;
+      user-select: none;
+      transition: all 0.15s ease;
+    }
+
+    .interactive-zone:hover {
+      border-color: rgba(255, 255, 255, 0.4);
+      color: #fff;
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .interactive-zone:active {
+      background: rgba(255, 255, 255, 0.14);
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="header-top">
+      <div>
+        <h1>Abyss Audio Master Suite</h1>
+        <p class="subtitle mono">FINAL CURATED INTERACTION AUDIO PRESETS (0MS LATENCY / PROCEDURAL SYNTHESIS)</p>
+      </div>
+      <div class="mono" style="font-size: 0.75rem; color: rgba(255,255,255,0.4);">
+        CLICK "PLAY" TO TEST REPEATEDLY
+      </div>
+    </div>
+
+    <div class="visualizer-card">
+      <canvas id="visualizer"></canvas>
+    </div>
+
+    <div class="tabs mono">
+      <button class="tab-btn active" data-filter="all">ALL (9)</button>
+      <button class="tab-btn" data-filter="hover">HOVER (1)</button>
+      <button class="tab-btn" data-filter="scroll">SCROLL (5)</button>
+      <button class="tab-btn" data-filter="click">CLICK (1)</button>
+      <button class="tab-btn" data-filter="drag">DRAG (1)</button>
+      <button class="tab-btn" data-filter="hold">HOLD (1)</button>
+    </div>
+  </header>
+
+  <main class="sound-grid" id="grid">
+    <!-- Rendered dynamically -->
+  </main>
+
+  <script>
+    let audioCtx = null;
+    let analyser = null;
+    let dataArray = null;
+
+    function getAudioContext() {
+      if (!audioCtx) {
+        const AudioClass = window.AudioContext || window.webkitAudioContext;
+        audioCtx = new AudioClass();
+        analyser = audioCtx.createAnalyser();
+        analyser.fftSize = 128;
+        dataArray = new Uint8Array(analyser.frequencyBinCount);
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+      return audioCtx;
+    }
+
+    function createMasterOut() {
+      const ctx = getAudioContext();
+      const master = ctx.createGain();
+      master.connect(analyser);
+      analyser.connect(ctx.destination);
+      return { ctx, master, now: ctx.currentTime };
+    }
+
+    // Canvas Visualizer
+    const canvas = document.getElementById('visualizer');
+    const cCtx = canvas.getContext('2d');
+    function resizeCanvas() {
+      canvas.width = canvas.offsetWidth * window.devicePixelRatio;
+      canvas.height = canvas.offsetHeight * window.devicePixelRatio;
+    }
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+
+    function drawVisualizer() {
+      requestAnimationFrame(drawVisualizer);
+      if (!analyser) return;
+
+      analyser.getByteFrequencyData(dataArray);
+      cCtx.clearRect(0, 0, canvas.width, canvas.height);
+
+      const barWidth = (canvas.width / dataArray.length) * 1.5;
+      let x = 0;
+
+      for (let i = 0; i < dataArray.length; i++) {
+        const barHeight = (dataArray[i] / 255) * canvas.height * 0.85;
+        cCtx.fillStyle = `rgba(255, 255, 255, ${Math.max(dataArray[i] / 255 * 0.9, 0.05)})`;
+        cCtx.fillRect(x, canvas.height - barHeight, barWidth - 2, barHeight);
+        x += barWidth;
+      }
+    }
+    drawVisualizer();
+
+    // Final Curated Audio Library
+    const SOUNDS = [
+      // === HOVER ===
+      {
+        id: "hov-05", category: "hover", title: "Nylon Detent Notch [05]",
+        desc: "800Hz subtle mechanical contact leaf with bandpass damping (6ms).",
+        play: () => {
+          const { ctx, master, now } = createMasterOut();
+          const osc = ctx.createOscillator(); const gain = ctx.createGain(); const filter = ctx.createBiquadFilter();
+          osc.type = "triangle"; osc.frequency.setValueAtTime(800, now);
+          filter.type = "bandpass"; filter.frequency.setValueAtTime(850, now); filter.Q.value = 2.0;
+          gain.gain.setValueAtTime(0.001, now);
+          gain.gain.linearRampToValueAtTime(0.06, now + 0.001);
+          gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.0065);
+          osc.connect(filter); filter.connect(gain); gain.connect(master);
+          osc.start(now); osc.stop(now + 0.0075);
+        }
+      },
+
+      // === CLICK ===
+      {
+        id: "clk-06", category: "click", title: "Ceramic Luxury Snap [06]",
+        desc: "420Hz polished ceramic push button release with lowpass filtering.",
+        play: () => {
+          const { ctx, master, now } = createMasterOut();
+          const osc = ctx.createOscillator(); const gain = ctx.createGain(); const filter = ctx.createBiquadFilter();
+          osc.type = "triangle"; osc.frequency.setValueAtTime(420, now);
+          filter.type = "lowpass"; filter.frequency.setValueAtTime(600, now);
+          gain.gain.setValueAtTime(0.001, now);
+          gain.gain.linearRampToValueAtTime(0.1, now + 0.002);
+          gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.016);
+          osc.connect(filter); filter.connect(gain); gain.connect(master);
+          osc.start(now); osc.stop(now + 0.018);
+        }
+      },
+
+      // === SCROLL ===
+      {
+        id: "scr-02", category: "scroll", title: "Braun Crown Notch [02]",
+        desc: "Precision 1.4kHz aluminum watch bezel click (6ms).",
+        play: () => {
+          const { ctx, master, now } = createMasterOut();
+          const osc = ctx.createOscillator(); const gain = ctx.createGain(); const filter = ctx.createBiquadFilter();
+          osc.type = "triangle"; osc.frequency.setValueAtTime(1400, now);
+          filter.type = "bandpass"; filter.frequency.setValueAtTime(1350, now); filter.Q.value = 2.5;
+          gain.gain.setValueAtTime(0.001, now);
+          gain.gain.linearRampToValueAtTime(0.06, now + 0.0015);
+          gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.007);
+          osc.connect(filter); filter.connect(gain); gain.connect(master);
+          osc.start(now); osc.stop(now + 0.008);
+        }
+      },
+      {
+        id: "scr-05", category: "scroll", title: "Ceramic Bead Click [05]",
+        desc: "Crisp 1.1kHz smooth ceramic bead notch (7ms).",
+        play: () => {
+          const { ctx, master, now } = createMasterOut();
+          const osc = ctx.createOscillator(); const gain = ctx.createGain(); const filter = ctx.createBiquadFilter();
+          osc.type = "triangle"; osc.frequency.setValueAtTime(1100, now);
+          filter.type = "lowpass"; filter.frequency.setValueAtTime(1400, now);
+          gain.gain.setValueAtTime(0.001, now);
+          gain.gain.linearRampToValueAtTime(0.05, now + 0.0015);
+          gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.007);
+          osc.connect(filter); filter.connect(gain); gain.connect(master);
+          osc.start(now); osc.stop(now + 0.008);
+        }
+      },
+      {
+        id: "scr-06", category: "scroll", title: "Damped Carbon Tooth [06]",
+        desc: "220Hz wood-damped mechanical ratchet step.",
+        play: () => {
+          const { ctx, master, now } = createMasterOut();
+          const osc = ctx.createOscillator(); const gain = ctx.createGain();
+          osc.type = "sine"; osc.frequency.setValueAtTime(220, now);
+          gain.gain.setValueAtTime(0.001, now);
+          gain.gain.linearRampToValueAtTime(0.09, now + 0.002);
+          gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.009);
+          osc.connect(gain); gain.connect(master);
+          osc.start(now); osc.stop(now + 0.01);
+        }
+      },
+      {
+        id: "scr-08", category: "scroll", title: "Parchment Leaf Tick [08]",
+        desc: "1.5kHz whisper paper edge step notch.",
+        play: () => {
+          const { ctx, master, now } = createMasterOut();
+          const osc = ctx.createOscillator(); const gain = ctx.createGain(); const filter = ctx.createBiquadFilter();
+          osc.type = "triangle"; osc.frequency.setValueAtTime(1520, now);
+          filter.type = "bandpass"; filter.frequency.setValueAtTime(1600, now); filter.Q.value = 1.8;
+          gain.gain.setValueAtTime(0.001, now);
+          gain.gain.linearRampToValueAtTime(0.035, now + 0.001);
+          gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.006);
+          osc.connect(filter); filter.connect(gain); gain.connect(master);
+          osc.start(now); osc.stop(now + 0.007);
+        }
+      },
+      {
+        id: "scr-09", category: "scroll", title: "Optic Linear Grating [09]",
+        desc: "2.4kHz high-resolution laser encoder tick (4ms).",
+        play: () => {
+          const { ctx, master, now } = createMasterOut();
+          const osc = ctx.createOscillator(); const gain = ctx.createGain();
+          osc.type = "sine"; osc.frequency.setValueAtTime(2400, now);
+          gain.gain.setValueAtTime(0.001, now);
+          gain.gain.linearRampToValueAtTime(0.03, now + 0.001);
+          gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.004);
+          osc.connect(gain); gain.connect(master);
+          osc.start(now); osc.stop(now + 0.005);
+        }
+      },
+
+      // === DRAG ===
+      {
+        id: "drg-10", category: "drag", title: "Polished Optic Glass Slide [10]",
+        desc: "Sapphire glass sliding over optical surface (28ms).",
+        play: () => {
+          const { ctx, master, now } = createMasterOut();
+          const osc = ctx.createOscillator(); const gain = ctx.createGain();
+          osc.type = "sine"; osc.frequency.setValueAtTime(940, now);
+          gain.gain.setValueAtTime(0.001, now);
+          gain.gain.linearRampToValueAtTime(0.025, now + 0.004);
+          gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.025);
+          osc.connect(gain); gain.connect(master);
+          osc.start(now); osc.stop(now + 0.028);
+        }
+      },
+
+      // === HOLD ===
+      {
+        id: "hld-02", category: "hold", title: "Thermal Sub Drone [02]",
+        desc: "Warm oscillating low-frequency thermal hum.",
+        play: (duration = 0.6) => {
+          const { ctx, master, now } = createMasterOut();
+          const osc = ctx.createOscillator(); const gain = ctx.createGain();
+          osc.type = "sine"; osc.frequency.setValueAtTime(55, now); osc.frequency.linearRampToValueAtTime(75, now + duration);
+          gain.gain.setValueAtTime(0.01, now); gain.gain.linearRampToValueAtTime(0.24, now + duration * 0.5); gain.gain.linearRampToValueAtTime(0.0001, now + duration);
+          osc.connect(gain); gain.connect(master); osc.start(now); osc.stop(now + duration + 0.02);
+        }
+      }
+    ];
+
+    const grid = document.getElementById('grid');
+
+    function renderSounds(filter = 'all') {
+      grid.innerHTML = '';
+      const filtered = filter === 'all' ? SOUNDS : SOUNDS.filter(s => s.category === filter);
+
+      filtered.forEach((sound, idx) => {
+        const card = document.createElement('div');
+        card.className = 'sound-card';
+        card.innerHTML = `
+          <div class="card-top">
+            <div class="card-meta mono">
+              <span>[${String(idx + 1).padStart(2, '0')}]</span>
+              <span class="card-tag">${sound.category}</span>
+            </div>
+            <div class="sound-title">${sound.title}</div>
+            <div class="sound-desc">${sound.desc}</div>
+          </div>
+          <div class="card-actions">
+            <button class="play-btn mono" id="btn-${sound.id}">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+              PLAY
+            </button>
+            <div class="interactive-zone mono" id="zone-${sound.id}">
+              TEST ${sound.category.toUpperCase()}
+            </div>
+          </div>
+        `;
+        grid.appendChild(card);
+
+        const btn = card.querySelector(`#btn-${sound.id}`);
+        btn.addEventListener('click', () => {
+          sound.play();
+        });
+
+        const zone = card.querySelector(`#zone-${sound.id}`);
+        if (sound.category === 'hover') {
+          zone.addEventListener('mouseenter', () => sound.play());
+        } else if (sound.category === 'scroll') {
+          zone.addEventListener('wheel', (e) => { e.preventDefault(); sound.play(); }, { passive: false });
+        } else if (sound.category === 'drag') {
+          zone.addEventListener('mousemove', (e) => { if (e.buttons === 1) sound.play(); });
+        } else if (sound.category === 'hold') {
+          zone.addEventListener('mousedown', () => {
+            sound.play(0.8);
+          });
+        } else {
+          zone.addEventListener('click', () => sound.play());
+        }
+      });
+    }
+
+    renderSounds('all');
+
+    // Tab Filter Switching
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        renderSounds(btn.dataset.filter);
+      });
+    });
+  </script>
+</body>
+</html>

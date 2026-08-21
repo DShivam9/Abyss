@@ -41,12 +41,66 @@ const DEFAULT_ITEMS: StreamMediaItem[] = [
   },
 ];
 
+let sharedAudioContext: AudioContext | null = null;
+
+function unlockAudioContext(): AudioContext | null {
+  if (typeof window === "undefined") return null;
+  if (!sharedAudioContext) {
+    const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+    if (AudioCtx) sharedAudioContext = new AudioCtx();
+  }
+  if (sharedAudioContext && sharedAudioContext.state === "suspended") {
+    sharedAudioContext.resume().catch(() => {});
+  }
+  return sharedAudioContext;
+}
+
+if (typeof window !== "undefined") {
+  const unlock = () => {
+    unlockAudioContext();
+    window.removeEventListener("pointerdown", unlock);
+    window.removeEventListener("keydown", unlock);
+  };
+  window.addEventListener("pointerdown", unlock, { passive: true });
+  window.addEventListener("keydown", unlock, { passive: true });
+}
+
+function playTactileHoverSound() {
+  const ctx = unlockAudioContext();
+  if (!ctx || ctx.state !== "running") return;
+
+  const now = ctx.currentTime;
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  const filter = ctx.createBiquadFilter();
+
+  // Winning Nylon Detent Notch [05] (800Hz bandpassed leaf tick)
+  osc.type = "triangle";
+  osc.frequency.setValueAtTime(800, now);
+
+  filter.type = "bandpass";
+  filter.frequency.setValueAtTime(850, now);
+  filter.Q.value = 2.0;
+
+  gain.gain.setValueAtTime(0.001, now);
+  gain.gain.linearRampToValueAtTime(0.06, now + 0.001);
+  gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.0065);
+
+  osc.connect(filter);
+  filter.connect(gain);
+  gain.connect(ctx.destination);
+
+  osc.start(now);
+  osc.stop(now + 0.0075);
+}
+
 export const HoverMediaStream: React.FC<HoverMediaStreamProps> = ({
   items = DEFAULT_ITEMS,
   backdropBlur = 80,
   ambientBrightness = 0.40,
   lineDuration = 1.25,
   fontSize = 62,
+  enableAudio = true,
   className = "",
   style,
   onLifecycleChange,
@@ -54,6 +108,9 @@ export const HoverMediaStream: React.FC<HoverMediaStreamProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const lineDurationRef = useRef(lineDuration);
   lineDurationRef.current = lineDuration;
+
+  const enableAudioRef = useRef(enableAudio);
+  enableAudioRef.current = enableAudio;
 
   const streamItems = useMemo(() => {
     return items && items.length > 0 ? items : DEFAULT_ITEMS;
@@ -69,7 +126,7 @@ export const HoverMediaStream: React.FC<HoverMediaStreamProps> = ({
     let currentlyHoveredRow: HTMLElement | null = null;
     let exitTimeout: ReturnType<typeof setTimeout> | null = null;
 
-    // Upfront DOM caching to eliminate reflow & runtime query overhead
+    // Upfront DOM caching
     const cachedRows = Array.from(rowElements).map((row, index) => ({
       row,
       index,
@@ -89,7 +146,6 @@ export const HoverMediaStream: React.FC<HoverMediaStreamProps> = ({
       currentlyHoveredRow = null;
       container?.classList.remove("has-active");
 
-      // Asymmetric Snappy Exit (Emil Kowalski standard)
       cachedRows.forEach((item) => {
         item.row.classList.remove("active");
 
@@ -118,7 +174,7 @@ export const HoverMediaStream: React.FC<HoverMediaStreamProps> = ({
           gsap.to(item.bgMedia, {
             opacity: 0,
             scale: 1.1,
-            duration: 1.1,
+            duration: 0.8,
             ease: "power2.out",
             overwrite: "auto",
             onComplete: () => {
@@ -194,6 +250,11 @@ export const HoverMediaStream: React.FC<HoverMediaStreamProps> = ({
         currentlyHoveredRow = item.row;
         container?.classList.add("has-active");
         if (onLifecycleChange) onLifecycleChange("peak");
+
+        // Synthesize tactile hover sound
+        if (enableAudioRef.current) {
+          playTactileHoverSound();
+        }
 
         // Hardware Playhead sync
         if (
@@ -276,7 +337,7 @@ export const HoverMediaStream: React.FC<HoverMediaStreamProps> = ({
 
         const dur = lineDurationRef.current;
 
-        // 1. Spatial Continuity & Optical Lift (Emil Kowalski)
+        // 1. Spatial Continuity & Optical Lift
         if (item.titleText) {
           gsap.fromTo(item.titleText,
             { y: 0, letterSpacing: "-0.025em", color: "rgba(255, 255, 255, 0.35)" },
@@ -351,7 +412,7 @@ export const HoverMediaStream: React.FC<HoverMediaStreamProps> = ({
           );
         }
 
-        // 6. Row's own video/GIF unrolls in place with aperture rise & scale down
+        // 6. Row's own video/GIF unrolls in place
         if (item.stage) {
           gsap.fromTo(item.stage, 
             { clipPath: "inset(100% 0% 0% 0%)" },

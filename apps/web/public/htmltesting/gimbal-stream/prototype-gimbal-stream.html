@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Abyss — Infinite Scrolling 3D Obsidian Chamber</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://unpkg.com/lenis@1.1.18/dist/lenis.min.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body, html {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #020305;
+      cursor: ns-resize;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+    #canvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+    }
+    .switcher {
+      position: absolute;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 6px;
+      z-index: 10;
+      background: rgba(10, 12, 18, 0.85);
+      padding: 4px;
+      border-radius: 6px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      backdrop-filter: blur(12px);
+    }
+    .btn {
+      background: transparent;
+      border: 1px solid transparent;
+      color: #9ca3af;
+      padding: 6px 14px;
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .btn:hover {
+      color: #ffffff;
+    }
+    .btn.active {
+      background: rgba(76, 163, 219, 0.2);
+      color: #9be5fb;
+      border: 1px solid rgba(76, 163, 219, 0.4);
+    }
+  </style>
+</head>
+<body>
+  <div class="switcher">
+    <button class="btn active" id="btn-plus">PLUS (+)</button>
+    <button class="btn" id="btn-ghost">GHOST GRID</button>
+    <button class="btn" id="btn-hex">HEX MESH</button>
+  </div>
+
+  <canvas id="canvas"></canvas>
+
+  <script>
+    const canvas = document.getElementById('canvas');
+    const scene = new THREE.Scene();
+    
+    const camera = new THREE.PerspectiveCamera(65, window.innerWidth / window.innerHeight, 0.1, 6000);
+    camera.position.set(0, 0, 0);
+    scene.add(camera);
+
+    const renderer = new THREE.WebGLRenderer({ 
+      canvas, 
+      antialias: true, 
+      powerPreference: 'high-performance',
+      precision: 'highp'
+    });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.25;
+
+    // --- Dynamic Studio Lights ---
+    const camKey = new THREE.DirectionalLight(0xffffff, 2.0);
+    camKey.position.set(0, 4, 7);
+    camera.add(camKey);
+
+    const camRim = new THREE.DirectionalLight(0xffffff, 1.5);
+    camRim.position.set(0, -4, 5);
+    camera.add(camRim);
+
+    // Volumetric Cobalt Back-Glow (Placed behind logo to create deep 3D spatial rim & separation)
+    const backGlow = new THREE.PointLight(0x4ca3db, 2.0, 700);
+    backGlow.position.set(0, 0, -260);
+    scene.add(backGlow);
+
+    const ambLight = new THREE.AmbientLight(0xffffff, 0.8);
+    scene.add(ambLight);
+
+    // =========================================================================
+    // HIGH-CONTRAST STUDIO LIQUID MERCURY ENVIRONMENT
+    // =========================================================================
+    function createLiquidMercuryStudioEnvironment() {
+      const envScene = new THREE.Scene();
+      
+      const envGeo = new THREE.SphereGeometry(90, 32, 16);
+      const envMat = new THREE.MeshBasicMaterial({ color: 0x050508, side: THREE.BackSide });
+      envScene.add(new THREE.Mesh(envGeo, envMat));
+
+      const topSoftbox = new THREE.Mesh(
+        new THREE.CircleGeometry(50, 24),
+        new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide })
+      );
+      topSoftbox.position.set(0, 60, 0);
+      topSoftbox.rotation.x = Math.PI / 2;
+      envScene.add(topSoftbox);
+
+      const frontSoftbox = new THREE.Mesh(
+        new THREE.PlaneGeometry(60, 60),
+        new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide })
+      );
+      frontSoftbox.position.set(0, 0, 55);
+      frontSoftbox.lookAt(0, 0, 0);
+      envScene.add(frontSoftbox);
+
+      for (let i = 0; i < 6; i++) {
+        const angle = (i / 6) * Math.PI * 2;
+        const bar = new THREE.Mesh(
+          new THREE.PlaneGeometry(28, 95),
+          new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide })
+        );
+        bar.position.set(Math.cos(angle) * 55, (i % 2 === 0 ? 15 : -15), Math.sin(angle) * 55);
+        bar.lookAt(0, 0, 0);
+        envScene.add(bar);
+      }
+
+      const horizStrip = new THREE.Mesh(
+        new THREE.RingGeometry(45, 52, 32),
+        new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide })
+      );
+      horizStrip.position.set(0, 0, 0);
+      horizStrip.rotation.x = Math.PI / 2;
+      envScene.add(horizStrip);
+
+      const pmremGen = new THREE.PMREMGenerator(renderer);
+      const envMap = pmremGen.fromScene(envScene, 0.04).texture;
+      pmremGen.dispose();
+      return envMap;
+    }
+
+    const studioEnvMap = createLiquidMercuryStudioEnvironment();
+    scene.environment = studioEnvMap;
+
+    // =========================================================================
+    // 1:1 VECTOR 3D LOGO CENTERPIECE (ENHANCED 3D BEVEL & DEPTH)
+    // =========================================================================
+    function createCleanAbyssLogoShape() {
+      const relCommands = [
+        [50, 7.5234],
+        [2.2461, 29.645],
+        [5.9648, -15.68],
+        [-5.2891, 24.566],
+        [0.089844, 1.0898],
+        [37.09, -22.633],
+        [-27.855, 22.355],
+        [20.266, -5.3906],
+        [-24.645, 10.09],
+        [42.133, 11.113],
+        [-39.566, -5.5469],
+        [21.109, 12.812],
+        [-25.188, -11.445],
+        [15.898, 34.777],
+        [-19.363, -30.055],
+        [3.1523, 22.242],
+        [-7.2656, -24.844],
+        [-21.031, 32.656],
+        [14.41, -31.531],
+        [-16.945, 14.586],
+        [17.043, -19.578],
+        [-42.254, 5.9141],
+        [36.457, -9.6016],
+        [-24.191, -3.6328],
+        [29.801, 0.89844],
+        [-32.168, -25.82],
+        [28.945, 17.656],
+        [-11.887, -17.145],
+        [19.934, 22.055],
+        [0.097656, 0.066406]
+      ];
+
+      const scale = 0.046;
+      const shape = new THREE.Shape();
+      let curX = relCommands[0][0];
+      let curY = relCommands[0][1];
+
+      shape.moveTo((curX - 50) * scale, -(curY - 50) * scale);
+
+      for (let i = 1; i < relCommands.length; i++) {
+        curX += relCommands[i][0];
+        curY += relCommands[i][1];
+        shape.lineTo((curX - 50) * scale, -(curY - 50) * scale);
+      }
+
+      shape.closePath();
+      return shape;
+    }
+
+    const logoShape = createCleanAbyssLogoShape();
+
+    const extrudeSettings = {
+      steps: 1,
+      depth: 0.24,
+      bevelEnabled: true,
+      bevelThickness: 0.22,
+      bevelSize: 0.12,
+      bevelSegments: 14,
+      curveSegments: 24
+    };
+
+    const logoGeo = new THREE.ExtrudeGeometry(logoShape, extrudeSettings);
+    logoGeo.center();
+    logoGeo.computeVertexNormals();
+
+    const logoMount = new THREE.Group();
+    logoMount.position.set(0, 0, -180);
+    logoMount.scale.set(8, 8, 8);
+    scene.add(logoMount);
+
+    const logoSpinner = new THREE.Group();
+    logoMount.add(logoSpinner);
+
+    const customUniforms = {
+      uTime: { value: 0.0 }
+    };
+
+    const liquidMercuryMat = new THREE.MeshStandardMaterial({
+      color: 0xf5f8fc,
+      metalness: 0.88,
+      roughness: 0.12,
+      envMap: studioEnvMap,
+      envMapIntensity: 2.5
+    });
+
+    liquidMercuryMat.onBeforeCompile = (shader) => {
+      shader.uniforms.uTime = customUniforms.uTime;
+
+      shader.vertexShader = `
+        varying vec3 vWorldNormal;
+        varying vec3 vWorldPos;
+        ${shader.vertexShader}
+      `;
+      shader.vertexShader = shader.vertexShader.replace(
+        '#include <worldpos_vertex>',
+        `
+        #include <worldpos_vertex>
+        vWorldNormal = normalize((modelMatrix * vec4(normal, 0.0)).xyz);
+        vWorldPos = (modelMatrix * vec4(transformed, 1.0)).xyz;
+        `
+      );
+
+      shader.fragmentShader = `
+        uniform float uTime;
+        varying vec3 vWorldNormal;
+        varying vec3 vWorldPos;
+        ${shader.fragmentShader}
+      `;
+
+      shader.fragmentShader = shader.fragmentShader.replace(
+        '#include <dithering_fragment>',
+        `
+        #include <dithering_fragment>
+
+        vec2 waveCoord = vWorldPos.xy * 0.04 + vec2(uTime * 0.40, -uTime * 0.32);
+        float fluidField = (sin(waveCoord.x) + cos(waveCoord.y) + sin(dot(vWorldPos.xy, vec2(0.03)) + uTime * 0.25)) * 0.333;
+        
+        vec3 iridA = vec3(0.5, 0.5, 0.5);
+        vec3 iridB = vec3(0.5, 0.5, 0.5);
+        vec3 iridC = vec3(1.0, 1.0, 1.0);
+        vec3 iridD = vec3(0.00, 0.33, 0.67);
+        vec3 iridColor = iridA + iridB * cos(6.28318 * (iridC * (fluidField * 2.0 + uTime * 0.12) + iridD));
+
+        vec3 viewDir = normalize(cameraPosition - vWorldPos);
+        float fresnel = 1.0 - max(0.0, dot(viewDir, vWorldNormal));
+
+        float iridBlend = (smoothstep(-0.2, 0.7, fluidField) * 0.16 + pow(fresnel, 1.6) * 0.24) * 0.55;
+        gl_FragColor.rgb = mix(gl_FragColor.rgb, gl_FragColor.rgb * iridColor * 1.5, iridBlend);
+        `
+      );
+    };
+
+    const logoMesh = new THREE.Mesh(logoGeo, liquidMercuryMat);
+    logoSpinner.add(logoMesh);
+
+    // =========================================================================
+    // INFINITE SEAMLESS CYLINDRICAL CHAMBER DOME
+    // =========================================================================
+    const cylinderRadius = 1050;
+    const cylinderHeight = 3000;
+    const cylinderGeo = new THREE.CylinderGeometry(cylinderRadius, cylinderRadius, cylinderHeight, 96, 64, true);
+
+    const chamberMat = new THREE.ShaderMaterial({
+      side: THREE.BackSide,
+      fog: false,
+      uniforms: {
+        uTime: { value: 0 },
+        uScrollY: { value: 0 },
+        uChamberAwake: { value: 0.20 },
+        uMorphWeights: { value: new THREE.Vector3(1.0, 0.0, 0.0) },
+        uCellSize: { value: 68.0 },
+        uCylinderRadius: { value: 1050.0 },
+        uBgDark: { value: new THREE.Color(0x020305) },
+        uBgMid: { value: new THREE.Color(0x0f2238) },
+        uCausticColor: { value: new THREE.Color(0x5cb8f8) },
+        uWireColor: { value: new THREE.Color(0x101522) },
+        uWireGlow: { value: new THREE.Color(0x9be5fb) }
+      },
+      vertexShader: `
+        varying vec3 vLocalPos;
+        varying vec3 vWorldPos;
+        varying vec3 vViewDir;
+        void main() {
+          vLocalPos = position;
+          vec4 worldPos = modelMatrix * vec4(position, 1.0);
+          vWorldPos = worldPos.xyz;
+          vViewDir = normalize(cameraPosition - worldPos.xyz);
+          gl_Position = projectionMatrix * viewMatrix * worldPos;
+        }
+      `,
+      fragmentShader: `
+        uniform float uTime;
+        uniform float uScrollY;
+        uniform float uChamberAwake;
+        uniform vec3 uMorphWeights;
+        uniform float uCellSize;
+        uniform float uCylinderRadius;
+        uniform vec3 uBgDark;
+        uniform vec3 uBgMid;
+        uniform vec3 uCausticColor;
+        uniform vec3 uWireColor;
+        uniform vec3 uWireGlow;
+
+        varying vec3 vLocalPos;
+        varying vec3 vWorldPos;
+        varying vec3 vViewDir;
+
+        const float PI = 3.14159265359;
+
+        float hash(vec3 p) {
+          p = fract(p * 0.3183099 + 0.1);
+          p *= 17.0;
+          return fract(p.x * p.y * p.z * (p.x + p.y + p.z));
+        }
+
+        float noise3D(vec3 x) {
+          vec3 p = floor(x);
+          vec3 f = fract(x);
+          f = f * f * (3.0 - 2.0 * f);
+          vec3 u = f;
+          return mix(
+            mix(mix(hash(p + vec3(0,0,0)), hash(p + vec3(1,0,0)), u.x),
+                mix(hash(p + vec3(0,1,0)), hash(p + vec3(1,1,0)), u.x), u.y),
+            mix(mix(hash(p + vec3(0,0,1)), hash(p + vec3(1,0,1)), u.x),
+                mix(hash(p + vec3(0,1,1)), hash(p + vec3(1,1,1)), u.x), u.y), u.z
+          );
+        }
+
+        float getSurfaceHeight(vec3 normPos, float scrollY, float t) {
+          vec3 p = vec3(normPos.x * 2.2, normPos.y * 2.2 + scrollY * 0.20, normPos.z * 2.2);
+          float w1 = sin(p.x * 2.5 + t * 0.85 + sin(p.y * 2.0));
+          float w2 = cos(p.y * 3.0 - t * 0.75 + cos(p.z * 2.2));
+          float n = noise3D(p * 1.5 + vec3(0.0, 0.0, t * 0.32));
+          return smoothstep(-0.25, 0.65, (w1 + w2) * 0.35 + n * 0.4);
+        }
+
+        float hexDist(vec2 p) {
+          p = abs(p);
+          float c = dot(p, normalize(vec2(1.0, 1.7320508)));
+          return max(c, p.x);
+        }
+
+        void main() {
+          vec3 normPos = normalize(vLocalPos);
+
+          float lon = atan(vLocalPos.x, -vLocalPos.z);
+          float arcLength = (lon / (2.0 * PI) + 0.5) * (2.0 * PI * uCylinderRadius);
+          float yPos = vLocalPos.y + uScrollY * 120.0;
+          
+          vec2 gridUV = vec2(arcLength / uCellSize, yPos / uCellSize);
+
+          float h = getSurfaceHeight(normPos, uScrollY, uTime);
+
+          float eps = 0.02;
+          float hX = getSurfaceHeight(normalize(vLocalPos + vec3(eps, 0.0, 0.0)), uScrollY, uTime);
+          float hY = getSurfaceHeight(normalize(vLocalPos + vec3(0.0, eps, 0.0)), uScrollY, uTime);
+          
+          vec3 geomNormal = -normPos;
+          vec3 surfNormal = normalize(geomNormal + vec3((h - hX), (h - hY), 0.0) * 1.8);
+
+          vec3 keyLightDir = normalize(vec3(0.1, 0.6, 0.8));
+          float diffuse = max(dot(surfNormal, keyLightDir), 0.0);
+          float fresnel = pow(1.0 - max(dot(geomNormal, vViewDir), 0.0), 3.0);
+
+          // A. Swiss Precision Plus (+)
+          vec2 cellFract = abs(fract(gridUV) - 0.5);
+          vec2 fw = fwidth(gridUV);
+          float hArm = step(cellFract.y, fw.y * 1.1) * (1.0 - step(0.14, cellFract.x));
+          float vArm = step(cellFract.x, fw.x * 1.1) * (1.0 - step(0.14, cellFract.y));
+          float alphaPlus = max(hArm, vArm) * 0.35;
+
+          // B. Ghost Stippled Grid
+          vec2 grid = abs(fract(gridUV - 0.5) - 0.5) / fwidth(gridUV);
+          float dotCadenceX = step(0.40, fract(gridUV.x * 5.0));
+          float dotCadenceY = step(0.40, fract(gridUV.y * 5.0));
+          float hLine = (1.0 - clamp(grid.y, 0.0, 1.0)) * dotCadenceX;
+          float vLine = (1.0 - clamp(grid.x, 0.0, 1.0)) * dotCadenceY;
+          float alphaGhost = max(hLine, vLine) * (0.08 + pow(h, 2.0) * 0.40);
+
+          // C. Hexagonal Honeycomb Lattice with 3D Normal Bulge
+          vec2 hexUV = vec2(arcLength / (uCellSize * 1.4), yPos / (uCellSize * 1.4)) + (surfNormal.xy - geomNormal.xy) * 0.28;
+          vec2 r = vec2(1.0, 1.7320508);
+          vec2 hR = r * 0.5;
+          vec2 a = mod(hexUV, r) - hR;
+          vec2 b = mod(hexUV - hR, r) - hR;
+          vec2 gv = dot(a, a) < dot(b, b) ? a : b;
+          float d = hexDist(gv);
+          float hexEdge = abs(d - 0.5);
+          float alphaHex = (1.0 - clamp(hexEdge / (fwidth(d) * 1.3), 0.0, 1.0)) * (0.18 + fresnel * 0.25);
+
+          float patternAlpha = (alphaPlus * uMorphWeights.x + alphaGhost * uMorphWeights.y + alphaHex * uMorphWeights.z) * (0.25 + uChamberAwake * 0.75);
+
+          float microGrain = hash(vLocalPos * 0.12) * 0.024;
+          float microWeave = (sin(gridUV.x * 32.0 + gridUV.y * 16.0) * 0.5 + 0.5) * 0.018;
+          vec3 luxuryGrain = vec3(0.04, 0.07, 0.12) * (microGrain + microWeave) * (1.0 - h * 0.5);
+
+          vec3 chamberSurface = mix(uBgDark, uBgMid, h) + luxuryGrain;
+          chamberSurface += uCausticColor * pow(h, 2.2) * (diffuse * 0.7 + 0.3) * (0.15 + uChamberAwake * 0.30);
+          chamberSurface += uCausticColor * fresnel * (0.10 + uChamberAwake * 0.15);
+
+          vec3 wireCol = mix(uWireColor, uWireGlow * 0.85, h * 0.7 + diffuse * 0.3);
+          vec3 finalColor = mix(chamberSurface, wireCol, patternAlpha);
+
+          gl_FragColor = vec4(finalColor, 1.0);
+        }
+      `
+    });
+
+    const chamberMesh = new THREE.Mesh(cylinderGeo, chamberMat);
+    chamberMesh.position.set(0, 0, -420);
+    scene.add(chamberMesh);
+
+    // =========================================================================
+    // MOUNTED INFINITE TOURBILLON GIMBAL RINGS (ZERO-G COMPONENT)
+    // =========================================================================
+    const textureLoader = new THREE.TextureLoader();
+    const imageList = [
+      '/images/components/gimbal-stream/1.webp',
+      '/images/components/gimbal-stream/2.webp',
+      '/images/components/gimbal-stream/3.webp',
+      '/images/components/gimbal-stream/4.webp',
+      '/images/components/gimbal-stream/5.webp',
+      '/images/components/gimbal-stream/6.webp',
+      '/images/components/gimbal-stream/7.webp',
+      '/images/components/gimbal-stream/8.webp',
+      '/images/components/gimbal-stream/9.webp',
+      '/images/components/gimbal-stream/10.webp',
+      '/images/components/gimbal-stream/11.webp',
+      '/images/components/gimbal-stream/12.webp',
+      '/images/components/gimbal-stream/13.webp',
+      '/images/components/gimbal-stream/14.webp',
+      '/images/components/gimbal-stream/15.webp',
+      '/images/components/gimbal-stream/16.webp',
+      '/images/components/gimbal-stream/17.webp',
+      '/images/components/gimbal-stream/18.webp',
+      '/images/components/gimbal-stream/19.webp',
+      '/images/components/gimbal-stream/20.webp',
+      '/images/components/gimbal-stream/21.webp',
+      '/images/components/gimbal-stream/22.webp',
+      '/images/components/gimbal-stream/23.webp',
+      '/images/components/gimbal-stream/24.webp'
+    ];
+
+    const cardBendUniform = { uCardBend: { value: 0.0 } };
+
+    function injectCurvatureShader(shader) {
+      shader.uniforms.uCardBend = cardBendUniform.uCardBend;
+      shader.vertexShader = `
+        uniform float uCardBend;
+        ${shader.vertexShader}
+      `;
+      shader.vertexShader = shader.vertexShader.replace(
+        '#include <begin_vertex>',
+        `
+        #include <begin_vertex>
+        float normY = position.y / 16.72;
+        float normX = position.x / 12.32;
+        float curveFactor = (1.0 - (normY * normY * 1.6 + normX * normX * 2.8));
+        transformed.z += curveFactor * uCardBend * 6.5;
+        `
+      );
+    }
+
+    const sharedMaterials = imageList.map(url => {
+      const tex = textureLoader.load(url);
+      tex.encoding = THREE.sRGBEncoding;
+      tex.generateMipmaps = true;
+      tex.minFilter = THREE.LinearMipmapLinearFilter;
+      tex.magFilter = THREE.LinearFilter;
+
+      const mat = new THREE.MeshBasicMaterial({
+        map: tex,
+        side: THREE.DoubleSide,
+        transparent: false,
+        opacity: 1.0
+      });
+      mat.onBeforeCompile = injectCurvatureShader;
+      return mat;
+    });
+
+    const voyageRoot = new THREE.Group();
+    voyageRoot.position.set(0, 0, -180);
+    scene.add(voyageRoot);
+
+    const tierSpacingY = 154.0;
+    const uniformCards = 12;
+    const cardWidth = 24.64;
+    const cardHeight = 33.44;
+    const cardGeo = new THREE.PlaneGeometry(cardWidth, cardHeight, 18, 18);
+
+    const closedRadius = 47.60;
+    const openRadius = 118.80;
+
+    const tierConfigs = [
+      { startY: -66.88, baseY: -308.0, speedMultiplier: 1.0, tiltX: 0.44, tiltZ: 0.19, direction: 1 },
+      { startY: -33.44, baseY: -154.0, speedMultiplier: -1.0, tiltX: -0.39, tiltZ: -0.24, direction: -1 },
+      { startY: 0.0,    baseY: 0.0,    speedMultiplier: 1.0, tiltX: 0.24, tiltZ: 0.34, direction: 1 },
+      { startY: 33.44,  baseY: 154.0,  speedMultiplier: -1.0, tiltX: -0.44, tiltZ: 0.19, direction: -1 },
+      { startY: 66.88,  baseY: 308.0,  speedMultiplier: 1.0, tiltX: 0.39, tiltZ: -0.29, direction: 1 }
+    ];
+
+    const totalVoyageHeight = tierSpacingY * tierConfigs.length;
+
+    const tiers = tierConfigs.map((cfg, tierIdx) => {
+      const gimbalAxis = new THREE.Group();
+      voyageRoot.add(gimbalAxis);
+
+      const ringRotator = new THREE.Group();
+      gimbalAxis.add(ringRotator);
+
+      gimbalAxis.rotation.set(0, 0, 0); // Flat horizontal stack at start
+
+      const cardMeshes = [];
+
+      for (let i = 0; i < uniformCards; i++) {
+        const mat = sharedMaterials[(i + tierIdx * 5) % sharedMaterials.length];
+        const mesh = new THREE.Mesh(cardGeo, mat);
+        mesh.userData = {
+          baseAngle: (i / uniformCards) * Math.PI * 2
+        };
+        ringRotator.add(mesh);
+        cardMeshes.push(mesh);
+      }
+
+      return { config: cfg, axis: gimbalAxis, cards: cardMeshes };
+    });
+
+    // --- Switcher Controls ---
+    const btnPlus = document.getElementById('btn-plus');
+    const btnGhost = document.getElementById('btn-ghost');
+    const btnHex = document.getElementById('btn-hex');
+    const btns = [btnPlus, btnGhost, btnHex];
+
+    const currentWeights = new THREE.Vector3(1.0, 0.0, 0.0);
+    const targetWeights = new THREE.Vector3(1.0, 0.0, 0.0);
+
+    function setTargetMode(x, y, z, activeBtn) {
+      targetWeights.set(x, y, z);
+      btns.forEach(b => b.classList.remove('active'));
+      activeBtn.classList.add('active');
+    }
+
+    btnPlus.addEventListener('click', () => setTargetMode(1.0, 0.0, 0.0, btnPlus));
+    btnGhost.addEventListener('click', () => setTargetMode(0.0, 1.0, 0.0, btnGhost));
+    btnHex.addEventListener('click', () => setTargetMode(0.0, 0.0, 1.0, btnHex));
+
+    // =========================================================================
+    // LENIS BUTTERY SMOOTH 3D VIRTUAL SCROLL & SPATIAL INERTIA ENGINE
+    // =========================================================================
+    let targetScrollY = 0;
+    let currentScrollY = 0;
+    let scrollVelocity = 0;
+    let lastScroll = 0;
+    let isDragging = false;
+    let lastMouseY = 0;
+    let accumulatedAutoTime = 0;
+    let currentBend = 0;
+    let hasFullyUnlocked = false;
+
+    // Lenis Virtual Wheel Momentum
+    window.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      // Normalize wheel delta (trackpad vs notch wheel) with silky scaling
+      const normalizedDelta = THREE.MathUtils.clamp(e.deltaY, -120, 120) * 0.22 + (e.deltaY * 0.04);
+      if (!hasFullyUnlocked) {
+        targetScrollY = Math.max(0.0, targetScrollY + normalizedDelta);
+      } else {
+        targetScrollY += normalizedDelta;
+      }
+    }, { passive: false });
+
+    window.addEventListener('mousedown', (e) => {
+      isDragging = true;
+      lastMouseY = e.clientY;
+    });
+
+    window.addEventListener('mousemove', (e) => {
+      if (!isDragging) return;
+      const deltaY = (e.clientY - lastMouseY) * 0.48;
+      if (!hasFullyUnlocked) {
+        targetScrollY = Math.max(0.0, targetScrollY - deltaY);
+      } else {
+        targetScrollY -= deltaY;
+      }
+      lastMouseY = e.clientY;
+    });
+
+    window.addEventListener('mouseup', () => { isDragging = false; });
+    window.addEventListener('mouseleave', () => { isDragging = false; });
+
+    window.addEventListener('touchstart', (e) => {
+      if (e.touches.length === 1) lastMouseY = e.touches[0].clientY;
+    }, { passive: true });
+
+    window.addEventListener('touchmove', (e) => {
+      if (e.touches.length === 1) {
+        const deltaY = (e.touches[0].clientY - lastMouseY) * 0.48;
+        if (!hasFullyUnlocked) {
+          targetScrollY = Math.max(0.0, targetScrollY - deltaY);
+        } else {
+          targetScrollY -= deltaY;
+        }
+        lastMouseY = e.touches[0].clientY;
+      }
+    }, { passive: true });
+
+    let lastNow = performance.now();
+    const halfHeight = totalVoyageHeight * 0.5;
+    const explodeThreshold = 280.0;
+    let currentExplodeProg = 0.0;
+
+    // High-Order Exponential Inertia Damping (Lenis-Grade)
+    function expDamp(current, target, rate, dt) {
+      return THREE.MathUtils.lerp(current, target, 1.0 - Math.exp(-rate * dt));
+    }
+
+    function animate(now) {
+      requestAnimationFrame(animate);
+      const delta = Math.min((now - lastNow) * 0.001, 0.1);
+      lastNow = now;
+      const t = now * 0.001;
+
+      accumulatedAutoTime += delta * 0.032;
+
+      // Lenis luxury inertia (rate: 2.4 for silky glide)
+      currentScrollY = expDamp(currentScrollY, targetScrollY, 2.4, delta);
+      scrollVelocity = (currentScrollY - lastScroll);
+      lastScroll = currentScrollY;
+
+      currentWeights.lerp(targetWeights, 0.08);
+
+      // ONE-WAY UNBOX UNLOCK
+      if (!hasFullyUnlocked && currentScrollY >= explodeThreshold) {
+        hasFullyUnlocked = true;
+      }
+
+      if (hasFullyUnlocked) {
+        currentExplodeProg = 1.0;
+      } else {
+        const rawP = THREE.MathUtils.clamp(currentScrollY / explodeThreshold, 0.0, 1.0);
+        currentExplodeProg = THREE.MathUtils.smoothstep(rawP, 0.0, 1.0);
+      }      // Z-Depth Transition (-310 -> -180)
+      const currentZ = THREE.MathUtils.lerp(-310.0, -180.0, currentExplodeProg);
+      voyageRoot.position.z = currentZ;
+      logoMount.position.set(0, 0, currentZ);
+      backGlow.position.set(0, 0, currentZ - 80.0);
+
+      // Starburst Core Scaling (8x -> 22x)
+      const currentCoreScale = THREE.MathUtils.lerp(8.0, 22.0, currentExplodeProg);
+      logoMount.scale.set(currentCoreScale, currentCoreScale, currentCoreScale);
+
+      // Multi-Harmonic Organic Zero-G Cinematic Gyroscopic Tumbling
+      const autoPitch = 0.22 + Math.sin(t * 0.58) * 0.28 + Math.cos(t * 0.31) * 0.18 + Math.sin(currentScrollY * 0.005) * 0.15;
+      const autoRoll = 0.38 + Math.cos(t * 0.47) * 0.24 + Math.sin(t * 0.23) * 0.15 + Math.sin(currentScrollY * 0.003) * 0.10;
+      logoMount.rotation.set(autoPitch, 0, autoRoll);
+
+      const autoYaw = -(t * 0.32) + Math.sin(t * 0.42) * 0.35 - (currentScrollY * 0.007);
+      logoSpinner.rotation.y = autoYaw;
+
+      // Card Curvature Physics
+      const targetBend = THREE.MathUtils.clamp(scrollVelocity * 0.18, -0.22, 0.22);
+      const bendRate = Math.abs(targetBend) > Math.abs(currentBend) ? 6.5 : 3.8;
+      currentBend = expDamp(currentBend, targetBend, bendRate, delta);
+      cardBendUniform.uCardBend.value = currentBend;
+
+      // Radial Bloom
+      const currentRadius = THREE.MathUtils.lerp(closedRadius, openRadius, currentExplodeProg);
+      const corridorScroll = hasFullyUnlocked ? (currentScrollY - explodeThreshold) : 0.0;
+
+      // Rings Batch Trajectory
+      for (let i = 0; i < tiers.length; i++) {
+        const { config, axis, cards } = tiers[i];
+
+        const unboxedBaseY = THREE.MathUtils.lerp(config.startY, config.baseY, currentExplodeProg);
+        const rawY = unboxedBaseY + corridorScroll;
+        
+        const wrappedY = (((rawY + halfHeight) % totalVoyageHeight) + totalVoyageHeight) % totalVoyageHeight - halfHeight;
+        axis.position.y = wrappedY;
+
+        const tiltProgress = Math.max(0.0, (currentExplodeProg - 0.10) / 0.90);
+        axis.rotation.x = config.tiltX * tiltProgress;
+        axis.rotation.z = config.tiltZ * tiltProgress;
+
+        const orbitAngle = (accumulatedAutoTime * config.direction) + (currentScrollY * config.speedMultiplier * 0.0045);
+
+        for (let j = 0; j < cards.length; j++) {
+          const card = cards[j];
+          const theta = card.userData.baseAngle + orbitAngle;
+          card.position.set(Math.cos(theta) * currentRadius, 0, Math.sin(theta) * currentRadius);
+          card.rotation.y = -theta + Math.PI / 2;
+        }
+      }
+
+      customUniforms.uTime.value = t;
+      chamberMat.uniforms.uTime.value = t;
+      chamberMat.uniforms.uScrollY.value = currentScrollY * 0.01;
+      chamberMat.uniforms.uChamberAwake.value = currentExplodeProg;
+      chamberMat.uniforms.uMorphWeights.value.copy(currentWeights);
+      backGlow.intensity = THREE.MathUtils.lerp(1.2, 3.2, currentExplodeProg);
+
+      renderer.render(scene, camera);
+    }
+    requestAnimationFrame(animate);
+
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+  </script>
+</body>
+</html>

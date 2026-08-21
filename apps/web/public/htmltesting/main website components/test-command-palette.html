@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Abyss Prototype — Universal Command Palette</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link href="https://api.fontshare.com/v2/css?f[]=ranade@500,600,700&f[]=switzer@400,500,600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0d0d0f;
+      --card-slab: #121215;
+      --dock-surface: #1a1a1c;
+      --text-primary: #ffffff;
+      --text-muted: #71717a;
+      --text-title-muted: #a1a1aa;
+      --accent: #9be5fb;
+      --font-display: 'Ranade', sans-serif;
+      --font-body: 'Switzer', sans-serif;
+      --font-mono: ui-monospace, SFMono-Regular, monospace;
+      --ease-emil: cubic-bezier(0.23, 1, 0.32, 1);
+      --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text-primary);
+      font-family: var(--font-body);
+      min-height: 100vh;
+      padding: 0;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body.modal-open {
+      overflow: hidden;
+    }
+
+    .app-canvas {
+      position: relative;
+      min-height: 100vh;
+      background-color: var(--bg);
+      border-radius: 0;
+      border: none;
+      overflow: hidden;
+      padding-top: 140px;
+    }
+
+    /* Fixed Compact Floating Dock Container */
+    .dock-wrapper {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: calc(100% - 32px);
+      max-width: 680px;
+      z-index: 1000;
+    }
+
+    /* Solid Smooth Dark Slate Slab Dock — Sleek Architectural Radius (14px) */
+    .dock-nav {
+      position: relative;
+      height: 54px;
+      padding: 0 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: linear-gradient(180deg, #141416 0%, #0d0d0f 100%);
+      border-radius: 14px;
+      border: none;
+      box-shadow: 
+        inset 0 1px 0 rgba(255, 255, 255, 0.08),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.5),
+        0 16px 36px rgba(0, 0, 0, 0.7);
+    }
+
+    .brand {
+      font-family: var(--font-display);
+      font-weight: 600;
+      font-size: 13.5px;
+      letter-spacing: 0.08em;
+      color: var(--text-primary);
+      text-decoration: none;
+      padding-left: 4px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .brand-icon {
+      color: var(--accent);
+      flex-shrink: 0;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .nav-link {
+      position: relative;
+      overflow: hidden;
+      font-size: 13.5px;
+      font-weight: 500;
+      color: var(--text-muted);
+      text-decoration: none;
+      padding: 6px 12px;
+      border-radius: 8px;
+      z-index: 1;
+      transition: color 200ms var(--ease-out), font-weight 200ms var(--ease-out);
+    }
+
+    .nav-link::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: var(--accent);
+      border-radius: 8px;
+      transform: translate3d(-105%, 105%, 0) skewX(-18deg);
+      transition: transform 240ms var(--ease-out);
+      z-index: -1;
+      pointer-events: none;
+    }
+
+    .nav-link:hover::before {
+      transform: translate3d(0, 0, 0) skewX(0deg);
+    }
+
+    .nav-link:hover {
+      color: #000000;
+      font-weight: 600;
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .search-trigger, .github-link {
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      background: var(--dock-surface);
+      border: none;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+      color: var(--text-muted);
+      text-decoration: none;
+      cursor: pointer;
+      z-index: 1;
+      transition: 
+        color 180ms var(--ease-out),
+        transform 180ms var(--ease-out);
+    }
+
+    .search-trigger::before, .github-link::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: var(--accent);
+      border-radius: 10px;
+      transform: translate3d(-105%, 105%, 0) skewX(-18deg);
+      transition: transform 240ms var(--ease-out);
+      z-index: -1;
+      pointer-events: none;
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      .search-trigger:hover::before, .github-link:hover::before {
+        transform: translate3d(0, 0, 0) skewX(0deg);
+      }
+
+      .search-trigger:hover, .github-link:hover {
+        color: #000000;
+        transform: translateY(-1px);
+      }
+    }
+
+    /* Modal Command Palette Overlay */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      z-index: 2000;
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      transition: opacity 220ms var(--ease-out), visibility 220ms var(--ease-out);
+    }
+
+    .modal-overlay.open {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+    }
+
+    /* Command Palette Modal — Dark Charcoal Slate Finish */
+    .search-modal {
+      width: 680px;
+      max-width: 100%;
+      background: linear-gradient(180deg, #111113 0%, #08080a 100%);
+      border: none;
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 
+        inset 0 1px 0 rgba(255, 255, 255, 0.07),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.6),
+        0 28px 72px rgba(0, 0, 0, 0.9);
+    }
+
+    .search-header {
+      display: flex;
+      align-items: center;
+      padding: 20px 24px;
+      border-bottom: none;
+      gap: 14px;
+      background: rgba(255, 255, 255, 0.015);
+    }
+
+    .search-brand-tag {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--accent);
+      flex-shrink: 0;
+    }
+    
+    .search-input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--text-primary);
+      font-family: var(--font-body);
+      font-size: 16.5px;
+      font-weight: 500;
+      letter-spacing: -0.01em;
+    }
+
+    .search-input::placeholder {
+      color: var(--text-muted);
+      font-weight: 400;
+    }
+
+    .kbd-esc {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      padding: 4px 8px;
+      border-radius: 6px;
+      background: #18181c;
+      color: var(--text-muted);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+      cursor: pointer;
+    }
+
+    .results-list {
+      max-height: 380px;
+      overflow-y: auto;
+      padding: 14px 18px;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+
+    /* Completely Hidden Scrollbar */
+    .results-list::-webkit-scrollbar {
+      display: none;
+    }
+
+    .category-title {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-muted);
+      padding: 10px 12px 6px 12px;
+      letter-spacing: 0.05em;
+    }
+
+    .result-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 14px;
+      border-radius: 10px;
+      text-decoration: none;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+      background: transparent;
+      transition: background 200ms var(--ease-out);
+    }
+
+    .result-item:hover, .result-item.selected {
+      background: rgba(255, 255, 255, 0.06);
+    }
+
+    .result-item.selected .item-name {
+      color: var(--accent);
+    }
+
+    .item-name { font-size: 14px; font-weight: 500; }
+    .route-badge { font-family: var(--font-mono); font-size: 11px; color: var(--text-muted); }
+
+    .search-footer {
+      padding: 14px 24px;
+      border-top: none;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .footer-keys { display: flex; gap: 16px; }
+
+    .kbd-badge {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      padding: 3px 7px;
+      border-radius: 5px;
+      background: #18181c;
+      color: var(--text-muted);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="app-canvas">
+    <!-- Pure Neutral Black & Grey Solid Slate Dock Container (shadcn/Lucide Icons) -->
+    <div class="dock-wrapper" id="dockWrapper">
+      <header class="dock-nav">
+        <a href="/" class="brand">
+          <!-- Y2K Sparkle Starburst Brand Icon — Cobalt Ice (#38bdf8) -->
+          <svg class="brand-icon" width="28" height="28" viewBox="0 0 100 100" fill="currentColor" style="color: var(--accent);">
+            <path d="m50 7.5234 2.2461 29.645 5.9648-15.68-5.2891 24.566 0.089844 1.0898 37.09-22.633-27.855 22.355 20.266-5.3906-24.645 10.09 42.133 11.113-39.566-5.5469 21.109 12.812-25.188-11.445 15.898 34.777-19.363-30.055 3.1523 22.242-7.2656-24.844-21.031 32.656 14.41-31.531-16.945 14.586 17.043-19.578-42.254 5.9141 36.457-9.6016-24.191-3.6328 29.801 0.89844-32.168-25.82 28.945 17.656-11.887-17.145 19.934 22.055 0.097656 0.066406z" fill-rule="evenodd"/>
+          </svg>
+          <span>ABYSS</span>
+        </a>
+
+        <nav class="nav-links">
+          <a href="/collection.html" class="nav-link">Collection</a>
+          <a href="/docs" class="nav-link">Docs</a>
+        </nav>
+
+        <div class="nav-actions">
+          <button class="search-trigger" id="openSearchBtn" title="Open Universal Search (Cmd+K)" aria-label="Search">
+            <!-- shadcn/Lucide Search Icon -->
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8"/>
+              <path d="m21 21-4.3-4.3"/>
+            </svg>
+          </button>
+          <a href="https://github.com" class="github-link" target="_blank" aria-label="GitHub Repository">
+            <!-- shadcn/Lucide Github Icon -->
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/>
+              <path d="M9 18c-4.51 2-5-2-7-2"/>
+            </svg>
+          </a>
+        </div>
+      </header>
+    </div>
+  </div>
+
+  <!-- Command Palette Modal Overlay — shadcn/Lucide Icons -->
+  <div class="modal-overlay" id="searchModalOverlay">
+    <div class="search-modal">
+      <div class="search-header">
+        <div class="search-brand-tag">
+          <!-- Y2K Sparkle Starburst Brand Icon — Cobalt Ice (#38bdf8) -->
+          <svg width="28" height="28" viewBox="0 0 100 100" fill="currentColor" style="color: var(--accent);">
+            <path d="m50 7.5234 2.2461 29.645 5.9648-15.68-5.2891 24.566 0.089844 1.0898 37.09-22.633-27.855 22.355 20.266-5.3906-24.645 10.09 42.133 11.113-39.566-5.5469 21.109 12.812-25.188-11.445 15.898 34.777-19.363-30.055 3.1523 22.242-7.2656-24.844-21.031 32.656 14.41-31.531-16.945 14.586 17.043-19.578-42.254 5.9141 36.457-9.6016-24.191-3.6328 29.801 0.89844-32.168-25.82 28.945 17.656-11.887-17.145 19.934 22.055 0.097656 0.066406z" fill-rule="evenodd"/>
+          </svg>
+        </div>
+        <input type="text" class="search-input" id="searchInput" placeholder="Type to filter specimens..." />
+        <kbd class="kbd-esc" id="closeSearchBtn">ESC</kbd>
+      </div>
+
+      <div class="results-list" id="resultsList">
+        <div class="category-group">
+          <div class="category-title">PAGES</div>
+          <a href="/" class="result-item">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <!-- shadcn/Lucide FileText Icon -->
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--text-muted);"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg>
+              <span class="item-name">Overview & Manifesto</span>
+            </div>
+            <!-- shadcn/Lucide ArrowUpRight Icon -->
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--text-muted);"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg>
+          </a>
+          <a href="/collection.html" class="result-item selected">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <!-- shadcn/Lucide LayoutGrid Icon -->
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--text-muted);"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></svg>
+              <span class="item-name">Collection Grid</span>
+            </div>
+            <!-- shadcn/Lucide ArrowUpRight Icon -->
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--text-muted);"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg>
+          </a>
+          <a href="/docs" class="result-item">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <!-- shadcn/Lucide BookOpen Icon -->
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--text-muted);"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+              <span class="item-name">Documentation Specs</span>
+            </div>
+            <!-- shadcn/Lucide ArrowUpRight Icon -->
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--text-muted);"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg>
+          </a>
+        </div>
+
+        <div class="category-group">
+          <div class="category-title">SHADERS & KINETIC PRIMITIVES</div>
+          <a href="/showcase/procedural-atlas" class="result-item">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <!-- shadcn/Lucide Component Icon -->
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--text-muted);"><path d="M5.5 8.5 9 12l-3.5 3.5L2 12l3.5-3.5Z"/><path d="m12 2 3.5 3.5L12 9 8.5 5.5 12 2Z"/><path d="M18.5 8.5 22 12l-3.5 3.5L15 12l3.5-3.5Z"/><path d="m12 15 3.5 3.5L12 22l-3.5-3.5L12 15Z"/></svg>
+              <span class="item-name">Procedural Atlas</span>
+            </div>
+            <!-- shadcn/Lucide ArrowRight Icon -->
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--text-muted);"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+          </a>
+          <a href="/showcase/gravity-cursor" class="result-item">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <!-- shadcn/Lucide Component Icon -->
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--text-muted);"><path d="M5.5 8.5 9 12l-3.5 3.5L2 12l3.5-3.5Z"/><path d="m12 2 3.5 3.5L12 9 8.5 5.5 12 2Z"/><path d="M18.5 8.5 22 12l-3.5 3.5L15 12l3.5-3.5Z"/><path d="m12 15 3.5 3.5L12 22l-3.5-3.5L12 15Z"/></svg>
+              <span class="item-name">Gravity Cursor</span>
+            </div>
+            <!-- shadcn/Lucide ArrowRight Icon -->
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--text-muted);"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+          </a>
+          <a href="/showcase/liquid-lens" class="result-item">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <!-- shadcn/Lucide Component Icon -->
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--text-muted);"><path d="M5.5 8.5 9 12l-3.5 3.5L2 12l3.5-3.5Z"/><path d="m12 2 3.5 3.5L12 9 8.5 5.5 12 2Z"/><path d="M18.5 8.5 22 12l-3.5 3.5L15 12l3.5-3.5Z"/><path d="m12 15 3.5 3.5L12 22l-3.5-3.5L12 15Z"/></svg>
+              <span class="item-name">Liquid Lens Distortion</span>
+            </div>
+            <!-- shadcn/Lucide ArrowRight Icon -->
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--text-muted);"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+          </a>
+          <a href="/showcase/3d-shatter-sphere" class="result-item">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <!-- shadcn/Lucide Component Icon -->
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--text-muted);"><path d="M5.5 8.5 9 12l-3.5 3.5L2 12l3.5-3.5Z"/><path d="m12 2 3.5 3.5L12 9 8.5 5.5 12 2Z"/><path d="M18.5 8.5 22 12l-3.5 3.5L15 12l3.5-3.5Z"/><path d="m12 15 3.5 3.5L12 22l-3.5-3.5L12 15Z"/></svg>
+              <span class="item-name">3D Shatter Sphere</span>
+            </div>
+            <!-- shadcn/Lucide ArrowRight Icon -->
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--text-muted);"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+          </a>
+          <a href="/showcase/apparatus-tracklist-gallery" class="result-item">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <!-- shadcn/Lucide Component Icon -->
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--text-muted);"><path d="M5.5 8.5 9 12l-3.5 3.5L2 12l3.5-3.5Z"/><path d="m12 2 3.5 3.5L12 9 8.5 5.5 12 2Z"/><path d="M18.5 8.5 22 12l-3.5 3.5L15 12l3.5-3.5Z"/><path d="m12 15 3.5 3.5L12 22l-3.5-3.5L12 15Z"/></svg>
+              <span class="item-name">Apparatus Tracklist Gallery</span>
+            </div>
+            <!-- shadcn/Lucide ArrowRight Icon -->
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--text-muted);"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+          </a>
+          <a href="/showcase/orbit-ring-gallery" class="result-item">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <!-- shadcn/Lucide Component Icon -->
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--text-muted);"><path d="M5.5 8.5 9 12l-3.5 3.5L2 12l3.5-3.5Z"/><path d="m12 2 3.5 3.5L12 9 8.5 5.5 12 2Z"/><path d="M18.5 8.5 22 12l-3.5 3.5L15 12l3.5-3.5Z"/><path d="m12 15 3.5 3.5L12 22l-3.5-3.5L12 15Z"/></svg>
+              <span class="item-name">Orbit Ring Gallery</span>
+            </div>
+            <!-- shadcn/Lucide ArrowRight Icon -->
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--text-muted);"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+          </a>
+        </div>
+      </div>
+
+      <div class="search-footer">
+        <span style="display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-muted);">
+          Go to page
+          <!-- shadcn/Lucide CornerDownLeft Icon -->
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--text-muted);"><polyline points="9 10 4 15 9 20"/><path d="M20 4v7a4 4 0 0 1-4 4H4"/></svg>
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Command Palette Modal & Keyboard Selection Logic
+    const openBtn = document.getElementById('openSearchBtn');
+    const closeBtn = document.getElementById('closeSearchBtn');
+    const overlay = document.getElementById('searchModalOverlay');
+    const input = document.getElementById('searchInput');
+
+    let selectedIndex = 1; // Default to 'Collection Grid'
+
+    function getVisibleItems() {
+      return Array.from(document.querySelectorAll('.result-item')).filter(item => {
+        return item.style.display !== 'none' && item.offsetParent !== null;
+      });
+    }
+
+    function setSelectedIndex(newIndex) {
+      const items = getVisibleItems();
+      if (items.length === 0) return;
+      
+      items.forEach(item => item.classList.remove('selected'));
+      selectedIndex = (newIndex + items.length) % items.length;
+      
+      const activeItem = items[selectedIndex];
+      activeItem.classList.add('selected');
+      activeItem.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    }
+
+    function openModal() {
+      overlay.classList.add('open');
+      document.body.classList.add('modal-open');
+      setTimeout(() => {
+        input.focus();
+        setSelectedIndex(1);
+      }, 50);
+    }
+
+    function closeModal() {
+      overlay.classList.remove('open');
+      document.body.classList.remove('modal-open');
+    }
+
+    openBtn.addEventListener('click', openModal);
+    closeBtn.addEventListener('click', closeModal);
+
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) closeModal();
+    });
+
+    // Mouse Hover Sync with Selection
+    document.querySelectorAll('.result-item').forEach((item) => {
+      item.addEventListener('mouseenter', () => {
+        const items = getVisibleItems();
+        const idx = items.indexOf(item);
+        if (idx !== -1) setSelectedIndex(idx);
+      });
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        if (overlay.classList.contains('open')) {
+          closeModal();
+        } else {
+          openModal();
+        }
+        return;
+      }
+
+      if (!overlay.classList.contains('open')) return;
+
+      if (e.key === 'Escape') {
+        closeModal();
+      } else if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        setSelectedIndex(selectedIndex + 1);
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        setSelectedIndex(selectedIndex - 1);
+      } else if (e.key === 'Enter') {
+        e.preventDefault();
+        const items = getVisibleItems();
+        if (items[selectedIndex]) {
+          items[selectedIndex].click();
+        }
+      }
+    });
+
+    input.addEventListener('input', () => {
+      const q = input.value.toLowerCase().trim();
+      document.querySelectorAll('.result-item').forEach(item => {
+        const text = item.textContent.toLowerCase();
+        item.style.display = text.includes(q) ? 'flex' : 'none';
+      });
+      document.querySelectorAll('.category-group').forEach(group => {
+        const visible = group.querySelectorAll('.result-item[style="display: flex;"], .result-item:not([style*="display: none"])');
+        group.style.display = visible.length > 0 ? 'block' : 'none';
+      });
+      setSelectedIndex(0);
+    });
+  </script>
+</body>
+</html>

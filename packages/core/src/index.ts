@@ -38,6 +38,7 @@ export * from "./components/curved-scroll-wipe";
 export * from "./components/tracklist-gallery";
 export * from "./components/abyss-cursor-fall";
 export * from "./components/hover-media-stream";
+export * from "./components/gimbal-stream";
 
 
 

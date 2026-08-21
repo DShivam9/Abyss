@@ -30,6 +30,7 @@ export const VIBE_SECTIONS: VibeSection[] = [
     count: 8,
     slugs: [
       "3d-shatter-sphere",
+      "gimbal-stream",
       "gravity-cursor",
       "focus-ring",
       "image-snake-trail",

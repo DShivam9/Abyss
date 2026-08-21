@@ -18,6 +18,21 @@ interface CommitEntry {
 
 const CHANGELOG_DATA: CommitEntry[] = [
   {
+    id: "commit-20",
+    date: "2026-08-21",
+    displayDate: "Aug 21, 2026 • 23:55 IST",
+    tag: "MAJOR",
+    title: "Gimbal Stream Component & 3D Spatial Gallery",
+    summary: "Introduced Gimbal Stream, a spatial 3D gallery featuring gyroscopic card rings, atmospheric chamber dynamics, liquid mercury centerpiece, and interactive hover inspector.",
+    items: [
+      "Added Gimbal Stream component with multi-axis gyroscopic card rings and responsive scroll drifting",
+      "Added atmospheric chamber backdrop with dynamic caustic wave lighting and pattern controls",
+      "Added 3D floating centerpiece with multi-harmonic zero-gravity tumbling motion",
+      "Added interactive card hover inspection with cursor-tracking detail pill and smooth scale lifts",
+      "Integrated live parameter controls for auto drift, orbit speed, card curvature, and chamber effects",
+    ],
+  },
+  {
     id: "commit-19",
     date: "2026-08-20",
     displayDate: "Aug 20, 2026 • 20:15 IST",

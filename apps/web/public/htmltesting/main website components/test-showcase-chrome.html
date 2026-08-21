@@ -1,0 +1,1616 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Abyss — Specimen Viewport</title>
+  <link rel="preconnect" href="https://api.fontshare.com">
+  <link href="https://api.fontshare.com/v2/css?f[]=switzer@400,500,600,700&f[]=ranade@400,500,600,700,900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0d0d0f;
+      --surface: #121215;
+      --surface-elevated: #16161a;
+      --border-subtle: #1f1f28;
+      --border-hairline: rgba(255, 255, 255, 0.06);
+      --text-primary: #f4f4f5;
+      --text-muted: #71717a;
+      --accent: #9be5fb;
+      --font-display: 'Ranade', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-body: 'Switzer', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: #0d0d0f;
+      color: var(--text-primary);
+      min-height: 100vh;
+      font-family: var(--font-body);
+      -webkit-font-smoothing: antialiased;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* Grain Overlay */
+    .bg-grain {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 1;
+      opacity: 0.14;
+      mix-blend-mode: overlay;
+    }
+
+    /* TOP-LEFT: Single Keycap Button (1:1 Navbar Material) */
+    .top-left-menu {
+      position: fixed;
+      top: 32px;
+      left: 32px;
+      z-index: 500;
+    }
+
+    .top-left-menu .keycap-symbol {
+      width: 44px;
+      height: 44px;
+      background: linear-gradient(180deg, #141416 0%, #0d0d0f 100%);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 12px;
+      color: #8e8e93;
+      box-shadow: 
+        inset 0 1px 0 rgba(255, 255, 255, 0.08),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.5),
+        0 8px 24px rgba(0, 0, 0, 0.6);
+      transition: all 200ms var(--ease-out);
+    }
+
+    .top-left-menu .keycap-symbol svg,
+    .top-left-menu .keycap-symbol rect {
+      transition: stroke 200ms var(--ease-out), color 200ms var(--ease-out);
+    }
+
+    body.ruler-drawer-open .top-left-menu .keycap-symbol {
+      background: linear-gradient(180deg, #141416 0%, #0d0d0f 100%);
+      border-color: rgba(255, 255, 255, 0.08);
+      color: #8e8e93;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 8px 24px rgba(0, 0, 0, 0.6);
+    }
+
+    .top-left-menu .keycap-symbol:hover,
+    body.ruler-drawer-open .top-left-menu .keycap-symbol:hover {
+      background: #9be5fb;
+      border-color: #9be5fb;
+      color: #0d0d0f;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+    }
+
+    .top-left-menu .keycap-symbol:hover svg,
+    .top-left-menu .keycap-symbol:hover rect,
+    body.ruler-drawer-open .top-left-menu .keycap-symbol:hover svg,
+    body.ruler-drawer-open .top-left-menu .keycap-symbol:hover rect {
+      stroke: #0d0d0f;
+      color: #0d0d0f;
+    }
+
+    /* 1:1 CHAMELEON RULER DRAWER (SEAMLESS BG & ZERO SHARP BORDER) */
+    .ruler-drawer {
+      position: fixed;
+      top: 0;
+      left: 24px;
+      z-index: 290;
+      width: 290px;
+      height: 100vh;
+      background: transparent;
+      border: none;
+      border-radius: 0;
+      padding: 0 12px 0 16px;
+      box-shadow: none;
+      display: flex;
+      flex-direction: column;
+      opacity: 1;
+      visibility: hidden;
+      transform: translateX(-340px);
+      transition: transform 680ms cubic-bezier(0.16, 1, 0.3, 1), visibility 680ms step-end;
+      overflow: hidden;
+    }
+
+    body.ruler-drawer-open .ruler-drawer {
+      visibility: visible;
+      transform: translateX(0);
+      transition: transform 680ms cubic-bezier(0.16, 1, 0.3, 1), visibility 0ms, background 360ms var(--ease-out);
+    }
+
+    .ruler-list-wrap {
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+      padding-top: 180px;
+      padding-bottom: 120px;
+      mask-image: linear-gradient(to bottom, transparent 0%, transparent 50px, black 130px, black calc(100% - 100px), transparent 100%);
+      -webkit-mask-image: linear-gradient(to bottom, transparent 0%, transparent 50px, black 130px, black calc(100% - 100px), transparent 100%);
+    }
+
+    .ruler-list-wrap::-webkit-scrollbar {
+      display: none;
+    }
+
+    /* Muted.html Tight Row & Line Micro-Interactions */
+    .row {
+      display: flex;
+      align-items: center;
+      height: 24px;
+    }
+
+    .row.interactive {
+      cursor: pointer;
+    }
+
+    .row.placeholder {
+      pointer-events: none;
+    }
+
+    .line-wrapper {
+      width: 28px;
+      display: flex;
+      justify-content: flex-start;
+      margin-right: 8px;
+      flex-shrink: 0;
+    }
+
+    .line {
+      width: 28px;
+      height: 1.5px;
+      background-color: #27272a;
+      transform-origin: left center;
+      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.25s ease;
+    }
+
+    .ruler-text {
+      font-family: var(--font-body);
+      font-size: 15.5px;
+      white-space: nowrap;
+      letter-spacing: -0.01em;
+      color: #71717a;
+      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), color 0.25s ease;
+    }
+
+    /* Hover: line extends right, pushes text right */
+    .row.interactive:hover .line,
+    .row.interactive.active .line {
+      transform: scaleX(1.5);
+      background-color: #9be5fb;
+    }
+
+    .row.interactive:hover .ruler-text,
+    .row.interactive.active .ruler-text {
+      transform: translateX(16px);
+      color: #9be5fb;
+      font-weight: 600;
+    }
+
+
+
+    /* ULTRA-CLEAN MONOCHROME CONTROLS DRAWER PILL */
+    .controls-drawer {
+      position: fixed;
+      bottom: 24px;
+      left: calc(50% + 125px);
+      right: auto;
+      top: auto;
+      transform: translateY(8px);
+      z-index: 290;
+      width: 320px;
+      height: auto;
+      max-height: 480px;
+      background: linear-gradient(180deg, #141416 0%, #0d0d0f 100%);
+      border-radius: 16px;
+      border: none;
+      box-shadow: 
+        inset 0 1px 0 rgba(255, 255, 255, 0.08),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.5),
+        0 24px 60px rgba(0, 0, 0, 0.75);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transition: opacity 220ms var(--ease-out), transform 220ms var(--ease-out), visibility 220ms step-end;
+      overflow: hidden;
+    }
+
+    body.controls-drawer-open .controls-drawer {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+      transform: translateY(0);
+      transition: opacity 220ms var(--ease-out), transform 220ms var(--ease-out), visibility 0ms;
+    }
+
+
+
+    .drawer-close-btn {
+      background: transparent;
+      border: none;
+      color: #71717a;
+      font-size: 16px;
+      line-height: 1;
+      cursor: pointer;
+      padding: 2px 6px;
+      border-radius: 6px;
+      transition: all 150ms ease;
+    }
+
+    .drawer-close-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: #ffffff;
+    }
+
+
+
+    .controls-drawer-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: var(--font-body);
+      font-size: 13px;
+      font-weight: 600;
+      color: #f4f4f5;
+      cursor: grab;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    .controls-drawer-header:active {
+      cursor: grabbing;
+    }
+
+
+
+    .controls-body {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    /* INSET SCRUBBER ROW */
+    .scrubber-row {
+      position: relative;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      height: 38px;
+      padding: 0 12px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+
+
+    .scrubber-fill {
+      position: absolute;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      background: rgba(255, 255, 255, 0.08);
+      pointer-events: none;
+      transition: width 60ms linear;
+    }
+
+
+
+    .scrubber-label {
+      position: relative;
+      z-index: 2;
+      font-family: var(--font-body);
+      font-size: 12px;
+      font-weight: 500;
+      color: #a1a1aa;
+    }
+
+
+
+    .scrubber-val {
+      position: relative;
+      z-index: 2;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 500;
+      color: #f4f4f5;
+    }
+
+
+
+    .scrubber-input {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+      cursor: ew-resize;
+      z-index: 3;
+    }
+
+    /* MONOCHROME SEGMENTED SWITCH */
+    .segmented-switch {
+      display: flex;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 10px;
+      padding: 3px;
+      gap: 3px;
+    }
+
+
+
+    .segment-btn {
+      flex: 1;
+      background: transparent;
+      border: none;
+      color: #71717a;
+      font-family: var(--font-body);
+      font-size: 11px;
+      font-weight: 500;
+      padding: 6px 0;
+      border-radius: 7px;
+      cursor: pointer;
+      transition: all 150ms ease;
+    }
+
+    .segment-btn.active {
+      background: rgba(255, 255, 255, 0.12);
+      color: #ffffff;
+    }
+
+
+
+    /* SECONDARY ACTION BUTTON */
+    .controls-action-btn {
+      width: 100%;
+      height: 36px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 10px;
+      color: #a1a1aa;
+      font-family: var(--font-body);
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 150ms ease;
+    }
+
+    .controls-action-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: #ffffff;
+    }
+
+
+
+    body.rail-is-expanded .top-left-menu .keycap-symbol:hover svg,
+    body.rail-is-expanded .top-left-menu .keycap-symbol:hover rect {
+      stroke: #000000;
+    }
+
+    /* Lime Diagonal Shutter Keycap Symbols */
+    button, a {
+      font-family: inherit;
+      outline: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .keycap-symbol {
+      position: relative;
+      overflow: visible;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      background: var(--surface);
+      border: 1px solid var(--border-hairline);
+      color: var(--text-muted);
+      cursor: pointer;
+      text-decoration: none;
+      z-index: 1;
+      transition: color 180ms var(--ease-out), border-color 180ms var(--ease-out), transform 160ms var(--ease-out);
+    }
+
+    .keycap-symbol-inner {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .keycap-symbol-inner::before {
+      display: none;
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      .keycap-symbol:hover {
+        color: var(--accent);
+        border-color: rgba(155, 229, 251, 0.25);
+        background: rgba(255, 255, 255, 0.08);
+      }
+    }
+
+    .keycap-symbol:active {
+      transform: scale(0.95);
+    }
+
+    .keycap-symbol.active {
+      background: rgba(155, 229, 251, 0.16);
+      color: var(--accent);
+      border-color: rgba(155, 229, 251, 0.4);
+    }
+
+    .keycap-symbol svg {
+      position: relative;
+      z-index: 2;
+      transition: color 180ms var(--ease-out);
+    }
+
+    .specimen-rail {
+      position: fixed;
+      top: calc(100vh - 48px);
+      left: 50vw;
+      bottom: auto;
+      right: auto;
+      transform: translate(-50%, -50%);
+      z-index: 200;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 0 14px;
+      width: auto;
+      min-width: 190px;
+      height: 52px;
+      border-radius: 14px;
+      background: linear-gradient(180deg, #141416 0%, #0d0d0f 100%);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      box-shadow: 
+        inset 0 1px 0 rgba(255, 255, 255, 0.08),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.5),
+        0 16px 36px rgba(0, 0, 0, 0.7);
+      overflow: hidden;
+      transition: 
+        top 720ms cubic-bezier(0.16, 1, 0.3, 1),
+        left 720ms cubic-bezier(0.16, 1, 0.3, 1),
+        transform 720ms cubic-bezier(0.16, 1, 0.3, 1),
+        width 720ms cubic-bezier(0.16, 1, 0.3, 1),
+        height 720ms cubic-bezier(0.16, 1, 0.3, 1),
+        padding 720ms cubic-bezier(0.16, 1, 0.3, 1),
+        border-radius 720ms cubic-bezier(0.16, 1, 0.3, 1),
+        background 500ms var(--ease-out);
+    }
+
+    .specimen-rail .keycap-symbol {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      background: transparent;
+      border: none;
+      box-shadow: none;
+      color: #8e8e93;
+      transition: background 180ms var(--ease-out), color 180ms var(--ease-out);
+    }
+
+    .specimen-rail .keycap-symbol svg,
+    .specimen-rail .keycap-symbol rect,
+    .specimen-rail .keycap-symbol path {
+      stroke: currentColor;
+      transition: stroke 180ms var(--ease-out);
+    }
+
+    .specimen-rail .keycap-symbol:hover {
+      background: rgba(255, 255, 255, 0.06);
+      color: #9be5fb;
+      border-color: transparent;
+      box-shadow: none;
+    }
+
+    .specimen-rail .keycap-symbol.active {
+      background: rgba(155, 229, 251, 0.14);
+      color: #9be5fb;
+      border-color: transparent;
+      box-shadow: none;
+    }
+
+    /* =========================================
+       SPECIMEN FLOATING PANELS (INFO & CODE)
+       ========================================= */
+    .specimen-ledger {
+      position: fixed;
+      top: 20px;
+      bottom: 20px;
+      right: 20px;
+      width: 560px;
+      max-width: calc(100vw - 40px);
+      height: calc(100vh - 40px);
+      background: linear-gradient(180deg, #141416 0%, #0d0d0f 100%);
+      border-radius: 16px;
+      border: none;
+      box-shadow: 
+        inset 0 1px 0 rgba(255, 255, 255, 0.08),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.5),
+        0 24px 60px rgba(0, 0, 0, 0.75);
+      z-index: 400;
+      display: flex;
+      flex-direction: column;
+      transform: translateX(calc(100% + 40px));
+      visibility: hidden;
+      transition: transform 620ms cubic-bezier(0.16, 1, 0.3, 1), visibility 620ms step-end;
+      overflow: hidden;
+    }
+
+    .specimen-ledger.open {
+      transform: translateX(0);
+      visibility: visible;
+      transition: transform 620ms cubic-bezier(0.16, 1, 0.3, 1), visibility 0ms;
+    }
+
+    .ledger-close-btn {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      z-index: 20;
+      background: rgba(255, 255, 255, 0.04);
+      border: none;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+      color: #71717a;
+      cursor: pointer;
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 150ms ease, color 150ms ease, transform 150ms ease;
+    }
+
+    .ledger-close-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: #f4f4f5;
+      transform: scale(1.04);
+    }
+
+    .ledger-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 48px 42px 140px 42px;
+      display: flex;
+      flex-direction: column;
+      gap: 60px;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+
+    .ledger-body::-webkit-scrollbar {
+      display: none;
+    }
+
+    .ledger-section {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .section-tag {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: #52525b;
+      margin-bottom: 4px;
+    }
+
+    .ledger-title {
+      font-family: var(--font-display);
+      font-size: 30px;
+      font-weight: 600;
+      letter-spacing: -0.025em;
+      color: #f4f4f5;
+      line-height: 1.15;
+    }
+
+    .ledger-desc {
+      font-family: var(--font-body);
+      font-size: 15.5px;
+      line-height: 1.8;
+      letter-spacing: -0.005em;
+      color: #9f9fa6;
+    }
+
+    .tech-pill-group {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 22px;
+    }
+
+    .tech-pill-dark {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-body);
+      font-size: 14px;
+      font-weight: 500;
+      color: #a1a1aa;
+      background: transparent;
+      border: none;
+      box-shadow: none;
+      padding: 0;
+    }
+
+    .tech-pill-dark svg {
+      width: 15px;
+      height: 15px;
+      color: #71717a;
+      flex-shrink: 0;
+    }
+
+    .pkg-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 4px;
+    }
+
+    .pkg-tab {
+      padding: 6px 14px;
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.03);
+      border: none;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+      color: #71717a;
+      font-size: 12.5px;
+      font-family: var(--font-body);
+      cursor: pointer;
+      transition: color 140ms var(--ease-out), background 140ms var(--ease-out);
+    }
+
+    .pkg-tab.active {
+      color: #f4f4f5;
+      background: rgba(255, 255, 255, 0.09);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+    }
+
+    .code-card {
+      position: relative;
+      background: rgba(0, 0, 0, 0.35);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 10px;
+      padding: 20px 22px;
+    }
+
+    .code-copy-btn {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.04);
+      border: none;
+      color: #71717a;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 180ms var(--ease-out);
+    }
+
+    .code-copy-btn:hover {
+      background: rgba(255, 255, 255, 0.09);
+      color: #f4f4f5;
+    }
+
+    .code-pre {
+      margin: 0;
+      font-family: var(--font-mono);
+      font-size: 13.5px;
+      line-height: 1.75;
+      color: #d4d4d8;
+      overflow-x: auto;
+    }
+
+    .code-kw { color: #a1a1aa; font-weight: 500; }
+    .code-comp { color: #f4f4f5; font-weight: 600; }
+    .code-tag { color: #e4e4e7; }
+    .code-prop { color: #a1a1aa; }
+    .code-val { color: #d4d4d8; }
+    .code-str { color: #8e8e93; }
+
+    .ledger-props-table {
+      width: 100%;
+      background: transparent;
+      border: none;
+      box-shadow: none;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .ledger-prop-row {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      padding: 20px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .ledger-prop-row:first-child {
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .ledger-prop-row:last-child {
+      border-bottom: none;
+    }
+
+    .ledger-prop-name {
+      font-family: var(--font-body);
+      font-size: 14.5px;
+      font-weight: 600;
+      color: #f4f4f5;
+      letter-spacing: 0.01em;
+    }
+
+    .ledger-prop-desc {
+      font-family: var(--font-body);
+      font-size: 14px;
+      line-height: 1.7;
+      color: #8e8e93;
+    }
+
+    .callout-box {
+      background: transparent;
+      border: none;
+      box-shadow: none;
+      padding: 0;
+      font-family: var(--font-body);
+      font-size: 14.5px;
+      line-height: 1.85;
+      color: #8e8e93;
+    }
+
+    .rail-header-buttons {
+      display: flex;
+      flex-direction: row;
+      gap: 8px;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .rail-action-group {
+      display: flex;
+      flex-direction: row;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .rail-separator {
+      width: 1px;
+      height: 20px;
+      background: var(--border-hairline);
+      margin: 0 4px;
+    }
+
+  </style>
+</head>
+<body>
+
+  <!-- Noise Grain Overlay -->
+    <svg class="bg-grain" xmlns="http://www.w3.org/2000/svg">
+      <filter id="noiseFilter">
+        <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="3" stitchTiles="stitch"/>
+      </filter>
+      <rect width="100%" height="100%" filter="url(#noiseFilter)"/>
+    </svg>
+
+    <!-- Specimen Board Stage Container -->
+    <div class="specimen-board" id="specimenBoard"></div>
+
+    <!-- TOP-LEFT: Single Keycap Button -->
+  <div class="top-left-menu">
+    <button id="menuTrigger" class="keycap-symbol" aria-label="Menu Trigger">
+      <div class="keycap-symbol-inner">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+          <rect x="3" y="3" width="7" height="7"></rect>
+          <rect x="14" y="3" width="7" height="7"></rect>
+          <rect x="14" y="14" width="7" height="7"></rect>
+          <rect x="3" y="14" width="7" height="7"></rect>
+        </svg>
+      </div>
+    </button>
+  </div>
+
+  <!-- ULTRA-CLEAN MONOCHROME CONTROLS DRAWER PILL -->
+  <div class="controls-drawer" id="controlsDrawer">
+    <div class="controls-drawer-header">
+      <span>Parameters</span>
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#71717a" stroke-width="2">
+          <line x1="4" y1="21" x2="4" y2="14"></line>
+          <line x1="4" y1="10" x2="4" y2="3"></line>
+          <line x1="12" y1="21" x2="12" y2="12"></line>
+          <line x1="12" y1="8" x2="12" y2="3"></line>
+          <line x1="20" y1="21" x2="20" y2="16"></line>
+          <line x1="20" y1="12" x2="20" y2="3"></line>
+          <line x1="1" y1="14" x2="7" y2="14"></line>
+          <line x1="9" y1="8" x2="15" y2="8"></line>
+          <line x1="17" y1="16" x2="23" y2="16"></line>
+        </svg>
+        <button id="closeControlsBtn" class="drawer-close-btn" aria-label="Close Controls">&times;</button>
+      </div>
+    </div>
+    <div class="controls-body">
+      <div class="segmented-switch">
+        <button class="segment-btn active">Physics</button>
+        <button class="segment-btn">Easing</button>
+        <button class="segment-btn">Time</button>
+      </div>
+
+      <div class="scrubber-row">
+        <div class="scrubber-fill" id="fillCurvature" style="width: 42%;"></div>
+        <span class="scrubber-label">Curvature</span>
+        <span class="scrubber-val" id="valCurvature">0.42</span>
+        <input type="range" class="scrubber-input" min="0" max="1" step="0.01" value="0.42" id="sliderCurvature">
+      </div>
+
+      <div class="scrubber-row">
+        <div class="scrubber-fill" id="fillInertia" style="width: 84%;"></div>
+        <span class="scrubber-label">Inertia</span>
+        <span class="scrubber-val" id="valInertia">0.92</span>
+        <input type="range" class="scrubber-input" min="0.5" max="1" step="0.01" value="0.92" id="sliderInertia">
+      </div>
+
+      <div class="scrubber-row">
+        <div class="scrubber-fill" id="fillDrag" style="width: 37.5%;"></div>
+        <span class="scrubber-label">Drag Velocity</span>
+        <span class="scrubber-val" id="valDrag">1.25</span>
+        <input type="range" class="scrubber-input" min="0.2" max="3" step="0.05" value="1.25" id="sliderDrag">
+      </div>
+
+      <button class="controls-action-btn" id="resetControlsBtn">Reset defaults</button>
+    </div>
+  </div>
+  <div class="ruler-drawer" id="rulerDrawer">
+    <div class="ruler-list-wrap">
+      <div class="row interactive active" data-comp="All Components"><div class="line-wrapper"><div class="line"></div></div><span class="ruler-text">All Components</span></div>
+      <div class="row placeholder"><div class="line-wrapper"><div class="line"></div></div></div>
+      <div class="row interactive" data-comp="Anime js scrollbar"><div class="line-wrapper"><div class="line"></div></div><span class="ruler-text">01 Anime js scrollbar</span></div>
+      <div class="row placeholder"><div class="line-wrapper"><div class="line"></div></div></div>
+      <div class="row interactive" data-comp="Dynamic island"><div class="line-wrapper"><div class="line"></div></div><span class="ruler-text">02 Dynamic island</span></div>
+      <div class="row placeholder"><div class="line-wrapper"><div class="line"></div></div></div>
+      <div class="row interactive" data-comp="Apple play button"><div class="line-wrapper"><div class="line"></div></div><span class="ruler-text">03 Apple play button</span></div>
+      <div class="row placeholder"><div class="line-wrapper"><div class="line"></div></div></div>
+      <div class="row interactive" data-comp="Theme toggle buttons"><div class="line-wrapper"><div class="line"></div></div><span class="ruler-text">04 Theme toggle buttons</span></div>
+      <div class="row placeholder"><div class="line-wrapper"><div class="line"></div></div></div>
+      <div class="row interactive" data-comp="Things drag and scroll"><div class="line-wrapper"><div class="line"></div></div><span class="ruler-text">05 Things drag and scroll</span></div>
+      <div class="row placeholder"><div class="line-wrapper"><div class="line"></div></div></div>
+      <div class="row interactive" data-comp="Hover members"><div class="line-wrapper"><div class="line"></div></div><span class="ruler-text">06 Hover members</span></div>
+      <div class="row placeholder"><div class="line-wrapper"><div class="line"></div></div></div>
+      <div class="row interactive" data-comp="Nike preloader"><div class="line-wrapper"><div class="line"></div></div><span class="ruler-text">07 Nike preloader</span></div>
+      <div class="row placeholder"><div class="line-wrapper"><div class="line"></div></div></div>
+      <div class="row interactive" data-comp="Words preloader"><div class="line-wrapper"><div class="line"></div></div><span class="ruler-text">08 Words preloader</span></div>
+      <div class="row placeholder"><div class="line-wrapper"><div class="line"></div></div></div>
+      <div class="row interactive" data-comp="Stairs preloader"><div class="line-wrapper"><div class="line"></div></div><span class="ruler-text">09 Stairs preloader</span></div>
+      <div class="row placeholder"><div class="line-wrapper"><div class="line"></div></div></div>
+      <div class="row interactive" data-comp="Double stairs preloader"><div class="line-wrapper"><div class="line"></div></div><span class="ruler-text">10 Double stairs preloader</span></div>
+      <div class="row placeholder"><div class="line-wrapper"><div class="line"></div></div></div>
+      <div class="row interactive" data-comp="Pixel preloader"><div class="line-wrapper"><div class="line"></div></div><span class="ruler-text">11 Pixel preloader</span></div>
+      <div class="row placeholder"><div class="line-wrapper"><div class="line"></div></div></div>
+      <div class="row interactive" data-comp="Vercel Liquid simulation"><div class="line-wrapper"><div class="line"></div></div><span class="ruler-text">12 Vercel Liquid simulation</span></div>
+      <div class="row placeholder"><div class="line-wrapper"><div class="line"></div></div></div>
+      <div class="row interactive" data-comp="Nike menu"><div class="line-wrapper"><div class="line"></div></div><span class="ruler-text">13 Nike menu</span></div>
+      <div class="row placeholder"><div class="line-wrapper"><div class="line"></div></div></div>
+      <div class="row interactive" data-comp="Ascii Simulation"><div class="line-wrapper"><div class="line"></div></div><span class="ruler-text">14 Ascii Simulation</span></div>
+      <div class="row placeholder"><div class="line-wrapper"><div class="line"></div></div></div>
+      <div class="row interactive" data-comp="Box loading preloader"><div class="line-wrapper"><div class="line"></div></div><span class="ruler-text">15 Box loading preloader</span></div>
+      <div class="row placeholder"><div class="line-wrapper"><div class="line"></div></div></div>
+      <div class="row interactive" data-comp="Card stack scroll"><div class="line-wrapper"><div class="line"></div></div><span class="ruler-text">16 Card stack scroll</span></div>
+      <div class="row placeholder"><div class="line-wrapper"><div class="line"></div></div></div>
+      <div class="row interactive" data-comp="Card stack with gsap and rotate"><div class="line-wrapper"><div class="line"></div></div><span class="ruler-text">17 Card stack with gsap and rotate</span></div>
+      <div class="row placeholder"><div class="line-wrapper"><div class="line"></div></div></div>
+      <div class="row interactive" data-comp="Image cursor trail"><div class="line-wrapper"><div class="line"></div></div><span class="ruler-text">18 Image cursor trail</span></div>
+      <div class="row placeholder"><div class="line-wrapper"><div class="line"></div></div></div>
+      <div class="row interactive" data-comp="Svg follow scroll"><div class="line-wrapper"><div class="line"></div></div><span class="ruler-text">19 Svg follow scroll</span></div>
+      <div class="row placeholder"><div class="line-wrapper"><div class="line"></div></div></div>
+      <div class="row interactive" data-comp="UniSwap Counter Picker"><div class="line-wrapper"><div class="line"></div></div><span class="ruler-text">20 UniSwap Counter Picker</span></div>
+      <div class="row placeholder"><div class="line-wrapper"><div class="line"></div></div></div>
+      <div class="row interactive" data-comp="Morphing Pill Dock"><div class="line-wrapper"><div class="line"></div></div><span class="ruler-text">21 Morphing Pill Dock</span></div>
+      <div class="row placeholder"><div class="line-wrapper"><div class="line"></div></div></div>
+      <div class="row interactive" data-comp="Kinetic Typography"><div class="line-wrapper"><div class="line"></div></div><span class="ruler-text">22 Kinetic Typography</span></div>
+      <div class="row placeholder"><div class="line-wrapper"><div class="line"></div></div></div>
+      <div class="row interactive" data-comp="Arc Navigation Toolbar"><div class="line-wrapper"><div class="line"></div></div><span class="ruler-text">23 Arc Navigation Toolbar</span></div>
+      <div class="row placeholder"><div class="line-wrapper"><div class="line"></div></div></div>
+      <div class="row interactive" data-comp="Raycast Specimen Deck"><div class="line-wrapper"><div class="line"></div></div><span class="ruler-text">24 Raycast Specimen Deck</span></div>
+      <div class="row placeholder"><div class="line-wrapper"><div class="line"></div></div></div>
+      <div class="row interactive" data-comp="Audio Equalizer Visualizer"><div class="line-wrapper"><div class="line"></div></div><span class="ruler-text">25 Audio Equalizer Visualizer</span></div>
+      <div class="row placeholder"><div class="line-wrapper"><div class="line"></div></div></div>
+      <div class="row interactive" data-comp="Glass Scrubber Matrix"><div class="line-wrapper"><div class="line"></div></div><span class="ruler-text">26 Glass Scrubber Matrix</span></div>
+      <div class="row placeholder"><div class="line-wrapper"><div class="line"></div></div></div>
+      <div class="row interactive" data-comp="Tactile Haptic Switch"><div class="line-wrapper"><div class="line"></div></div><span class="ruler-text">27 Tactile Haptic Switch</span></div>
+      <div class="row placeholder"><div class="line-wrapper"><div class="line"></div></div></div>
+      <div class="row interactive" data-comp="Floating Capsule Tray"><div class="line-wrapper"><div class="line"></div></div><span class="ruler-text">28 Floating Capsule Tray</span></div>
+      <div class="row placeholder"><div class="line-wrapper"><div class="line"></div></div></div>
+      <div class="row interactive" data-comp="Matrix Character Stream"><div class="line-wrapper"><div class="line"></div></div><span class="ruler-text">29 Matrix Character Stream</span></div>
+      <div class="row placeholder"><div class="line-wrapper"><div class="line"></div></div></div>
+      <div class="row interactive" data-comp="Smoked Slab Viewport"><div class="line-wrapper"><div class="line"></div></div><span class="ruler-text">30 Smoked Slab Viewport</span></div>
+      <div class="row placeholder"><div class="line-wrapper"><div class="line"></div></div></div>
+      <div class="row interactive" data-comp="Spatial Depth Canvas"><div class="line-wrapper"><div class="line"></div></div><span class="ruler-text">31 Spatial Depth Canvas</span></div>
+      <div class="row placeholder"><div class="line-wrapper"><div class="line"></div></div></div>
+      <div class="row interactive" data-comp="Spring Velocity Orbiter"><div class="line-wrapper"><div class="line"></div></div><span class="ruler-text">32 Spring Velocity Orbiter</span></div>
+      <div class="row placeholder"><div class="line-wrapper"><div class="line"></div></div></div>
+      <div class="row interactive" data-comp="Radial Dial Selector"><div class="line-wrapper"><div class="line"></div></div><span class="ruler-text">33 Radial Dial Selector</span></div>
+      <div class="row placeholder"><div class="line-wrapper"><div class="line"></div></div></div>
+      <div class="row interactive" data-comp="Micro Specimen Vault"><div class="line-wrapper"><div class="line"></div></div><span class="ruler-text">34 Micro Specimen Vault</span></div>
+      <div class="row placeholder"><div class="line-wrapper"><div class="line"></div></div></div>
+      <div class="row interactive" data-comp="Vercel Tooltip"><div class="line-wrapper"><div class="line"></div></div><span class="ruler-text">35 Vercel Tooltip</span></div>
+      <div class="row placeholder"><div class="line-wrapper"><div class="line"></div></div></div>
+      <div class="row interactive" data-comp="Vercel scroll with blur"><div class="line-wrapper"><div class="line"></div></div><span class="ruler-text">36 Vercel scroll with blur</span></div>
+      <div class="row placeholder"><div class="line-wrapper"><div class="line"></div></div></div>
+      <div class="row interactive" data-comp="Family Receive button"><div class="line-wrapper"><div class="line"></div></div><span class="ruler-text">37 Family Receive button</span></div>
+      <div class="row placeholder"><div class="line-wrapper"><div class="line"></div></div></div>
+      <div class="row interactive" data-comp="Nextjs gooey menu"><div class="line-wrapper"><div class="line"></div></div><span class="ruler-text">38 Nextjs gooey menu</span></div>
+      <div class="row placeholder"><div class="line-wrapper"><div class="line"></div></div></div>
+      <div class="row interactive" data-comp="Perspective carousel"><div class="line-wrapper"><div class="line"></div></div><span class="ruler-text">39 Perspective carousel</span></div>
+      <div class="row placeholder"><div class="line-wrapper"><div class="line"></div></div></div>
+      <div class="row interactive" data-comp="Card swipe carousel"><div class="line-wrapper"><div class="line"></div></div><span class="ruler-text">40 Card swipe carousel</span></div>
+      <div class="row placeholder"><div class="line-wrapper"><div class="line"></div></div></div>
+      <div class="row interactive" data-comp="Inverted perspective carousel"><div class="line-wrapper"><div class="line"></div></div><span class="ruler-text">41 Inverted perspective carousel</span></div>
+      <div class="row placeholder"><div class="line-wrapper"><div class="line"></div></div></div>
+      <div class="row interactive" data-comp="Creative carousel 001"><div class="line-wrapper"><div class="line"></div></div><span class="ruler-text">42 Creative carousel 001</span></div>
+      <div class="row placeholder"><div class="line-wrapper"><div class="line"></div></div></div>
+      <div class="row interactive" data-comp="Creative carousel 002"><div class="line-wrapper"><div class="line"></div></div><span class="ruler-text">43 Creative carousel 002</span></div>
+      <div class="row placeholder"><div class="line-wrapper"><div class="line"></div></div></div>
+      <div class="row interactive" data-comp="ExpandOnHover"><div class="line-wrapper"><div class="line"></div></div><span class="ruler-text">44 ExpandOnHover</span></div>
+      <div class="row placeholder"><div class="line-wrapper"><div class="line"></div></div></div>
+      <div class="row interactive" data-comp="ExpandOnHover vertical"><div class="line-wrapper"><div class="line"></div></div><span class="ruler-text">45 ExpandOnHover vertical</span></div>
+      <div class="row placeholder"><div class="line-wrapper"><div class="line"></div></div></div>
+      <div class="row interactive" data-comp="Shadcn clipPath Carousal"><div class="line-wrapper"><div class="line"></div></div><span class="ruler-text">46 Shadcn clipPath Carousal</span></div>
+      <div class="row placeholder"><div class="line-wrapper"><div class="line"></div></div></div>
+      <div class="row interactive" data-comp="Parallax Image"><div class="line-wrapper"><div class="line"></div></div><span class="ruler-text">47 Parallax Image</span></div>
+      <div class="row placeholder"><div class="line-wrapper"><div class="line"></div></div></div>
+      <div class="row interactive" data-comp="Devouring details sign in"><div class="line-wrapper"><div class="line"></div></div><span class="ruler-text">48 Devouring details sign in</span></div>
+      <div class="row placeholder"><div class="line-wrapper"><div class="line"></div></div></div>
+      <div class="row interactive" data-comp="Vercel navigation bar"><div class="line-wrapper"><div class="line"></div></div><span class="ruler-text">49 Vercel navigation bar</span></div>
+      <div class="row placeholder"><div class="line-wrapper"><div class="line"></div></div></div>
+      <div class="row interactive" data-comp="Text roll navigation"><div class="line-wrapper"><div class="line"></div></div><span class="ruler-text">50 Text roll navigation</span></div>
+      <div class="row placeholder"><div class="line-wrapper"><div class="line"></div></div></div>
+      <div class="row interactive" data-comp="Drawing cursor effect"><div class="line-wrapper"><div class="line"></div></div><span class="ruler-text">51 Drawing cursor effect</span></div>
+      <div class="row placeholder"><div class="line-wrapper"><div class="line"></div></div></div>
+      <div class="row interactive" data-comp="Side Scroll Navigation"><div class="line-wrapper"><div class="line"></div></div><span class="ruler-text">52 Side Scroll Navigation</span></div>
+      <div class="row placeholder"><div class="line-wrapper"><div class="line"></div></div></div>
+      <div class="row interactive" data-comp="Mouse follow animations"><div class="line-wrapper"><div class="line"></div></div><span class="ruler-text">53 Mouse follow animations</span></div>
+      <div class="row placeholder"><div class="line-wrapper"><div class="line"></div></div></div>
+      <div class="row interactive" data-comp="Loop animation hook"><div class="line-wrapper"><div class="line"></div></div><span class="ruler-text">54 Loop animation hook</span></div>
+      <div class="row placeholder"><div class="line-wrapper"><div class="line"></div></div></div>
+      <div class="row interactive" data-comp="Apple squicircle effect"><div class="line-wrapper"><div class="line"></div></div><span class="ruler-text">55 Apple squicircle effect</span></div>
+      <div class="row placeholder"><div class="line-wrapper"><div class="line"></div></div></div>
+      <div class="row interactive" data-comp="Gooey Effect"><div class="line-wrapper"><div class="line"></div></div><span class="ruler-text">56 Gooey Effect</span></div>
+      <div class="row placeholder"><div class="line-wrapper"><div class="line"></div></div></div>
+      <div class="row interactive" data-comp="Breakpoint indicator"><div class="line-wrapper"><div class="line"></div></div><span class="ruler-text">57 Breakpoint indicator</span></div>
+      <div class="row placeholder"><div class="line-wrapper"><div class="line"></div></div></div>
+      <div class="row interactive" data-comp="SVG clip path mask"><div class="line-wrapper"><div class="line"></div></div><span class="ruler-text">58 SVG clip path mask</span></div>
+      <div class="row placeholder"><div class="line-wrapper"><div class="line"></div></div></div>
+      <div class="row interactive" data-comp="Video player 001"><div class="line-wrapper"><div class="line"></div></div><span class="ruler-text">59 Video player 001</span></div>
+      <div class="row placeholder"><div class="line-wrapper"><div class="line"></div></div></div>
+      <div class="row interactive" data-comp="Animated number input"><div class="line-wrapper"><div class="line"></div></div><span class="ruler-text">60 Animated number input</span></div>
+      <div class="row placeholder"><div class="line-wrapper"><div class="line"></div></div></div>
+      <div class="row interactive" data-comp="Skiper Number flow"><div class="line-wrapper"><div class="line"></div></div><span class="ruler-text">61 Skiper Number flow</span></div>
+      <div class="row placeholder"><div class="line-wrapper"><div class="line"></div></div></div>
+      <div class="row interactive" data-comp="Text reveal box"><div class="line-wrapper"><div class="line"></div></div><span class="ruler-text">62 Text reveal box</span></div>
+      <div class="row placeholder"><div class="line-wrapper"><div class="line"></div></div></div>
+      <div class="row interactive" data-comp="Image reveal"><div class="line-wrapper"><div class="line"></div></div><span class="ruler-text">63 Image reveal</span></div>
+      <div class="row placeholder"><div class="line-wrapper"><div class="line"></div></div></div>
+      <div class="row interactive" data-comp="Horizontal Text reveal"><div class="line-wrapper"><div class="line"></div></div><span class="ruler-text">64 Horizontal Text reveal</span></div>
+      <div class="row placeholder"><div class="line-wrapper"><div class="line"></div></div></div>
+      <div class="row interactive" data-comp="Infinite canvas"><div class="line-wrapper"><div class="line"></div></div><span class="ruler-text">65 Infinite canvas</span></div>
+      <div class="row placeholder"><div class="line-wrapper"><div class="line"></div></div></div>
+      <div class="row interactive" data-comp="Timeline calendar"><div class="line-wrapper"><div class="line"></div></div><span class="ruler-text">66 Timeline calendar</span></div>
+      <div class="row placeholder"><div class="line-wrapper"><div class="line"></div></div></div>
+      <div class="row interactive" data-comp="Apple Navbar V002"><div class="line-wrapper"><div class="line"></div></div><span class="ruler-text">67 Apple Navbar V002</span></div>
+      <div class="row placeholder"><div class="line-wrapper"><div class="line"></div></div></div>
+      <div class="row interactive" data-comp="Mesh Gradient Shader"><div class="line-wrapper"><div class="line"></div></div><span class="ruler-text">68 Mesh Gradient Shader</span></div>
+      <div class="row placeholder"><div class="line-wrapper"><div class="line"></div></div></div>
+      <div class="row interactive" data-comp="Volumetric Light Prism"><div class="line-wrapper"><div class="line"></div></div><span class="ruler-text">69 Volumetric Light Prism</span></div>
+      <div class="row placeholder"><div class="line-wrapper"><div class="line"></div></div></div>
+      <div class="row interactive" data-comp="Holographic Card Matrix"><div class="line-wrapper"><div class="line"></div></div><span class="ruler-text">70 Holographic Card Matrix</span></div>
+      <div class="row placeholder"><div class="line-wrapper"><div class="line"></div></div></div>
+      <div class="row interactive" data-comp="Magnetic Cursor Well"><div class="line-wrapper"><div class="line"></div></div><span class="ruler-text">71 Magnetic Cursor Well</span></div>
+      <div class="row placeholder"><div class="line-wrapper"><div class="line"></div></div></div>
+      <div class="row interactive" data-comp="Fluid Distortion Mesh"><div class="line-wrapper"><div class="line"></div></div><span class="ruler-text">72 Fluid Distortion Mesh</span></div>
+      <div class="row placeholder"><div class="line-wrapper"><div class="line"></div></div></div>
+      <div class="row interactive" data-comp="Noise Grain Synthesizer"><div class="line-wrapper"><div class="line"></div></div><span class="ruler-text">73 Noise Grain Synthesizer</span></div>
+      <div class="row placeholder"><div class="line-wrapper"><div class="line"></div></div></div>
+      <div class="row interactive" data-comp="Quantum State Indicator"><div class="line-wrapper"><div class="line"></div></div><span class="ruler-text">74 Quantum State Indicator</span></div>
+      <div class="row placeholder"><div class="line-wrapper"><div class="line"></div></div></div>
+      <div class="row interactive" data-comp="Abyss Specimen Core"><div class="line-wrapper"><div class="line"></div></div><span class="ruler-text">75 Abyss Specimen Core</span></div>
+    </div>
+  </div>
+
+  <!-- BOTTOM SPECIMEN RAIL (COMPACT DOCK PILL) -->
+  <div class="specimen-rail" id="specimenRail">
+    <div class="rail-header-buttons">
+      <div class="rail-action-group">
+        <!-- Details Symbol -->
+        <button id="infoBtn" class="keycap-symbol" aria-label="Spec Sheet" title="Component Specs">
+          <div class="keycap-symbol-inner">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+              <line x1="12" y1="10" x2="12" y2="18"></line>
+              <circle cx="12" cy="5.5" r="2" fill="currentColor" stroke="none"></circle>
+            </svg>
+          </div>
+        </button>
+
+        <!-- Code Symbol -->
+        <button id="codeBtn" class="keycap-symbol" aria-label="View Code" title="Implementation Code">
+          <div class="keycap-symbol-inner">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <polyline points="16 18 22 12 16 6"></polyline>
+              <polyline points="8 6 2 12 8 18"></polyline>
+            </svg>
+          </div>
+        </button>
+
+        <!-- Fullscreen Symbol -->
+        <button id="fullscreenBtn" class="keycap-symbol" aria-label="Fullscreen" title="Toggle Fullscreen">
+          <div class="keycap-symbol-inner">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path>
+            </svg>
+          </div>
+        </button>
+      </div>
+
+      <div class="rail-separator"></div>
+
+      <!-- Controls Symbol -->
+      <button id="controlsBtn" class="keycap-symbol" aria-label="Controls" title="Parameters">
+        <div class="keycap-symbol-inner">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <line x1="4" y1="21" x2="4" y2="14"></line>
+            <line x1="4" y1="10" x2="4" y2="3"></line>
+            <line x1="12" y1="21" x2="12" y2="12"></line>
+            <line x1="12" y1="8" x2="12.01" y2="8"></line>
+            <line x1="20" y1="21" x2="20" y2="16"></line>
+            <line x1="20" y1="12" x2="20" y2="3"></line>
+            <line x1="1" y1="14" x2="7" y2="14"></line>
+            <line x1="9" y1="8" x2="15" y2="8"></line>
+            <line x1="17" y1="16" x2="23" y2="16"></line>
+          </svg>
+        </div>
+      </button>
+    </div>
+  </div>
+
+  <!-- RIGHT-EDGE SPECIMEN INFO LEDGER -->
+  <aside class="specimen-ledger" id="infoLedger" aria-label="Component Spec Sheet">
+    <button class="ledger-close-btn" id="closeInfoLedgerBtn" aria-label="Close Info" title="Close">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+        <line x1="18" y1="6" x2="6" y2="18"></line>
+        <line x1="6" y1="6" x2="18" y2="18"></line>
+      </svg>
+    </button>
+
+    <div class="ledger-body">
+      <!-- 01: Overview & Pitch -->
+      <section class="ledger-section">
+        <div class="section-tag">OVERVIEW</div>
+        <h1 class="ledger-title" id="ledgerCompTitle">Arc Drift Gallery</h1>
+        <p class="ledger-desc">
+          Kinetic spatial exhibition gallery utilizing GLSL radial arc distortion curves and delta-corrected inertial physics. Designed for high-impact visual showcases with continuous focus tracking and momentum friction.
+        </p>
+      </section>
+
+      <!-- 02: Tech & Dependencies -->
+      <section class="ledger-section">
+        <div class="section-tag">TECH & DEPENDENCIES</div>
+        <div class="tech-pill-group">
+          <span class="tech-pill-dark">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(30 12 12)"></ellipse><ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(-30 12 12)"></ellipse><circle cx="12" cy="12" r="1.5" fill="currentColor"></circle></svg>
+            React 18+
+          </span>
+          <span class="tech-pill-dark">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
+            Three.js / WebGL
+          </span>
+          <span class="tech-pill-dark">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 19 8.5 19 15.5 12 22 5 15.5 5 8.5 12 2"></polygon><line x1="12" y1="22" x2="12" y2="12"></line><line x1="12" y1="12" x2="19" y2="8.5"></line><line x1="12" y1="12" x2="5" y2="8.5"></line></svg>
+            Custom GLSL
+          </span>
+          <span class="tech-pill-dark">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="3" ry="3"></rect><path d="M7 8h6M10 8v8M14 13.5c.5.5 1.2.8 1.8.8.8 0 1.2-.4 1.2-.8s-.4-.7-1.2-1l-.6-.2c-1.1-.4-1.7-1-1.7-1.9 0-1.1.9-1.9 2.2-1.9.9 0 1.6.3 2.1.8l-.6.7c-.4-.4-.9-.6-1.5-.6-.7 0-1.1.3-1.1.7 0 .4.4.6 1.1.9l.6.2c1.2.4 1.8 1 1.8 2 0 1.2-.9 2-2.3 2-1 0-1.9-.4-2.4-1l.5-.7z"></path></svg>
+            TypeScript
+          </span>
+          <span class="tech-pill-dark">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 12c.5-1.5 1.8-2.5 3.5-2.5 2.5 0 3 2.5 5.5 2.5 1.5 0 2.5-.7 3-2M3 17c.5-1.5 1.8-2.5 3.5-2.5 2.5 0 3 2.5 5.5 2.5 1.5 0 2.5-.7 3-2"></path></svg>
+            Tailwind CSS
+          </span>
+        </div>
+      </section>
+
+      <!-- 03: Where to Use -->
+      <section class="ledger-section">
+        <div class="section-tag">APPLICATION & USE CASES</div>
+        <p class="ledger-desc">
+          Ideal for portfolio specimen showcases, architecture work galleries, product landing heroes, and curated editorial archives where tactile momentum elevates presentation.
+        </p>
+      </section>
+
+      <!-- 04: Properties & Configuration -->
+      <section class="ledger-section">
+        <div class="section-tag">PROPERTIES</div>
+        <div class="ledger-props-table">
+          <div class="ledger-prop-row">
+            <span class="ledger-prop-name">items: GalleryItem[]</span>
+            <span class="ledger-prop-desc">Array of texture sources, titles, and aspect ratios.</span>
+          </div>
+          <div class="ledger-prop-row">
+            <span class="ledger-prop-name">curvature: number (0.1 - 1.0)</span>
+            <span class="ledger-prop-desc">GLSL radial arc distortion coefficient. Default 0.42.</span>
+          </div>
+          <div class="ledger-prop-row">
+            <span class="ledger-prop-name">inertia: number (0.5 - 0.99)</span>
+            <span class="ledger-prop-desc">Momentum friction deceleration factor. Default 0.92.</span>
+          </div>
+          <div class="ledger-prop-row">
+            <span class="ledger-prop-name">dragSensitivity: number</span>
+            <span class="ledger-prop-desc">Pointer kinetic displacement multiplier. Default 1.25.</span>
+          </div>
+          <div class="ledger-prop-row">
+            <span class="ledger-prop-name">onSelect?: (item: GalleryItem) =&gt; void</span>
+            <span class="ledger-prop-desc">Event callback triggered when a card enters active focus.</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- 05: Engineering Notes -->
+      <section class="ledger-section">
+        <div class="section-tag">ENGINEERING NOTES</div>
+        <div class="callout-box">
+          • Zero layout thrashing: uses GPU vertex displacement shaders.<br>
+          • Frame-rate independent physics with delta-time smoothing.<br>
+          • Automated WebGL texture mipmap compression and buffer disposal on unmount.
+        </div>
+      </section>
+
+      <!-- 06: Disclaimer -->
+      <section class="ledger-section">
+        <div class="section-tag">HERITAGE & DISCLAIMER</div>
+        <p class="ledger-desc" style="font-size: 12px; color: #71717a;">
+          Crafted as an independent design recreation study exploring spatial web primitives. Built from scratch with custom math, shaders, and physics. Not affiliated with original inspiration works.
+        </p>
+      </section>
+
+      <!-- 07: License -->
+      <section class="ledger-section">
+        <div class="section-tag">LICENSE & USAGE</div>
+        <p class="ledger-desc" style="font-size: 12px; color: #71717a;">
+          MIT License. Free for commercial, personal, and educational production.
+        </p>
+      </section>
+    </div>
+  </aside>
+
+  <!-- RIGHT-EDGE SPECIMEN CODE LEDGER -->
+  <aside class="specimen-ledger" id="codeLedger" aria-label="Component Code Snippets">
+    <button class="ledger-close-btn" id="closeCodeLedgerBtn" aria-label="Close Code" title="Close">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+        <line x1="18" y1="6" x2="6" y2="18"></line>
+        <line x1="6" y1="6" x2="18" y2="18"></line>
+      </svg>
+    </button>
+
+    <div class="ledger-body">
+      <!-- Sub-snippet 1: Installation -->
+      <section class="ledger-section">
+        <div class="section-tag">INSTALLATION</div>
+        <div class="pkg-tabs">
+          <button class="pkg-tab active" data-cmd="npm i @abyss-ui/core">npm</button>
+          <button class="pkg-tab" data-cmd="pnpm add @abyss-ui/core">pnpm</button>
+          <button class="pkg-tab" data-cmd="yarn add @abyss-ui/core">yarn</button>
+          <button class="pkg-tab" data-cmd="bun add @abyss-ui/core">bun</button>
+        </div>
+        <div class="code-card">
+          <pre class="code-pre"><code id="installCmdText" style="color: #e4e4e7;">npm i @abyss-ui/core</code></pre>
+        </div>
+      </section>
+
+      <!-- Sub-snippet 2: Basic Usage -->
+      <section class="ledger-section">
+        <div class="section-tag">BASIC USAGE</div>
+        <div class="code-card">
+          <button class="code-copy-btn" data-copy="basic" aria-label="Copy Code">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+            </svg>
+          </button>
+          <pre class="code-pre"><code><span class="code-kw">import</span> { <span class="code-comp">ArcDriftGallery</span> } <span class="code-kw">from</span> <span class="code-str">"@abyss-ui/core"</span>;
+
+<span class="code-kw">export default function</span> <span class="code-comp">SimpleGallery</span>() {
+  <span class="code-kw">return</span> (
+    <span class="code-tag">&lt;ArcDriftGallery</span>
+      <span class="code-prop">items</span>=<span class="code-val">{galleryItems}</span>
+      <span class="code-prop">curvature</span>=<span class="code-val">{0.42}</span>
+      <span class="code-prop">inertia</span>=<span class="code-val">{0.92}</span>
+    <span class="code-tag">/&gt;</span>
+  );
+}</code></pre>
+        </div>
+      </section>
+
+      <!-- Sub-snippet 3: Controlled State -->
+      <section class="ledger-section">
+        <div class="section-tag">CONTROLLED STATE</div>
+        <div class="code-card">
+          <button class="code-copy-btn" data-copy="controlled" aria-label="Copy Code">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+            </svg>
+          </button>
+          <pre class="code-pre"><code><span class="code-kw">import</span> { <span class="code-comp">useState</span> } <span class="code-kw">from</span> <span class="code-str">"react"</span>;
+<span class="code-kw">import</span> { <span class="code-comp">ArcDriftGallery</span> } <span class="code-kw">from</span> <span class="code-str">"@abyss-ui/core"</span>;
+
+<span class="code-kw">export default function</span> <span class="code-comp">ControlledGallery</span>() {
+  <span class="code-kw">const</span> [activeId, setActiveId] = <span class="code-comp">useState</span>(<span class="code-str">"01"</span>);
+
+  <span class="code-kw">return</span> (
+    <span class="code-tag">&lt;ArcDriftGallery</span>
+      <span class="code-prop">items</span>=<span class="code-val">{galleryItems}</span>
+      <span class="code-prop">activeId</span>=<span class="code-val">{activeId}</span>
+      <span class="code-prop">onSelect</span>=<span class="code-val">{(item) =&gt; setActiveId(item.id)}</span>
+    <span class="code-tag">/&gt;</span>
+  );
+}</code></pre>
+        </div>
+      </section>
+
+      <!-- Sub-snippet 4: Custom Distortion & Physics -->
+      <section class="ledger-section">
+        <div class="section-tag">CUSTOM DISTORTION & PHYSICS</div>
+        <div class="code-card">
+          <button class="code-copy-btn" data-copy="custom" aria-label="Copy Code">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+            </svg>
+          </button>
+          <pre class="code-pre"><code><span class="code-tag">&lt;ArcDriftGallery</span>
+  <span class="code-prop">items</span>=<span class="code-val">{galleryItems}</span>
+  <span class="code-prop">curvature</span>=<span class="code-val">{0.65}</span>
+  <span class="code-prop">inertia</span>=<span class="code-val">{0.96}</span>
+  <span class="code-prop">dragSensitivity</span>=<span class="code-val">{1.4}</span>
+  <span class="code-prop">autoFocus</span>=<span class="code-val">{true}</span>
+  <span class="code-prop">className</span>=<span class="code-str">"h-screen w-full"</span>
+<span class="code-tag">/&gt;</span></code></pre>
+        </div>
+      </section>
+
+      <!-- Sub-snippet 5: Event Handlers -->
+      <section class="ledger-section">
+        <div class="section-tag">EVENT HANDLERS & CALLBACKS</div>
+        <div class="code-card">
+          <button class="code-copy-btn" data-copy="events" aria-label="Copy Code">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+            </svg>
+          </button>
+          <pre class="code-pre"><code><span class="code-tag">&lt;ArcDriftGallery</span>
+  <span class="code-prop">items</span>=<span class="code-val">{galleryItems}</span>
+  <span class="code-prop">onFocusChange</span>=<span class="code-val">{(index) =&gt; {</span>
+    <span class="code-comp">console</span>.log(<span class="code-str">"Card focused:"</span>, index);
+  <span class="code-val">}}</span>
+  <span class="code-prop">onSelect</span>=<span class="code-val">{(item) =&gt; {</span>
+    <span class="code-comp">console</span>.log(<span class="code-str">"Card selected:"</span>, item);
+  <span class="code-val">}}</span>
+<span class="code-tag">/&gt;</span></code></pre>
+        </div>
+      </section>
+    </div>
+  </aside>
+
+  <script>
+    const infoBtn = document.getElementById('infoBtn');
+    const codeBtn = document.getElementById('codeBtn');
+    const controlsBtn = document.getElementById('controlsBtn');
+    const fullscreenBtn = document.getElementById('fullscreenBtn');
+
+    const infoLedger = document.getElementById('infoLedger');
+    const codeLedger = document.getElementById('codeLedger');
+    const closeInfoBtn = document.getElementById('closeInfoLedgerBtn');
+    const closeCodeBtn = document.getElementById('closeCodeLedgerBtn');
+
+    function closeAllLedgers() {
+      if (infoLedger) infoLedger.classList.remove('open');
+      if (codeLedger) codeLedger.classList.remove('open');
+      if (infoBtn) infoBtn.classList.remove('active');
+      if (codeBtn) codeBtn.classList.remove('active');
+    }
+
+    function openInfoLedger() {
+      if (codeLedger) codeLedger.classList.remove('open');
+      if (codeBtn) codeBtn.classList.remove('active');
+      if (infoLedger) infoLedger.classList.add('open');
+      if (infoBtn) infoBtn.classList.add('active');
+    }
+
+    function openCodeLedger() {
+      if (infoLedger) infoLedger.classList.remove('open');
+      if (infoBtn) infoBtn.classList.remove('active');
+      if (codeLedger) codeLedger.classList.add('open');
+      if (codeBtn) codeBtn.classList.add('active');
+    }
+
+    if (infoBtn) {
+      infoBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (infoLedger && infoLedger.classList.contains('open')) {
+          closeAllLedgers();
+        } else {
+          openInfoLedger();
+        }
+      });
+    }
+
+    if (codeBtn) {
+      codeBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (codeLedger && codeLedger.classList.contains('open')) {
+          closeAllLedgers();
+        } else {
+          openCodeLedger();
+        }
+      });
+    }
+
+    if (closeInfoBtn) closeInfoBtn.addEventListener('click', (e) => { e.stopPropagation(); closeAllLedgers(); });
+    if (closeCodeBtn) closeCodeBtn.addEventListener('click', (e) => { e.stopPropagation(); closeAllLedgers(); });
+
+    // Package Tabs Switch
+    document.querySelectorAll('.pkg-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.pkg-tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        const cmd = tab.getAttribute('data-cmd');
+        const textEl = document.getElementById('installCmdText');
+        if (textEl && cmd) textEl.textContent = cmd;
+      });
+    });
+
+    // Copy Code Buttons
+    document.querySelectorAll('.code-copy-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const card = btn.closest('.code-card');
+        const code = card ? card.querySelector('.code-pre')?.innerText : '';
+        if (code) {
+          navigator.clipboard.writeText(code);
+          btn.style.color = '#9be5fb';
+          setTimeout(() => { btn.style.color = ''; }, 1200);
+        }
+      });
+    });
+
+    // Menu Drawer Toggle
+    const menuTrigger = document.getElementById('menuTrigger');
+    const rulerDrawer = document.getElementById('rulerDrawer');
+
+    if (menuTrigger) {
+      menuTrigger.addEventListener('click', (e) => {
+        e.stopPropagation();
+        document.body.classList.toggle('ruler-drawer-open');
+      });
+    }
+
+    // Ruler Items Click
+    document.querySelectorAll('.row.interactive').forEach(item => {
+      item.addEventListener('click', (e) => {
+        e.stopPropagation();
+        document.querySelectorAll('.row.interactive').forEach(i => i.classList.remove('active'));
+        item.classList.add('active');
+        const compName = item.getAttribute('data-comp');
+        const titleEl = document.getElementById('ledgerCompTitle');
+        if (titleEl && compName) {
+          titleEl.textContent = compName;
+        }
+        document.body.classList.remove('ruler-drawer-open');
+      });
+    });
+
+    // Controls Drawer Toggle via controlsBtn
+    const controlsDrawer = document.getElementById('controlsDrawer');
+
+    if (controlsBtn) {
+      controlsBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const isOpen = document.body.classList.toggle('controls-drawer-open');
+        controlsBtn.classList.toggle('active', isOpen);
+      });
+    }
+
+    const closeControlsBtn = document.getElementById('closeControlsBtn');
+    if (closeControlsBtn) {
+      closeControlsBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        document.body.classList.remove('controls-drawer-open');
+        if (controlsBtn) controlsBtn.classList.remove('active');
+      });
+    }
+
+    // Connect Sliders to Value Displays
+    const setupSlider = (sliderId, valId) => {
+      const slider = document.getElementById(sliderId);
+      const valDisplay = document.getElementById(valId);
+      if (slider && valDisplay) {
+        slider.addEventListener('input', () => {
+          valDisplay.textContent = slider.value;
+        });
+      }
+    };
+
+    const setupScrubber = (sliderId, valId, fillId, suffix = '') => {
+      const slider = document.getElementById(sliderId);
+      const valDisplay = document.getElementById(valId);
+      const fill = document.getElementById(fillId);
+      if (slider && valDisplay && fill) {
+        const update = () => {
+          const min = parseFloat(slider.min) || 0;
+          const max = parseFloat(slider.max) || 1;
+          const val = parseFloat(slider.value);
+          const pct = ((val - min) / (max - min)) * 100;
+          fill.style.width = pct + '%';
+          valDisplay.textContent = slider.value + suffix;
+        };
+        slider.addEventListener('input', update);
+        update();
+      }
+    };
+
+    setupScrubber('sliderCurvature', 'valCurvature', 'fillCurvature');
+    setupScrubber('sliderInertia', 'valInertia', 'fillInertia');
+    setupScrubber('sliderDrag', 'valDrag', 'fillDrag');
+
+    const resetBtn = document.getElementById('resetControlsBtn');
+    if (resetBtn) {
+      resetBtn.addEventListener('click', () => {
+        const c = document.getElementById('sliderCurvature');
+        const i = document.getElementById('sliderInertia');
+        const d = document.getElementById('sliderDrag');
+        if (c) { c.value = 0.42; c.dispatchEvent(new Event('input')); }
+        if (i) { i.value = 0.92; i.dispatchEvent(new Event('input')); }
+        if (d) { d.value = 1.25; d.dispatchEvent(new Event('input')); }
+      });
+    }
+
+    // Free-form Drag for Controls Drawer
+    const controlsHeader = document.querySelector('.controls-drawer-header');
+    if (controlsHeader && controlsDrawer) {
+      let isDragging = false;
+      let startX = 0, startY = 0;
+      let initialLeft = 0, initialTop = 0;
+
+      const onDragStart = (e) => {
+        if (e.target.closest('.controls-body')) return;
+
+        isDragging = true;
+        controlsHeader.style.cursor = 'grabbing';
+        
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+        const rect = controlsDrawer.getBoundingClientRect();
+        initialLeft = rect.left;
+        initialTop = rect.top;
+
+        controlsDrawer.style.left = initialLeft + 'px';
+        controlsDrawer.style.top = initialTop + 'px';
+        controlsDrawer.style.right = 'auto';
+        controlsDrawer.style.bottom = 'auto';
+        controlsDrawer.style.transform = 'none';
+        controlsDrawer.style.transition = 'none';
+
+        startX = clientX;
+        startY = clientY;
+
+        window.addEventListener('mousemove', onDragMove);
+        window.addEventListener('mouseup', onDragEnd);
+        window.addEventListener('touchmove', onDragMove, { passive: false });
+        window.addEventListener('touchend', onDragEnd);
+      };
+
+      const onDragMove = (e) => {
+        if (!isDragging) return;
+        if (e.preventDefault && e.cancelable) e.preventDefault();
+
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+        const deltaX = clientX - startX;
+        const deltaY = clientY - startY;
+
+        let newLeft = initialLeft + deltaX;
+        let newTop = initialTop + deltaY;
+
+        const maxLeft = window.innerWidth - controlsDrawer.offsetWidth - 12;
+        const maxTop = window.innerHeight - controlsDrawer.offsetHeight - 12;
+
+        newLeft = Math.max(12, Math.min(newLeft, maxLeft));
+        newTop = Math.max(12, Math.min(newTop, maxTop));
+
+        controlsDrawer.style.left = newLeft + 'px';
+        controlsDrawer.style.top = newTop + 'px';
+      };
+
+      const onDragEnd = () => {
+        isDragging = false;
+        controlsHeader.style.cursor = 'grab';
+        window.removeEventListener('mousemove', onDragMove);
+        window.removeEventListener('mouseup', onDragEnd);
+        window.removeEventListener('touchmove', onDragMove);
+        window.removeEventListener('touchend', onDragEnd);
+      };
+
+      controlsHeader.addEventListener('mousedown', onDragStart);
+      controlsHeader.addEventListener('touchstart', onDragStart, { passive: false });
+    }
+
+    // Segmented Switches
+    document.querySelectorAll('.segment-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.segment-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+      });
+    });
+
+
+
+    // Fullscreen Toggle
+    if (fullscreenBtn) {
+      fullscreenBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (!document.fullscreenElement) {
+          document.documentElement.requestFullscreen().catch(() => {});
+          fullscreenBtn.classList.add('active');
+        } else {
+          document.exitFullscreen().catch(() => {});
+          fullscreenBtn.classList.remove('active');
+        }
+      });
+    }
+
+    // ESC Key
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        closeAllLedgers();
+        document.body.classList.remove('ruler-drawer-open');
+        document.body.classList.remove('controls-drawer-open');
+      }
+    });
+  </script>
+</body>
+</html>

@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Search } from "lucide-react";
 
 interface DockNavbarProps {
@@ -11,6 +12,7 @@ interface DockNavbarProps {
 
 export function DockNavbar({ onOpenSearch, threshold = 40 }: DockNavbarProps) {
   const [isScrolled, setIsScrolled] = useState(false);
+  const pathname = usePathname();
 
   useEffect(() => {
     // ponytail: native passive scroll listener for pill condensation
@@ -22,6 +24,20 @@ export function DockNavbar({ onOpenSearch, threshold = 40 }: DockNavbarProps) {
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, [threshold]);
+
+  const handleCollectionClick = (e: React.MouseEvent) => {
+    if (pathname === "/components") {
+      e.preventDefault();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
+
+  const handleDocsClick = (e: React.MouseEvent) => {
+    if (pathname === "/docs") {
+      e.preventDefault();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
 
   return (
     <div className="dock-wrapper" id="dockWrapper">
@@ -50,10 +66,18 @@ export function DockNavbar({ onOpenSearch, threshold = 40 }: DockNavbarProps) {
 
         {/* Links */}
         <nav className="dock-nav-links">
-          <Link href="/components" className="dock-nav-link shutter-hover">
+          <Link
+            href="/components"
+            className="dock-nav-link shutter-hover"
+            onClick={handleCollectionClick}
+          >
             Collection
           </Link>
-          <Link href="/docs" className="dock-nav-link shutter-hover">
+          <Link
+            href="/docs"
+            className="dock-nav-link shutter-hover"
+            onClick={handleDocsClick}
+          >
             Docs
           </Link>
         </nav>

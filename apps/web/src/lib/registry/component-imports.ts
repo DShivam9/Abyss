@@ -37,6 +37,7 @@ export const COMPONENT_IMPORTS: Record<string, React.ComponentType<VesselCompone
   "scroll-text-reveal": dynamic(() => import("../../../../../packages/core/src/components/scroll-text-reveal"), { ssr: false }),
   "tracklist-gallery": dynamic(() => import("../../../../../packages/core/src/components/tracklist-gallery"), { ssr: false }),
   "hover-media-stream": dynamic(() => import("../../../../../packages/core/src/components/hover-media-stream"), { ssr: false }),
+  "gimbal-stream": dynamic(() => import("../../../../../packages/core/src/components/gimbal-stream"), { ssr: false }),
 };
 
 

@@ -14,6 +14,7 @@ export interface HoverMediaStreamProps extends VesselComponentProps {
   ambientBrightness?: number;
   lineDuration?: number;
   fontSize?: number;
+  enableAudio?: boolean;
   className?: string;
   style?: React.CSSProperties;
 }

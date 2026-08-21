@@ -1,0 +1,1498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Abyss — Component Collection</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="preconnect" href="https://api.fontshare.com">
+  <link href="https://api.fontshare.com/v2/css?f[]=switzer@400,500,600&f[]=ranade@500,600,700&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Dela+Gothic+One&family=Major+Mono+Display&family=RocknRoll+One&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      /* Smoked Onyx Deep Matte Palette */
+      --bg: #0d0d0f;
+      --card-slab: #121215;
+      --preview-bg: #070709;
+      --dock-surface: #1a1a1c;
+      --text-primary: #ffffff;
+      --text-muted: #8e8e93;
+      --text-title-muted: #a1a1aa;
+      --card-text: #d4d4d8;
+      --card-text-hover: #ffffff;
+      --accent: #9be5fb;
+      --font-display: 'Ranade', -apple-system, sans-serif;
+      --font-body: 'Switzer', -apple-system, sans-serif;
+      --font-mono: ui-monospace, SFMono-Regular, monospace;
+      --ease-emil: cubic-bezier(0.23, 1, 0.32, 1);
+      --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      overflow-x: hidden;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+
+    html::-webkit-scrollbar,
+    body::-webkit-scrollbar {
+      display: none;
+      width: 0;
+      height: 0;
+    }
+
+    body {
+      background-color: var(--bg);
+      position: relative;
+      color: var(--text-primary);
+      font-family: var(--font-body);
+      min-height: 100vh;
+      /* ponytail: 170px top space for floating dock navbar breathing room */
+      padding: 170px 40px 100px 40px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body.modal-open {
+      overflow: hidden;
+    }
+
+    /* Fixed Compact Floating Dock Container */
+    .dock-wrapper {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: calc(100% - 32px);
+      max-width: 680px;
+      z-index: 1000;
+    }
+
+    /* Solid Smooth Dark Slate Slab Dock — Sleek Architectural Radius (14px) */
+    .dock-nav {
+      position: relative;
+      height: 54px;
+      padding: 0 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: linear-gradient(180deg, #141416 0%, #0d0d0f 100%);
+      border-radius: 14px;
+      border: none;
+      box-shadow: 
+        inset 0 1px 0 rgba(255, 255, 255, 0.08),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.5),
+        0 16px 36px rgba(0, 0, 0, 0.7);
+    }
+
+    .brand {
+      font-family: var(--font-display);
+      font-weight: 600;
+      font-size: 13.5px;
+      letter-spacing: 0.08em;
+      color: var(--text-primary);
+      text-decoration: none;
+      padding-left: 4px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .brand-icon {
+      color: var(--accent);
+      flex-shrink: 0;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .nav-link {
+      position: relative;
+      overflow: hidden;
+      font-size: 13.5px;
+      font-weight: 500;
+      color: var(--text-muted);
+      text-decoration: none;
+      padding: 6px 12px;
+      border-radius: 8px;
+      z-index: 1;
+      transition: color 200ms var(--ease-out), font-weight 200ms var(--ease-out);
+    }
+
+    .nav-link::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: var(--accent);
+      border-radius: 8px;
+      transform: translate3d(-105%, 105%, 0) skewX(-18deg);
+      transition: transform 240ms var(--ease-out);
+      z-index: -1;
+      pointer-events: none;
+    }
+
+    .nav-link:hover::before {
+      transform: translate3d(0, 0, 0) skewX(0deg);
+    }
+
+    .nav-link:hover {
+      color: #000000;
+      font-weight: 600;
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .search-trigger, .github-link {
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      background: var(--dock-surface);
+      border: none;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+      color: var(--text-muted);
+      text-decoration: none;
+      cursor: pointer;
+      z-index: 1;
+      transition: 
+        color 180ms var(--ease-out),
+        transform 180ms var(--ease-out);
+    }
+
+    .search-trigger::before, .github-link::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: var(--accent);
+      border-radius: 10px;
+      transform: translate3d(-105%, 105%, 0) skewX(-18deg);
+      transition: transform 240ms var(--ease-out);
+      z-index: -1;
+      pointer-events: none;
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      .search-trigger:hover::before, .github-link:hover::before {
+        transform: translate3d(0, 0, 0) skewX(0deg);
+      }
+
+      .search-trigger:hover, .github-link:hover {
+        color: #000000;
+        transform: translateY(-1px);
+      }
+    }
+
+    /* Modal Command Palette Overlay */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      z-index: 2000;
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      transition: opacity 220ms var(--ease-out), visibility 220ms var(--ease-out);
+    }
+
+    .modal-overlay.open {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+    }
+
+    /* Command Palette Modal — Dark Charcoal Slate Finish */
+    .search-modal {
+      width: 680px;
+      max-width: 100%;
+      background: linear-gradient(180deg, #111113 0%, #08080a 100%);
+      border: none;
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 
+        inset 0 1px 0 rgba(255, 255, 255, 0.07),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.6),
+        0 28px 72px rgba(0, 0, 0, 0.9);
+    }
+
+    .search-header {
+      display: flex;
+      align-items: center;
+      padding: 20px 24px;
+      border-bottom: none;
+      gap: 14px;
+      background: rgba(255, 255, 255, 0.015);
+    }
+
+    .search-brand-tag {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--accent);
+      flex-shrink: 0;
+    }
+    
+    .search-input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--text-primary);
+      font-family: var(--font-body);
+      font-size: 16.5px;
+      font-weight: 500;
+      letter-spacing: -0.01em;
+    }
+
+    .search-input::placeholder {
+      color: var(--text-muted);
+      font-weight: 400;
+    }
+
+    .kbd-esc {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      padding: 4px 8px;
+      border-radius: 6px;
+      background: #18181c;
+      color: var(--text-muted);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+      cursor: pointer;
+    }
+
+    .results-list {
+      max-height: 380px;
+      overflow-y: auto;
+      padding: 14px 18px;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+
+    /* Completely Hidden Scrollbar */
+    .results-list::-webkit-scrollbar {
+      display: none;
+    }
+
+    .category-title {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-muted);
+      padding: 10px 12px 6px 12px;
+      letter-spacing: 0.05em;
+    }
+
+    .result-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 14px;
+      border-radius: 10px;
+      text-decoration: none;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+      background: transparent;
+      transition: background 200ms var(--ease-out);
+    }
+
+    .result-item:hover, .result-item.selected {
+      background: rgba(255, 255, 255, 0.06);
+    }
+
+    .result-item.selected .item-name {
+      color: var(--accent);
+    }
+
+    .item-name { font-size: 14px; font-weight: 500; }
+    .route-badge { font-family: var(--font-mono); font-size: 11px; color: var(--text-muted); }
+
+    .search-footer {
+      padding: 14px 24px;
+      border-top: none;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .footer-keys { display: flex; gap: 16px; }
+
+    /* Page Layout Container */
+    .container {
+      position: relative;
+      z-index: 1;
+      max-width: 1280px;
+      margin: 0 auto;
+    }
+
+    /* Search & Sort Control Bar (Floating Bottom-Center Command Dock, 1:1 Nav Style) */
+    .control-bar-wrap {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 1000;
+      margin: 0;
+    }
+
+    .control-pill {
+      position: relative;
+      height: 54px;
+      padding: 0 20px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      background: linear-gradient(180deg, #141416 0%, #0d0d0f 100%);
+      border-radius: 14px;
+      border: none;
+      box-shadow: 
+        inset 0 1px 0 rgba(255, 255, 255, 0.08),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.5),
+        0 16px 36px rgba(0, 0, 0, 0.7);
+      transition: box-shadow 200ms var(--ease-out);
+    }
+
+    .control-pill:focus-within {
+      box-shadow: 
+        inset 0 1px 0 rgba(255, 255, 255, 0.16),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.5),
+        0 20px 42px rgba(0, 0, 0, 0.85);
+    }
+
+    .pill-search-box {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .pill-search-icon {
+      color: var(--text-muted);
+      flex-shrink: 0;
+    }
+
+    .live-search-input {
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--text-primary);
+      font-family: var(--font-body);
+      font-size: 13.5px;
+      font-weight: 500;
+      width: 150px;
+      transition: width 240ms var(--ease-emil);
+    }
+
+    .live-search-input:focus {
+      width: 190px;
+    }
+
+    .live-search-input::placeholder {
+      color: var(--text-muted);
+      font-weight: 400;
+    }
+
+    .pill-clear-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 12px;
+      cursor: pointer;
+      padding: 2px 4px;
+      display: none;
+    }
+
+    .pill-clear-btn:hover {
+      color: #ffffff;
+    }
+
+    .pill-divider {
+      width: 1px;
+      height: 20px;
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .pill-sort-box {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .sort-icon-btn {
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--text-muted);
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: background 180ms var(--ease-out), color 180ms var(--ease-out);
+    }
+
+    .sort-icon-btn:hover {
+      color: var(--text-primary);
+      background: rgba(255, 255, 255, 0.06);
+    }
+
+    .sort-icon-btn.active {
+      color: var(--accent);
+      background: rgba(155, 229, 251, 0.12);
+    }
+
+    .no-results-box {
+      display: none;
+      text-align: center;
+      padding: 64px 20px;
+      color: var(--text-muted);
+      font-family: var(--font-body);
+      font-size: 15px;
+    }
+
+    /* Section Wrapper */
+    .vibe-section {
+      position: relative;
+      margin-bottom: 64px;
+    }
+
+    .section-header, .card-grid {
+      position: relative;
+      z-index: 1;
+    }
+
+    .section-headline-wrap {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    .headline-s1 {
+      font-family: 'Dela Gothic One', sans-serif;
+      font-size: 38px;
+      color: #ffffff;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      text-shadow: none;
+    }
+
+    .headline-s2 {
+      font-family: 'Dela Gothic One', sans-serif;
+      font-size: 38px;
+      color: #3b82f6;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      text-shadow: none;
+    }
+
+    .headline-s3 {
+      font-family: 'Dela Gothic One', sans-serif;
+      font-size: 38px;
+      color: #818cf8;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      text-shadow: none;
+    }
+
+    .headline-s4 {
+      font-family: 'Dela Gothic One', sans-serif;
+      font-size: 38px;
+      color: #f46b5b;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      text-shadow: none;
+    }
+
+    .headline-count {
+      font-family: var(--font-mono);
+      font-size: 14px;
+      font-weight: 500;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+      vertical-align: super;
+      margin-left: 8px;
+      opacity: 0.55;
+    }
+
+    /* =========================================
+       2 Curated Layout Modes
+       ========================================= */
+
+    /* Mode 1: Standard 3-Column Card Grid (Default) */
+    .layout-grid .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+      gap: 16px;
+    }
+
+    /* Mode 2: Organic Staggered Waterfall (Masonry) */
+    .layout-masonry .card-grid {
+      column-count: 3;
+      column-gap: 16px;
+      display: block;
+    }
+
+    .layout-masonry .skiper-card {
+      break-inside: avoid;
+      margin-bottom: 16px;
+      display: flex;
+    }
+
+    .layout-masonry .skiper-card:nth-child(5n + 1) .card-preview {
+      aspect-ratio: 1.1 / 1;
+    }
+
+    .layout-masonry .skiper-card:nth-child(5n + 2) .card-preview {
+      aspect-ratio: 1.85 / 1;
+    }
+
+    .layout-masonry .skiper-card:nth-child(5n + 3) .card-preview {
+      aspect-ratio: 1.35 / 1;
+    }
+
+    .layout-masonry .skiper-card:nth-child(5n + 4) .card-preview {
+      aspect-ratio: 1.95 / 1;
+    }
+
+    .layout-masonry .skiper-card:nth-child(5n) .card-preview {
+      aspect-ratio: 1.2 / 1;
+    }
+
+    /* Physically Mounted Specimen Slab Card */
+    .skiper-card {
+      text-decoration: none;
+      color: inherit;
+      display: flex;
+      flex-direction: column;
+      padding: 10px;
+      background: var(--card-slab);
+      border: 1px solid rgba(255, 255, 255, 0.055);
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 
+        inset 0 1px 0 rgba(255, 255, 255, 0.08),
+        0 8px 24px -2px rgba(0, 0, 0, 0.75),
+        0 2px 6px rgba(0, 0, 0, 0.6);
+      transition: 
+        transform 280ms var(--ease-emil),
+        box-shadow 280ms var(--ease-emil),
+        border-color 280ms var(--ease-emil);
+    }
+
+    .skiper-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 
+        inset 0 1px 0 rgba(255, 255, 255, 0.08),
+        0 14px 32px -4px rgba(0, 0, 0, 0.85),
+        0 4px 10px rgba(0, 0, 0, 0.7);
+    }
+
+    .skiper-card:active {
+      transform: translateY(-1px) scale(0.99);
+      box-shadow: 
+        inset 0 1px 0 rgba(255, 255, 255, 0.06),
+        0 6px 16px -2px rgba(0, 0, 0, 0.5);
+    }
+
+    /* Seamless Soft Inner Preview Canvas */
+    .card-preview {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 1.6 / 1;
+      border-radius: 10px;
+      overflow: hidden;
+      background-color: var(--preview-bg);
+      border: none;
+    }
+
+    .card-preview img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      border-radius: 10px;
+      transition: transform 380ms var(--ease-emil);
+    }
+
+    .skiper-card:hover .card-preview img {
+      transform: scale(1.05);
+    }
+
+    /* Integrated Footer — Static & Grounded */
+    .card-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 6px 4px 6px;
+      opacity: 1;
+    }
+
+    .card-title {
+      font-family: var(--font-body);
+      font-size: 14.5px;
+      font-weight: 500;
+      color: var(--card-text);
+      transition: color 200ms var(--ease-emil);
+    }
+
+    .skiper-card:hover .card-title {
+      color: var(--card-text-hover);
+    }
+
+    .card-arrow {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-primary);
+      opacity: 0;
+      transform: translate(-3px, 3px);
+      transition: 
+        opacity 220ms var(--ease-emil),
+        transform 220ms var(--ease-emil);
+    }
+
+    .skiper-card:hover .card-arrow {
+      opacity: 1;
+      transform: translate(0, 0);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Pure Neutral Black & Grey Solid Slate Dock Container (shadcn/Lucide Icons) -->
+  <div class="dock-wrapper" id="dockWrapper">
+    <header class="dock-nav">
+      <a href="/" class="brand">
+        <!-- Y2K Sparkle Starburst Brand Icon — Cobalt Ice (#38bdf8) -->
+        <svg class="brand-icon" width="28" height="28" viewBox="0 0 100 100" fill="currentColor" style="color: var(--accent);">
+          <path d="m50 7.5234 2.2461 29.645 5.9648-15.68-5.2891 24.566 0.089844 1.0898 37.09-22.633-27.855 22.355 20.266-5.3906-24.645 10.09 42.133 11.113-39.566-5.5469 21.109 12.812-25.188-11.445 15.898 34.777-19.363-30.055 3.1523 22.242-7.2656-24.844-21.031 32.656 14.41-31.531-16.945 14.586 17.043-19.578-42.254 5.9141 36.457-9.6016-24.191-3.6328 29.801 0.89844-32.168-25.82 28.945 17.656-11.887-17.145 19.934 22.055 0.097656 0.066406z" fill-rule="evenodd"/>
+        </svg>
+        <span>ABYSS</span>
+      </a>
+
+      <nav class="nav-links">
+        <a href="/collection.html" class="nav-link">Collection</a>
+        <a href="/docs" class="nav-link">Docs</a>
+      </nav>
+
+      <div class="nav-actions">
+        <button class="search-trigger" id="openSearchBtn" title="Open Universal Search (Cmd+K)" aria-label="Search">
+          <!-- shadcn/Lucide Search Icon -->
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"/>
+            <path d="m21 21-4.3-4.3"/>
+          </svg>
+        </button>
+        <a href="https://github.com" class="github-link" target="_blank" aria-label="GitHub Repository">
+          <!-- shadcn/Lucide Github Icon -->
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/>
+            <path d="M9 18c-4.51 2-5-2-7-2"/>
+          </svg>
+        </a>
+      </div>
+    </header>
+  </div>
+
+  <!-- Main Collection Container -->
+  <div class="container layout-grid" id="mainContainer">
+
+    <!-- Minimal Search & Sort Control Bar -->
+    <div class="control-bar-wrap">
+      <div class="control-pill">
+        <div class="pill-search-box">
+          <svg class="pill-search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"/>
+            <path d="m21 21-4.3-4.3"/>
+          </svg>
+          <input type="text" id="liveSearchInput" class="live-search-input" placeholder="Explore" autocomplete="off">
+          <button id="pillClearBtn" class="pill-clear-btn" aria-label="Clear search">✕</button>
+        </div>
+        <div class="pill-divider"></div>
+        <div class="pill-sort-box">
+          <button type="button" id="layoutCycleBtn" class="sort-icon-btn active" title="Layout: Grid (Click for Waterfall Masonry)" aria-label="Switch Layout">
+            <!-- Dynamic Layout Icon (Defaults to Grid) -->
+            <svg id="layoutIcon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></svg>
+          </button>
+          <button type="button" id="sortToggleBtn" class="sort-icon-btn" title="Sort: Curated (Click for A → Z)" aria-label="Toggle Alphabetical Sort">
+            <!-- AZ sort icon -->
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 16 4 4 4-4"/><path d="M7 20V4"/><path d="M20 8h-5"/><path d="M15 10V6.5a2.5 2.5 0 0 1 5 0V10"/><path d="M15 14h5l-5 6h5"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Empty Search State -->
+    <div id="noResults" class="no-results-box">
+      No specimens found matching your search.
+    </div>
+
+    <!-- Unified Master Grid for Alphabetical / Global View -->
+    <div id="allComponentsSection" class="vibe-section" style="display: none;">
+      <div class="section-headline-wrap">
+        <h2 class="headline-s1">All Components <span class="headline-count">[34]</span></h2>
+      </div>
+      <div class="card-grid" id="allCardsGrid"></div>
+    </div>
+
+    <!-- Curated 4 Chapters Container -->
+    <div id="curatedSections">
+
+    <!-- Section 1: Light and Texture -->
+    <section class="vibe-section">
+      <div class="section-headline-wrap">
+        <h2 class="headline-s1">Light and Texture <span class="headline-count">[13]</span></h2>
+      </div>
+      <div class="card-grid">
+        
+        <a href="#" class="skiper-card">
+          <div class="card-preview">
+            <img src="/images/components images/Image(shader)/i  alfa.webp" alt="Stone Bas-Relief">
+          </div>
+          <div class="card-footer">
+            <span class="card-title">Stone Bas-Relief</span>
+            <span class="card-arrow"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7"/><path d="M7 7h10v10"/></svg></span>
+          </div>
+        </a>
+
+        <a href="#" class="skiper-card">
+          <div class="card-preview">
+            <img src="/images/components images/Image(shader)/fjvfba.webp" alt="Bronze Patina">
+          </div>
+          <div class="card-footer">
+            <span class="card-title">Bronze Patina</span>
+            <span class="card-arrow"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7"/><path d="M7 7h10v10"/></svg></span>
+          </div>
+        </a>
+
+        <a href="#" class="skiper-card">
+          <div class="card-preview">
+            <img src="/images/components images/Image(shader)/japparii.webp" alt="Leonardo Sketch">
+          </div>
+          <div class="card-footer">
+            <span class="card-title">Leonardo Sketch</span>
+            <span class="card-arrow"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7"/><path d="M7 7h10v10"/></svg></span>
+          </div>
+        </a>
+
+        <a href="#" class="skiper-card">
+          <div class="card-preview">
+            <img src="/images/components images/Image(shader)/chromepunk-beast.webp" alt="Chromepunk Normal Map">
+          </div>
+          <div class="card-footer">
+            <span class="card-title">Chromepunk Normal Map</span>
+            <span class="card-arrow"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7"/><path d="M7 7h10v10"/></svg></span>
+          </div>
+        </a>
+
+        <a href="#" class="skiper-card">
+          <div class="card-preview">
+            <img src="/images/components images/Image(shader)/merlin-knights.webp" alt="Knight Wind Banner">
+          </div>
+          <div class="card-footer">
+            <span class="card-title">Knight Wind Banner</span>
+            <span class="card-arrow"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7"/><path d="M7 7h10v10"/></svg></span>
+          </div>
+        </a>
+
+        <a href="#" class="skiper-card">
+          <div class="card-preview">
+            <img src="/images/components images/Image(shader)/acg-fleece.webp" alt="Bas-Relief Emboss">
+          </div>
+          <div class="card-footer">
+            <span class="card-title">Bas-Relief Emboss</span>
+            <span class="card-arrow"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7"/><path d="M7 7h10v10"/></svg></span>
+          </div>
+        </a>
+
+        <a href="#" class="skiper-card">
+          <div class="card-preview">
+            <img src="/images/components images/Image(shader)/dee.webp" alt="Molten Mercury">
+          </div>
+          <div class="card-footer">
+            <span class="card-title">Molten Mercury</span>
+            <span class="card-arrow"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7"/><path d="M7 7h10v10"/></svg></span>
+          </div>
+        </a>
+
+        <a href="#" class="skiper-card">
+          <div class="card-preview">
+            <img src="/images/components images/Image(shader)/download (2).webp" alt="Water Ripple">
+          </div>
+          <div class="card-footer">
+            <span class="card-title">Water Ripple</span>
+            <span class="card-arrow"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7"/><path d="M7 7h10v10"/></svg></span>
+          </div>
+        </a>
+
+        <a href="#" class="skiper-card">
+          <div class="card-preview">
+            <img src="/images/components images/Image(shader)/download (3).webp" alt="Infrared Thermal">
+          </div>
+          <div class="card-footer">
+            <span class="card-title">Infrared Thermal</span>
+            <span class="card-arrow"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7"/><path d="M7 7h10v10"/></svg></span>
+          </div>
+        </a>
+
+        <a href="#" class="skiper-card">
+          <div class="card-preview">
+            <img src="/images/components images/Image(shader)/faf.webp" alt="Gold Gilding">
+          </div>
+          <div class="card-footer">
+            <span class="card-title">Gold Gilding</span>
+            <span class="card-arrow"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7"/><path d="M7 7h10v10"/></svg></span>
+          </div>
+        </a>
+
+        <a href="#" class="skiper-card">
+          <div class="card-preview">
+            <img src="/images/components images/Image(shader)/fblf.webp" alt="Depth Silhouette">
+          </div>
+          <div class="card-footer">
+            <span class="card-title">Depth Silhouette</span>
+            <span class="card-arrow"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7"/><path d="M7 7h10v10"/></svg></span>
+          </div>
+        </a>
+
+        <a href="#" class="skiper-card">
+          <div class="card-preview">
+            <img src="/images/components images/Image(shader)/ll.webp" alt="Steel Intaglio">
+          </div>
+          <div class="card-footer">
+            <span class="card-title">Steel Intaglio</span>
+            <span class="card-arrow"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7"/><path d="M7 7h10v10"/></svg></span>
+          </div>
+        </a>
+
+        <a href="#" class="skiper-card">
+          <div class="card-preview">
+            <img src="/images/components images/Image(shader)/hoqnl.webp" alt="Procedural Atlas">
+          </div>
+          <div class="card-footer">
+            <span class="card-title">Procedural Atlas</span>
+            <span class="card-arrow"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7"/><path d="M7 7h10v10"/></svg></span>
+          </div>
+        </a>
+
+      </div>
+    </section>
+
+    <!-- Section 2: Scroll Perspectives -->
+    <section class="vibe-section">
+      <div class="section-headline-wrap">
+        <h2 class="headline-s2">scroll perspectives <span class="headline-count">[08]</span></h2>
+      </div>
+      <div class="card-grid">
+
+        <a href="#" class="skiper-card">
+          <div class="card-preview">
+            <img src="/images/components images/scroll/cosmos_1859262512.webp" alt="Parallax Column">
+          </div>
+          <div class="card-footer">
+            <span class="card-title">Parallax Column</span>
+            <span class="card-arrow"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7"/><path d="M7 7h10v10"/></svg></span>
+          </div>
+        </a>
+
+        <a href="#" class="skiper-card">
+          <div class="card-preview">
+            <img src="/images/components images/scroll/cosmos_1207399578.webp" alt="Erosion Map">
+          </div>
+          <div class="card-footer">
+            <span class="card-title">Erosion Map</span>
+            <span class="card-arrow"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7"/><path d="M7 7h10v10"/></svg></span>
+          </div>
+        </a>
+
+        <a href="#" class="skiper-card">
+          <div class="card-preview">
+            <img src="/images/components images/scroll/cosmos_679994644.webp" alt="Dual Wave">
+          </div>
+          <div class="card-footer">
+            <span class="card-title">Dual Wave</span>
+            <span class="card-arrow"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7"/><path d="M7 7h10v10"/></svg></span>
+          </div>
+        </a>
+
+        <a href="#" class="skiper-card">
+          <div class="card-preview">
+            <img src="/images/components images/scroll/cosmos_1591705408.webp" alt="Phase Drift">
+          </div>
+          <div class="card-footer">
+            <span class="card-title">Phase Drift</span>
+            <span class="card-arrow"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7"/><path d="M7 7h10v10"/></svg></span>
+          </div>
+        </a>
+
+        <a href="#" class="skiper-card">
+          <div class="card-preview">
+            <img src="/images/components images/scroll/cosmos_1994819013.webp" alt="Depth Swim">
+          </div>
+          <div class="card-footer">
+            <span class="card-title">Depth Swim</span>
+            <span class="card-arrow"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7"/><path d="M7 7h10v10"/></svg></span>
+          </div>
+        </a>
+
+        <a href="#" class="skiper-card">
+          <div class="card-preview">
+            <img src="/images/components images/scroll/cosmos_1452408749.webp" alt="Cylinder Scroll">
+          </div>
+          <div class="card-footer">
+            <span class="card-title">Cylinder Scroll</span>
+            <span class="card-arrow"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7"/><path d="M7 7h10v10"/></svg></span>
+          </div>
+        </a>
+
+        <a href="#" class="skiper-card">
+          <div class="card-preview">
+            <img src="/images/components images/scroll/p1_hq.webp" alt="Parallax Bleed">
+          </div>
+          <div class="card-footer">
+            <span class="card-title">Parallax Bleed</span>
+            <span class="card-arrow"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7"/><path d="M7 7h10v10"/></svg></span>
+          </div>
+        </a>
+
+        <a href="#" class="skiper-card">
+          <div class="card-preview">
+            <img src="/images/components images/scroll/p2_hq.webp" alt="Arc Drift Gallery">
+          </div>
+          <div class="card-footer">
+            <span class="card-title">Arc Drift Gallery</span>
+            <span class="card-arrow"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7"/><path d="M7 7h10v10"/></svg></span>
+          </div>
+        </a>
+
+      </div>
+    </section>
+
+    <!-- Section 3: Spatial Galleries -->
+    <section class="vibe-section">
+      <div class="section-headline-wrap">
+        <h2 class="headline-s3">Spatial Galleries <span class="headline-count">[08]</span></h2>
+      </div>
+      <div class="card-grid">
+
+        <a href="#" class="skiper-card">
+          <div class="card-preview">
+            <img src="/images/components images/Gallary/cosmos_145253936.webp" alt="Orbit Ring Gallery">
+          </div>
+          <div class="card-footer">
+            <span class="card-title">Orbit Ring Gallery</span>
+            <span class="card-arrow"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7"/><path d="M7 7h10v10"/></svg></span>
+          </div>
+        </a>
+
+        <a href="#" class="skiper-card">
+          <div class="card-preview">
+            <img src="/images/components images/Gallary/cosmos_1441380570.webp" alt="3D Shatter Sphere">
+          </div>
+          <div class="card-footer">
+            <span class="card-title">3D Shatter Sphere</span>
+            <span class="card-arrow"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7"/><path d="M7 7h10v10"/></svg></span>
+          </div>
+        </a>
+
+        <a href="#" class="skiper-card">
+          <div class="card-preview">
+            <img src="/images/components images/Gallary/cosmos_1110264921.webp" alt="Gravity Cursor">
+          </div>
+          <div class="card-footer">
+            <span class="card-title">Gravity Cursor</span>
+            <span class="card-arrow"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7"/><path d="M7 7h10v10"/></svg></span>
+          </div>
+        </a>
+
+        <a href="#" class="skiper-card">
+          <div class="card-preview">
+            <img src="/images/components images/scroll/cosmos_1309660817.webp" alt="Focus Ring">
+          </div>
+          <div class="card-footer">
+            <span class="card-title">Focus Ring</span>
+            <span class="card-arrow"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7"/><path d="M7 7h10v10"/></svg></span>
+          </div>
+        </a>
+
+        <a href="#" class="skiper-card">
+          <div class="card-preview">
+            <img src="/images/components images/scroll/cosmos_1215932660.webp" alt="Cursor Wake">
+          </div>
+          <div class="card-footer">
+            <span class="card-title">Cursor Wake</span>
+            <span class="card-arrow"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7"/><path d="M7 7h10v10"/></svg></span>
+          </div>
+        </a>
+
+        <a href="#" class="skiper-card">
+          <div class="card-preview">
+            <img src="/images/components images/Gallary/cosmos_1309943729.webp" alt="Image Snake Trail">
+          </div>
+          <div class="card-footer">
+            <span class="card-title">Image Snake Trail</span>
+            <span class="card-arrow"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7"/><path d="M7 7h10v10"/></svg></span>
+          </div>
+        </a>
+
+        <a href="#" class="skiper-card">
+          <div class="card-preview">
+            <img src="/images/components images/Gallary/cosmos_140351120.webp" alt="Abyss Cursor Fall">
+          </div>
+          <div class="card-footer">
+            <span class="card-title">Abyss Cursor Fall</span>
+            <span class="card-arrow"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7"/><path d="M7 7h10v10"/></svg></span>
+          </div>
+        </a>
+
+        <a href="#" class="skiper-card">
+          <div class="card-preview">
+            <img src="/images/components images/Gallary/cosmos_140351120.webp" alt="Tracklist Gallery">
+          </div>
+          <div class="card-footer">
+            <span class="card-title">Tracklist Gallery</span>
+            <span class="card-arrow"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7"/><path d="M7 7h10v10"/></svg></span>
+          </div>
+        </a>
+
+      </div>
+    </section>
+
+    <!-- Section 4: Type and Motion -->
+    <section class="vibe-section">
+      <div class="section-headline-wrap">
+        <h2 class="headline-s4">Type and Motion <span class="headline-count">[05]</span></h2>
+      </div>
+      <div class="card-grid">
+
+        <a href="#" class="skiper-card">
+          <div class="card-preview">
+            <img src="/images/components images/Transitions/luca-bravo-ii5JY_46xH0-unsplash.webp" alt="Accordion Wall">
+          </div>
+          <div class="card-footer">
+            <span class="card-title">Accordion Wall</span>
+            <span class="card-arrow"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7"/><path d="M7 7h10v10"/></svg></span>
+          </div>
+        </a>
+
+        <a href="#" class="skiper-card">
+          <div class="card-preview">
+            <img src="/images/components images/Transitions/clay-banks-u27Rrbs9Dwc-unsplash.webp" alt="Curved Scroll Wipe">
+          </div>
+          <div class="card-footer">
+            <span class="card-title">Curved Scroll Wipe</span>
+            <span class="card-arrow"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7"/><path d="M7 7h10v10"/></svg></span>
+          </div>
+        </a>
+
+        <a href="#" class="skiper-card">
+          <div class="card-preview">
+            <img src="/images/components images/Transitions/jonatan-pie-3l3RwQdHRHg-unsplash.webp" alt="Clip Morph">
+          </div>
+          <div class="card-footer">
+            <span class="card-title">Clip Morph</span>
+            <span class="card-arrow"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7"/><path d="M7 7h10v10"/></svg></span>
+          </div>
+        </a>
+
+        <a href="#" class="skiper-card">
+          <div class="card-preview">
+            <img src="/images/components images/scroll/cosmos_1292975902.webp" alt="Ripple Scramble">
+          </div>
+          <div class="card-footer">
+            <span class="card-title">Ripple Scramble</span>
+            <span class="card-arrow"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7"/><path d="M7 7h10v10"/></svg></span>
+          </div>
+        </a>
+
+        <a href="#" class="skiper-card">
+          <div class="card-preview">
+            <img src="/images/components images/scroll/cosmos_1298955025.webp" alt="3D Reel Text">
+          </div>
+          <div class="card-footer">
+            <span class="card-title">3D Reel Text</span>
+            <span class="card-arrow"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7"/><path d="M7 7h10v10"/></svg></span>
+          </div>
+        </a>
+
+      </div>
+    </section>
+
+    </div><!-- End #curatedSections -->
+
+  </div>
+
+  <!-- Command Palette Modal Overlay — shadcn/Lucide Icons -->
+  <div class="modal-overlay" id="searchModalOverlay">
+    <div class="search-modal">
+      <div class="search-header">
+        <div class="search-brand-tag">
+          <!-- Y2K Sparkle Starburst Brand Icon — Cobalt Ice (#38bdf8) -->
+          <svg width="28" height="28" viewBox="0 0 100 100" fill="currentColor" style="color: var(--accent);">
+            <path d="m50 7.5234 2.2461 29.645 5.9648-15.68-5.2891 24.566 0.089844 1.0898 37.09-22.633-27.855 22.355 20.266-5.3906-24.645 10.09 42.133 11.113-39.566-5.5469 21.109 12.812-25.188-11.445 15.898 34.777-19.363-30.055 3.1523 22.242-7.2656-24.844-21.031 32.656 14.41-31.531-16.945 14.586 17.043-19.578-42.254 5.9141 36.457-9.6016-24.191-3.6328 29.801 0.89844-32.168-25.82 28.945 17.656-11.887-17.145 19.934 22.055 0.097656 0.066406z" fill-rule="evenodd"/>
+          </svg>
+        </div>
+        <input type="text" class="search-input" id="searchInput" placeholder="Type to filter specimens..." />
+        <kbd class="kbd-esc" id="closeSearchBtn">ESC</kbd>
+      </div>
+
+      <div class="results-list" id="resultsList">
+        <div class="category-group">
+          <div class="category-title">PAGES</div>
+          <a href="/" class="result-item">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <!-- shadcn/Lucide FileText Icon -->
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--text-muted);"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg>
+              <span class="item-name">Overview & Manifesto</span>
+            </div>
+            <!-- shadcn/Lucide ArrowUpRight Icon -->
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--text-muted);"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg>
+          </a>
+          <a href="/collection.html" class="result-item selected">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <!-- shadcn/Lucide LayoutGrid Icon -->
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--text-muted);"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></svg>
+              <span class="item-name">Collection Grid</span>
+            </div>
+            <!-- shadcn/Lucide ArrowUpRight Icon -->
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--text-muted);"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg>
+          </a>
+          <a href="/docs" class="result-item">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <!-- shadcn/Lucide BookOpen Icon -->
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--text-muted);"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+              <span class="item-name">Documentation Specs</span>
+            </div>
+            <!-- shadcn/Lucide ArrowUpRight Icon -->
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--text-muted);"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg>
+          </a>
+        </div>
+
+        <div class="category-group">
+          <div class="category-title">SHADERS & KINETIC PRIMITIVES</div>
+          <a href="/showcase/procedural-atlas" class="result-item">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <!-- shadcn/Lucide Component Icon -->
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--text-muted);"><path d="M5.5 8.5 9 12l-3.5 3.5L2 12l3.5-3.5Z"/><path d="m12 2 3.5 3.5L12 9 8.5 5.5 12 2Z"/><path d="M18.5 8.5 22 12l-3.5 3.5L15 12l3.5-3.5Z"/><path d="m12 15 3.5 3.5L12 22l-3.5-3.5L12 15Z"/></svg>
+              <span class="item-name">Procedural Atlas</span>
+            </div>
+            <!-- shadcn/Lucide ArrowRight Icon -->
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--text-muted);"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+          </a>
+          <a href="/showcase/gravity-cursor" class="result-item">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <!-- shadcn/Lucide Component Icon -->
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--text-muted);"><path d="M5.5 8.5 9 12l-3.5 3.5L2 12l3.5-3.5Z"/><path d="m12 2 3.5 3.5L12 9 8.5 5.5 12 2Z"/><path d="M18.5 8.5 22 12l-3.5 3.5L15 12l3.5-3.5Z"/><path d="m12 15 3.5 3.5L12 22l-3.5-3.5L12 15Z"/></svg>
+              <span class="item-name">Gravity Cursor</span>
+            </div>
+            <!-- shadcn/Lucide ArrowRight Icon -->
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--text-muted);"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+          </a>
+          <a href="/showcase/liquid-lens" class="result-item">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <!-- shadcn/Lucide Component Icon -->
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--text-muted);"><path d="M5.5 8.5 9 12l-3.5 3.5L2 12l3.5-3.5Z"/><path d="m12 2 3.5 3.5L12 9 8.5 5.5 12 2Z"/><path d="M18.5 8.5 22 12l-3.5 3.5L15 12l3.5-3.5Z"/><path d="m12 15 3.5 3.5L12 22l-3.5-3.5L12 15Z"/></svg>
+              <span class="item-name">Liquid Lens Distortion</span>
+            </div>
+            <!-- shadcn/Lucide ArrowRight Icon -->
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--text-muted);"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+          </a>
+          <a href="/showcase/3d-shatter-sphere" class="result-item">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <!-- shadcn/Lucide Component Icon -->
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--text-muted);"><path d="M5.5 8.5 9 12l-3.5 3.5L2 12l3.5-3.5Z"/><path d="m12 2 3.5 3.5L12 9 8.5 5.5 12 2Z"/><path d="M18.5 8.5 22 12l-3.5 3.5L15 12l3.5-3.5Z"/><path d="m12 15 3.5 3.5L12 22l-3.5-3.5L12 15Z"/></svg>
+              <span class="item-name">3D Shatter Sphere</span>
+            </div>
+            <!-- shadcn/Lucide ArrowRight Icon -->
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--text-muted);"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+          </a>
+          <a href="/showcase/apparatus-tracklist-gallery" class="result-item">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <!-- shadcn/Lucide Component Icon -->
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--text-muted);"><path d="M5.5 8.5 9 12l-3.5 3.5L2 12l3.5-3.5Z"/><path d="m12 2 3.5 3.5L12 9 8.5 5.5 12 2Z"/><path d="M18.5 8.5 22 12l-3.5 3.5L15 12l3.5-3.5Z"/><path d="m12 15 3.5 3.5L12 22l-3.5-3.5L12 15Z"/></svg>
+              <span class="item-name">Apparatus Tracklist Gallery</span>
+            </div>
+            <!-- shadcn/Lucide ArrowRight Icon -->
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--text-muted);"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+          </a>
+          <a href="/showcase/orbit-ring-gallery" class="result-item">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <!-- shadcn/Lucide Component Icon -->
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--text-muted);"><path d="M5.5 8.5 9 12l-3.5 3.5L2 12l3.5-3.5Z"/><path d="m12 2 3.5 3.5L12 9 8.5 5.5 12 2Z"/><path d="M18.5 8.5 22 12l-3.5 3.5L15 12l3.5-3.5Z"/><path d="m12 15 3.5 3.5L12 22l-3.5-3.5L12 15Z"/></svg>
+              <span class="item-name">Orbit Ring Gallery</span>
+            </div>
+            <!-- shadcn/Lucide ArrowRight Icon -->
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--text-muted);"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+          </a>
+        </div>
+      </div>
+
+      <div class="search-footer">
+        <span style="display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-muted);">
+          Go to page
+          <!-- shadcn/Lucide CornerDownLeft Icon -->
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--text-muted);"><polyline points="9 10 4 15 9 20"/><path d="M20 4v7a4 4 0 0 1-4 4H4"/></svg>
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Command Palette Modal & Keyboard Selection Logic
+    const openBtn = document.getElementById('openSearchBtn');
+    const closeBtn = document.getElementById('closeSearchBtn');
+    const overlay = document.getElementById('searchModalOverlay');
+    const input = document.getElementById('searchInput');
+
+    let selectedIndex = 1; // Default to 'Collection Grid'
+
+    function getVisibleItems() {
+      return Array.from(document.querySelectorAll('.result-item')).filter(item => {
+        return item.style.display !== 'none' && item.offsetParent !== null;
+      });
+    }
+
+    function setSelectedIndex(newIndex) {
+      const items = getVisibleItems();
+      if (items.length === 0) return;
+      
+      items.forEach(item => item.classList.remove('selected'));
+      selectedIndex = (newIndex + items.length) % items.length;
+      
+      const activeItem = items[selectedIndex];
+      activeItem.classList.add('selected');
+      activeItem.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    }
+
+    function openModal() {
+      overlay.classList.add('open');
+      document.body.classList.add('modal-open');
+      setTimeout(() => {
+        input.focus();
+        setSelectedIndex(1);
+      }, 50);
+    }
+
+    function closeModal() {
+      overlay.classList.remove('open');
+      document.body.classList.remove('modal-open');
+    }
+
+    openBtn.addEventListener('click', openModal);
+    closeBtn.addEventListener('click', closeModal);
+
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) closeModal();
+    });
+
+    // Mouse Hover Sync with Selection
+    document.querySelectorAll('.result-item').forEach((item) => {
+      item.addEventListener('mouseenter', () => {
+        const items = getVisibleItems();
+        const idx = items.indexOf(item);
+        if (idx !== -1) setSelectedIndex(idx);
+      });
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        if (overlay.classList.contains('open')) {
+          closeModal();
+        } else {
+          openModal();
+        }
+        return;
+      }
+
+      if (!overlay.classList.contains('open')) return;
+
+      if (e.key === 'Escape') {
+        closeModal();
+      } else if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        setSelectedIndex(selectedIndex + 1);
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        setSelectedIndex(selectedIndex - 1);
+      } else if (e.key === 'Enter') {
+        e.preventDefault();
+        const items = getVisibleItems();
+        if (items[selectedIndex]) {
+          items[selectedIndex].click();
+        }
+      }
+    });
+
+    input.addEventListener('input', () => {
+      const q = input.value.toLowerCase().trim();
+      document.querySelectorAll('.result-item').forEach(item => {
+        const text = item.textContent.toLowerCase();
+        item.style.display = text.includes(q) ? 'flex' : 'none';
+      });
+      document.querySelectorAll('.category-group').forEach(group => {
+        const visible = group.querySelectorAll('.result-item[style="display: flex;"], .result-item:not([style*="display: none"])');
+        group.style.display = visible.length > 0 ? 'block' : 'none';
+      });
+      setSelectedIndex(0);
+    });
+
+    // In-Page Live Search, 4 Layout Switcher & 3-State Sort Logic
+    const liveSearchInput = document.getElementById('liveSearchInput');
+    const pillClearBtn = document.getElementById('pillClearBtn');
+    const layoutCycleBtn = document.getElementById('layoutCycleBtn');
+    const layoutIcon = document.getElementById('layoutIcon');
+    const sortToggleBtn = document.getElementById('sortToggleBtn');
+    const noResults = document.getElementById('noResults');
+    const mainContainer = document.getElementById('mainContainer');
+    const curatedSections = document.getElementById('curatedSections');
+    const allComponentsSection = document.getElementById('allComponentsSection');
+    const allCardsGrid = document.getElementById('allCardsGrid');
+    const sections = curatedSections.querySelectorAll('.vibe-section');
+
+    // 2 Clean Layout Modes: Grid vs Waterfall Masonry
+    const layouts = [
+      {
+        id: 'grid',
+        name: 'Grid',
+        icon: '<rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/>'
+      },
+      {
+        id: 'masonry',
+        name: 'Waterfall Masonry',
+        icon: '<rect width="7" height="11" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="11" x="14" y="10" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/>'
+      }
+    ];
+
+    let currentLayoutIdx = 0;
+    
+    // Sort states: 'curated' -> 'az' -> 'za' -> 'curated'
+    const sortStates = ['curated', 'az', 'za'];
+    let currentSortIdx = 0;
+
+    function setLayout(idx) {
+      currentLayoutIdx = idx % layouts.length;
+      const l = layouts[currentLayoutIdx];
+      mainContainer.classList.remove('layout-grid', 'layout-masonry');
+      mainContainer.classList.add(`layout-${l.id}`);
+      layoutIcon.innerHTML = l.icon;
+      layoutCycleBtn.setAttribute('title', `Layout: ${l.name} (Click to toggle)`);
+    }
+
+    layoutCycleBtn.addEventListener('click', () => {
+      setLayout(currentLayoutIdx + 1);
+    });
+
+    // Populate allCardsGrid with cloned cards for global sort
+    const rawCards = Array.from(curatedSections.querySelectorAll('.skiper-card')).map(card => card.cloneNode(true));
+    
+    function rebuildMasterGrid(order) {
+      allCardsGrid.innerHTML = '';
+      const sorted = [...rawCards].sort((a, b) => {
+        const tA = a.querySelector('.card-title')?.textContent.trim().toLowerCase() || '';
+        const tB = b.querySelector('.card-title')?.textContent.trim().toLowerCase() || '';
+        return order === 'az' ? tA.localeCompare(tB) : tB.localeCompare(tA);
+      });
+      sorted.forEach(c => allCardsGrid.appendChild(c));
+    }
+
+    function filterCards() {
+      const q = liveSearchInput.value.toLowerCase().trim();
+      pillClearBtn.style.display = q ? 'block' : 'none';
+      let totalVisible = 0;
+      const activeSort = sortStates[currentSortIdx];
+
+      if (activeSort === 'curated') {
+        sections.forEach(sec => {
+          const cards = sec.querySelectorAll('.skiper-card');
+          let secVisible = 0;
+          cards.forEach(card => {
+            const title = card.querySelector('.card-title')?.textContent.toLowerCase() || '';
+            const match = title.includes(q);
+            card.style.display = match ? 'flex' : 'none';
+            if (match) secVisible++;
+          });
+          sec.style.display = secVisible > 0 ? 'block' : 'none';
+          totalVisible += secVisible;
+        });
+      } else {
+        const cards = allCardsGrid.querySelectorAll('.skiper-card');
+        cards.forEach(card => {
+          const title = card.querySelector('.card-title')?.textContent.toLowerCase() || '';
+          const match = title.includes(q);
+          card.style.display = match ? 'flex' : 'none';
+          if (match) totalVisible++;
+        });
+      }
+
+      noResults.style.display = totalVisible === 0 ? 'block' : 'none';
+    }
+
+    // 3-State Sort Cycle Button Handler
+    const azIconSvg = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 16 4 4 4-4"/><path d="M7 20V4"/><path d="M20 8h-5"/><path d="M15 10V6.5a2.5 2.5 0 0 1 5 0V10"/><path d="M15 14h5l-5 6h5"/></svg>';
+    const zaIconSvg = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 8 4-4 4 4"/><path d="M7 4v16"/><path d="M20 8h-5"/><path d="M15 10V6.5a2.5 2.5 0 0 1 5 0V10"/><path d="M15 14h5l-5 6h5"/></svg>';
+
+    sortToggleBtn.addEventListener('click', () => {
+      currentSortIdx = (currentSortIdx + 1) % sortStates.length;
+      const state = sortStates[currentSortIdx];
+
+      if (state === 'curated') {
+        sortToggleBtn.classList.remove('active');
+        sortToggleBtn.innerHTML = azIconSvg;
+        sortToggleBtn.setAttribute('title', 'Sort: Curated (Click for A → Z)');
+        allComponentsSection.style.display = 'none';
+        curatedSections.style.display = 'block';
+      } else if (state === 'az') {
+        sortToggleBtn.classList.add('active');
+        sortToggleBtn.innerHTML = azIconSvg;
+        sortToggleBtn.setAttribute('title', 'Sort: A → Z (Click for Z → A)');
+        rebuildMasterGrid('az');
+        curatedSections.style.display = 'none';
+        allComponentsSection.style.display = 'block';
+      } else if (state === 'za') {
+        sortToggleBtn.classList.add('active');
+        sortToggleBtn.innerHTML = zaIconSvg;
+        sortToggleBtn.setAttribute('title', 'Sort: Z → A (Click for Curated)');
+        rebuildMasterGrid('za');
+        curatedSections.style.display = 'none';
+        allComponentsSection.style.display = 'block';
+      }
+
+      filterCards();
+    });
+
+    liveSearchInput.addEventListener('input', filterCards);
+    pillClearBtn.addEventListener('click', () => {
+      liveSearchInput.value = '';
+      filterCards();
+      liveSearchInput.focus();
+    });
+  </script>
+</body>
+</html>
