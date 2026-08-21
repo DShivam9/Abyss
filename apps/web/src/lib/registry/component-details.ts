@@ -584,7 +584,8 @@ export const COMPONENT_DETAILS: Record<string, ComponentDetail> = {
       { type: "slider", key: "autoRotateSpeed", label: "Auto Drift Speed", default: 0.10, min: 0.0, max: 0.50, step: 0.01 },
       { type: "slider", key: "scrollSpeed", label: "Scroll Orbit Speed", default: 0.0045, min: 0.001, max: 0.02, step: 0.0005 },
       { type: "slider", key: "cardBendMultiplier", label: "Card Curvature Bend", default: 6.5, min: 0.0, max: 15.0, step: 0.5 },
-      { type: "slider", key: "waveBrightness", label: "Nebula Wave Brightness", default: 1.0, min: 0.0, max: 2.5, step: 0.05 }
+      { type: "slider", key: "waveBrightness", label: "Nebula Wave Brightness", default: 1.0, min: 0.30, max: 2.5, step: 0.05 },
+      { type: "slider", key: "waveSpeed", label: "Nebula Wave Speed", default: 1.0, min: 0.20, max: 3.50, step: 0.10 }
     ]
   }
 };

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useEffect } from "react";
+import React, { useRef, useEffect, useState } from "react";
 import * as THREE from "three";
 import { GimbalStreamProps } from "./types";
 import { IMAGE_LIST, CARD_TITLES, TIER_CONFIGS, TIER_IMAGE_INDICES, GIMBAL_LAYOUT } from "./constants";
@@ -16,12 +16,14 @@ export default function GimbalStream({
   cardBendMultiplier = 6.5,
   glowIntensity = 3.2,
   waveBrightness = 1.0,
+  waveSpeed = 1.0,
   className = "",
   style
 }: GimbalStreamProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const textContainerRef = useRef<HTMLDivElement>(null);
+  const [isLoaded, setIsLoaded] = useState(false);
   const leftTextRef = useRef<HTMLDivElement>(null);
   const rightTextRef = useRef<HTMLDivElement>(null);
   const pillRef = useRef<HTMLDivElement>(null);
@@ -33,6 +35,7 @@ export default function GimbalStream({
   const cardBendMultiplierRef = useRef(cardBendMultiplier);
   const glowIntensityRef = useRef(glowIntensity);
   const waveBrightnessRef = useRef(waveBrightness);
+  const waveSpeedRef = useRef(waveSpeed);
 
   useEffect(() => {
     autoRotateSpeedRef.current = autoRotateSpeed;
@@ -40,7 +43,8 @@ export default function GimbalStream({
     cardBendMultiplierRef.current = cardBendMultiplier;
     glowIntensityRef.current = glowIntensity;
     waveBrightnessRef.current = waveBrightness;
-  }, [autoRotateSpeed, scrollSpeed, cardBendMultiplier, glowIntensity, waveBrightness]);
+    waveSpeedRef.current = waveSpeed;
+  }, [autoRotateSpeed, scrollSpeed, cardBendMultiplier, glowIntensity, waveBrightness, waveSpeed]);
 
   useEffect(() => {
     if (gridVariant === "plus") targetWeightsRef.current.set(1.0, 0.0, 0.0);
@@ -159,8 +163,18 @@ export default function GimbalStream({
     chamberMesh.position.set(0, 0, -420);
     scene.add(chamberMesh);
 
-    // --- Tourbillon Gimbal Rings ---
-    const textureLoader = new THREE.TextureLoader();
+    // --- Eager In-Memory Preload & Tourbillon Gimbal Rings ---
+    const loadingManager = new THREE.LoadingManager();
+    loadingManager.onLoad = () => {
+      setIsLoaded(true);
+    };
+
+    // Fast fallback to ensure display within 300ms regardless of network stalls
+    const readyTimer = setTimeout(() => {
+      setIsLoaded(true);
+    }, 350);
+
+    const textureLoader = new THREE.TextureLoader(loadingManager);
     const cardBendUniform = { uCardBend: { value: 0.0 } };
     const sharedMaterials = IMAGE_LIST.map((url) => {
       const tex = textureLoader.load(url);
@@ -219,6 +233,7 @@ export default function GimbalStream({
     let lastScroll = 0;
     let lastTouchY = 0;
     let accumulatedAutoTime = 0;
+    let accumulatedWaveTime = 0;
     let currentBend = 0;
     let hasFullyUnlocked = false;
 
@@ -327,13 +342,13 @@ export default function GimbalStream({
       currentMouseX = expDamp(currentMouseX, targetMouseX, 3.2, delta);
       currentMouseY = expDamp(currentMouseY, targetMouseY, 3.2, delta);
 
-      camera.position.x = currentMouseX * 18.0;
-      camera.position.y = -currentMouseY * 14.0;
-      camera.rotation.y = -currentMouseX * 0.028;
-      camera.rotation.x = currentMouseY * 0.020;
+      camera.position.x = currentMouseX * 8.0;
+      camera.position.y = -currentMouseY * 10.0;
+      camera.rotation.y = -currentMouseX * 0.015;
+      camera.rotation.x = currentMouseY * 0.014;
 
-      voyageRoot.rotation.x = currentMouseY * 0.035;
-      voyageRoot.rotation.y = currentMouseX * 0.045;
+      voyageRoot.rotation.x = currentMouseY * 0.025;
+      voyageRoot.rotation.y = currentMouseX * 0.030;
 
       // Multi-Harmonic Zero-G Gyroscopic Tumbling + Mouse Reaction
       const autoPitch = 0.22 + Math.sin(t * 0.58) * 0.28 + Math.cos(t * 0.31) * 0.18 + Math.sin(currentScrollY * 0.005) * 0.15;
@@ -371,8 +386,11 @@ export default function GimbalStream({
         }
       }
 
+      accumulatedAutoTime += delta * autoRotateSpeedRef.current;
+      accumulatedWaveTime += delta * waveSpeedRef.current;
+
       customUniforms.uTime.value = t;
-      chamberMat.uniforms.uTime.value = t;
+      chamberMat.uniforms.uTime.value = accumulatedWaveTime;
       chamberMat.uniforms.uScrollY.value = currentScrollY * 0.01;
       chamberMat.uniforms.uChamberAwake.value = currentExplodeProg;
       chamberMat.uniforms.uMorphWeights.value.copy(currentWeights);
@@ -390,12 +408,21 @@ export default function GimbalStream({
       const dynamicRoll = 3.0 + currentExplodeProg * 5.0;
       const dynamicTracking = 0.04 + currentExplodeProg * 0.08;
 
+      // Interactive 3D Rotational Depth Flare & Auto-Evading Typography
+      const leftYaw = dynamicYaw + currentMouseX * 14.0;
+      const leftZ = dynamicZ - currentMouseX * 30.0;
+      const leftOutwardX = -textSlide - Math.max(0, -currentMouseX) * 24.0;
+
+      const rightYaw = -dynamicYaw + currentMouseX * 14.0;
+      const rightZ = dynamicZ + currentMouseX * 30.0;
+      const rightOutwardX = textSlide + Math.max(0, currentMouseX) * 24.0;
+
       if (leftTextRef.current) {
-        leftTextRef.current.style.transform = `perspective(1100px) rotateY(${dynamicYaw}deg) rotateX(${dynamicPitch + currentMouseY * 3.5}deg) rotateZ(${-dynamicRoll + currentMouseX * 2.0}deg) translate3d(${-textSlide + currentMouseX * 10}px, calc(-50% + ${-currentMouseY * 7}px), ${dynamicZ}px)`;
+        leftTextRef.current.style.transform = `perspective(1100px) rotateY(${leftYaw}deg) rotateX(${dynamicPitch + currentMouseY * 4.0}deg) rotateZ(${-dynamicRoll + currentMouseX * 2.0}deg) translate3d(${leftOutwardX}px, calc(-50% + ${-currentMouseY * 8}px), ${leftZ}px)`;
         leftTextRef.current.style.letterSpacing = `${dynamicTracking}em`;
       }
       if (rightTextRef.current) {
-        rightTextRef.current.style.transform = `perspective(1100px) rotateY(${-dynamicYaw}deg) rotateX(${dynamicPitch + currentMouseY * 3.5}deg) rotateZ(${dynamicRoll + currentMouseX * 2.0}deg) translate3d(${textSlide + currentMouseX * 10}px, calc(-50% + ${-currentMouseY * 7}px), ${dynamicZ}px)`;
+        rightTextRef.current.style.transform = `perspective(1100px) rotateY(${rightYaw}deg) rotateX(${dynamicPitch + currentMouseY * 4.0}deg) rotateZ(${dynamicRoll + currentMouseX * 2.0}deg) translate3d(${rightOutwardX}px, calc(-50% + ${-currentMouseY * 8}px), ${rightZ}px)`;
         rightTextRef.current.style.letterSpacing = `${dynamicTracking}em`;
       }
 
@@ -463,7 +490,8 @@ export default function GimbalStream({
       isDisposed = true;
       cancelAnimationFrame(animId);
       window.removeEventListener("resize", onResize);
-      container.removeEventListener("wheel", onWheel);
+      clearTimeout(readyTimer);
+      window.removeEventListener("wheel", onWheel);
       window.removeEventListener("mousemove", onPointerMove);
       container.removeEventListener("mouseleave", onPointerLeave);
       container.removeEventListener("touchstart", onTouchStart);
@@ -485,7 +513,11 @@ export default function GimbalStream({
           font-weight: 800;
         }
       `}</style>
-      <canvas ref={canvasRef} className="absolute inset-0 w-full h-full block" />
+      <canvas
+        ref={canvasRef}
+        className="absolute inset-0 w-full h-full block transition-opacity duration-700 ease-out"
+        style={{ opacity: isLoaded ? 1 : 0 }}
+      />
 
       {/* Flanking Typography Container (Hidden until WebGL paints first frame) */}
       <div
@@ -496,7 +528,7 @@ export default function GimbalStream({
         {/* Left Flanking Typography: GIMBAL (Angled & curved into depth) */}
         <div
           ref={leftTextRef}
-          className="pointer-events-none absolute top-1/2 right-[calc(50%+100px)] sm:right-[calc(50%+115px)] md:right-[calc(50%+130px)] lg:right-[calc(50%+145px)] -translate-y-1/2 z-10 select-none will-change-transform text-right origin-right"
+          className="pointer-events-none absolute top-1/2 right-[calc(50%+115px)] sm:right-[calc(50%+130px)] md:right-[calc(50%+148px)] lg:right-[calc(50%+165px)] -translate-y-1/2 z-10 select-none will-change-transform text-right origin-right"
           style={{ transform: "perspective(1000px) rotateY(36deg) rotateX(6deg) rotateZ(-3deg) translate3d(0, -50%, 0)" }}
         >
           <span className="gimbal-stream-font block uppercase text-2xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-[4.25rem] tracking-[0.04em] text-[#f8fafc] whitespace-nowrap drop-shadow-[0_8px_32px_rgba(0,0,0,0.9)]">
@@ -507,7 +539,7 @@ export default function GimbalStream({
         {/* Right Flanking Typography: STREAM (Angled & curved into depth) */}
         <div
           ref={rightTextRef}
-          className="pointer-events-none absolute top-1/2 left-[calc(50%+100px)] sm:left-[calc(50%+115px)] md:left-[calc(50%+130px)] lg:left-[calc(50%+145px)] -translate-y-1/2 z-10 select-none will-change-transform text-left origin-left"
+          className="pointer-events-none absolute top-1/2 left-[calc(50%+115px)] sm:left-[calc(50%+130px)] md:left-[calc(50%+148px)] lg:left-[calc(50%+165px)] -translate-y-1/2 z-10 select-none will-change-transform text-left origin-left"
           style={{ transform: "perspective(1000px) rotateY(-36deg) rotateX(6deg) rotateZ(3deg) translate3d(0, -50%, 0)" }}
         >
           <span className="gimbal-stream-font block uppercase text-2xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-[4.25rem] tracking-[0.04em] text-[#f8fafc] whitespace-nowrap drop-shadow-[0_8px_32px_rgba(0,0,0,0.9)]">

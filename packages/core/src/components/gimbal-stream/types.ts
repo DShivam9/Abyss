@@ -7,6 +7,7 @@ export interface GimbalStreamProps extends VesselComponentProps {
   cardBendMultiplier?: number;
   glowIntensity?: number;
   waveBrightness?: number;
+  waveSpeed?: number;
 }
 
 export interface TierConfig {
