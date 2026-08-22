@@ -7,7 +7,6 @@ build/
 .agents/
 .claude/
 .vscode/
-docs/
 *.png
 !apps/web/public/**/*.png
 !packages/core/**/*.png
