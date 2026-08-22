@@ -15,6 +15,15 @@ const nextConfig: NextConfig = {
     });
     return config;
   },
+  async redirects() {
+    return [
+      {
+        source: "/components",
+        destination: "/collection",
+        permanent: true,
+      },
+    ];
+  },
 };
 
 export default nextConfig;

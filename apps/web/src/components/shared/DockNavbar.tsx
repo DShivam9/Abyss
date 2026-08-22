@@ -26,7 +26,7 @@ export function DockNavbar({ onOpenSearch, threshold = 40 }: DockNavbarProps) {
   }, [threshold]);
 
   const handleCollectionClick = (e: React.MouseEvent) => {
-    if (pathname === "/components") {
+    if (pathname === "/collection" || pathname === "/components") {
       e.preventDefault();
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
@@ -34,6 +34,13 @@ export function DockNavbar({ onOpenSearch, threshold = 40 }: DockNavbarProps) {
 
   const handleDocsClick = (e: React.MouseEvent) => {
     if (pathname === "/docs") {
+      e.preventDefault();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
+
+  const handleChangelogClick = (e: React.MouseEvent) => {
+    if (pathname === "/changelog") {
       e.preventDefault();
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
@@ -67,7 +74,7 @@ export function DockNavbar({ onOpenSearch, threshold = 40 }: DockNavbarProps) {
         {/* Links */}
         <nav className="dock-nav-links">
           <Link
-            href="/components"
+            href="/collection"
             className="dock-nav-link shutter-hover"
             onClick={handleCollectionClick}
           >
@@ -79,6 +86,13 @@ export function DockNavbar({ onOpenSearch, threshold = 40 }: DockNavbarProps) {
             onClick={handleDocsClick}
           >
             Docs
+          </Link>
+          <Link
+            href="/changelog"
+            className="dock-nav-link shutter-hover"
+            onClick={handleChangelogClick}
+          >
+            Changelog
           </Link>
         </nav>
 

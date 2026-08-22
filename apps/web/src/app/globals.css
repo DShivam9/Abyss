@@ -240,59 +240,26 @@
     transform: translateX(0);
   }
 
-  /* ─── Docs Sidebar List Rules ─── */
-  .docs-sidebar-list {
-    display: flex;
-    flex-direction: column;
-    width: 100%;
+  /* ─── Custom Scrollbar ─── */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
   }
-  .docs-sidebar-row {
-    display: flex;
-    align-items: center;
-    height: 10px;
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
   }
-  .docs-sidebar-row.interactive {
-    cursor: pointer;
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 9999px;
   }
-  .docs-sidebar-row.placeholder {
-    pointer-events: none;
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.2);
   }
-  .docs-sidebar-line-wrapper {
-    width: 48px;
-    display: flex;
-    justify-content: flex-start;
-    margin-right: 10px;
-    flex-shrink: 0;
-    pointer-events: none;
+  .custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.08) transparent;
   }
-  .docs-sidebar-line {
-    width: 24px;
-    height: 1px;
-    background-color: #222222;
-    transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.25s ease;
-  }
-  .docs-sidebar-row.vernier-tick .docs-sidebar-line {
-    width: 32px;
-    background-color: #383838;
-  }
-  .docs-sidebar-text {
-    font-size: 0.85rem;
-    white-space: nowrap;
-    letter-spacing: -0.01em;
-    color: #666666;
-    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), color 0.25s ease;
-  }
-  
-  .docs-sidebar-row.interactive:hover .docs-sidebar-line,
-  .docs-sidebar-row.interactive.is-selected .docs-sidebar-line {
-    width: 48px !important;
-    background-color: #a3e635 !important;
-  }
-  .docs-sidebar-row.interactive:hover .docs-sidebar-text,
-  .docs-sidebar-row.interactive.is-selected .docs-sidebar-text {
-    transform: translateX(16px);
-    color: #a3e635;
-  }
+
 }
 
 @theme inline {
@@ -601,3 +568,29 @@
   pointer-events: none;
   mix-blend-mode: overlay;
 }
+
+/* ─── Custom Dark Minimalist Scrollbar ─── */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0d0d0f;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #22222a;
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #363644;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #22222a #0d0d0f;
+}
+

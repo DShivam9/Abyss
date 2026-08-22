@@ -23,7 +23,7 @@ interface CommandPaletteProps {
 
 const STATIC_PAGES = [
   { name: "Home", path: "/", icon: FileText },
-  { name: "Collection Grid", path: "/components", icon: LayoutGrid },
+  { name: "Collection Grid", path: "/collection", icon: LayoutGrid },
   { name: "Documentation Specs", path: "/docs", icon: BookOpen },
 ];
 

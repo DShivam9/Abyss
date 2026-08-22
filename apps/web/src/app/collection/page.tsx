@@ -99,7 +99,7 @@ function CollectionContent() {
       <DockNavbar onOpenSearch={() => setCommandPaletteOpen(true)} />
 
       {/* Main Collection Container */}
-      <LayoutGroup id="collection-catalog">
+      <LayoutGroup id="collection-grid">
         <main className={`collection-container layout-${layoutMode}`} id="mainContainer">
           <AnimatePresence mode="popLayout">
             {!hasResults ? (

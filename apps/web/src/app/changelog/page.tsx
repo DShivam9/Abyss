@@ -1,504 +1,260 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import Link from "next/link";
-import { motion } from "framer-motion";
-import { ArrowLeft, Github, ExternalLink } from "lucide-react";
+import React, { useState, useEffect, useMemo } from "react";
+import { Sparkles } from "lucide-react";
+import { CHANGELOG_DATA, CommitEntry } from "@/lib/changelog-data";
+import { COMPONENT_DETAILS } from "@/lib/registry";
+import { DockNavbar } from "@/components/shared/DockNavbar";
+import { CommandPalette } from "@/components/catalog/CommandPalette";
+import { DocsFooter } from "@/components/docs/DocsFooter";
+import { ChangelogHeader } from "@/components/changelog/ChangelogHeader";
+import { ScrollToTopButton } from "@/components/changelog/ScrollToTopButton";
+import { ChangelogCard, getEntryTags } from "@/components/changelog/ChangelogCard";
+import { ChangelogFinaleHorizon } from "@/components/changelog/ChangelogFinaleHorizon";
+import {
+  ChangelogControlConsole,
+  TagFilter,
+} from "@/components/changelog/ChangelogControlConsole";
 
-interface CommitEntry {
-  id: string;
-  date: string;
-  displayDate: string;
-  tag: "MAJOR" | "ADDITION" | "MINOR" | "FIX";
-  title: string;
-  summary: string;
-  commitHash?: string;
-  items: string[];
+const ALL_COMPONENTS = Object.values(COMPONENT_DETAILS);
+
+function getMonthYear(dateStr: string): string {
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return "Recent Updates";
+  return d.toLocaleDateString("en-US", { month: "long", year: "numeric" });
 }
 
-const CHANGELOG_DATA: CommitEntry[] = [
-  {
-    id: "commit-20",
-    date: "2026-08-21",
-    displayDate: "Aug 21, 2026 • 23:55 IST",
-    tag: "MAJOR",
-    title: "Gimbal Stream Component & 3D Spatial Gallery",
-    summary: "Introduced Gimbal Stream, a spatial 3D gallery featuring gyroscopic card rings, atmospheric chamber dynamics, liquid mercury centerpiece, and interactive hover inspector.",
-    items: [
-      "Added Gimbal Stream component with multi-axis gyroscopic card rings and responsive scroll drifting",
-      "Added atmospheric chamber backdrop with dynamic caustic wave lighting and pattern controls",
-      "Added 3D floating centerpiece with multi-harmonic zero-gravity tumbling motion",
-      "Added interactive card hover inspection with cursor-tracking detail pill and smooth scale lifts",
-      "Integrated live parameter controls for auto drift, orbit speed, card curvature, and chamber effects",
-    ],
-  },
-  {
-    id: "commit-19",
-    date: "2026-08-20",
-    displayDate: "Aug 20, 2026 • 20:15 IST",
-    tag: "MAJOR",
-    title: "Hover Media Stream Component, Component Pruning & Controls Isolation",
-    summary: "Added the Hover Media Stream component, permanently pruned obsolete cursor and gallery components from the library, and resolved global event bleed across showcase controls.",
-    items: [
-      "Added Hover Media Stream component featuring 100vw horizon baseline lines, Moiré strands, flank video reveals, and full-screen ambient backdrops",
-      "Permanently deleted 3D Cursor Trail, Cursor Wake, and Orbit Ring Gallery from core library packages and catalog registry",
-      "Isolated pointer, touch, and scroll events on ControlsDrawer to prevent slider interaction from bleeding into background 3D canvas scenes",
-      "Added TabVisibilityTitle provider for dynamic window title updates when switching browser tabs",
-      "Registered interactive live parameter sliders for backdrop blur, ambient brightness, line duration, and font sizing",
-      "Standardized media storage pipeline under /audio/components/, /images/components/, and /videos/components/",
-    ],
-  },
-  {
-    id: "commit-18",
-    date: "2026-08-19",
-    displayDate: "Aug 19, 2026 • 21:40 IST",
-    tag: "MAJOR",
-    title: "Tracklist Gallery Overhaul, Catalog Rework & Legacy UI Removal",
-    summary: "Rebuilt Tracklist Gallery with mechanical audio feedback, purged legacy catalog drawer navigation, and introduced modular Vibe Collection architecture with Specimen Ledgers.",
-    items: [
-      "Rebuilt Tracklist Gallery with unmount audio cleanup, tab-visibility volume fading, and mechanical ratchet audio haptics",
-      "Migrated legacy apparatus-tracklist-gallery to clean core package architecture",
-      "Permanently deleted legacy catalog UI components including StoryViewer, ShowcaseDrawer, Sidebar, VesselControls, and ComponentPreview",
-      "Introduced Vibe Section architecture with SpecimenCodeLedger, SpecimenInfoLedger, SpecimenRail, and BottomControlPill",
-      "Replaced catalog navigation with DockNavbar and hardware-accelerated dock materials",
-      "Updated component metadata across all registry files with refined tags and category mappings",
-    ],
-  },
-  {
-    id: "commit-17",
-    date: "2026-08-18",
-    displayDate: "Aug 18, 2026 • 00:48 IST",
-    tag: "MAJOR",
-    title: "Showcase Architecture Overhaul & Component Motion Polish",
-    summary: "Overhauled the Tracklist Gallery with robust audio lifecycles, tactile mechanical haptics, and refined editorial typography, alongside a modernized Vibe Collection showcase architecture.",
-    items: [
-      "Overhauled Tracklist Gallery with unmount audio cleanup, tab-visibility volume fading, and instant autoplay playback",
-      "Added synthesized mechanical ratchet audio feedback on scroll wheel navigation and track switches",
-      "Switched Tracklist Gallery typography to Ranade with dynamic layout measurement and stationary text transitions",
-      "Enlarged cover artwork with organic rounded corners and synced palette illuminations",
-      "Introduced live tuning controls and visual refinements for Dual Wave, Gravity Cursor, Ripple Scramble, and Parallax components",
-      "Re-architected the showcase collection into streamlined Vibe Sections with interactive Specimen Ledgers",
-      "Purged legacy catalog navigation and unified component registry state management",
-    ],
-  },
-  {
-    id: "commit-16",
-    date: "2026-08-12",
-    displayDate: "Aug 12, 2026 • 13:46 IST",
-    tag: "ADDITION",
-    title: "Tracklist Gallery Component & Audio Integration",
-    summary: "Introduced the Tracklist Gallery component featuring kinetic album artwork transitions, synchronized audio previews, and ambient background color crossfading.",
-    items: [
-      "Added Tracklist Gallery component with kinetic album artwork motion and interactive track selection",
-      "Added ambient background color crossfading tuned to track art color palettes",
-      "Added synchronized audio preview scrubbing on active track change",
-      "Streamlined main project documentation and overview presentation",
-    ],
-  },
-  {
-    id: "commit-15",
-    date: "2026-08-11",
-    displayDate: "Aug 11, 2026 • 22:20 IST",
-    tag: "MAJOR",
-    title: "Initial Hero Section & 3D Shatter Motion",
-    summary: "Built the initial hero section featuring 3D rolling typography, interactive shatter globe backdrop, and stark lime CTA hover interaction.",
-    items: [
-      "Built initial hero section with top navigation and 3D rolling text typography",
-      "Added staggered 3D photo tile assembly build sequence for the hero globe",
-      "Added pre-shatter anticipation tremor with micro-vibrations and scale contraction",
-      "Added hero action button with hover-reveal stark lime arrow circle",
-      "Optimized 3D WebGL render loop for smooth 60fps performance",
-      "Prevented sphere from re-assembling on click once shattered",
-    ],
-  },
-  {
-    id: "commit-14",
-    date: "2026-08-11",
-    displayDate: "Aug 11, 2026 • 13:35 IST",
-    tag: "MAJOR",
-    title: "Library Refactor & Quality Standard Overhaul",
-    summary: "Renamed product library to Abyss, purged legacy Apparatus prefixes, standardized asset thumbnails, and refined component quality standards.",
-    items: [
-      "Renamed core library to Abyss and updated technical documentation",
-      "Purged legacy 'apparatus-' prefix across component paths, registry keys, and exports",
-      "Standardized component preview thumbnails with curated high-resolution WebP graphics",
-      "Retired initial components (Elastic Membrane, Turbulence Lens, Page Fade Shift, Venetian Blinds, Page Overlay Wipe, Origin Expand, Layout Morph, Cinematic Unstack, 3D Typography Grid) for redesign — these concepts will return in future releases with elevated interaction models",
-      "Refined canvas layout framing for Procedural Atlas and filtered empty catalog categories",
-    ],
-  },
-  {
-    id: "commit-13",
-    date: "2026-08-11",
-    displayDate: "Aug 11, 2026 • 13:30 IST",
-    tag: "FIX",
-    title: "Abyss Cursor Fall Camera Orbit & Viewport Expansion",
-    summary: "Expanded camera perspective and refined edge-tracking stability for Abyss Cursor Fall.",
-    items: [
-      "Expanded 3D camera perspective for a spacious, un-congested void environment",
-      "Stabilized camera target tracking across extreme screen boundaries",
-      "Smoothed camera roll tilt motion during high-velocity cursor gestures",
-      "Enhanced scroll wheel response for continuous camera zoom adjustments",
-    ],
-  },
-  {
-    id: "commit-0f",
-    date: "2026-08-10",
-    displayDate: "Aug 10, 2026 • 21:37 IST",
-    tag: "FIX",
-    title: "Production Layout & Asset Reliability Fixes",
-    summary: "Resolved production rendering issues for scroll components to ensure consistent layout framing and image loading across live deployments.",
-    items: [
-      "Fixed full-screen container height alignment for self-contained scroll experiences",
-      "Resolved image asset path resolution issues across production CDN environments",
-      "Improved initial page load stability and rendering performance on production builds",
-    ],
-  },
-  {
-    id: "commit-0e",
-    date: "2026-08-10",
-    displayDate: "Aug 10, 2026 • 21:24 IST",
-    tag: "ADDITION",
-    title: "Apparatus 3D Reel Text Component",
-    summary: "Introduced the Apparatus 3D Reel Text component with kinetic 3D typography, 12 directional cascade variants, and scroll-driven dividers.",
-    items: [
-      "Added 3D text roll interaction with dynamic depth shading",
-      "Added 12 cascade direction variants including center-outward, edge-inward, wave, and random modes",
-      "Added automated hero presentation loop with 3-second variant holds",
-      "Placed 12 interactive text variants directly on the dark canvas grid",
-      "Added scroll-triggered horizontal divider lines with alternating wipe directions",
-      "Added minimal rolling variant counter indicator",
-      "Optimized animation frame-rates for fluid 60fps scrolling",
-    ],
-  },
-  {
-    id: "commit-0d",
-    date: "2026-08-09",
-    displayDate: "Aug 09, 2026 • 21:55 IST",
-    tag: "ADDITION",
-    title: "Abyss Cursor Fall & Image Snake Trail Components",
-    summary: "Introduced the Abyss Cursor Fall and Image Snake Trail gallery components featuring dynamic 3D depth, responsive physics, and fluid cursor interactions.",
-    items: [
-      "Added Abyss Cursor Fall component featuring atmospheric 3D card physics and smooth camera perspective movement",
-      "Added multi-layer depth positioning with momentum response to fast cursor gestures",
-      "Added vivid electric neon palette options with adaptive depth desaturation as cards move through space",
-      "Added Image Snake Trail component featuring smooth cursor tracking, continuous infinite wrap, and tactile recoil motion",
-      "Integrated comprehensive live tuning controls in the showcase inspector",
-      "Polished interface rendering and resolved animation warnings",
-    ],
-  },
-  {
-    id: "commit-0c",
-    date: "2026-08-08",
-    displayDate: "Aug 08, 2026 • 21:05 IST",
-    tag: "FIX",
-    title: "Global Showcase Scroll Lock & Arc Drift Physics",
-    summary: "Resolved menu scroll interaction conflicts and refined Arc Drift Gallery scroll responsiveness.",
-    items: [
-      "Improved drawer menu scroll locking to ensure seamless page navigation",
-      "Fixed pointer event behavior when closing overlay menus",
-      "Refined Arc Drift Gallery scroll layout for continuous smooth drifting",
-      "Enhanced scroll wheel response with fluid spring animation dynamics",
-    ],
-  },
-  {
-    id: "commit-0a",
-    date: "2026-08-08",
-    displayDate: "Aug 08, 2026 • 16:38 IST",
-    tag: "ADDITION",
-    title: "Arc Drift Gallery Component",
-    summary: "Introduced the Arc Drift Gallery featuring curved thumbnail motion and seamless background image transitions.",
-    items: [
-      "Added Arc Drift Gallery with smooth curved thumbnail drift on scroll",
-      "Added background image crossfading when cards pass the center axis",
-      "Added gallery image collections and interactive controls panel",
-    ],
-  },
-  {
-    id: "commit-0b",
-    date: "2026-08-08",
-    displayDate: "Aug 08, 2026 • 16:38 IST",
-    tag: "FIX",
-    title: "Gravity Cursor Responsiveness & Motion Polish",
-    summary: "Improved interaction responsiveness when spawning multiple elements and optimized rendering performance.",
-    items: [
-      "Enhanced hold-to-spawn interaction smoothness across high-refresh rate displays",
-      "Optimized physics simulation frame-rate stability",
-      "Refined shadow styling for lighter GPU footprint and cleaner visual clarity",
-    ],
-  },
-  {
-    id: "commit-1",
-    date: "2026-08-07",
-    displayDate: "Aug 07, 2026 • 19:09 IST",
-    tag: "MAJOR",
-    title: "Catalog Search & Documentation Updates",
-    summary: "Added search capabilities to the catalog navigation and expanded the technical documentation suite.",
-    commitHash: "e044f3d",
-    items: [
-      "Added full-width catalog search bar with kinetic text scramble effects",
-      "Built comprehensive documentation layout with code highlight viewer",
-      "Added direct repository links and navigation shortcuts",
-    ],
-  },
-  {
-    id: "commit-2",
-    date: "2026-08-07",
-    displayDate: "Aug 07, 2026 • 14:10 IST",
-    tag: "FIX",
-    title: "Catalog Drawer Scroll Isolation",
-    summary: "Isolated scrolling behavior inside side drawer panels to prevent background page movement.",
-    commitHash: "60d9537",
-    items: [
-      "Isolated touch and wheel scrolling inside drawer containers",
-      "Prevented page scroll movement during active drawer interaction",
-    ],
-  },
-  {
-    id: "commit-3",
-    date: "2026-08-07",
-    displayDate: "Aug 07, 2026 • 14:03 IST",
-    tag: "MINOR",
-    title: "Codebase Optimization & Speed Improvements",
-    summary: "Streamlined codebase structure and optimized component initialization times across the library.",
-    commitHash: "f3992ad",
-    items: [
-      "Cleaned up legacy files and unused dependency references",
-      "Improved initial component load times and render responsiveness",
-    ],
-  },
-  {
-    id: "commit-4",
-    date: "2026-07-29",
-    displayDate: "Jul 29, 2026 • 20:25 IST",
-    tag: "ADDITION",
-    title: "3D Shatter Sphere & Monolith Components",
-    summary: "Added 3D Cuboid and Monolith component variations with updated HUD presentation layouts.",
-    commitHash: "e22e425",
-    items: [
-      "Added 3D Cuboid and Monolith interactive variations",
-      "Updated HUD overlay designs and layout scaling",
-    ],
-  },
-  {
-    id: "commit-5",
-    date: "2026-07-28",
-    displayDate: "Jul 28, 2026 • 21:33 IST",
-    tag: "ADDITION",
-    title: "Apparatus Dual Wave Refinements",
-    summary: "Refined default parameter presets, control reset behavior, and wave motion smoothness.",
-    commitHash: "f0ee28e",
-    items: [
-      "Updated default component parameters and control reset actions",
-      "Enhanced wave animation fluidity",
-    ],
-  },
-  {
-    id: "commit-6",
-    date: "2026-07-25",
-    displayDate: "Jul 25, 2026 • 00:20 IST",
-    tag: "MINOR",
-    title: "Kinetic Hover Physics & UI Polish",
-    summary: "Polished mouse hover dynamics and cleaned up build diagnostics.",
-    commitHash: "dd2ad9a",
-    items: [
-      "Refined cursor hover motion and fluid interaction response",
-      "Cleaned up build diagnostics and unused code paths",
-    ],
-  },
-  {
-    id: "commit-7",
-    date: "2026-07-23",
-    displayDate: "Jul 23, 2026 • 23:30 IST",
-    tag: "MAJOR",
-    title: "Text Component Collection & Header Redesign",
-    summary: "Introduced the text animation component category and redesigned the showcase top bar interface.",
-    commitHash: "f6f54f7",
-    items: [
-      "Added text animation component collection to core library",
-      "Redesigned top bar interface across showcase pages",
-    ],
-  },
-  {
-    id: "commit-8",
-    date: "2026-07-16",
-    displayDate: "Jul 16, 2026 • 18:15 IST",
-    tag: "ADDITION",
-    title: "Clip Morph & Kinetic Scroll Components",
-    summary: "Added the clip morph component and kinetic inertia scrolling.",
-    commitHash: "a214385",
-    items: [
-      "Added clip morph animation component",
-      "Added smooth inertia scroll and updated typography",
-    ],
-  },
-  {
-    id: "commit-9",
-    date: "2026-07-14",
-    displayDate: "Jul 14, 2026 • 16:40 IST",
-    tag: "ADDITION",
-    title: "Parallax Column & Venetian Blinds Components",
-    summary: "Added Parallax Column component and added backlight flare to Venetian Blinds.",
-    commitHash: "c7ce6c3",
-    items: [
-      "Added Parallax Column component with custom controls",
-      "Added backlight glow and infinite scroll to Venetian Blinds",
-    ],
-  },
-  {
-    id: "commit-10",
-    date: "2026-07-13",
-    displayDate: "Jul 13, 2026 • 14:20 IST",
-    tag: "MAJOR",
-    title: "Project Renamed to Abyss & Orbit Ring Gallery",
-    summary: "Renamed the project to Abyss and added the Orbit Ring Gallery component.",
-    commitHash: "96443d3",
-    items: [
-      "Renamed packages and core library to Abyss",
-      "Added Orbit Ring Gallery component",
-    ],
-  },
-  {
-    id: "commit-11",
-    date: "2026-07-07",
-    displayDate: "Jul 07, 2026 • 19:10 IST",
-    tag: "ADDITION",
-    title: "Home Page Navigation & Deepwood Glimmer",
-    summary: "Added Enter Stage button on the homepage and built the Deepwood Glimmer component.",
-    commitHash: "f4cbd66",
-    items: [
-      "Added Enter Stage navigation button to the homepage",
-      "Added Deepwood Glimmer component",
-      "Fixed image loading for static preview cards",
-    ],
-  },
-];
-
-const FILTERS = ["All", "Major", "Addition", "Minor", "Fix"];
-
 export default function ChangelogPage() {
-  const [filter, setFilter] = useState<string>("All");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [tagFilter, setTagFilter] = useState<TagFilter>("ALL");
+  const [componentFilter, setComponentFilter] = useState<string>("ALL");
+  const [monthFilter, setMonthFilter] = useState<string>("ALL");
+  const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
 
   useEffect(() => {
-    document.title = "Changelog ✶ Abyss";
+    document.title = "Changelog — Abyss";
   }, []);
 
-  const filtered = CHANGELOG_DATA.filter((entry) => {
-    if (filter === "All") return true;
-    return entry.tag.toLowerCase() === filter.toLowerCase();
-  });
+  // Global Cmd+K shortcut for Universal Search Command Palette
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setCommandPaletteOpen((prev) => !prev);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
+  // Calculate component frequency
+  const componentCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    CHANGELOG_DATA.forEach((entry) => {
+      entry.affectedSlugs?.forEach((slug) => {
+        counts[slug] = (counts[slug] || 0) + 1;
+      });
+    });
+    return counts;
+  }, []);
+
+  const availableComponents = useMemo(() => {
+    return Object.keys(componentCounts).sort();
+  }, [componentCounts]);
+
+  // Extract unique months
+  const availableMonths = useMemo(() => {
+    const months = new Set<string>();
+    CHANGELOG_DATA.forEach((entry) => {
+      months.add(getMonthYear(entry.date));
+    });
+    return Array.from(months);
+  }, []);
+
+  // Filter entries
+  const filteredEntries = useMemo(() => {
+    return CHANGELOG_DATA.filter((entry) => {
+      // 1. Tag filter
+      if (tagFilter !== "ALL") {
+        const entryTags = getEntryTags(entry);
+        if (!entryTags.includes(tagFilter)) return false;
+      }
+
+      // 2. Component filter
+      if (componentFilter !== "ALL") {
+        if (!entry.affectedSlugs?.includes(componentFilter)) return false;
+      }
+
+      // 3. Month filter
+      if (monthFilter !== "ALL") {
+        if (getMonthYear(entry.date) !== monthFilter) return false;
+      }
+
+      // 4. Search query
+      if (searchQuery.trim()) {
+        const query = searchQuery.toLowerCase().trim();
+        const matchesTitle = entry.title.toLowerCase().includes(query);
+        const matchesSummary = entry.summary.toLowerCase().includes(query);
+        const matchesItems = entry.items.some((item) =>
+          item.toLowerCase().includes(query)
+        );
+        const matchesSlug = entry.affectedSlugs?.some((s) =>
+          s.toLowerCase().includes(query)
+        );
+        if (!matchesTitle && !matchesSummary && !matchesItems && !matchesSlug) {
+          return false;
+        }
+      }
+
+      return true;
+    });
+  }, [tagFilter, componentFilter, monthFilter, searchQuery]);
+
+  // Group filtered entries by Month
+  const groupedByMonth = useMemo(() => {
+    const groups: { month: string; entries: CommitEntry[] }[] = [];
+    filteredEntries.forEach((entry) => {
+      const month = getMonthYear(entry.date);
+      const existing = groups.find((g) => g.month === month);
+      if (existing) {
+        existing.entries.push(entry);
+      } else {
+        groups.push({ month, entries: [entry] });
+      }
+    });
+    return groups;
+  }, [filteredEntries]);
+
+  const hasActiveFilters =
+    tagFilter !== "ALL" ||
+    componentFilter !== "ALL" ||
+    monthFilter !== "ALL" ||
+    searchQuery.trim() !== "";
+
+  const handleResetFilters = () => {
+    setTagFilter("ALL");
+    setComponentFilter("ALL");
+    setMonthFilter("ALL");
+    setSearchQuery("");
+  };
 
   return (
-    <div className="min-h-screen bg-[#0A0A0A] text-white font-sans selection:bg-white selection:text-black">
-      {/* Top Bar Header */}
-      <header className="sticky top-0 z-40 w-full bg-[#0A0A0A]/90 backdrop-blur-md border-b border-neutral-900 h-14 flex items-center justify-between px-6 lg:px-12">
-        <Link
-          href="/components"
-          className="flex items-center gap-2 font-mono text-xs text-neutral-400 hover:text-white transition-colors py-1.5 px-3 rounded-lg hover:bg-neutral-900 border border-transparent hover:border-neutral-800 active:scale-[0.98]"
-        >
-          <ArrowLeft className="w-3.5 h-3.5" />
-          <span>Back to Catalog</span>
-        </Link>
-      </header>
+    <div
+      style={{
+        position: "relative",
+        width: "100%",
+        minHeight: "100vh",
+        background: "#9be5fb",
+        color: "#ffffff",
+      }}
+    >
+      {/* Foreground Main Sheet with Rounded Bottom Corners */}
+      <div
+        style={{
+          position: "relative",
+          zIndex: 2,
+          background: "#0d0d0f",
+          borderBottomLeftRadius: "36px",
+          borderBottomRightRadius: "36px",
+          borderBottom: "1px solid rgba(255, 255, 255, 0.06)",
+          boxShadow: "0 20px 40px -10px rgba(0, 0, 0, 0.35)",
+          overflow: "hidden",
+        }}
+      >
+        {/* Universal Floating Dock Navbar with Search Command Trigger */}
+        <DockNavbar onOpenSearch={() => setCommandPaletteOpen(true)} />
 
-      {/* Main Content Container */}
-      <main className="max-w-5xl mx-auto px-6 lg:px-12 py-12 md:py-16 space-y-12">
-        {/* Title Header Row */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-8 border-b border-neutral-900">
-          <div className="space-y-3">
-            <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-white leading-tight">
-              Changelog
-            </h1>
-            <p className="text-neutral-400 text-base md:text-lg leading-relaxed">
-              A record of all notable changes to Abyss.
-            </p>
-          </div>
+        {/* Main Page Container */}
+        <main className="max-w-5xl mx-auto px-6 lg:px-8 pt-28 md:pt-36 pb-12 space-y-10">
+          {/* Header Area */}
+          <ChangelogHeader totalCount={CHANGELOG_DATA.length} />
 
-          {/* Pure Monochrome Filter Pills */}
-          <div className="flex flex-wrap items-center gap-2 font-mono text-xs shrink-0">
-            {FILTERS.map((f) => {
-              const isActive = filter === f;
-              return (
-                <button
-                  key={f}
-                  onClick={() => setFilter(f)}
-                  className={`px-4 py-1.5 rounded-full text-xs transition-all cursor-pointer ${
-                    isActive
-                      ? "bg-white text-black font-bold shadow-sm"
-                      : "bg-transparent text-neutral-400 hover:text-white border border-neutral-800 hover:border-neutral-700"
-                  }`}
-                >
-                  {f}
-                </button>
-              );
-            })}
-          </div>
-        </div>
+          {/* Unified Control Console Bar */}
+          <ChangelogControlConsole
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+            tagFilter={tagFilter}
+            onTagFilterChange={setTagFilter}
+            monthFilter={monthFilter}
+            onMonthFilterChange={setMonthFilter}
+            componentFilter={componentFilter}
+            onComponentFilterChange={setComponentFilter}
+            availableMonths={availableMonths}
+            availableComponents={availableComponents}
+            componentCounts={componentCounts}
+            filteredCount={filteredEntries.length}
+            totalCount={CHANGELOG_DATA.length}
+            hasActiveFilters={hasActiveFilters}
+            onResetFilters={handleResetFilters}
+          />
 
-        {/* Changelog Timeline Items */}
-        <div className="divide-y divide-neutral-900">
-          {filtered.map((entry) => (
-            <motion.article
-              key={entry.id}
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-              className="py-10 md:py-14 flex flex-col md:flex-row items-start gap-8 md:gap-12"
-            >
-              {/* Left Meta Column (Date, Tag, Commit Link) */}
-              <div className="w-full md:w-48 shrink-0 font-mono space-y-2.5 pt-1">
-                <div className="text-xs text-neutral-400 font-medium tracking-wide">
-                  {entry.displayDate}
-                </div>
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="inline-block px-3 py-1 rounded border border-neutral-800 bg-neutral-900/90 text-neutral-300 text-[10px] uppercase font-bold tracking-widest">
-                    {entry.tag}
-                  </span>
-                  <a
-                    href="https://github.com/DShivam9/Abyss"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 px-2 py-1 rounded border border-neutral-800/80 bg-neutral-950 text-neutral-400 hover:text-white hover:border-neutral-700 text-[10px] font-mono transition-colors group active:scale-[0.96]"
-                    title="View GitHub Repository"
-                  >
-                    <Github className="w-3 h-3 text-neutral-500 group-hover:text-white transition-colors" />
-                    <span>Repository</span>
-                    <ExternalLink className="w-2.5 h-2.5 text-neutral-600 group-hover:text-neutral-400 transition-colors" />
-                  </a>
-                </div>
-              </div>
-
-              {/* Right Content Column */}
-              <div className="flex-1 space-y-6">
-                <div className="space-y-3">
-                  <h2 className="text-2xl md:text-3xl font-bold text-white tracking-tight leading-snug">
-                    {entry.title}
-                  </h2>
-                  <p className="text-neutral-400 text-sm md:text-base leading-relaxed">
-                    {entry.summary}
+          {/* Grouped Month Feed — 2-Column Responsive CSS Masonry Grid */}
+          <section className="space-y-12">
+            {filteredEntries.length === 0 ? (
+              <div className="text-center py-16 px-6 bg-[#101013] border border-[rgba(255,255,255,0.05)] rounded-2xl space-y-4">
+                <Sparkles className="w-8 h-8 text-[#55555c] mx-auto" />
+                <div className="space-y-1">
+                  <h3 className="text-base font-medium text-white font-['Ranade',sans-serif]">
+                    No release entries found
+                  </h3>
+                  <p className="text-xs text-[#8e8e93]">
+                    No log updates match your active search and filter combinations.
                   </p>
                 </div>
-
-                {/* Change Bullets Grid */}
-                {entry.items && entry.items.length > 0 && (
-                  <ul className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 pt-2 text-xs md:text-sm text-neutral-300 font-sans leading-relaxed">
-                    {entry.items.map((item, idx) => (
-                      <li key={idx} className="flex items-start gap-3">
-                        <span className="text-neutral-500 font-bold select-none">•</span>
-                        <span>{item}</span>
-                      </li>
-                    ))}
-                  </ul>
-                )}
+                <button
+                  onClick={handleResetFilters}
+                  className="px-4 py-1.5 rounded-lg bg-[#18181c] border border-[rgba(255,255,255,0.08)] text-xs font-mono text-white hover:text-[#9be5fb] transition-colors cursor-pointer"
+                >
+                  Reset all filters
+                </button>
               </div>
-            </motion.article>
-          ))}
-        </div>
+            ) : (
+              groupedByMonth.map((group) => (
+                <div
+                  key={group.month}
+                  id={`month-section-${group.month.replace(/\s+/g, "-")}`}
+                  className="space-y-4 scroll-mt-28"
+                >
+                  {/* Month Milestone Separator */}
+                  <div className="flex items-center gap-3 pt-2">
+                    <div className="font-mono text-xs uppercase tracking-widest text-[#8e8e93] font-semibold bg-[#101013] px-3 py-1 rounded-md border border-[rgba(255,255,255,0.05)]">
+                      {group.month}
+                    </div>
+                    <div className="h-px flex-1 bg-[rgba(255,255,255,0.05)]" />
+                    <span className="font-mono text-[11px] text-[#55555c]">
+                      {group.entries.length}{" "}
+                      {group.entries.length === 1 ? "release" : "releases"}
+                    </span>
+                  </div>
 
-        {/* Footer Summary */}
-        <div className="text-center font-mono text-xs text-neutral-400 pt-12 border-t border-neutral-900">
-          <span>{filtered.length} commits</span>
-        </div>
-      </main>
+                  {/* CSS Masonry Columns */}
+                  <div className="columns-1 md:columns-2 gap-4.5 space-y-4.5 [column-fill:_balance]">
+                    {group.entries.map((entry) => (
+                      <ChangelogCard key={entry.id} entry={entry} />
+                    ))}
+                  </div>
+                </div>
+              ))
+            )}
+          </section>
+
+          {/* Horizon Laser Finale with Centerpiece 3D Star Logo */}
+          <ChangelogFinaleHorizon />
+        </main>
+
+        {/* Floating "Go to Top" Button */}
+        <ScrollToTopButton />
+      </div>
+
+      {/* Sticky Reveal Curtain Footer on Solid Ice Blue Background */}
+      <DocsFooter activePage="/changelog" />
+
+      {/* Universal Search Command Palette Modal */}
+      <CommandPalette
+        isOpen={commandPaletteOpen}
+        onClose={() => setCommandPaletteOpen(false)}
+        components={ALL_COMPONENTS}
+      />
     </div>
   );
 }

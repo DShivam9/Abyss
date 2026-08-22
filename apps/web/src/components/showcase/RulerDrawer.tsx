@@ -42,7 +42,7 @@ export function RulerDrawer({ currentSlug, onClose }: RulerDrawerProps) {
 
   const handleGoCollection = () => {
     onClose();
-    router.push("/components");
+    router.push("/collection");
   };
 
   return (

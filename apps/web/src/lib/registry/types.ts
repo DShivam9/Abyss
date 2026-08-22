@@ -22,4 +22,10 @@ export interface ComponentDetail {
   tags?: string[];
   previewType?: "shader" | "scroll" | "gallery" | "transition" | "text" | "svg";
   controls?: ControlConfig[];
+  overview?: string;
+  useCases?: string[];
+  techStack?: string[];
+  engineeringNotes?: string[];
+  codeUsage?: string;
+  codeControlled?: string;
 }

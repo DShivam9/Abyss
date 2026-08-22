@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cryogenic Frost Shader ✶ Abyss</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background-color: #0d0d0f;
+      color: #ededee;
+      min-height: 100vh;
+      overflow-x: hidden;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    #canvas-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    /* Mock Floating Dock Navbar */
+    .dock-wrapper {
+      position: fixed;
+      top: 24px;
+      left: 0;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      z-index: 50;
+      pointer-events: none;
+    }
+
+    .dock-nav {
+      pointer-events: auto;
+      display: inline-flex;
+      align-items: center;
+      gap: 28px;
+      padding: 8px 18px;
+      background: linear-gradient(180deg, rgba(20, 20, 22, 0.85) 0%, rgba(13, 13, 15, 0.85) 100%);
+      backdrop-filter: blur(20px) saturate(180%);
+      -webkit-backdrop-filter: blur(20px) saturate(180%);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 9999px;
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.1),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.5),
+        0 16px 36px rgba(0, 0, 0, 0.7);
+    }
+
+    .dock-brand {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 700;
+      font-size: 13px;
+      letter-spacing: 0.08em;
+      color: #ededee;
+      text-decoration: none;
+    }
+
+    .dock-brand svg {
+      color: #9be5fb;
+    }
+
+    .dock-links {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .dock-link {
+      font-size: 13px;
+      color: #8e8e93;
+      text-decoration: none;
+      transition: color 0.2s ease;
+    }
+
+    .dock-link:hover, .dock-link.active {
+      color: #ededee;
+    }
+
+    /* Page Content Overlay */
+    .content-overlay {
+      position: relative;
+      z-index: 10;
+      max-w: 800px;
+      margin: 0 auto;
+      padding: 160px 24px 80px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      pointer-events: none;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: monospace;
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #9be5fb;
+      background: rgba(155, 229, 251, 0.08);
+      padding: 4px 12px;
+      border-radius: 9999px;
+      border: 1px solid rgba(155, 229, 251, 0.2);
+      margin-bottom: 20px;
+    }
+
+    h1 {
+      font-size: clamp(38px, 6vw, 64px);
+      font-weight: 400;
+      letter-spacing: -0.035em;
+      color: #d4d4d8;
+      line-height: 1.1;
+      margin-bottom: 16px;
+      max-width: 680px;
+    }
+
+    p {
+      font-size: 16px;
+      line-height: 1.7;
+      color: #8e8e93;
+      max-width: 520px;
+    }
+
+    /* Tuner HUD in Bottom Corner */
+    .hud {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      z-index: 100;
+      background: rgba(18, 18, 21, 0.88);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 14px;
+      padding: 14px 18px;
+      box-shadow: 0 12px 32px rgba(0,0,0,0.6);
+      font-size: 12px;
+      font-family: monospace;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      min-width: 220px;
+    }
+
+    .hud-header {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: #9be5fb;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .hud-control {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .hud-label {
+      display: flex;
+      justify-content: space-between;
+      color: #a1a1aa;
+    }
+
+    .hud-slider {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 4px;
+      border-radius: 2px;
+      background: #27272a;
+      outline: none;
+    }
+
+    .hud-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: #9be5fb;
+      cursor: pointer;
+    }
+  </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+</head>
+<body>
+
+  <!-- Shader Canvas -->
+  <div id="canvas-container"></div>
+
+  <!-- Mock Top Dock Navbar -->
+  <div class="dock-wrapper">
+    <header class="dock-nav">
+      <a href="#" class="dock-brand">
+        <svg width="18" height="18" viewBox="0 0 100 100" fill="currentColor">
+          <path d="m50 7.5234 2.2461 29.645 5.9648-15.68-5.2891 24.566 0.089844 1.0898 37.09-22.633-27.855 22.355 20.266-5.3906-24.645 10.09 42.133 11.113-39.566-5.5469 21.109 12.812-25.188-11.445 15.898 34.777-19.363-30.055 3.1523 22.242-7.2656-24.844-21.031 32.656 14.41-31.531-16.945 14.586 17.043-19.578-42.254 5.9141 36.457-9.6016-24.191-3.6328 29.801 0.89844-32.168-25.82 28.945 17.656-11.887-17.145 19.934 22.055 0.097656 0.066406z" fillRule="evenodd" />
+        </svg>
+        <span>ABYSS</span>
+      </a>
+      <nav class="dock-links">
+        <a href="#" class="dock-link">Collection</a>
+        <a href="#" class="dock-link active">Docs</a>
+      </nav>
+    </header>
+  </div>
+
+  <!-- Preview Text Content -->
+  <div class="content-overlay">
+    <div class="badge">Cryogenic Frost V1</div>
+    <h1>Autonomous Shader Background</h1>
+    <p>Domain-warped FBM fluid shifting gently with deep cryogenic ice blue highlights over an obsidian void.</p>
+  </div>
+
+  <!-- Live Tuner HUD -->
+  <div class="hud">
+    <div class="hud-header">
+      <span>Shader Tuner</span>
+      <span style="color: #52525b">GLSL</span>
+    </div>
+    
+    <div class="hud-control">
+      <div class="hud-label">
+        <span>Drift Speed</span>
+        <span id="val-speed">0.18</span>
+      </div>
+      <input type="range" id="slider-speed" class="hud-slider" min="0.02" max="0.8" step="0.01" value="0.18">
+    </div>
+
+    <div class="hud-control">
+      <div class="hud-label">
+        <span>Frost Glow</span>
+        <span id="val-glow">0.35</span>
+      </div>
+      <input type="range" id="slider-glow" class="hud-slider" min="0.05" max="0.9" step="0.02" value="0.35">
+    </div>
+
+    <div class="hud-control">
+      <div class="hud-label">
+        <span>Swirl Scale</span>
+        <span id="val-scale">1.40</span>
+      </div>
+      <input type="range" id="slider-scale" class="hud-slider" min="0.5" max="3.5" step="0.1" value="1.40">
+    </div>
+  </div>
+
+  <script>
+    // ─── WebGL Shader Implementation ───
+    const container = document.getElementById('canvas-container');
+    const scene = new THREE.Scene();
+    const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, powerPreference: "high-performance" });
+    
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    container.appendChild(renderer.domElement);
+
+    const vertexShader = `
+      varying vec2 vUv;
+      void main() {
+        vUv = uv;
+        gl_Position = vec4(position, 1.0);
+      }
+    `;
+
+    const fragmentShader = `
+      uniform float uTime;
+      uniform vec2 uResolution;
+      uniform vec2 uMouse;
+      uniform float uSpeed;
+      uniform float uGlow;
+      uniform float uScale;
+      varying vec2 vUv;
+
+      // Precision Simplex-like Noise
+      vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+      vec2 mod289(vec2 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+      vec3 permute(vec3 x) { return mod289(((x*34.0)+1.0)*x); }
+
+      float snoise(vec2 v) {
+        const vec4 C = vec4(0.211324865405187, 0.366025403784439,
+                           -0.577350269189626, 0.024390243902439);
+        vec2 i  = floor(v + dot(v, C.yy));
+        vec2 x0 = v -   i + dot(i, C.xx);
+        vec2 i1;
+        i1 = (x0.x > x0.y) ? vec2(1.0, 0.0) : vec2(0.0, 1.0);
+        vec4 x12 = x0.xyxy + C.xxzz;
+        x12.xy -= i1;
+        i = mod289(i);
+        vec3 p = permute(permute(i.y + vec3(0.0, i1.y, 1.0))
+              + i.x + vec3(0.0, i1.x, 1.0));
+        vec3 m = max(0.5 - vec3(dot(x0,x0), dot(x12.xy,x12.xy), dot(x12.zw,x12.zw)), 0.0);
+        m = m*m;
+        m = m*m;
+        vec3 x = 2.0 * fract(p * C.www) - 1.0;
+        vec3 h = abs(x) - 0.5;
+        vec3 ox = floor(x + 0.5);
+        vec3 a0 = x - ox;
+        m *= 1.79284291400159 - 0.85373472095314 * (a0*a0 + h*h);
+        vec3 g;
+        g.x = a0.x * x0.x + h.x * x0.y;
+        g.yz = a0.yz * x12.xz + h.yz * x12.yw;
+        return 130.0 * dot(m, g);
+      }
+
+      // Domain Warped Fractal Brownian Motion
+      float fbm(vec2 p) {
+        float f = 0.0;
+        float w = 0.5;
+        for (int i = 0; i < 4; i++) {
+          f += w * snoise(p);
+          p *= 2.02;
+          w *= 0.5;
+        }
+        return f;
+      }
+
+      // Dithering to eliminate 8-bit color banding
+      float randomDither(vec2 uv) {
+        return fract(sin(dot(uv, vec2(12.9898, 78.233))) * 43758.5453);
+      }
+
+      void main() {
+        vec2 st = (gl_FragCoord.xy - 0.5 * uResolution.xy) / min(uResolution.x, uResolution.y);
+        st *= uScale;
+
+        float t = uTime * uSpeed;
+
+        // Domain warping coordinates
+        vec2 q = vec2(
+          fbm(st + vec2(0.0, t * 0.2)),
+          fbm(st + vec2(5.2, t * 0.13))
+        );
+
+        vec2 r = vec2(
+          fbm(st + 4.0 * q + vec2(1.7, 9.2 + t * 0.15)),
+          fbm(st + 4.0 * q + vec2(8.3, 2.8 + t * 0.12))
+        );
+
+        float f = fbm(st + 4.0 * r);
+
+        // Color Palettes
+        // Base Void: #0d0d0f (13, 13, 15)
+        vec3 colBase = vec3(0.051, 0.051, 0.059);
+        
+        // Deep Glacial Trench: #0a131c
+        vec3 colDeepGlacier = vec3(0.039, 0.075, 0.110);
+        
+        // Ethereal Ice Blue / Frost Accent: #9be5fb (155, 229, 251)
+        vec3 colIceBlue = vec3(0.608, 0.898, 0.984);
+
+        // Frost Mist White
+        vec3 colFrostMist = vec3(0.85, 0.95, 1.0);
+
+        // Mix layers
+        vec3 color = mix(colBase, colDeepGlacier, clamp((f*f)*4.0, 0.0, 1.0));
+        
+        // Add subtle ice blue highlights along ridges
+        float ridge = smoothstep(0.1, 0.9, length(q));
+        color = mix(color, colIceBlue, clamp(length(r) * ridge * uGlow, 0.0, 0.85));
+
+        // Add soft specular frost crest
+        float crest = pow(clamp(f * 1.2, 0.0, 1.0), 3.0) * uGlow * 0.6;
+        color += colFrostMist * crest;
+
+        // Hardware dither pass
+        color += (randomDither(vUv) - 0.5) * 0.012;
+
+        gl_FragColor = vec4(color, 1.0);
+      }
+    `;
+
+    const uniforms = {
+      uTime: { value: 0 },
+      uResolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) },
+      uMouse: { value: new THREE.Vector2(0.5, 0.5) },
+      uSpeed: { value: 0.18 },
+      uGlow: { value: 0.35 },
+      uScale: { value: 1.40 }
+    };
+
+    const material = new THREE.ShaderMaterial({
+      vertexShader,
+      fragmentShader,
+      uniforms,
+      depthWrite: false,
+      depthTest: false
+    });
+
+    const geometry = new THREE.PlaneGeometry(2, 2);
+    const mesh = new THREE.Mesh(geometry, material);
+    scene.add(mesh);
+
+    // Resize handler
+    window.addEventListener('resize', () => {
+      const w = window.innerWidth;
+      const h = window.innerHeight;
+      renderer.setSize(w, h);
+      uniforms.uResolution.value.set(w, h);
+    });
+
+    // Mouse tracking
+    window.addEventListener('mousemove', (e) => {
+      uniforms.uMouse.value.set(e.clientX / window.innerWidth, 1.0 - e.clientY / window.innerHeight);
+    });
+
+    // Animation Loop
+    const clock = new THREE.Clock();
+    function animate() {
+      requestAnimationFrame(animate);
+      uniforms.uTime.value = clock.getElapsedTime();
+      renderer.render(scene, camera);
+    }
+    animate();
+
+    // ─── HUD Tuner Bindings ───
+    const sliderSpeed = document.getElementById('slider-speed');
+    const sliderGlow = document.getElementById('slider-glow');
+    const sliderScale = document.getElementById('slider-scale');
+
+    const valSpeed = document.getElementById('val-speed');
+    const valGlow = document.getElementById('val-glow');
+    const valScale = document.getElementById('val-scale');
+
+    sliderSpeed.addEventListener('input', (e) => {
+      const v = parseFloat(e.target.value);
+      uniforms.uSpeed.value = v;
+      valSpeed.textContent = v.toFixed(2);
+    });
+
+    sliderGlow.addEventListener('input', (e) => {
+      const v = parseFloat(e.target.value);
+      uniforms.uGlow.value = v;
+      valGlow.textContent = v.toFixed(2);
+    });
+
+    sliderScale.addEventListener('input', (e) => {
+      const v = parseFloat(e.target.value);
+      uniforms.uScale.value = v;
+      valScale.textContent = v.toFixed(2);
+    });
+  </script>
+</body>
+</html>

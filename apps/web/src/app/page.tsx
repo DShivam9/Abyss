@@ -177,16 +177,16 @@ export default function HomePage() {
           </Link>
           <nav className="flex items-center gap-8 md:gap-10 text-sm md:text-base font-medium text-neutral-400 font-['Switzer',sans-serif]">
             <Link 
+              href="/collection" 
+              className="hover:text-white transition-colors duration-200 active:scale-[0.97] cursor-pointer"
+            >
+              Collection
+            </Link>
+            <Link 
               href="/docs" 
               className="hover:text-white transition-colors duration-200 active:scale-[0.97] cursor-pointer"
             >
               Docs
-            </Link>
-            <Link 
-              href="/components" 
-              className="hover:text-white transition-colors duration-200 active:scale-[0.97] cursor-pointer"
-            >
-              Components
             </Link>
             <Link 
               href="/changelog" 
@@ -238,12 +238,12 @@ export default function HomePage() {
             {/* Pill Hover-Reveal Arrow Hero Action Button */}
             <div className="hero-fade-in opacity-0 mt-8 flex items-center justify-center pointer-events-auto">
               <Link
-                href="/components"
+                href="/collection"
                 className="group relative flex items-center h-12 text-black font-['Switzer',sans-serif] active:scale-[0.97] transition-transform duration-160 cursor-pointer"
               >
                 {/* Inner Label */}
                 <div className="bg-white rounded-full h-12 px-8 flex items-center justify-center whitespace-nowrap text-sm font-semibold relative z-10 w-full group-hover:w-[calc(100%-52px)] transition-all duration-500 ease-[cubic-bezier(0.165,0.84,0.44,1)]">
-                  Browse Components
+                  Browse Collection
                 </div>
 
                 {/* Stark Lime Circle Arrow Reveal */}
