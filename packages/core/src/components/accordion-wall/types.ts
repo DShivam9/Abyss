@@ -1,34 +1,60 @@
 import { VesselComponentProps } from "../../engine/types";
 
+export interface AccordionWallItem {
+  id?: string;
+  title: string;
+  image: string;
+  moodColor?: string;
+}
+
 export interface ApparatusAccordionWallProps extends VesselComponentProps {
   /**
-   * List of image URLs to display in the accordion panels.
+   * List of accordion items to display.
+   */
+  items?: AccordionWallItem[];
+
+  /**
+   * Backward-compatible list of image URLs.
    */
   images?: string[];
 
   /**
-   * List of titles corresponding to each image/panel.
+   * Backward-compatible list of titles.
    */
   titles?: string[];
 
   /**
-   * List of subtitles corresponding to each image/panel.
+   * Watermark text displayed in the upper void.
+   * @default "Hover to Unveil • Click to Expand"
    */
-  subtitles?: string[];
+  watermarkText?: string;
 
   /**
-   * How panels are activated: on hover or on click.
-   * @default "hover"
+   * Number of visible monoliths.
+   * @default 8
    */
-  interactiveMode?: "hover" | "click";
+  panelCount?: number;
 
   /**
-   * The index of the active panel (controlled externally).
+   * Transition speed in seconds.
+   * @default 1.35
    */
-  activePanelIndex?: number;
+  speed?: number;
 
   /**
-   * Callback when the active panel index changes.
+   * Callback when a monolith is clicked to expand into fullscreen view.
    */
-  onActivePanelChange?: (index: number) => void;
+  onExpand?: (index: number | null) => void;
+
+  /**
+   * Custom CSS class name.
+   */
+  className?: string;
+
+  /**
+   * Custom inline styles.
+   */
+  style?: React.CSSProperties;
 }
+
+export type PillarGalleryProps = ApparatusAccordionWallProps;

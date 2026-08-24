@@ -1,53 +1,10 @@
 import React, { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { ApparatusClipMorphProps } from "./types";
+import { DEFAULT_IMAGES } from "./constants";
+import { getClipPathString } from "./helpers";
 
-// Morph keyframe target: Kinetic Star centered at (50, 50) using exactly 12 vertices
-const STAR_KEYFRAME = [
-  { x: 50, y: 20 }, { x: 56, y: 39.6 }, { x: 76, y: 35 }, { x: 62, y: 50 },
-  { x: 76, y: 65 }, { x: 56, y: 60.4 }, { x: 50, y: 80 }, { x: 44, y: 60.4 },
-  { x: 24, y: 65 }, { x: 38, y: 50 }, { x: 24, y: 35 }, { x: 44, y: 39.6 }
-];
-
-const DEFAULT_IMAGES = [
-  "/images/components images/Transitions/ChatGPT Image Jul 16, 2026, 06_08_32 PM.webp",
-  "/images/components images/Transitions/ChatGPT Image Jul 16, 2026, 06_10_44 PM.webp",
-  "/images/components images/Transitions/ChatGPT Image Jul 16, 2026, 06_11_21 PM.webp",
-  "/images/components images/Transitions/ChatGPT Image Jul 16, 2026, 06_12_28 PM.webp"
-];
-
-// Helper to calculate clip path polygon string for the kinetic star
-const getClipPathString = (progress: number, maxRotation: number) => {
-  const p = Math.max(0, Math.min(1, progress));
-  if (p === 0) return "none"; // Full bleed resting state
-
-  // Scale the star from 4.5 (full bleed outside screen) to 0.0 (collapse to center)
-  const s = (1 - p) * 4.5;
-
-  // Rotate star as it morphs/collapses
-  const angleRad = (p * maxRotation) * (Math.PI / 180);
-  const cos = Math.cos(angleRad);
-  const sin = Math.sin(angleRad);
-
-  const pts = STAR_KEYFRAME.map((pt) => {
-    const dx = pt.x - 50;
-    const dy = pt.y - 50;
-    const rx = dx * cos - dy * sin;
-    const ry = dx * sin + dy * cos;
-    return {
-      x: 50 + rx * s,
-      y: 50 + ry * s
-    };
-  });
-
-  return `polygon(${pts.map(pt => `${pt.x.toFixed(2)}% ${pt.y.toFixed(2)}%`).join(", ")})`;
-};
-
-export const ApparatusClipMorph: React.FC<ApparatusClipMorphProps & {
-  customRotation?: number;
-  customBleed?: number;
-  customGrain?: number;
-}> = ({
+export const ApparatusClipMorph: React.FC<ApparatusClipMorphProps> = ({
   images,
   imageSrc,
   className = "",

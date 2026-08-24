@@ -5,6 +5,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { Github, ArrowRight } from "lucide-react";
 import { CommitEntry } from "@/lib/changelog-data";
+import { COMPONENT_DETAILS } from "@/lib/registry";
 
 interface ChangelogCardProps {
   entry: CommitEntry;
@@ -16,6 +17,16 @@ export function getEntryTags(entry: CommitEntry): string[] {
   return ["ADDITION"];
 }
 
+export function getTagBadgeStyle(tag: string): string {
+  switch (tag) {
+    case "MAJOR": return "text-[#7dd3fc] bg-[#0c4a6e]/20 border border-[#075985]/30";
+    case "ADDITION": return "text-[#6ee7b7] bg-[#064e3b]/20 border border-[#065f46]/30";
+    case "FIX": return "text-[#fde047] bg-[#713f12]/20 border border-[#854d0e]/30";
+    case "REMOVAL": return "text-[#fda4af] bg-[#881337]/20 border border-[#9f1239]/30";
+    default: return "text-[#a1a1aa] bg-[#27272a]/40 border border-[#3f3f46]/30";
+  }
+}
+
 export function ChangelogCard({ entry }: ChangelogCardProps) {
   const tags = getEntryTags(entry);
 
@@ -23,60 +34,55 @@ export function ChangelogCard({ entry }: ChangelogCardProps) {
     <motion.article
       initial={{ opacity: 0, y: 18 }}
       whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "0px 0px -40px 0px" }}
-      transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
-      className="break-inside-avoid bg-[#101013] border border-[rgba(255,255,255,0.05)] hover:border-[rgba(255,255,255,0.1)] rounded-2xl p-5 md:p-6 transition-[border-color,background-color] space-y-4 mb-4.5 will-change-[transform,opacity]"
+      viewport={{ once: true, margin: "-40px" }}
+      transition={{ duration: 0.35, ease: "easeOut" }}
+      className="p-5 md:p-6 rounded-2xl border border-[rgba(255,255,255,0.06)] bg-[#0d0d10] hover:border-[rgba(255,255,255,0.12)] transition-colors duration-200 space-y-4"
     >
-      {/* Top Header Row: Date & Tag */}
-      <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-[rgba(255,255,255,0.04)] font-mono text-xs">
-        <div className="flex flex-wrap items-center gap-1.5">
-          <span className="text-[#8e8e93] font-medium tracking-wide">
-            {entry.displayDate.split("•")[0].trim()}
+      {/* Top Header: Date, Multi-Tags Badges, and optional Commit Hash Link */}
+      <div className="flex flex-wrap items-center justify-between gap-3 text-xs">
+        <div className="flex flex-wrap items-center gap-2">
+          {/* Main Date Display */}
+          <span className="font-mono text-[#71717a] font-medium tracking-tight">
+            {entry.displayDate.split(" • ")[0]}
           </span>
-          <span className="text-[#333338] select-none">•</span>
-          {tags.map((t) => (
-            <span
-              key={t}
-              className={`inline-block px-2 py-0.5 rounded-md bg-[#0a0a0c] border border-[rgba(255,255,255,0.05)] text-[10px] uppercase font-bold tracking-widest ${
-                t === "MAJOR"
-                  ? "text-[#7dd3fc]"
-                  : t === "ADDITION"
-                  ? "text-[#6ee7b7]"
-                  : t === "FIX"
-                  ? "text-[#fde047]"
-                  : t === "REMOVAL"
-                  ? "text-[#fda4af]"
-                  : "text-[#a1a1aa]"
-              }`}
-            >
-              {t}
-            </span>
-          ))}
-          {entry.breaking && (
-            <span className="inline-block px-2 py-0.5 rounded-md bg-red-950/20 border border-red-900/30 text-[#fda4af] text-[10px] uppercase font-bold tracking-widest">
-              BREAKING
+
+          {/* Optional IST time sub-label */}
+          {entry.displayDate.includes(" • ") && (
+            <span className="text-[#3f3f46] hidden sm:inline select-none">•</span>
+          )}
+          {entry.displayDate.includes(" • ") && (
+            <span className="font-mono text-[#52525b] hidden sm:inline">
+              {entry.displayDate.split(" • ")[1]}
             </span>
           )}
+
+          {/* Multi-Tags Badges */}
+          <div className="flex items-center gap-1.5 ml-1">
+            {tags.map((t) => (
+              <span
+                key={t}
+                className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold tracking-wider uppercase ${getTagBadgeStyle(
+                  t
+                )}`}
+              >
+                {t}
+              </span>
+            ))}
+          </div>
         </div>
 
-        {/* Clean GitHub Icon Button */}
-        <a
-          href={
-            entry.commitHash
-              ? `https://github.com/DShivam9/Abyss/commit/${entry.commitHash}`
-              : "https://github.com/DShivam9/Abyss"
-          }
-          target="_blank"
-          rel="noopener noreferrer"
-          className="p-1.5 rounded-lg bg-[#0a0a0c] border border-[rgba(255,255,255,0.05)] text-[#71717a] hover:text-white hover:bg-[#141418] transition-colors flex items-center justify-center group"
-          title={
-            entry.commitHash
-              ? `View Commit ${entry.commitHash} on GitHub`
-              : "View Abyss Repository on GitHub"
-          }
-        >
-          <Github className="w-3.5 h-3.5 group-hover:text-white transition-colors" />
-        </a>
+        {/* Commit Hash Github Link */}
+        {entry.commitHash && (
+          <a
+            href={`https://github.com/Abyss-UI/Abyss/commit/${entry.commitHash}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1 font-mono text-[11px] text-[#71717a] hover:text-white transition-colors duration-150 group"
+          >
+            <Github className="w-3 h-3 text-[#52525b] group-hover:text-white transition-colors" />
+            <span>{entry.commitHash}</span>
+          </a>
+        )}
       </div>
 
       {/* Title & 1-Sentence Summary */}
@@ -97,7 +103,7 @@ export function ChangelogCard({ entry }: ChangelogCardProps) {
                 href={`/showcase/${slug}`}
                 className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-[rgba(255,255,255,0.06)] bg-[#0a0a0c] hover:bg-[#141418] text-xs font-mono font-medium text-[#d4d4d8] hover:text-[#9be5fb] transition-[color,background-color,transform] duration-150 ease-out cursor-pointer group active:scale-[0.98]"
               >
-                <span>{slug}</span>
+                <span>{COMPONENT_DETAILS[slug]?.label || slug}</span>
                 <ArrowRight className="w-3 h-3 text-[#71717a] group-hover:text-[#9be5fb] group-hover:translate-x-0.5 transition-[color,transform] duration-150 ease-out" />
               </Link>
             ))}

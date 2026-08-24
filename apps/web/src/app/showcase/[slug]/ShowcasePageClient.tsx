@@ -50,12 +50,10 @@ export default function ShowcasePageClient({ slug }: { slug: string }) {
   // Self-contained scroll components handle their own wheel events internally
   const SELF_CONTAINED_SCROLL = new Set([
     "dual-wave",
-    "phase-drift",
     "depth-swim",
     "cylinder-scroll",
     "parallax-bleed",
     "curved-scroll-wipe",
-    "arc-drift-gallery",
     "erosion-map",
     "clip-morph"
   ]);

@@ -15,6 +15,37 @@ export interface ApparatusErosionMapProps extends VesselComponentProps {
    * @default 3.0
    */
   erosionDamper?: number;
+  /**
+   * Noise scale multiplier.
+   */
+  noiseScale?: number;
+  /**
+   * Edge glow intensity.
+   */
+  edgeGlow?: number;
+  /**
+   * Number of noise octaves.
+   * @default 3
+   */
+  octaves?: number;
+  /**
+   * Wind distortion pattern.
+   * @default "linear"
+   */
+  windPattern?: "linear" | "vortex" | "wave" | "turbulent";
+  /**
+   * Wind direction angle in degrees.
+   * @default 180
+   */
+  windAngle?: number;
+  /**
+   * Wind stretch ratio.
+   * @default 2.5
+   */
+  windStretch?: number;
+  /**
+   * Curve power coefficient.
+   * @default 1.0
+   */
+  curvePower?: number;
 }
-
-

@@ -11,6 +11,12 @@ export interface TrackItem {
   audioSrc?: string;
 }
 
+export interface ExtendedTrackItem extends TrackItem {
+  accentBg: string;
+  titleColor: string;
+  audioStartTime?: number;
+}
+
 export interface TracklistGalleryProps extends VesselComponentProps {
   /**
    * List of audio tracks to showcase in gallery.

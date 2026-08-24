@@ -1,79 +1,12 @@
 import { useRef, useEffect, useCallback } from "react";
-import { VesselComponentProps } from "../../engine/types";
-
-// 20 Vector Shape SVGs
-const SHAPE_SVGS = [
-  "/images/shapes/Shape%201.svg",
-  "/images/shapes/Shape%202.svg",
-  "/images/shapes/Shape%203.svg",
-  "/images/shapes/Shape%204.svg",
-  "/images/shapes/Shape%205.svg",
-  "/images/shapes/Shape%206.svg",
-  "/images/shapes/Shape%207.svg",
-  "/images/shapes/Shape%208.svg",
-  "/images/shapes/Shape%209.svg",
-  "/images/shapes/Shape%2010.svg",
-  "/images/shapes/Shape%2011.svg",
-  "/images/shapes/Shape%2012.svg",
-  "/images/shapes/Shape%2013.svg",
-  "/images/shapes/Shape%2014.svg",
-  "/images/shapes/Shape%2015.svg",
-  "/images/shapes/Shape%2016.svg",
-  "/images/shapes/Shape%2017.svg",
-  "/images/shapes/Shape%2018.svg",
-  "/images/shapes/Shape%2019.svg",
-  "/images/shapes/Shape%2020.svg",
-];
-
-// Bright & Hard High-Contrast Colors
-const VIBRANT_PALETTE = [
-  "#FF0033", // Hard Neon Red
-  "#00FF66", // Hard Electric Lime
-  "#00E5FF", // Hard Laser Cyan
-  "#FF00FF", // Hard Pure Magenta
-  "#FFE600", // Hard Solar Yellow
-  "#FF5500", // Hard Blaze Orange
-  "#9900FF", // Hard Ultra Purple
-  "#0066FF", // Hard Electric Blue
-  "#FF0080", // Hard Hot Pink
-  "#00FFCC", // Hard Bright Turquoise
-];
-
-// Baked constants for high-performance physics engine
-const BAKED_SPAWN_INTERVAL = 55; // ms between stream spawns
-const BAKED_FRICTION = 0.92; // space friction / slide damping
-const BAKED_MAX_ITEMS = 45; // pre-allocated pool cap
-
-export interface ApparatusGravityCursorProps extends VesselComponentProps {
-  gravity?: number; // Gravitational acceleration magnitude (px/frame^2)
-  bounceDamping?: number; // Elasticity coefficient (0.1 - 0.95)
-  imageSize?: number; // Image box width in px (80 - 240)
-  zeroGravity?: boolean; // Zero-gravity mode flag
-  gravityMode?: "normal" | "zero-gravity" | "magnetic-repulsor"; // Gravity physics variant
-  interactionMode?: "hold-drag" | "cursor-trail"; // Mouse interaction mode
-  repelRadius?: number; // Magnetic repeller field radius in px (150 - 600)
-  repelForce?: number; // Repulsion shockwave power multiplier (1.0 - 25.0)
-}
-
-interface PhysicsBody {
-  active: boolean;
-  id: number;
-  src: string;
-  color: string;
-  x: number;
-  y: number;
-  vx: number;
-  vy: number;
-  rotation: number;
-  vSpin: number;
-  bounces: number;
-  opacity: number;
-  scale: number;
-  settled: boolean;
-  settledAge: number;
-  age: number;
-  maxAge: number;
-}
+import { ApparatusGravityCursorProps, PhysicsBody } from "./types";
+import {
+  SHAPE_SVGS,
+  VIBRANT_PALETTE,
+  BAKED_SPAWN_INTERVAL,
+  BAKED_FRICTION,
+  BAKED_MAX_ITEMS,
+} from "./constants";
 
 export default function ApparatusGravityCursor({
   gravity = 0.55,

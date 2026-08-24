@@ -3,6 +3,7 @@ import { gsap } from "gsap";
 import { useGSAP } from "@gsap/react";
 import { CustomEase } from "gsap/CustomEase";
 import { ApparatusDepthSwimProps, DepthSwimImage } from "./types";
+import { DEFAULT_IMAGES } from "./constants";
 
 gsap.registerPlugin(CustomEase);
 
@@ -11,42 +12,6 @@ try {
 } catch (e) {
   // Already registered
 }
-
-const DEFAULT_IMAGES = [
-  "/images/components images/scroll/cosmos_1067833670.webp",
-  "/images/components images/scroll/cosmos_1207399578.webp",
-  "/images/components images/scroll/cosmos_1215932660.webp",
-  "/images/components images/scroll/cosmos_1225764898.webp",
-  "/images/components images/scroll/cosmos_1244425812.webp",
-  "/images/components images/scroll/cosmos_1292975902.webp",
-  "/images/components images/scroll/cosmos_1298955025.webp",
-  "/images/components images/scroll/cosmos_1309660817.webp",
-  "/images/components images/scroll/cosmos_1452408749.webp",
-  "/images/components images/scroll/cosmos_1556080729.webp",
-  "/images/components images/scroll/cosmos_1591705408.webp",
-  "/images/components images/scroll/cosmos_1633231397.webp",
-  "/images/components images/scroll/cosmos_169178344.webp",
-  "/images/components images/scroll/cosmos_1859262512.webp",
-  "/images/components images/scroll/cosmos_1872135509.webp",
-  "/images/components images/scroll/cosmos_1994819013.webp",
-  "/images/components images/scroll/cosmos_2063063057.webp",
-  "/images/components images/scroll/cosmos_2086495860.webp",
-  "/images/components images/scroll/cosmos_2093433371.webp",
-  "/images/components images/scroll/cosmos_362742055.webp",
-  "/images/components images/scroll/cosmos_496247602.webp",
-  "/images/components images/scroll/cosmos_51140502.webp",
-  "/images/components images/scroll/cosmos_51259133.webp",
-  "/images/components images/scroll/cosmos_520815919.webp",
-  "/images/components images/scroll/cosmos_524862175.webp",
-  "/images/components images/scroll/cosmos_553216837.webp",
-  "/images/components images/scroll/cosmos_586109684.webp",
-  "/images/components images/scroll/cosmos_641044503.webp",
-  "/images/components images/scroll/cosmos_664508213.webp",
-  "/images/components images/scroll/cosmos_666194661.webp",
-  "/images/components images/scroll/cosmos_679994644.webp",
-  "/images/components images/scroll/cosmos_861775148.webp",
-  "/images/components images/scroll/cosmos_961582572.webp"
-];
 
 // 42-Point Organic Constellation Matrix with Tightened Vertical & Cluster Gaps
 const generateOrganicConstellation = (): { x: number; y: number; z: number }[] => {

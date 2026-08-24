@@ -2,7 +2,6 @@
 
 import React from "react";
 import Link from "next/link";
-import { motion } from "framer-motion";
 import { ArrowUpRight } from "lucide-react";
 
 interface CollectionCardProps {
@@ -19,18 +18,7 @@ export function CollectionCard({ slug, title, filename }: CollectionCardProps) {
       : `/images/components images/${filename}`;
 
   return (
-    <motion.div
-      layout
-      initial={{ opacity: 0, scale: 0.96 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.96 }}
-      transition={{
-        layout: { type: "spring", stiffness: 350, damping: 32, mass: 0.8 },
-        opacity: { duration: 0.22, ease: [0.16, 1, 0.3, 1] },
-        scale: { duration: 0.22, ease: [0.16, 1, 0.3, 1] },
-      }}
-      className="skiper-card-wrap"
-    >
+    <div className="skiper-card-wrap">
       <Link href={`/showcase/${slug}`} className="skiper-card">
         <div className="card-preview">
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -48,6 +36,6 @@ export function CollectionCard({ slug, title, filename }: CollectionCardProps) {
           </span>
         </div>
       </Link>
-    </motion.div>
+    </div>
   );
 }

@@ -19,8 +19,44 @@ export interface ApparatusDualWaveProps extends VesselComponentProps {
   scrollProgress?: number;
 
   /**
-   * Is full screen mode
+   * Is full screen mode.
    * @default false
    */
   isFullscreen?: boolean;
+
+  /**
+   * Font family for text rendering.
+   */
+  fontFamily?: string;
+
+  /**
+   * Wave amplitude in pixels.
+   */
+  amplitude?: number;
+
+  /**
+   * Spacing between wave elements.
+   */
+  spacing?: number;
+
+  /**
+   * Maximum blur for off-focus items.
+   */
+  maxBlur?: number;
+
+  /**
+   * Maximum card rotation angle.
+   */
+  maxRotation?: number;
+
+  /**
+   * Scroll inertia damping.
+   */
+  scrollDamping?: number;
+
+  /**
+   * Wave path pattern algorithm.
+   * @default "barrel"
+   */
+  wavePattern?: "barrel" | "horizon" | "dualSine";
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useEffect, useState } from "react";
+import { useRef, useEffect, useState } from "react";
 import * as THREE from "three";
 import { GimbalStreamProps } from "./types";
 import { IMAGE_LIST, CARD_TITLES, TIER_CONFIGS, TIER_IMAGE_INDICES, GIMBAL_LAYOUT } from "./constants";

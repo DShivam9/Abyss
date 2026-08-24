@@ -1,52 +1,7 @@
 import { useRef, useEffect, useState, useCallback } from "react";
 import * as THREE from "three";
-import { VesselComponentProps } from "../../engine/types";
-
-// Expanded Dedicated Image Pool (22 Unique High-Res Assets)
-const GALLERY_IMAGES = [
-  "/images/components/3d-shatter-sphere/tile-01.webp",
-  "/images/components/3d-shatter-sphere/tile-02.webp",
-  "/images/components/3d-shatter-sphere/tile-03.webp",
-  "/images/components/3d-shatter-sphere/tile-04.webp",
-  "/images/components/3d-shatter-sphere/tile-05.webp",
-  "/images/components/3d-shatter-sphere/tile-06.webp",
-  "/images/components/3d-shatter-sphere/tile-07.webp",
-  "/images/components/3d-shatter-sphere/tile-08.webp",
-  "/images/components/3d-shatter-sphere/tile-09.webp",
-  "/images/components/3d-shatter-sphere/tile-10.webp",
-  "/images/components/3d-shatter-sphere/tile-11.webp",
-  "/images/components/3d-shatter-sphere/tile-12.webp",
-  "/images/components/3d-shatter-sphere/art-01.webp",
-  "/images/components/3d-shatter-sphere/art-02.webp",
-  "/images/components/3d-shatter-sphere/art-03.webp",
-  "/images/components/3d-shatter-sphere/art-04.webp",
-  "/images/components/3d-shatter-sphere/art-05.webp",
-  "/images/components/3d-shatter-sphere/art-06.webp",
-  "/images/components/3d-shatter-sphere/art-07.webp",
-  "/images/components/3d-shatter-sphere/art-08.webp",
-  "/images/components/3d-shatter-sphere/art-09.webp",
-  "/images/components/3d-shatter-sphere/art-10.webp",
-];
-
-export interface Apparatus3DShatterSphereProps extends VesselComponentProps {
-  sphereRadius?: number; // 3D Sphere/Cuboid radius (200 - 650)
-  shatterForce?: number; // Radial explosion magnitude (0.5 - 3.5)
-  cardScale?: number; // Tile scale multiplier (0.5 - 2.0)
-  autoRotateSpeed?: number; // Idle 3D spin speed (0 - 2.5)
-  itemCount?: number; // Number of cards on 3D sphere (20 - 60)
-  shapeMode?: "sphere" | "cuboid" | "cuboid-grid"; // 3D Geometry variant
-  showCenterText?: boolean; // Control visibility of center text overlay
-  autoShatterDelay?: number; // Delay in ms to automatically shatter on mount
-  disableRebuildOnClick?: boolean; // Prevent clicking from re-assembling once shattered
-}
-
-interface MeshData {
-  mesh: THREE.Mesh;
-  unitPos: THREE.Vector3; // Position normalized at unit radius 1.0
-  baseRot: THREE.Euler;
-  material: THREE.MeshBasicMaterial;
-  currentProx?: number;
-}
+import { Apparatus3DShatterSphereProps, MeshData } from "./types";
+import { GALLERY_IMAGES } from "./constants";
 
 export default function Apparatus3DShatterSphere({
   sphereRadius = 420,

@@ -14,12 +14,10 @@ interface PreviewPageClientProps {
 
 const SELF_CONTAINED_SCROLL = new Set([
   "dual-wave",
-  "phase-drift",
   "depth-swim",
   "cylinder-scroll",
   "parallax-bleed",
-  "curved-scroll-wipe",
-  "arc-drift-gallery"
+  "curved-scroll-wipe"
 ]);
 
 export default function PreviewPageClient({ slug }: PreviewPageClientProps) {
@@ -115,7 +113,7 @@ export default function PreviewPageClient({ slug }: PreviewPageClientProps) {
   };
 
   return (
-    <main className="w-full min-h-screen h-screen overflow-hidden bg-[#070708]">
+    <main className={`w-full min-h-screen bg-[#070708] ${isScroll ? "" : "h-screen overflow-hidden"}`}>
       <ComponentErrorBoundary fallbackSlug={slug}>
         {renderLayout()}
       </ComponentErrorBoundary>

@@ -46,3 +46,24 @@ export interface ApparatusImageSnakeTrailProps extends VesselComponentProps {
    */
   zoom?: number;
 }
+
+export interface CollectibleData {
+  id: string;
+  x: number;
+  y: number;
+  src: string;
+  floatOffset: number;
+  colorFilter?: string;
+}
+
+export interface BodySegment {
+  id: string;
+  src: string;
+  colorFilter?: string;
+}
+
+export interface RippleImpulse {
+  startTime: number;
+  dirX: number;
+  dirY: number;
+}

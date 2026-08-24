@@ -1,0 +1,670 @@
+<!--
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Accordion Wall — High-Fashion Editorial Monoliths</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Italiana&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      background-color: #0c0c0e;
+      color: #ffffff;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      overflow: hidden;
+      user-select: none;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Viewport Stage */
+    .stage {
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      padding: 0 24px;
+      background-color: #0c0c0e;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Ambient Mood Void Layer */
+    .stage-ambient-echo {
+      position: absolute;
+      inset: 0;
+      background-color: transparent;
+      opacity: 0;
+      pointer-events: none;
+      z-index: 1;
+      will-change: opacity, background-color;
+      transition: opacity 1000ms cubic-bezier(0.16, 1, 0.3, 1), background-color 1000ms cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    /* Large Editorial Center Whisper */
+    .center-cue {
+      position: absolute;
+      top: 38%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-family: 'Instrument Serif', Georgia, serif;
+      font-weight: 400;
+      font-style: italic;
+      font-size: clamp(2.2rem, 4vw, 3.8rem);
+      letter-spacing: -0.01em;
+      color: rgba(255, 255, 255, 0.12);
+      pointer-events: none;
+      z-index: 2;
+      white-space: nowrap;
+      transition: opacity 500ms ease;
+    }
+
+    /* 8-Pillar Matrix Container */
+    .pillar-matrix {
+      display: flex;
+      gap: 16px;
+      width: 100%;
+      max-width: 1640px;
+      height: 100%;
+      align-items: flex-end;
+      justify-content: center;
+      margin: 0 auto;
+      z-index: 3;
+      position: relative;
+    }
+
+    /* Column Wrapper */
+    .pillar-wrap {
+      flex: 1;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-end;
+      position: relative;
+      pointer-events: none;
+      will-change: flex-grow, transform, opacity;
+      transform-origin: center bottom;
+    }
+
+    /* Editorial Header Label */
+    .pillar-header {
+      margin-bottom: 14px;
+      text-align: center;
+      pointer-events: none;
+      position: relative;
+      z-index: 10;
+    }
+
+    .pillar-title {
+      font-family: 'Instrument Serif', 'Italiana', Georgia, serif;
+      font-size: 1.35rem;
+      font-weight: 400;
+      font-style: italic;
+      letter-spacing: 0.02em;
+      color: rgba(255, 255, 255, 0.65);
+      white-space: nowrap;
+      pointer-events: none;
+      opacity: 0;
+      transform: translateY(18px);
+      transition: color 400ms ease, transform 400ms ease;
+    }
+
+    /* Generous Resting Image Slab */
+    .pillar-img-wrap {
+      width: 100%;
+      height: 220px;
+      border-radius: 14px 14px 0 0;
+      overflow: hidden;
+      position: relative;
+      pointer-events: auto;
+      cursor: pointer;
+      will-change: height, box-shadow, clip-path;
+      background: #16161a;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      clip-path: inset(100% 0 0 0);
+    }
+
+    .pillar-img {
+      width: 100%;
+      height: 91vh;
+      object-fit: cover;
+      object-position: center center;
+      display: block;
+      border: none;
+      outline: none;
+      pointer-events: none;
+      transform-origin: center top;
+      transform: translateY(0%) scale(1.04);
+      will-change: transform;
+    }
+
+    /* Active Highlight States */
+    .pillar-wrap.is-active .pillar-title {
+      color: #ffffff;
+      transform: translateY(-3px) scale(1.08) !important;
+    }
+
+    /* Dedicated FLIP Expanded Monolith (97vw Wide × 91vh Tall) */
+    .expanded-stage-monolith {
+      position: fixed;
+      bottom: 0;
+      left: 24px;
+      width: calc(100vw - 48px);
+      height: 91vh;
+      border-radius: 24px 24px 0 0;
+      overflow: visible;
+      z-index: 100;
+      pointer-events: none;
+      opacity: 0;
+      visibility: hidden;
+      will-change: transform, width, height, left, top, opacity;
+    }
+
+    .expanded-inner-wrap {
+      width: 100%;
+      height: 100%;
+      border-radius: 24px 24px 0 0;
+      overflow: hidden;
+      position: relative;
+      background: #121214;
+      box-shadow: 0 0 40px rgba(0, 0, 0, 0.6);
+      cursor: pointer;
+    }
+
+    .expanded-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center center;
+      display: block;
+    }
+
+    /* Floating Title in Void Above Monolith (Refined 1.75rem) */
+    .expanded-title-bar {
+      position: absolute;
+      bottom: calc(100% + 12px);
+      left: 50%;
+      transform: translateX(-50%);
+      text-align: center;
+      pointer-events: none;
+      white-space: nowrap;
+      z-index: 102;
+    }
+
+    .expanded-title-text {
+      font-family: 'Instrument Serif', 'Italiana', Georgia, serif;
+      font-weight: 400;
+      font-style: italic;
+      font-size: 1.75rem;
+      color: #ffffff;
+      letter-spacing: 0.01em;
+      line-height: 1;
+    }
+
+    /* Crisp Minimal Vector ✕ Close Button */
+    .close-btn {
+      position: fixed;
+      top: 24px;
+      right: 28px;
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 50%;
+      outline: none;
+      cursor: pointer;
+      z-index: 150;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 400ms ease, transform 400ms cubic-bezier(0.16, 1, 0.3, 1), background 300ms ease;
+    }
+
+    .close-btn.is-visible {
+      opacity: 0.8;
+      pointer-events: auto;
+    }
+
+    .close-btn:hover {
+      opacity: 1;
+      background: rgba(255, 255, 255, 0.18);
+      transform: rotate(90deg) scale(1.08);
+    }
+
+    .close-svg {
+      width: 13px;
+      height: 13px;
+      stroke: #ffffff;
+      stroke-width: 1.5;
+    }
+  </style>
+</head>
+<body>
+  <div class="stage" id="stage">
+    <!-- Ambient Void Echo Layer -->
+    <div class="stage-ambient-echo" id="ambientEcho"></div>
+
+    <!-- Permanent Editorial Watermark -->
+    <div class="center-cue" id="centerCue">Hover to Unveil • Click to Expand</div>
+
+    <!-- Crisp Minimal Vector ✕ Close Button -->
+    <button class="close-btn" id="closeBtn" aria-label="Close Fullscreen">
+      <svg class="close-svg" viewBox="0 0 16 16" fill="none">
+        <line x1="3" y1="3" x2="13" y2="13" />
+        <line x1="13" y1="3" x2="3" y2="13" />
+      </svg>
+    </button>
+
+    <!-- Dedicated FLIP Monolith Layer -->
+    <div class="expanded-stage-monolith" id="expandedMonolith">
+      <div class="expanded-title-bar">
+        <div class="expanded-title-text" id="expandedTitle">Title</div>
+      </div>
+      <div class="expanded-inner-wrap" id="expandedInner">
+        <img src="" alt="Expanded Artwork" class="expanded-img" id="expandedImg" />
+      </div>
+    </div>
+
+    <div class="pillar-matrix" id="matrix">
+      <!-- 01 -->
+      <div class="pillar-wrap" data-index="0" data-mood="#0f2613">
+        <div class="pillar-header">
+          <h3 class="pillar-title">Geigy Graphic</h3>
+        </div>
+        <div class="pillar-img-wrap">
+          <img src="/images/components/accordion-wall/full-01.webp" alt="Geigy Graphic" class="pillar-img" />
+        </div>
+      </div>
+
+      <!-- 02 -->
+      <div class="pillar-wrap" data-index="1" data-mood="#1c1711">
+        <div class="pillar-header">
+          <h3 class="pillar-title">Atelier Cashmere</h3>
+        </div>
+        <div class="pillar-img-wrap">
+          <img src="/images/components/accordion-wall/full-02.webp" alt="Atelier Cashmere" class="pillar-img" />
+        </div>
+      </div>
+
+      <!-- 03 -->
+      <div class="pillar-wrap" data-index="2" data-mood="#1a0d12">
+        <div class="pillar-header">
+          <h3 class="pillar-title">Vermilion Flora</h3>
+        </div>
+        <div class="pillar-img-wrap">
+          <img src="/images/components/accordion-wall/full-03.webp" alt="Vermilion Flora" class="pillar-img" />
+        </div>
+      </div>
+
+      <!-- 04 -->
+      <div class="pillar-wrap" data-index="3" data-mood="#1e1914">
+        <div class="pillar-header">
+          <h3 class="pillar-title">Nocturne Feline</h3>
+        </div>
+        <div class="pillar-img-wrap">
+          <img src="/images/components/accordion-wall/full-04.webp" alt="Nocturne Feline" class="pillar-img" />
+        </div>
+      </div>
+
+      <!-- 05 -->
+      <div class="pillar-wrap" data-index="4" data-mood="#1a1816">
+        <div class="pillar-header">
+          <h3 class="pillar-title">Vinyl Studio</h3>
+        </div>
+        <div class="pillar-img-wrap">
+          <img src="/images/components/accordion-wall/full-05.webp" alt="Vinyl Studio" class="pillar-img" />
+        </div>
+      </div>
+
+      <!-- 06 -->
+      <div class="pillar-wrap" data-index="5" data-mood="#1e0d10">
+        <div class="pillar-header">
+          <h3 class="pillar-title">Orbital Rings</h3>
+        </div>
+        <div class="pillar-img-wrap">
+          <img src="/images/components/accordion-wall/full-06.webp" alt="Orbital Rings" class="pillar-img" />
+        </div>
+      </div>
+
+      <!-- 07 -->
+      <div class="pillar-wrap" data-index="6" data-mood="#260b0e">
+        <div class="pillar-header">
+          <h3 class="pillar-title">Crimson Horizon</h3>
+        </div>
+        <div class="pillar-img-wrap">
+          <img src="/images/components/accordion-wall/full-07.webp" alt="Crimson Horizon" class="pillar-img" />
+        </div>
+      </div>
+
+      <!-- 08 -->
+      <div class="pillar-wrap" data-index="7" data-mood="#0a141a">
+        <div class="pillar-header">
+          <h3 class="pillar-title">Frost Seraph</h3>
+        </div>
+        <div class="pillar-img-wrap">
+          <img src="/images/components/accordion-wall/full-08.webp" alt="Frost Seraph" class="pillar-img" />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const stage = document.getElementById("stage");
+    const ambientEcho = document.getElementById("ambientEcho");
+    const centerCue = document.getElementById("centerCue");
+    const closeBtn = document.getElementById("closeBtn");
+    const expandedMonolith = document.getElementById("expandedMonolith");
+    const expandedTitle = document.getElementById("expandedTitle");
+    const expandedImg = document.getElementById("expandedImg");
+    const expandedInner = document.getElementById("expandedInner");
+
+    const pillars = Array.from(document.querySelectorAll(".pillar-wrap"));
+    const imgWraps = pillars.map(p => p.querySelector(".pillar-img-wrap"));
+    const imgs = pillars.map(p => p.querySelector(".pillar-img"));
+    const titles = pillars.map(p => p.querySelector(".pillar-title"));
+
+    let isExpanded = false;
+    let activeOriginRect = null;
+    let activeIdx = null;
+
+    // Emil-Grade Dramatic Page-Load Entrance
+    window.addEventListener("DOMContentLoaded", () => {
+      const enterTL = gsap.timeline({ delay: 0.2 });
+
+      enterTL
+        .to(imgWraps, {
+          clipPath: "inset(0% 0 0 0)",
+          duration: 1.35,
+          stagger: 0.1,
+          ease: "expo.out"
+        }, 0)
+        .to(titles, {
+          opacity: 1,
+          y: 0,
+          duration: 0.95,
+          stagger: 0.1,
+          ease: "power3.out"
+        }, 0.35);
+    });
+
+    // Precision FLIP Monolith Takeover with Safe Mid-Flight Interruptibility
+    function expandPillar(idx) {
+      if (isExpanded) return;
+      isExpanded = true;
+      activeIdx = idx;
+
+      // Instantly kill any active hover/resize tweens across all elements
+      gsap.killTweensOf(pillars);
+      gsap.killTweensOf(imgWraps);
+      gsap.killTweensOf(imgs);
+
+      const pillar = pillars[idx];
+      const wrap = imgWraps[idx];
+      const img = imgs[idx];
+      const title = titles[idx].textContent;
+      const moodColor = pillar.dataset.mood;
+
+      // Read real-time origin bounding box at moment of click
+      const rect = wrap.getBoundingClientRect();
+      activeOriginRect = rect;
+
+      // Set expanded content directly from master element
+      expandedTitle.textContent = title;
+      expandedImg.src = img.src;
+
+      const targetWidth = window.innerWidth - 48;
+      const targetHeight = window.innerHeight * 0.91;
+      const targetLeft = 24;
+      const targetTop = window.innerHeight - targetHeight;
+
+      // Setup initial geometry matching clicked pillar exactly
+      gsap.set(expandedMonolith, {
+        visibility: "visible",
+        opacity: 1,
+        pointerEvents: "auto",
+        left: rect.left,
+        top: rect.top,
+        width: rect.width,
+        height: rect.height,
+        transform: "none"
+      });
+
+      // Atomically hide origin pillar & wrap
+      gsap.set([pillar, wrap], { opacity: 0 });
+
+      // Physics-Coupled Displacement: Siblings move organically as expanding monolith grows
+      pillars.forEach((p, i) => {
+        if (i !== idx) {
+          const dist = Math.abs(i - idx);
+          const pushDistance = i < idx ? -(window.innerWidth * 1.15) : (window.innerWidth * 1.15);
+          
+          gsap.to(p, {
+            x: pushDistance,
+            opacity: 0,
+            duration: 1.25,
+            delay: 0.08 + (dist * 0.065),
+            ease: "cubic-bezier(0.22, 1, 0.36, 1)"
+          });
+        }
+      });
+
+      // Deliberate 1.35s Monolith Unfurl in unified lockstep
+      const tl = gsap.timeline({ defaults: { ease: "cubic-bezier(0.22, 1, 0.36, 1)" } });
+
+      tl
+        .to(centerCue, { opacity: 0, duration: 0.5 }, 0)
+        .to(expandedMonolith, {
+          left: targetLeft,
+          top: targetTop,
+          width: targetWidth,
+          height: targetHeight,
+          duration: 1.35
+        }, 0)
+        .fromTo(expandedTitle, {
+          opacity: 0,
+          y: 16
+        }, {
+          opacity: 1,
+          y: 0,
+          duration: 0.75
+        }, 0.35);
+
+      closeBtn.classList.add("is-visible");
+
+      if (ambientEcho && moodColor) {
+        ambientEcho.style.backgroundColor = moodColor;
+        ambientEcho.style.opacity = "0.95";
+      }
+    }
+
+    // Collapse Monolith back into starting slot
+    function collapseExpanded() {
+      if (!isExpanded) return;
+      isExpanded = false;
+      closeBtn.classList.remove("is-visible");
+
+      const rect = activeOriginRect || imgWraps[activeIdx].getBoundingClientRect();
+
+      const tl = gsap.timeline({
+        defaults: { ease: "cubic-bezier(0.16, 1, 0.3, 1)" },
+        onComplete: () => {
+          gsap.set(expandedMonolith, { visibility: "hidden", opacity: 0, pointerEvents: "none" });
+          gsap.set([pillars[activeIdx], imgWraps[activeIdx]], { opacity: 1 });
+          activeIdx = null;
+        }
+      });
+
+      tl
+        .to(expandedTitle, { opacity: 0, y: 10, duration: 0.35 }, 0)
+        .to(expandedMonolith, {
+          left: rect.left,
+          top: rect.top,
+          width: rect.width,
+          height: rect.height,
+          duration: 0.95
+        }, 0)
+        .to(centerCue, { opacity: 1, duration: 0.6 }, 0.3);
+
+      // Regroup siblings in perfect sync
+      pillars.forEach((p, i) => {
+        if (i !== activeIdx) {
+          const dist = Math.abs(i - activeIdx);
+          gsap.to(p, {
+            x: 0,
+            opacity: 1,
+            duration: 0.9,
+            delay: 0.08 + (dist * 0.025),
+            ease: "cubic-bezier(0.16, 1, 0.3, 1)"
+          });
+        }
+      });
+
+      if (ambientEcho) {
+        ambientEcho.style.opacity = "0";
+      }
+    }
+
+    closeBtn.addEventListener("click", collapseExpanded);
+    expandedInner.addEventListener("click", collapseExpanded);
+    window.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") collapseExpanded();
+    });
+
+    pillars.forEach((pillar, idx) => {
+      const imgWrap = pillar.querySelector(".pillar-img-wrap");
+      const moodColor = pillar.dataset.mood;
+
+      // Click to Expand
+      imgWrap.addEventListener("click", () => expandPillar(idx));
+
+      // Hover triggers Vertical Rise + Bloom
+      imgWrap.addEventListener("mouseenter", () => {
+        if (isExpanded) return;
+
+        if (ambientEcho && moodColor) {
+          gsap.to(ambientEcho, {
+            backgroundColor: moodColor,
+            opacity: 0.88,
+            duration: 1.2,
+            ease: "power2.out",
+            overwrite: "auto"
+          });
+        }
+
+        pillars.forEach((p, i) => {
+          const isTarget = i === idx;
+          const pWrap = p.querySelector(".pillar-img-wrap");
+          const pImg = p.querySelector(".pillar-img");
+
+          if (isTarget) {
+            p.classList.add("is-active");
+
+            gsap.to(pWrap, {
+              height: "82vh",
+              boxShadow: "0 -28px 70px -10px rgba(0, 0, 0, 0.95)",
+              duration: 0.85,
+              ease: "cubic-bezier(0.25, 1, 0.5, 1)",
+              overwrite: "auto"
+            });
+            gsap.to(pImg, {
+              scale: 1.0,
+              duration: 0.85,
+              ease: "cubic-bezier(0.25, 1, 0.5, 1)",
+              overwrite: "auto"
+            });
+            gsap.to(p, {
+              flexGrow: 2.6,
+              opacity: 1,
+              duration: 0.75,
+              ease: "power2.out",
+              overwrite: "auto"
+            });
+
+          } else {
+            p.classList.remove("is-active");
+
+            gsap.to(pWrap, {
+              height: "220px",
+              boxShadow: "0 10px 30px rgba(0,0,0,0.5)",
+              duration: 0.75,
+              ease: "power2.out",
+              overwrite: "auto"
+            });
+            gsap.to(pImg, {
+              scale: 1.04,
+              duration: 0.75,
+              ease: "power2.out",
+              overwrite: "auto"
+            });
+            gsap.to(p, {
+              flexGrow: 0.78,
+              opacity: 0.55,
+              duration: 0.75,
+              ease: "power2.out",
+              overwrite: "auto"
+            });
+          }
+        });
+      });
+
+      // Synchronized harmonic exit on mouseleave
+      imgWrap.addEventListener("mouseleave", () => {
+        if (isExpanded) return;
+        if (ambientEcho) {
+          gsap.to(ambientEcho, {
+            opacity: 0,
+            duration: 1.0,
+            ease: "power2.out",
+            overwrite: "auto"
+          });
+        }
+
+        pillars.forEach((p) => {
+          p.classList.remove("is-active");
+          const pWrap = p.querySelector(".pillar-img-wrap");
+          const pImg = p.querySelector(".pillar-img");
+
+          gsap.to(p, {
+            flexGrow: 1,
+            opacity: 1,
+            duration: 0.7,
+            ease: "cubic-bezier(0.25, 1, 0.5, 1)",
+            overwrite: "auto"
+          });
+
+          gsap.to(pWrap, {
+            height: "220px",
+            boxShadow: "0 10px 30px rgba(0,0,0,0.5)",
+            duration: 0.7,
+            ease: "cubic-bezier(0.25, 1, 0.5, 1)",
+            overwrite: "auto"
+          });
+
+          gsap.to(pImg, {
+            transform: "translateY(0%) scale(1.04)",
+            duration: 0.7,
+            ease: "cubic-bezier(0.25, 1, 0.5, 1)",
+            overwrite: "auto"
+          });
+        });
+      });
+    });
+  </script>
+</body>
+</html>
+
+-->

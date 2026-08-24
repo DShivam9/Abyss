@@ -2,34 +2,19 @@ import React, { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import Lenis from "lenis";
 import { ApparatusParallaxColumnProps } from "./types";
-
-// Default premium images from Abyss assets — ultra-optimized, no repeats across columns
-const DEFAULT_LEFT_IMAGES = [
-  "/images/components/parallax-column/left-01.webp",
-  "/images/components/parallax-column/left-02.webp",
-  "/images/components/parallax-column/left-03.webp",
-  "/images/components/parallax-column/left-04.webp",
-  "/images/components/parallax-column/left-05.webp"
-];
-
-const DEFAULT_RIGHT_IMAGES = [
-  "/images/components/parallax-column/right-01.webp",
-  "/images/components/parallax-column/right-02.webp",
-  "/images/components/parallax-column/right-03.webp",
-  "/images/components/parallax-column/right-04.webp",
-  "/images/components/parallax-column/right-05.webp"
-];
-
-// Baked constants for refined motion and geometry
-const BAKED_SPLIT_RATIO = 50;
-const BAKED_SPEED_FACTOR = 1.0;
-const BAKED_BG_SCALE = 40;
-const BAKED_INERTIA = 4;
-const BAKED_AUTO_SCROLL_SPEED = 25;
-const BAKED_CONCAVE_DEPTH = 520;
-const BAKED_CONCAVE_TILT = 42;
-const BAKED_CONVEX_BULGE = 480;
-const BAKED_CONVEX_TILT = 38;
+import {
+  DEFAULT_LEFT_IMAGES,
+  DEFAULT_RIGHT_IMAGES,
+  BAKED_SPLIT_RATIO,
+  BAKED_SPEED_FACTOR,
+  BAKED_BG_SCALE,
+  BAKED_INERTIA,
+  BAKED_AUTO_SCROLL_SPEED,
+  BAKED_CONCAVE_DEPTH,
+  BAKED_CONCAVE_TILT,
+  BAKED_CONVEX_BULGE,
+  BAKED_CONVEX_TILT,
+} from "./constants";
 
 export const ApparatusParallaxColumn: React.FC<ApparatusParallaxColumnProps> = ({
   leftImages,

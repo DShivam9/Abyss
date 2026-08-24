@@ -28,6 +28,21 @@ export interface CommitEntry {
 
 export const CHANGELOG_DATA: CommitEntry[] = [
   {
+    id: "commit-22",
+    date: "2026-08-24",
+    displayDate: "Aug 24, 2026 • 21:15 IST",
+    tags: ["MAJOR", "REMOVAL"],
+    title: "Reworked Pillar Gallery",
+    summary: "Replaced old accordion wall with a new vertical pillar gallery and fullscreen view.",
+    affectedSlugs: ["accordion-wall"],
+    items: [
+      "Replaced old accordion wall with Pillar Gallery and 8 curated artworks",
+      "Click any pillar to expand into a full-height gallery view",
+      "Ambient background lighting that smoothly blends behind active pillars",
+      "Removed obsolete components and old prototype galleries",
+    ],
+  },
+  {
     id: "commit-21",
     date: "2026-08-22",
     displayDate: "Aug 22, 2026 • 22:30 IST",
@@ -187,7 +202,6 @@ export const CHANGELOG_DATA: CommitEntry[] = [
     tags: ["MAJOR", "ADDITION"],
     title: "Added 3D Reel Text",
     summary: "Kinetic 3D typography roll with 12 directional cascade variants and dividers.",
-    affectedSlugs: ["3d-reel-text"],
     items: [
       "3D text roll interaction with dynamic depth shading",
       "12 cascade directions including wave, center-out, and random",
@@ -217,7 +231,6 @@ export const CHANGELOG_DATA: CommitEntry[] = [
     tags: ["FIX"],
     title: "Fixed Scroll Lock & Arc Drift",
     summary: "Fixed drawer scroll locking and improved Arc Drift Gallery momentum.",
-    affectedSlugs: ["arc-drift-gallery"],
     items: [
       "Prevented background page scrolling when opening drawers",
       "Smoother curved thumbnail drift on scroll wheel navigation",
@@ -230,7 +243,6 @@ export const CHANGELOG_DATA: CommitEntry[] = [
     tags: ["MAJOR", "ADDITION"],
     title: "Added Arc Drift Gallery",
     summary: "Curved thumbnail gallery with center-axis background image crossfades.",
-    affectedSlugs: ["arc-drift-gallery"],
     items: [
       "Curved thumbnail drift aligned along an elliptical arc",
       "Background image crossfade when cards pass the center axis",

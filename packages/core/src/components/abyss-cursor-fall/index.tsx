@@ -2,73 +2,15 @@ import React, { useRef, useMemo } from "react";
 import * as THREE from "three";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
-import { Apparatus3dCursorTrailProps } from "./types";
-
-const DEFAULT_IMAGES = [
-  "/images/components/abyss-cursor-fall/card-01.webp",
-  "/images/components/abyss-cursor-fall/shapes/shape-01.svg",
-  "/images/components/abyss-cursor-fall/card-02.webp",
-  "/images/components/abyss-cursor-fall/shapes/shape-02.svg",
-  "/images/components/abyss-cursor-fall/card-03.webp",
-  "/images/components/abyss-cursor-fall/shapes/shape-03.svg",
-  "/images/components/abyss-cursor-fall/card-04.webp",
-  "/images/components/abyss-cursor-fall/shapes/shape-04.svg",
-  "/images/components/abyss-cursor-fall/card-05.webp",
-  "/images/components/abyss-cursor-fall/shapes/shape-05.svg",
-  "/images/components/abyss-cursor-fall/card-06.webp",
-  "/images/components/abyss-cursor-fall/shapes/shape-06.svg",
-  "/images/components/abyss-cursor-fall/card-07.webp",
-  "/images/components/abyss-cursor-fall/shapes/shape-07.svg",
-  "/images/components/abyss-cursor-fall/card-08.webp",
-  "/images/components/abyss-cursor-fall/shapes/shape-08.svg",
-  "/images/components/abyss-cursor-fall/card-09.webp",
-  "/images/components/abyss-cursor-fall/shapes/shape-09.svg",
-  "/images/components/abyss-cursor-fall/card-10.webp",
-  "/images/components/abyss-cursor-fall/shapes/shape-10.svg",
-];
-
-// Rich, vivid palette for vector SVGs (Blue, Red, Green, Lime, Purple, Violet, Cyan, Magenta)
-const STARK_SVG_PALETTE = [
-  0x0088ff, // Electric Blue
-  0xff1133, // Stark Crimson Red
-  0x00e640, // Bright Emerald Green
-  0x76ff03, // Vivid Electric Lime
-  0x9c27b0, // Deep Neon Purple
-  0x7c4dff, // Bright Electric Violet
-  0x00e5ff, // Stark Cyan
-  0xff007f, // Stark Magenta
-];
-
-const DESATURATED_SVG_GREY = new THREE.Color(0.28, 0.28, 0.32);
-const DESATURATED_PHOTO_GREY = new THREE.Color(0.22, 0.22, 0.25);
-const PURE_WHITE = new THREE.Color(1.0, 1.0, 1.0);
-
-const DEPTH_LAYERS = [1.2, 0.0, -1.8];
-
-interface SpawnedCard {
-  mesh: THREE.Mesh<THREE.PlaneGeometry, THREE.MeshBasicMaterial>;
-  active: boolean;
-  spawnTime: number;
-  x: number;
-  y: number;
-  z: number;
-  vx: number;
-  vy: number;
-  vz: number;
-  rotX: number;
-  rotY: number;
-  rotZ: number;
-  vRotX: number;
-  vRotY: number;
-  vRotZ: number;
-  baseScale: number;
-  initialColor: THREE.Color;
-  isSvg: boolean;
-  speedMag: number;
-  perpX: number;
-  perpY: number;
-  cutAngle: number;
-}
+import { Apparatus3dCursorTrailProps, SpawnedCard } from "./types";
+import {
+  DEFAULT_IMAGES,
+  STARK_SVG_PALETTE,
+  DESATURATED_SVG_GREY,
+  DESATURATED_PHOTO_GREY,
+  PURE_WHITE,
+  DEPTH_LAYERS,
+} from "./constants";
 
 export const Apparatus3dCursorTrail: React.FC<Apparatus3dCursorTrailProps> = ({
   images = [],

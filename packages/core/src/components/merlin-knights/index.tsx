@@ -1,12 +1,8 @@
 import React, { useRef, useEffect, useState } from "react";
 import * as THREE from "three";
-import { VesselComponentProps } from "../../engine/types";
+import { MerlinKnightsProps } from "./types";
 import displayFrag from "./shader.frag.glsl";
 import passVert from "./shader.vert.glsl";
-
-export interface MerlinKnightsProps extends VesselComponentProps {
-  windSpeed?: number;
-}
 
 export const MerlinKnights: React.FC<MerlinKnightsProps> = ({
   imageSrc,

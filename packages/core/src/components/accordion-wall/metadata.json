@@ -1,16 +1,16 @@
 {
-  "name": "Accordion Wall",
+  "name": "Pillar Gallery",
   "slug": "accordion-wall",
-  "pitch": "A tactile vertical image accordion that unfolds like a folding screen divider, collapsing neighbor panels while revealing title text and folding shadows.",
+  "pitch": "Vertical image pillars that rise on hover and seamlessly expand into a towering fullscreen gallery with ambient color echoes and floating typography.",
   "family": "layout",
   "energy": "responsive",
   "triggers": ["click", "hover"],
   "tech": ["react", "gsap"],
   "lifecycle": {
-    "idle": "All panels are equally sized with a moderate shadow overlay.",
-    "discovery": "Entering a panel primes it for expansion and triggers initial lifecycle.",
-    "buildUp": "Panel expands dynamically, shifting sibling panels to compress, and triggers a crease line flash.",
-    "peak": "Selected panel reaches max width (60%), shadow opacity drops to flat-lit, and text content reveals.",
-    "recovery": "Leaving the panel returns all panels back to equal size and moderate fold shadows."
+    "idle": "All pillars rest at baseline with elegant subtle heights.",
+    "discovery": "Entering a pillar triggers dramatic vertical rise and sibling dimming.",
+    "buildUp": "Clicking initiates in-place FLIP expansion and harmonic sibling push-away.",
+    "peak": "Monolith occupies 91vh with ambient mood lighting and floating title.",
+    "recovery": "Dismissing collapses the monolith cleanly back into its starting pillar slot."
   }
 }

@@ -1,3 +1,4 @@
+import * as THREE from "three";
 import { VesselComponentProps } from "../../engine/types";
 
 export interface Apparatus3dCursorTrailProps extends VesselComponentProps {
@@ -45,4 +46,29 @@ export interface Apparatus3dCursorTrailProps extends VesselComponentProps {
    * @default "images-only"
    */
   spawnFilter?: "images-only" | "shapes-only";
+}
+
+export interface SpawnedCard {
+  mesh: THREE.Mesh<THREE.PlaneGeometry, THREE.MeshBasicMaterial>;
+  active: boolean;
+  spawnTime: number;
+  x: number;
+  y: number;
+  z: number;
+  vx: number;
+  vy: number;
+  vz: number;
+  rotX: number;
+  rotY: number;
+  rotZ: number;
+  vRotX: number;
+  vRotY: number;
+  vRotZ: number;
+  baseScale: number;
+  initialColor: THREE.Color;
+  isSvg: boolean;
+  speedMag: number;
+  perpX: number;
+  perpY: number;
+  cutAngle: number;
 }

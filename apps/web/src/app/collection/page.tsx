@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo, Suspense } from "react";
-import { LayoutGroup, AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { COMPONENT_DETAILS, VIBE_SECTIONS } from "@/lib/registry";
 import { DockNavbar } from "@/components/shared/DockNavbar";
 import { SectionHeader } from "@/components/collection/SectionHeader";
@@ -13,7 +13,6 @@ const ALL_COMPONENTS = Object.values(COMPONENT_DETAILS);
 
 function CollectionContent() {
   const [searchQuery, setSearchQuery] = useState("");
-  const [layoutMode, setLayoutMode] = useState<"grid" | "masonry">("grid");
   const [sortMode, setSortMode] = useState<"curated" | "asc" | "desc">("curated");
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
 
@@ -33,10 +32,6 @@ function CollectionContent() {
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
-
-  const handleToggleLayout = () => {
-    setLayoutMode((prev) => (prev === "grid" ? "masonry" : "grid"));
-  };
 
   const handleToggleSort = () => {
     setSortMode((prev) => {
@@ -99,85 +94,92 @@ function CollectionContent() {
       <DockNavbar onOpenSearch={() => setCommandPaletteOpen(true)} />
 
       {/* Main Collection Container */}
-      <LayoutGroup id="collection-grid">
-        <main className={`collection-container layout-${layoutMode}`} id="mainContainer">
-          <AnimatePresence mode="popLayout">
-            {!hasResults ? (
-              <motion.div
-                key="no-results"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="no-results-box"
-              >
-                No specimens found matching your search.
-              </motion.div>
-            ) : sortMode !== "curated" || (query && curatedChapters.length === 0) ? (
-              /* Alphabetical / Search Flat Grid */
-              <motion.section
-                key={`flat-${sortMode}`}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.2 }}
-                className="vibe-section"
-              >
-                <SectionHeader
-                  title={sortMode === "desc" ? "All Components (Z → A)" : "All Components"}
-                  count={sortedAllComponents.length}
-                  headlineClass="headline-s1"
-                />
-                <div className="card-grid">
-                  {sortedAllComponents.map((comp) => (
-                    <CollectionCard
-                      key={comp.slug}
-                      slug={comp.slug}
-                      title={comp.label}
-                      filename={comp.filename}
-                    />
-                  ))}
-                </div>
-              </motion.section>
-            ) : (
-              /* Curated Vibe Chapters */
-              <motion.div
-                key="curated"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.2 }}
-              >
-                {curatedChapters.map((section) => (
-                  <section key={section.id} className="vibe-section">
-                    <SectionHeader
-                      title={section.title}
-                      count={section.items.length}
-                      headlineClass={section.headlineClass}
-                    />
-                    <div className="card-grid">
-                      {section.items.map((comp) => (
-                        <CollectionCard
-                          key={comp.slug}
-                          slug={comp.slug}
-                          title={comp.label}
-                          filename={comp.filename}
-                        />
-                      ))}
-                    </div>
-                  </section>
+      <main className="collection-container" id="mainContainer">
+        <AnimatePresence mode="wait">
+          {!hasResults ? (
+            <motion.div
+              key="no-results"
+              initial={{ opacity: 0, scale: 0.98 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.98 }}
+              transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+              className="no-results-box"
+            >
+              No specimens found matching your search.
+            </motion.div>
+          ) : sortMode !== "curated" || (query && curatedChapters.length === 0) ? (
+            /* Alphabetical / Search Flat Grid */
+            <motion.section
+              key={`flat-${sortMode}-${query}`}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ duration: 0.24, ease: [0.16, 1, 0.3, 1] }}
+              className="vibe-section"
+            >
+              <SectionHeader
+                title={sortMode === "desc" ? "All Components (Z → A)" : "All Components"}
+                count={sortedAllComponents.length}
+                headlineClass="headline-s1"
+              />
+              <div className="card-grid">
+                {sortedAllComponents.map((comp) => (
+                  <CollectionCard
+                    key={comp.slug}
+                    slug={comp.slug}
+                    title={comp.label}
+                    filename={comp.filename}
+                  />
                 ))}
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </main>
-      </LayoutGroup>
+              </div>
+            </motion.section>
+          ) : (
+            /* Curated Vibe Chapters */
+            <motion.div
+              key="curated"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ duration: 0.24, ease: [0.16, 1, 0.3, 1] }}
+            >
+              {curatedChapters.map((section, idx) => (
+                <motion.section
+                  key={section.id}
+                  className="vibe-section"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{
+                    duration: 0.3,
+                    delay: idx * 0.03,
+                    ease: [0.16, 1, 0.3, 1],
+                  }}
+                >
+                  <SectionHeader
+                    title={section.title}
+                    count={section.items.length}
+                    headlineClass={section.headlineClass}
+                  />
+                  <div className="card-grid">
+                    {section.items.map((comp) => (
+                      <CollectionCard
+                        key={comp.slug}
+                        slug={comp.slug}
+                        title={comp.label}
+                        filename={comp.filename}
+                      />
+                    ))}
+                  </div>
+                </motion.section>
+              ))}
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </main>
 
       {/* Floating Bottom Control Pill */}
       <BottomControlPill
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
-        layoutMode={layoutMode}
-        onToggleLayout={handleToggleLayout}
         sortMode={sortMode}
         onToggleSort={handleToggleSort}
       />

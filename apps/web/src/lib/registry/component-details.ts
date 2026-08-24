@@ -132,18 +132,17 @@ export const COMPONENT_DETAILS: Record<string, ComponentDetail> = {
   },
   "accordion-wall": {
     id: "38",
-    label: "Accordion Wall",
+    label: "Pillar Gallery",
     filename: "components/accordion-wall/hero.webp",
-    desc: "A tactile vertical image accordion that unfolds like a folding screen divider, collapsing neighbor panels while revealing title text and folding shadows.",
+    desc: "Vertical image pillars that rise on hover and expand into a towering fullscreen gallery with ambient lighting and floating typography.",
     slug: "accordion-wall",
     category: "gallery",
     subtype: "accordion",
     tags: ["GSAP", "Flexbox", "Crease Shadows"],
     previewType: "transition",
     controls: [
-      { type: "slider", key: "panelCount", label: "Panels", default: 5, min: 3, max: 8, step: 1 },
-      { type: "slider", key: "speed", label: "Speed", default: 0.6, min: 0.3, max: 1.5, step: 0.05, unit: "s" },
-      { type: "select", key: "triggerMode", label: "Trigger", default: "hover", options: [{ label: "Hover", value: "hover" }, { label: "Click", value: "click" }] }
+      { type: "slider", key: "panelCount", label: "Panels", default: 8, min: 4, max: 8, step: 1 },
+      { type: "slider", key: "speed", label: "Speed", default: 1.35, min: 0.5, max: 2.0, step: 0.05, unit: "s" }
     ]
   },
   "parallax-column": {
@@ -251,35 +250,6 @@ export const COMPONENT_DETAILS: Record<string, ComponentDetail> = {
       { type: "slider", key: "customGrain", label: "Film Grain", default: 25, min: 0, max: 80, step: 2, unit: "%" }
     ]
   },
-  "phase-drift": {
-    id: "46",
-    label: "Phase Drift",
-    filename: "components/phase-drift/hero.webp",
-    desc: "Coordinated scroll-driven horizontal wave undulating images on a traveling sinusoidal path with velocity-driven amplitude swells.",
-    slug: "phase-drift",
-    category: "scroll",
-    subtype: "gallery",
-    tags: ["GSAP", "Scroll", "Sine Wave", "Velocity"],
-    previewType: "scroll",
-    controls: [
-      {
-        type: "select",
-        key: "pathType",
-        label: "Wave Motion Pattern",
-        default: "sine",
-        options: [
-          { label: "Sine Wave", value: "sine" },
-          { label: "ZigZag Path", value: "zigzag" },
-          { label: "Wandering Drift", value: "wandering" },
-          { label: "Spiral Swing", value: "spiral" }
-        ]
-      },
-      { type: "slider", key: "waveAmplitude", label: "Wave Amplitude", default: 150, min: 20, max: 300, step: 10, unit: "px" },
-      { type: "slider", key: "driftSpeed", label: "Drift Speed", default: 0.8, min: 0.1, max: 3.0, step: 0.1 },
-      { type: "slider", key: "imageWidth", label: "Tile Width", default: 120, min: 60, max: 240, step: 10, unit: "px" },
-      { type: "slider", key: "smoothFactor", label: "Inertia Smoothness", default: 0.08, min: 0.01, max: 0.2, step: 0.01 }
-    ]
-  },
   "depth-swim": {
     id: "47",
     label: "Depth Swim",
@@ -315,24 +285,6 @@ export const COMPONENT_DETAILS: Record<string, ComponentDetail> = {
       { type: "slider", key: "maxBlur", label: "Max Blur Limit", default: 2, min: 0, max: 20, step: 1, unit: "px" },
       { type: "slider", key: "cardGap", label: "Card Gap Spacing", default: 28, min: 8, max: 48, step: 2, unit: "px" },
       { type: "slider", key: "pathBend", label: "Path Curvature", default: 0, min: 0, max: 100, step: 5, unit: "%" }
-    ]
-  },
-  "focus-ring": {
-    id: "49",
-    label: "Focus Ring",
-    filename: "components/focus-ring/hero.webp",
-    desc: "Images arranged in a 2D elliptical path. The ring rotates via horizontal dragging, wheel, or arrow keys, bringing the active image to full scale, opacity, and sharp focus.",
-    slug: "focus-ring",
-    category: "gallery",
-    subtype: "gallery",
-    tags: ["GSAP", "Physics", "Tactile", "Focus Gradient"],
-    previewType: "scroll",
-    controls: [
-      { type: "slider", key: "rxFactor", label: "Ring Radius Width", default: 0.35, min: 0.15, max: 0.55, step: 0.01 },
-      { type: "slider", key: "ryFactor", label: "Ring Depth Height", default: 0.12, min: 0.05, max: 0.35, step: 0.01 },
-      { type: "slider", key: "baseItemScale", label: "Card Scale", default: 1.0, min: 0.5, max: 2.0, step: 0.1 },
-      { type: "slider", key: "activeBlur", label: "Max Depth Blur", default: 4.0, min: 0, max: 12.0, step: 0.5, unit: "px" },
-      { type: "slider", key: "ambientSpinSpeed", label: "Ambient Spin Velocity", default: 0.02, min: 0, max: 0.1, step: 0.005 }
     ]
   },
   "parallax-bleed": {
@@ -420,33 +372,6 @@ export const COMPONENT_DETAILS: Record<string, ComponentDetail> = {
       { type: "slider", key: "lineHeightScale", label: "Line Rhythm", default: 1.65, min: 1.3, max: 2.2, step: 0.05, unit: "x" }
     ]
   },
-  "arc-drift-gallery": {
-    id: "42",
-    label: "Arc Drift Gallery",
-    filename: "components/arc-drift-gallery/hero.webp",
-    desc: "A slow procession of photographs drifting along an invisible horizon arc where background landscapes dissolve to match the centered image.",
-    slug: "arc-drift-gallery",
-    category: "scroll",
-    subtype: "gallery",
-    tags: ["Gallery", "Arc Drift", "ScrollTrigger", "Background Crossfade", "Editorial"],
-    controls: [
-      {
-        type: "select",
-        key: "motionVariant",
-        label: "Motion Trajectory Variant",
-        default: "classic-arc",
-        options: [
-          { label: "Classic Horizon Arc (Default)", value: "classic-arc" },
-          { label: "Panoramic Film Ribbon", value: "panoramic-ribbon" }
-        ]
-      },
-      { type: "slider", key: "scrollSpeed", label: "Scroll Speed", default: 0.5, min: 0.1, max: 2.0, step: 0.1, unit: "x" },
-      { type: "slider", key: "arcHeight", label: "Arc Height", default: 45, min: 10, max: 50, step: 5, unit: "vh" },
-      { type: "slider", key: "bgOpacity", label: "Background Opacity", default: 0.80, min: 0.1, max: 1.0, step: 0.05, unit: "" },
-      { type: "slider", key: "crossfadeDuration", label: "Crossfade Duration", default: 0.6, min: 0.2, max: 1.5, step: 0.1, unit: "s" },
-      { type: "slider", key: "thumbnailWidth", label: "Thumbnail Width", default: 180, min: 120, max: 280, step: 10, unit: "px" }
-    ]
-  },
   "curved-scroll-wipe": {
     id: "68",
     label: "Curved Scroll Wipe",
@@ -508,24 +433,6 @@ export const COMPONENT_DETAILS: Record<string, ComponentDetail> = {
       { type: "slider", key: "lifespan", label: "Card Lifespan", default: 3.0, min: 1.0, max: 6.0, step: 0.2, unit: "s" },
       { type: "slider", key: "fallSpeed", label: "Void Fall Speed", default: 2.4, min: 0.5, max: 8.0, step: 0.5 },
       { type: "slider", key: "cameraParallax", label: "3D Camera Parallax", default: 2.8, min: 0.5, max: 6.0, step: 0.2 }
-    ]
-  },
-  "scroll-text-reveal": {
-    id: "71",
-    label: "3d Reel Text",
-    filename: "components/scroll-text-reveal/hero.webp",
-    desc: "Two-section text component shell with header hero and active component canvas.",
-    slug: "scroll-text-reveal",
-    category: "text",
-    subtype: "reveal",
-    tags: ["Text", "Scroll", "GSAP", "Typography"],
-    controls: [
-      { type: "slider", key: "speed", label: "Speed", default: 1.0, min: 0.2, max: 3.0, step: 0.1 },
-      { type: "slider", key: "stagger", label: "Center Stagger", default: 0.20, min: 0.05, max: 0.5, step: 0.01, unit: "s" },
-      { type: "slider", key: "fontSize", label: "Line 1 Size", default: 96, min: 48, max: 140, step: 4, unit: "px" },
-      { type: "slider", key: "letterSpacing", label: "Letter Spacing", default: -2, min: -10, max: 10, step: 1, unit: "px" },
-      { type: "slider", key: "lineHeight", label: "Line Height", default: 1.0, min: 0.8, max: 1.8, step: 0.05 },
-      { type: "slider", key: "scrubSmoothness", label: "Scrub Weight", default: 0.8, min: 0.1, max: 2.0, step: 0.1, unit: "s" }
     ]
   },
   "tracklist-gallery": {

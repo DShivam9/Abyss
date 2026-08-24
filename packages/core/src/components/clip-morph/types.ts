@@ -29,4 +29,22 @@ export interface ApparatusClipMorphProps extends VesselComponentProps {
    * @default "vessel"
    */
   ease?: string;
+
+  /**
+   * Maximum rotation angle of the star in degrees.
+   * @default 180
+   */
+  customRotation?: number;
+
+  /**
+   * Star scale bleed factor.
+   * @default 40
+   */
+  customBleed?: number;
+
+  /**
+   * Noise grain intensity overlay (0 to 100).
+   * @default 25
+   */
+  customGrain?: number;
 }
