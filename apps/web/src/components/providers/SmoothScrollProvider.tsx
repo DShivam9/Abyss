@@ -1,6 +1,7 @@
 "use client";
 
-import { ReactNode } from "react";
+import { ReactNode, useEffect } from "react";
+import { usePathname } from "next/navigation";
 import Lenis from "lenis";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -11,14 +12,18 @@ if (typeof window !== "undefined") {
 }
 
 export function SmoothScrollProvider({ children }: { children: ReactNode }) {
+  const pathname = usePathname();
+
   useGSAP(() => {
+    // ponytail: natural 1:1 wheel multiplier + crisp duration for responsive scrolling
     const lenis = new Lenis({
-      duration: 1.2,
-      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)), // Luxurious exponential decay ease
+      duration: 0.85,
+      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
       smoothWheel: true,
-      wheelMultiplier: 0.7,
+      wheelMultiplier: 1.0,
       touchMultiplier: 1.0,
       infinite: false,
+      autoRaf: false,
     });
 
     (window as unknown as { lenis: Lenis }).lenis = lenis;
@@ -36,8 +41,26 @@ export function SmoothScrollProvider({ children }: { children: ReactNode }) {
     return () => {
       lenis.destroy();
       gsap.ticker.remove(updateTicker);
+      delete (window as unknown as { lenis?: Lenis }).lenis;
     };
   }, []);
+
+  // Sync scroll position, bounds and ScrollTrigger on route navigation
+  useEffect(() => {
+    const lenis = (window as unknown as { lenis?: Lenis }).lenis;
+    if (!lenis) return;
+
+    lenis.scrollTo(0, { immediate: true });
+    lenis.resize();
+    ScrollTrigger.refresh();
+
+    const timer = setTimeout(() => {
+      lenis.resize();
+      ScrollTrigger.refresh();
+    }, 100);
+
+    return () => clearTimeout(timer);
+  }, [pathname]);
 
   return <>{children}</>;
 }

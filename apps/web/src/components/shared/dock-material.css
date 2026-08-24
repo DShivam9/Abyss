@@ -21,7 +21,7 @@
   /* Typography */
   --font-display: 'Ranade', -apple-system, sans-serif;
   --font-body: 'Switzer', -apple-system, sans-serif;
-  --font-section: 'Saint Regus', sans-serif;
+  --font-section: var(--font-saint-regus), 'Saint Regus', sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 
   /* Easing curves */

@@ -133,7 +133,7 @@ export const COMPONENT_DETAILS: Record<string, ComponentDetail> = {
   "accordion-wall": {
     id: "38",
     label: "Pillar Gallery",
-    filename: "components/accordion-wall/hero.webp",
+    filename: "components/accordion-wall/art-01.webp",
     desc: "Vertical image pillars that rise on hover and expand into a towering fullscreen gallery with ambient lighting and floating typography.",
     slug: "accordion-wall",
     category: "gallery",

@@ -29,7 +29,7 @@
   src: url('/fonts/saint-regus/sonar-hubermann-saintregus-semiboldexpanded.otf') format('opentype');
   font-weight: 600;
   font-style: normal;
-  font-display: swap;
+  font-display: block;
 }
 
 @theme {

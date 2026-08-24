@@ -47,6 +47,14 @@ const jetbrainsMono = JetBrains_Mono({
   subsets: ["latin"],
 });
 
+const saintRegus = localFont({
+  src: "../../public/fonts/saint-regus/sonar-hubermann-saintregus-semiboldexpanded.otf",
+  weight: "600",
+  style: "normal",
+  variable: "--font-saint-regus",
+  display: "block",
+});
+
 export const metadata: Metadata = {
   title: {
     default: "Abyss",
@@ -64,7 +72,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning className={cn("h-full", "antialiased", satoshi.variable, jetbrainsMono.variable, "font-sans", editorialNew.variable)}>
+    <html lang="en" suppressHydrationWarning className={cn("h-full", "antialiased", satoshi.variable, jetbrainsMono.variable, "font-sans", editorialNew.variable, saintRegus.variable)}>
       <head>
         <link rel="preconnect" href="https://api.fontshare.com" />
         <link href="https://api.fontshare.com/v2/css?f[]=switzer@400,500,600,700&f[]=ranade@400,500,600,700,900&display=swap" rel="stylesheet" />

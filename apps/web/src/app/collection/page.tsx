@@ -41,6 +41,17 @@ function CollectionContent() {
     });
   };
 
+  // ponytail: resize Lenis scroll boundaries on filter/sort changes
+  useEffect(() => {
+    const lenis = (window as unknown as { lenis?: { resize: () => void } }).lenis;
+    if (lenis) {
+      const timer = setTimeout(() => {
+        lenis.resize();
+      }, 150);
+      return () => clearTimeout(timer);
+    }
+  }, [sortMode, searchQuery]);
+
   // Filtered components based on search query
   const query = searchQuery.trim().toLowerCase();
 
