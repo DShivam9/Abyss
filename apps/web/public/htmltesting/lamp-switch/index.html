@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Abyss — Architectural Lamp Pull Switch</title>
+  <style>
+    :root {
+      --ease-lux: cubic-bezier(0.16, 1, 0.3, 1);
+      --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+      /* Dark Room */
+      --bg: #09090b;
+      --solar-color: #ffffff;
+      --lunar-bg: #141418;
+    }
+
+    [data-theme="light"] {
+      /* Light Room */
+      --bg: #f5f5f7;
+      --solar-color: #09090b;
+      --lunar-bg: #f5f5f7;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      user-select: none;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, monospace;
+      transition: background 0.6s var(--ease-lux);
+    }
+
+    /* Volumetric Warm Ambient Lamp Illumination */
+    #lampGlow {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 1;
+      opacity: 0;
+      background: radial-gradient(
+        circle 1100px at calc(100% - 80px) 0px,
+        rgba(255, 235, 185, 0.32) 0%,
+        rgba(255, 215, 150, 0.14) 50%,
+        transparent 85%
+      );
+      transition: opacity 0.65s var(--ease-lux);
+    }
+
+    [data-theme="light"] #lampGlow {
+      opacity: 1;
+    }
+
+    /* =========================================================
+       EXACT CELESTIAL MORPHING EMBLEM FROM PROTOTYPE A
+       ========================================================= */
+    .icon-stage {
+      position: relative;
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+      z-index: 10;
+      transition: transform 0.5s var(--ease-lux);
+    }
+
+    /* Slender 8 Solar Rays */
+    .solar-rays {
+      position: absolute;
+      width: 26px;
+      height: 26px;
+      color: var(--solar-color);
+      stroke-linecap: round;
+      transition: transform 0.85s var(--ease-spring), opacity 0.4s var(--ease-lux), color 0.4s var(--ease-lux);
+    }
+
+    [data-theme="light"] .solar-rays {
+      transform: scale(1) rotate(0deg);
+      opacity: 1;
+    }
+
+    [data-theme="dark"] .solar-rays {
+      transform: scale(0.2) rotate(75deg);
+      opacity: 0;
+    }
+
+    /* Central Celestial Core */
+    .celestial-core {
+      position: relative;
+      width: 13px;
+      height: 13px;
+      border-radius: 50%;
+      overflow: hidden;
+      transition: background 0.3s, transform 0.85s var(--ease-spring), box-shadow 0.4s;
+      z-index: 2;
+    }
+
+    [data-theme="light"] .celestial-core {
+      background: #09090b;
+      transform: scale(1) rotate(0deg);
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+    }
+
+    [data-theme="dark"] .celestial-core {
+      background: #ffffff;
+      transform: scale(1.08) rotate(-20deg);
+      box-shadow: 0 0 5px rgba(255, 255, 255, 0.45);
+    }
+
+    /* Lunar Occlusion Shadow Disc */
+    .lunar-shadow {
+      position: absolute;
+      inset: -1px;
+      border-radius: 50%;
+      transition: transform 0.85s var(--ease-spring), background 0.4s var(--ease-lux);
+      z-index: 3;
+      transform: translate(3.8px, -2.8px);
+    }
+
+    [data-theme="dark"] .lunar-shadow {
+      background: #09090b;
+    }
+
+    [data-theme="light"] .lunar-shadow {
+      background: #09090b;
+      transform: translate(-160%, -160%);
+    }
+
+    /* Fullscreen Pull Rig */
+    #pullCanvas {
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 50;
+      cursor: default;
+      touch-action: none;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Volumetric Lamp Glow -->
+  <div id="lampGlow"></div>
+
+  <!-- Morphing Celestial Emblem in Center -->
+  <div class="icon-stage" id="iconStage">
+    <!-- Slender 8 Solar Rays -->
+    <svg class="solar-rays" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+      <line x1="12" y1="1" x2="12" y2="3.5"></line>
+      <line x1="12" y1="20.5" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.99" y2="5.99"></line>
+      <line x1="18.01" y1="18.01" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3.5" y2="12"></line>
+      <line x1="20.5" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.99" y2="18.01"></line>
+      <line x1="18.01" y1="5.99" x2="19.78" y2="4.22"></line>
+    </svg>
+
+    <!-- Core & Crescent -->
+    <div class="celestial-core">
+      <div class="lunar-shadow"></div>
+    </div>
+  </div>
+
+  <!-- Fullscreen Interactive Canvas -->
+  <canvas id="pullCanvas"></canvas>
+
+  <script>
+    const html = document.documentElement;
+    const canvas = document.getElementById('pullCanvas');
+    const ctx = canvas.getContext('2d');
+    const iconStage = document.getElementById('iconStage');
+
+    // Preload Studio Mechanical Audio Samples
+    const sndEngage = new Audio('./lamp_engage.wav');
+    const sndRelease = new Audio('./lamp_release.wav');
+    sndEngage.volume = 0.65;
+    sndRelease.volume = 0.85;
+
+    function playSound(audio) {
+      try {
+        audio.currentTime = 0;
+        audio.play().catch(() => {});
+      } catch (e) {}
+    }
+
+    // Dynamic High-DPI Canvas
+    let width = window.innerWidth;
+    let height = window.innerHeight;
+    let dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+    function resizeCanvas() {
+      width = window.innerWidth;
+      height = window.innerHeight;
+      dpr = Math.min(window.devicePixelRatio || 1, 2);
+      canvas.width = width * dpr;
+      canvas.height = height * dpr;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    // Longer Elegant Cord (28 Links, ~252px Rest Length)
+    const numSegments = 28;
+    const segmentLength = 9;
+    const restLength = numSegments * segmentLength; // 252px
+
+    function getAnchorX() {
+      return width - 80;
+    }
+
+    const points = [];
+    for (let i = 0; i <= numSegments; i++) {
+      points.push({
+        x: getAnchorX(),
+        y: (i / numSegments) * restLength,
+        oldX: getAnchorX(),
+        oldY: (i / numSegments) * restLength,
+        pinned: i === 0
+      });
+    }
+
+    let isDragging = false;
+    let dragTargetX = getAnchorX();
+    let dragTargetY = restLength;
+    let isPrimed = false;
+    let clickSparkIntensity = 0;
+
+    // Logarithmic Tension Threshold
+    const pullThreshold = 45;
+
+    // Toggle Room Lighting on Release
+    function toggleLamp() {
+      const isDark = html.getAttribute('data-theme') === 'dark';
+      const nextTheme = isDark ? 'light' : 'dark';
+
+      html.setAttribute('data-theme', nextTheme);
+
+      // Micro subtle icon bounce
+      iconStage.style.transform = 'scale(0.9)';
+      setTimeout(() => { iconStage.style.transform = ''; }, 220);
+
+      playSound(sndRelease);
+      if (navigator.vibrate) navigator.vibrate([8, 12, 10]);
+    }
+
+    // Interactive Pointer Handlers with Pointer Capture
+    function onPointerDown(e) {
+      const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+      const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+      const tip = points[points.length - 1];
+
+      if (Math.hypot(clientX - tip.x, clientY - tip.y) < 70) {
+        isDragging = true;
+        isPrimed = false;
+        dragTargetX = clientX;
+        dragTargetY = clientY;
+        canvas.style.cursor = 'grabbing';
+
+        if (e.pointerId && canvas.setPointerCapture) {
+          try { canvas.setPointerCapture(e.pointerId); } catch(err) {}
+        }
+
+        window.addEventListener('pointermove', onPointerMove);
+        window.addEventListener('pointerup', onPointerUp);
+        window.addEventListener('blur', onPointerUp);
+      }
+    }
+
+    function onPointerMove(e) {
+      const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+      const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+      const tip = points[points.length - 1];
+
+      if (!isDragging) {
+        if (Math.hypot(clientX - tip.x, clientY - tip.y) < 70) {
+          canvas.style.cursor = 'grab';
+        } else {
+          canvas.style.cursor = 'default';
+        }
+        return;
+      }
+
+      const anchorX = getAnchorX();
+      dragTargetX = anchorX + (clientX - anchorX) * 0.85;
+
+      const rawDelta = clientY - restLength;
+      if (rawDelta > 0) {
+        const maxExtension = 190;
+        const softFactor = 240;
+        const rubberBanded = maxExtension * Math.tanh(rawDelta / softFactor);
+        dragTargetY = restLength + rubberBanded;
+      } else {
+        dragTargetY = restLength;
+      }
+
+      const currentPull = dragTargetY - restLength;
+      if (currentPull >= pullThreshold) {
+        if (!isPrimed) {
+          isPrimed = true;
+          clickSparkIntensity = 1.0;
+          playSound(sndEngage);
+          iconStage.style.transform = 'scale(1.12)';
+          if (navigator.vibrate) navigator.vibrate(10);
+        }
+      } else {
+        if (isPrimed) {
+          isPrimed = false;
+          iconStage.style.transform = '';
+        }
+      }
+    }
+
+    function onPointerUp(e) {
+      if (!isDragging) return;
+      isDragging = false;
+      canvas.style.cursor = 'default';
+      iconStage.style.transform = '';
+
+      if (e && e.pointerId && canvas.releasePointerCapture) {
+        try { canvas.releasePointerCapture(e.pointerId); } catch(err) {}
+      }
+
+      window.removeEventListener('pointermove', onPointerMove);
+      window.removeEventListener('pointerup', onPointerUp);
+      window.removeEventListener('blur', onPointerUp);
+
+      // FIRM TOGGLE ON RELEASE!
+      if (isPrimed) {
+        toggleLamp();
+        isPrimed = false;
+      }
+    }
+
+    canvas.addEventListener('pointerdown', onPointerDown);
+    window.addEventListener('pointermove', onPointerMove);
+
+    // Verlet Physics Simulation Step
+    function updateVerlet() {
+      const gravity = 0.45;
+      const friction = 0.95;
+
+      const anchorX = getAnchorX();
+      points[0].x = anchorX;
+      points[0].y = 0;
+
+      const vibrate = (isDragging && isPrimed) ? (Math.random() - 0.5) * 0.8 : 0;
+
+      for (let i = 0; i < points.length; i++) {
+        const p = points[i];
+        if (p.pinned) continue;
+
+        if (i === points.length - 1 && isDragging) {
+          p.x = dragTargetX + vibrate;
+          p.y = dragTargetY;
+          p.oldX = dragTargetX;
+          p.oldY = dragTargetY;
+          continue;
+        }
+
+        const vx = (p.x - p.oldX) * friction;
+        const vy = (p.y - p.oldY) * friction;
+
+        p.oldX = p.x;
+        p.oldY = p.y;
+        p.x += vx + vibrate * (i / points.length);
+        p.y += vy + gravity;
+      }
+
+      const iterations = 12;
+      for (let iter = 0; iter < iterations; iter++) {
+        for (let i = 0; i < points.length - 1; i++) {
+          const p1 = points[i];
+          const p2 = points[i + 1];
+
+          const dx = p2.x - p1.x;
+          const dy = p2.y - p1.y;
+          const dist = Math.hypot(dx, dy);
+          const diff = (dist - segmentLength) / (dist || 1);
+
+          if (!p1.pinned) {
+            p1.x += dx * 0.5 * diff;
+            p1.y += dy * 0.5 * diff;
+          }
+          if (!p2.pinned && !(i + 1 === points.length - 1 && isDragging)) {
+            p2.x -= dx * 0.5 * diff;
+            p2.y -= dy * 0.5 * diff;
+          }
+        }
+      }
+
+      if (clickSparkIntensity > 0) {
+        clickSparkIntensity *= 0.88;
+      }
+    }
+
+    // Render Realistic 3D Metallic Ball Chain & Sculpted Bell Fob
+    function render() {
+      ctx.clearRect(0, 0, width, height);
+
+      const isLight = html.getAttribute('data-theme') === 'light';
+
+      // 1. Connecting Wire Core
+      ctx.beginPath();
+      ctx.moveTo(points[0].x, points[0].y);
+      for (let i = 1; i < points.length - 1; i++) {
+        const xc = (points[i].x + points[i + 1].x) / 2;
+        const yc = (points[i].y + points[i + 1].y) / 2;
+        ctx.quadraticCurveTo(points[i].x, points[i].y, xc, yc);
+      }
+      ctx.strokeStyle = isLight ? '#71717a' : '#3f3f46';
+      ctx.lineWidth = 1.2;
+      ctx.stroke();
+
+      // 2. 3D Shaded Metallic Beads
+      for (let i = 1; i < points.length - 1; i++) {
+        const p = points[i];
+        const r = 2.4;
+
+        const beadGrad = ctx.createRadialGradient(p.x - 0.7, p.y - 0.7, 0.4, p.x, p.y, r);
+        if (isLight) {
+          beadGrad.addColorStop(0, '#ffffff');
+          beadGrad.addColorStop(0.4, '#e4e4e7');
+          beadGrad.addColorStop(0.85, '#a1a1aa');
+          beadGrad.addColorStop(1, '#71717a');
+        } else {
+          beadGrad.addColorStop(0, '#a1a1aa');
+          beadGrad.addColorStop(0.35, '#52525b');
+          beadGrad.addColorStop(0.85, '#27272a');
+          beadGrad.addColorStop(1, '#18181b');
+        }
+
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
+        ctx.fillStyle = beadGrad;
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.arc(p.x - 0.8, p.y - 0.8, 0.7, 0, Math.PI * 2);
+        ctx.fillStyle = isLight ? '#ffffff' : 'rgba(255, 255, 255, 0.6)';
+        ctx.fill();
+      }
+
+      // 3. Machined Bell Fob
+      const tip = points[points.length - 1];
+      const prev = points[points.length - 2];
+      const angle = Math.atan2(tip.y - prev.y, tip.x - prev.x) - Math.PI / 2;
+
+      ctx.save();
+      ctx.translate(tip.x, tip.y);
+      ctx.rotate(angle);
+
+      const topW = 4.5;
+      const baseW = 12;
+      const fobHeight = 38;
+
+      ctx.shadowColor = isLight ? 'rgba(0, 0, 0, 0.16)' : 'rgba(0, 0, 0, 0.75)';
+      ctx.shadowBlur = 14;
+      ctx.shadowOffsetY = 6;
+
+      // Collar Ring
+      ctx.beginPath();
+      ctx.roundRect(-topW - 1, -4, (topW + 1) * 2, 4.5, 2);
+      ctx.fillStyle = isLight ? '#d4d4d8' : '#27272a';
+      ctx.fill();
+
+      // Flared Bell Body Path
+      ctx.beginPath();
+      ctx.moveTo(-topW, 0);
+      ctx.bezierCurveTo(-topW - 1, 10, -baseW - 1.5, 26, -baseW, fobHeight - 4);
+      ctx.quadraticCurveTo(-baseW, fobHeight, 0, fobHeight);
+      ctx.quadraticCurveTo(baseW, fobHeight, baseW, fobHeight - 4);
+      ctx.bezierCurveTo(baseW + 1.5, 26, topW + 1, 10, topW, 0);
+      ctx.closePath();
+
+      const grad = ctx.createLinearGradient(-baseW, 0, baseW, 0);
+      if (isLight) {
+        grad.addColorStop(0, '#b8b8c2');
+        grad.addColorStop(0.25, '#f4f4f6');
+        grad.addColorStop(0.5, '#ffffff');
+        grad.addColorStop(0.75, '#e4e4e8');
+        grad.addColorStop(1, '#9e9ea8');
+      } else {
+        grad.addColorStop(0, '#141418');
+        grad.addColorStop(0.25, '#32323e');
+        grad.addColorStop(0.5, '#4a4a58');
+        grad.addColorStop(0.75, '#22222a');
+        grad.addColorStop(1, '#0c0c0f');
+      }
+
+      ctx.fillStyle = grad;
+      ctx.fill();
+
+      ctx.shadowColor = 'transparent';
+
+      // Knurled Grip Bands
+      ctx.strokeStyle = isLight ? 'rgba(0, 0, 0, 0.15)' : 'rgba(255, 255, 255, 0.18)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(-topW - 1, 9);
+      ctx.lineTo(topW + 1, 9);
+      ctx.moveTo(-topW - 2, 14);
+      ctx.lineTo(topW + 2, 14);
+      ctx.moveTo(-baseW + 2, fobHeight - 9);
+      ctx.lineTo(baseW - 2, fobHeight - 9);
+      ctx.stroke();
+
+      // Specular Glint
+      ctx.strokeStyle = isLight ? 'rgba(255, 255, 255, 0.95)' : 'rgba(255, 255, 255, 0.4)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(-0.5, 1);
+      ctx.lineTo(-1.5, fobHeight - 4);
+      ctx.stroke();
+
+      // Click Spark / Engagement Flash Glint
+      if (clickSparkIntensity > 0.05) {
+        ctx.beginPath();
+        ctx.arc(0, fobHeight / 2, baseW * 1.4 * clickSparkIntensity, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(254, 240, 138, ${clickSparkIntensity * 0.55})`;
+        ctx.fill();
+      }
+
+      ctx.restore();
+    }
+
+    function loop() {
+      updateVerlet();
+      render();
+      requestAnimationFrame(loop);
+    }
+    loop();
+  </script>
+</body>
+</html>

@@ -3,7 +3,7 @@ import React from "react";
 interface SectionHeaderProps {
   title: string;
   count: number;
-  headlineClass: "headline-s1" | "headline-s2" | "headline-s3" | "headline-s4" | "headline-s5";
+  headlineClass: "headline-s1" | "headline-s2" | "headline-s3" | "headline-s4" | "headline-s5" | "headline-s6";
 }
 
 export function SectionHeader({ title, count, headlineClass }: SectionHeaderProps) {

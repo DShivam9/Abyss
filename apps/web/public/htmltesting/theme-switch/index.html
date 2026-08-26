@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Abyss — Theme Switch Master</title>
+  <style>
+    :root {
+      --ease: cubic-bezier(0.16, 1, 0.3, 1);
+      --spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+      --bg: #09090b;
+      --text: #71717a;
+      --solar: #ffffff;
+      --lunar-bg: #09090b;
+    }
+    [data-theme="light"] {
+      --bg: #f4f4f6;
+      --text: #71717a;
+      --solar: #09090b;
+      --lunar-bg: #f4f4f6;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, monospace;
+      user-select: none;
+      overflow: hidden;
+      transition: background 0.5s var(--ease);
+    }
+
+    /* Expanding Screen Wave (3D Dial Only) */
+    #waveLayer { position: fixed; inset: 0; pointer-events: none; z-index: 20; opacity: 0; }
+
+    /* Top-Down Volumetric Floodlight (Lamp Cord Only) */
+    #lampGlow {
+      position: fixed; inset: 0; pointer-events: none; z-index: 1; opacity: 0;
+      background: radial-gradient(circle 1100px at calc(100% - 80px) 0px, rgba(255,235,185,0.32) 0%, rgba(255,215,150,0.14) 50%, transparent 85%);
+      transition: opacity 0.65s var(--ease);
+    }
+    [data-theme="light"] #lampGlow { opacity: 1; }
+
+    /* =========================================================
+       VARIANT A: 3D MECHANICAL PUSH DIAL (DEFAULT)
+       ========================================================= */
+    .variant-dial {
+      position: relative; z-index: 30;
+      width: 72px; height: 72px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.4s var(--ease);
+    }
+    [data-theme="dark"] .variant-dial {
+      background: #0d0d10; border: 1px solid rgba(255,255,255,0.08);
+      box-shadow: inset 0 4px 10px rgba(0,0,0,0.95), inset 0 -1.5px 2px rgba(255,255,255,0.08);
+    }
+    [data-theme="light"] .variant-dial {
+      background: #e2e2ea; border: 1px solid rgba(0,0,0,0.08);
+      box-shadow: inset 0 4px 8px rgba(0,0,0,0.18), inset 0 -2px 2px #fff;
+    }
+
+    .tactile-btn {
+      position: relative; width: 56px; height: 56px; border-radius: 50%;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      outline: none; border: none; transform: translateY(-2.5px);
+      transition: transform 0.12s var(--ease), box-shadow 0.12s var(--ease), background 0.4s var(--ease);
+    }
+    [data-theme="dark"] .tactile-btn {
+      background: linear-gradient(175deg, #24242d 0%, #15151a 50%, #0e0e12 100%);
+      box-shadow: inset 0 1.5px 1px rgba(255,255,255,0.35), 0 1px 0 #181820, 0 2px 0 #14141a, 0 3px 0 #101015, 0 4.5px 0 #0b0b0e, 0 8px 18px rgba(0,0,0,0.85);
+    }
+    [data-theme="light"] .tactile-btn {
+      background: linear-gradient(175deg, #fff 0%, #ececf2 50%, #dedee6 100%);
+      box-shadow: inset 0 1.5px 1.5px #fff, 0 1px 0 #d8d8e2, 0 2px 0 #cfcfe0, 0 3px 0 #c8c8d8, 0 4.5px 0 #bebec8, 0 8px 16px rgba(0,0,0,0.12);
+    }
+    .tactile-btn:active { transform: translateY(2.5px) !important; box-shadow: inset 0 2px 4px rgba(0,0,0,0.4) !important; }
+
+    /* =========================================================
+       BOLD PROPORTIONED CELESTIAL EMBLEM (PROMINENT MOON)
+       ========================================================= */
+    .icon-stage { position: relative; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; pointer-events: none; }
+    .solar-rays {
+      position: absolute; width: 30px; height: 30px; color: var(--solar); stroke-linecap: round;
+      transition: transform 0.85s var(--spring), opacity 0.4s var(--ease), color 0.4s var(--ease);
+    }
+    [data-theme="light"] .solar-rays { transform: scale(1) rotate(0deg); opacity: 1; }
+    [data-theme="dark"] .solar-rays { transform: scale(0.2) rotate(75deg); opacity: 0; }
+
+    .celestial-core {
+      position: relative; width: 18px; height: 18px; border-radius: 50%; overflow: hidden;
+      transition: background 0.3s, transform 0.85s var(--spring), box-shadow 0.4s;
+    }
+    [data-theme="light"] .celestial-core { background: #09090b; transform: scale(1) rotate(0deg); }
+    [data-theme="dark"] .celestial-core { background: #ffffff; transform: scale(1.05) rotate(-22deg); box-shadow: 0 0 6px rgba(255,255,255,0.5); }
+
+    .lunar-shadow {
+      position: absolute; inset: -1px; border-radius: 50%;
+      transition: transform 0.85s var(--spring), background 0.4s var(--ease);
+      transform: translate(5.8px, -4px);
+    }
+    [data-theme="dark"] .lunar-shadow { background: #141418; }
+    [data-theme="light"] .lunar-shadow { background: #f4f4f6; transform: translate(-160%, -160%); }
+
+    /* Center Icon for Lamp Variant */
+    .variant-lamp-center { position: relative; z-index: 30; display: none; pointer-events: none; }
+
+    /* Pull Cord Canvas (Lamp Variant Only) */
+    #pullCanvas { position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: 40; touch-action: none; display: none; }
+
+    /* Bottom Variant Selector Pill */
+    .variant-bar {
+      position: fixed; bottom: 28px; z-index: 100; display: flex; gap: 4px;
+      background: rgba(20,20,26,0.7); padding: 4px; border-radius: 9999px;
+      border: 1px solid rgba(255,255,255,0.08); backdrop-filter: blur(16px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+    }
+    [data-theme="light"] .variant-bar {
+      background: rgba(255,255,255,0.85); border: 1px solid rgba(0,0,0,0.08);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+    }
+    .variant-btn {
+      background: transparent; border: none; padding: 6px 14px; border-radius: 9999px;
+      font-size: 11px; font-weight: 500; color: var(--text); cursor: pointer; font-family: inherit;
+      transition: all 0.25s var(--ease);
+    }
+    .variant-btn.active { background: #27272a; color: #f4f4f5; }
+    [data-theme="light"] .variant-btn.active { background: #09090b; color: #fff; }
+  </style>
+</head>
+<body>
+
+  <div id="waveLayer"></div>
+  <div id="lampGlow"></div>
+
+  <!-- VARIANT A: 3D Dial (Default) -->
+  <div class="variant-dial" id="dialWrap">
+    <button class="tactile-btn" id="dialToggle" aria-label="Toggle theme">
+      <div class="icon-stage">
+        <svg class="solar-rays" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <line x1="12" y1="1" x2="12" y2="3.5"></line><line x1="12" y1="20.5" x2="12" y2="23"></line>
+          <line x1="4.22" y1="4.22" x2="5.99" y2="5.99"></line><line x1="18.01" y1="18.01" x2="19.78" y2="19.78"></line>
+          <line x1="1" y1="12" x2="3.5" y2="12"></line><line x1="20.5" y1="12" x2="23" y2="12"></line>
+          <line x1="4.22" y1="19.78" x2="5.99" y2="18.01"></line><line x1="18.01" y1="5.99" x2="19.78" y2="4.22"></line>
+        </svg>
+        <div class="celestial-core"><div class="lunar-shadow"></div></div>
+      </div>
+    </button>
+  </div>
+
+  <!-- VARIANT B: Lamp Center Floating Icon -->
+  <div class="variant-lamp-center" id="lampCenter">
+    <div class="icon-stage" id="lampIconStage">
+      <svg class="solar-rays" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+        <line x1="12" y1="1" x2="12" y2="3.5"></line><line x1="12" y1="20.5" x2="12" y2="23"></line>
+        <line x1="4.22" y1="4.22" x2="5.99" y2="5.99"></line><line x1="18.01" y1="18.01" x2="19.78" y2="19.78"></line>
+        <line x1="1" y1="12" x2="3.5" y2="12"></line><line x1="20.5" y1="12" x2="23" y2="12"></line>
+        <line x1="4.22" y1="19.78" x2="5.99" y2="18.01"></line><line x1="18.01" y1="5.99" x2="19.78" y2="4.22"></line>
+      </svg>
+      <div class="celestial-core"><div class="lunar-shadow"></div></div>
+    </div>
+  </div>
+
+  <canvas id="pullCanvas"></canvas>
+
+  <div class="variant-bar">
+    <button class="variant-btn active" id="btnDial">3D Push Dial (Default)</button>
+    <button class="variant-btn" id="btnLamp">Lamp Pull Cord</button>
+  </div>
+
+  <script>
+    const html = document.documentElement;
+    const waveLayer = document.getElementById('waveLayer');
+    const dialToggle = document.getElementById('dialToggle');
+    const dialWrap = document.getElementById('dialWrap');
+    const lampCenter = document.getElementById('lampCenter');
+    const lampIconStage = document.getElementById('lampIconStage');
+    const canvas = document.getElementById('pullCanvas');
+    const ctx = canvas.getContext('2d');
+    const btnDial = document.getElementById('btnDial');
+    const btnLamp = document.getElementById('btnLamp');
+
+    let activeVariant = 'dial';
+
+    // Preloaded Audio Objects
+    const sndRelease = new Audio('./lamp_release.wav');
+    const sndEngage = new Audio('./lamp_engage.wav');
+    sndRelease.volume = 0.85;
+    sndEngage.volume = 0.65;
+
+    function playSnd(audio) {
+      try {
+        const clone = audio.cloneNode();
+        clone.volume = audio.volume;
+        clone.play().catch(() => {});
+      } catch(e) {}
+    }
+
+    // Switch Variants (Silent Tab Switching)
+    btnDial.onclick = () => {
+      activeVariant = 'dial'; btnDial.classList.add('active'); btnLamp.classList.remove('active');
+      dialWrap.style.display = 'flex'; lampCenter.style.display = 'none'; canvas.style.display = 'none';
+    };
+    btnLamp.onclick = () => {
+      activeVariant = 'lamp'; btnLamp.classList.add('active'); btnDial.classList.remove('active');
+      dialWrap.style.display = 'none'; lampCenter.style.display = 'flex'; canvas.style.display = 'block'; resize();
+    };
+
+    // 1400ms Wave for 3D Dial
+    let activeAnim = null;
+    dialToggle.onclick = () => {
+      const next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      const r = dialToggle.getBoundingClientRect();
+      const ox = r.left + r.width / 2, oy = r.top + r.height / 2;
+      const maxR = Math.hypot(Math.max(ox, innerWidth - ox), Math.max(oy, innerHeight - oy));
+
+      if (activeAnim) activeAnim.cancel();
+      waveLayer.style.background = next === 'light' ? '#f4f4f6' : '#09090b';
+      waveLayer.style.opacity = '1';
+      html.setAttribute('data-theme', next);
+
+      activeAnim = waveLayer.animate([
+        { clipPath: `circle(0px at ${ox}px ${oy}px)` },
+        { clipPath: `circle(${maxR}px at ${ox}px ${oy}px)` }
+      ], { duration: 1400, easing: 'cubic-bezier(0.16, 1, 0.3, 1)', fill: 'forwards' });
+      activeAnim.onfinish = () => { waveLayer.style.opacity = '0'; activeAnim = null; };
+
+      playSnd(sndRelease);
+      if (navigator.vibrate) navigator.vibrate(16);
+    };
+
+    // Lamp Cord Verlet Physics
+    let w = innerWidth, h = innerHeight, dpr = Math.min(devicePixelRatio || 1, 2);
+    function resize() {
+      w = innerWidth; h = innerHeight; dpr = Math.min(devicePixelRatio || 1, 2);
+      canvas.width = w * dpr; canvas.height = h * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+    window.onresize = resize; resize();
+
+    const segs = 28, segLen = 9, restL = segs * segLen;
+    const pts = Array.from({ length: segs + 1 }, (_, i) => ({
+      x: w - 80, y: (i / segs) * restL, oldX: w - 80, oldY: (i / segs) * restL, pinned: i === 0
+    }));
+    let isDrag = false, tx = w - 80, ty = restL, isPrimed = false, spark = 0;
+
+    function toggleLamp() {
+      const next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      html.setAttribute('data-theme', next);
+      lampIconStage.style.transform = 'scale(0.9)';
+      setTimeout(() => { lampIconStage.style.transform = ''; }, 220);
+      playSnd(sndRelease);
+      if (navigator.vibrate) navigator.vibrate([8, 12, 10]);
+    }
+
+    canvas.onpointerdown = e => {
+      if (activeVariant !== 'lamp') return;
+      const tip = pts[pts.length - 1];
+      if (Math.hypot(e.clientX - tip.x, e.clientY - tip.y) < 70) {
+        isDrag = true; isPrimed = false; tx = e.clientX; ty = e.clientY;
+        if (e.pointerId && canvas.setPointerCapture) canvas.setPointerCapture(e.pointerId);
+        window.onpointermove = onMove; window.onpointerup = onUp;
+      }
+    };
+    function onMove(e) {
+      if (!isDrag) return;
+      tx = (w - 80) + (e.clientX - (w - 80)) * 0.85;
+      const dy = e.clientY - restL;
+      ty = dy > 0 ? restL + 190 * Math.tanh(dy / 240) : restL;
+      if (ty - restL >= 45) {
+        if (!isPrimed) {
+          isPrimed = true; spark = 1;
+          playSnd(sndEngage);
+          lampIconStage.style.transform = 'scale(1.14)';
+          if (navigator.vibrate) navigator.vibrate(10);
+        }
+      } else if (isPrimed) {
+        isPrimed = false;
+        lampIconStage.style.transform = '';
+      }
+    }
+    function onUp() {
+      if (!isDrag) return;
+      isDrag = false; lampIconStage.style.transform = '';
+      window.onpointermove = null; window.onpointerup = null;
+      if (isPrimed) { toggleLamp(); isPrimed = false; }
+    }
+
+    function loop() {
+      if (activeVariant === 'lamp') {
+        pts[0].x = w - 80; pts[0].y = 0;
+        pts.forEach((p, i) => {
+          if (p.pinned) return;
+          if (i === pts.length - 1 && isDrag) { p.x = tx; p.y = ty; p.oldX = tx; p.oldY = ty; return; }
+          const vx = (p.x - p.oldX) * 0.95, vy = (p.y - p.oldY) * 0.95;
+          p.oldX = p.x; p.oldY = p.y; p.x += vx; p.y += vy + 0.45;
+        });
+        for (let iter = 0; iter < 12; iter++) {
+          for (let i = 0; i < pts.length - 1; i++) {
+            const p1 = pts[i], p2 = pts[i + 1], dx = p2.x - p1.x, dy = p2.y - p1.y, dist = Math.hypot(dx, dy);
+            const diff = (dist - segLen) / (dist || 1);
+            if (!p1.pinned) { p1.x += dx * 0.5 * diff; p1.y += dy * 0.5 * diff; }
+            if (!p2.pinned && !(i + 1 === pts.length - 1 && isDrag)) { p2.x -= dx * 0.5 * diff; p2.y -= dy * 0.5 * diff; }
+          }
+        }
+        if (spark > 0) spark *= 0.88;
+
+        // Render 3D Hardware
+        ctx.clearRect(0, 0, w, h);
+        const isL = html.getAttribute('data-theme') === 'light';
+
+        // 1. Connecting Wire Core
+        ctx.beginPath(); ctx.moveTo(pts[0].x, pts[0].y);
+        for (let i = 1; i < pts.length - 1; i++) ctx.quadraticCurveTo(pts[i].x, pts[i].y, (pts[i].x + pts[i + 1].x)/2, (pts[i].y + pts[i + 1].y)/2);
+        ctx.strokeStyle = isL ? '#71717a' : '#3f3f46'; ctx.lineWidth = 1.2; ctx.stroke();
+
+        // 2. 3D Metallic Beads with Specular Glints
+        for (let i = 1; i < pts.length - 1; i++) {
+          const p = pts[i];
+          const bg = ctx.createRadialGradient(p.x - 0.7, p.y - 0.7, 0.4, p.x, p.y, 2.4);
+          if (isL) {
+            bg.addColorStop(0, '#ffffff'); bg.addColorStop(0.5, '#d4d4d8'); bg.addColorStop(1, '#8e8e98');
+          } else {
+            bg.addColorStop(0, '#a1a1aa'); bg.addColorStop(0.5, '#404048'); bg.addColorStop(1, '#18181b');
+          }
+          ctx.beginPath(); ctx.arc(p.x, p.y, 2.4, 0, Math.PI * 2); ctx.fillStyle = bg; ctx.fill();
+          ctx.beginPath(); ctx.arc(p.x - 0.8, p.y - 0.8, 0.7, 0, Math.PI * 2); ctx.fillStyle = isL ? '#ffffff' : 'rgba(255,255,255,0.6)'; ctx.fill();
+        }
+
+        // 3. Realistic Machined Bell Fob with Cylindrical Metallic PBR Shading
+        const tip = pts[pts.length - 1], prev = pts[pts.length - 2];
+        const angle = Math.atan2(tip.y - prev.y, tip.x - prev.x) - Math.PI / 2;
+
+        ctx.save();
+        ctx.translate(tip.x, tip.y);
+        ctx.rotate(angle);
+
+        const topW = 4.5, baseW = 12, fobH = 38;
+
+        // Cast Drop Shadow
+        ctx.shadowColor = isL ? 'rgba(0, 0, 0, 0.18)' : 'rgba(0, 0, 0, 0.8)';
+        ctx.shadowBlur = 14;
+        ctx.shadowOffsetY = 6;
+
+        // Collar Ring
+        ctx.beginPath(); ctx.roundRect(-topW - 1, -4, (topW + 1) * 2, 4.5, 2);
+        ctx.fillStyle = isL ? '#d4d4d8' : '#27272a'; ctx.fill();
+
+        // Bell Body
+        ctx.beginPath();
+        ctx.moveTo(-topW, 0);
+        ctx.bezierCurveTo(-topW - 1, 10, -baseW - 1.5, 26, -baseW, fobH - 4);
+        ctx.quadraticCurveTo(-baseW, fobH, 0, fobH);
+        ctx.quadraticCurveTo(baseW, fobH, baseW, fobH - 4);
+        ctx.bezierCurveTo(baseW + 1.5, 26, topW + 1, 10, topW, 0);
+        ctx.closePath();
+
+        const grad = ctx.createLinearGradient(-baseW, 0, baseW, 0);
+        if (isL) {
+          grad.addColorStop(0, '#9e9ea8');
+          grad.addColorStop(0.2, '#dedee6');
+          grad.addColorStop(0.5, '#ffffff');
+          grad.addColorStop(0.8, '#d4d4dc');
+          grad.addColorStop(1, '#92929e');
+        } else {
+          grad.addColorStop(0, '#141418');
+          grad.addColorStop(0.25, '#32323e');
+          grad.addColorStop(0.5, '#4a4a58');
+          grad.addColorStop(0.75, '#22222a');
+          grad.addColorStop(1, '#0c0c0f');
+        }
+        ctx.fillStyle = grad;
+        ctx.fill();
+
+        ctx.shadowColor = 'transparent';
+
+        // Knurled Rings
+        ctx.strokeStyle = isL ? 'rgba(0, 0, 0, 0.15)' : 'rgba(255, 255, 255, 0.18)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(-topW - 1, 9); ctx.lineTo(topW + 1, 9);
+        ctx.moveTo(-topW - 2, 14); ctx.lineTo(topW + 2, 14);
+        ctx.moveTo(-baseW + 2, fobH - 9); ctx.lineTo(baseW - 2, fobH - 9);
+        ctx.stroke();
+
+        // Specular Glint Rib
+        ctx.strokeStyle = isL ? 'rgba(255, 255, 255, 0.95)' : 'rgba(255, 255, 255, 0.4)';
+        ctx.beginPath(); ctx.moveTo(-0.5, 1); ctx.lineTo(-1.5, fobH - 4); ctx.stroke();
+
+        // Engagement Click Spark
+        if (spark > 0.05) {
+          ctx.beginPath(); ctx.arc(0, fobH / 2, baseW * 1.4 * spark, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(254, 240, 138, ${spark * 0.55})`; ctx.fill();
+        }
+
+        ctx.restore();
+      }
+      requestAnimationFrame(loop);
+    }
+    loop();
+  </script>
+</body>
+</html>

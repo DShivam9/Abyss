@@ -510,6 +510,34 @@ export const COMPONENT_DETAILS: Record<string, ComponentDetail> = {
       { type: "slider", key: "dominoLean", label: "Domino Inertia Lean", default: 1.0, min: 0.5, max: 2.5, step: 0.1 },
       { type: "slider", key: "ambientDriftSpeed", label: "Conveyor Drift Speed", default: 0.016, min: 0.0, max: 0.05, step: 0.002 }
     ]
+  },
+  "theme-toggle-redesign": {
+    id: "77",
+    label: "Theme Toggle Redesign",
+    filename: "components/theme-toggle-redesign/hero.webp",
+    desc: "An architectural redesign of light and dark mode toggling. Features a 3D tactile dial plunge button with 1400ms unhurried circular expanding screen wave immersion and a physical lamp pull cord with 28-bead Verlet physics and volumetric top-down room floodlight illumination.",
+    slug: "theme-toggle-redesign",
+    category: "interaction",
+    subtype: "toggles",
+    tags: ["Light Dark Mode", "Redesign", "3D Push Dial", "Lamp Pull Cord", "Verlet Physics", "Acoustic Audio", "Haptic Touch"],
+    controls: [
+      {
+        type: "select",
+        key: "variant",
+        label: "Variant",
+        default: "dial",
+        options: [
+          { label: "3D Dial", value: "dial" },
+          { label: "Lamp Cord", value: "lamp" }
+        ]
+      },
+      {
+        type: "toggle",
+        key: "enableAudio",
+        label: "Acoustic SFX",
+        default: true
+      }
+    ]
   }
 };
 

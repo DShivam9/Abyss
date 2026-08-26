@@ -28,6 +28,21 @@ export interface CommitEntry {
 
 export const CHANGELOG_DATA: CommitEntry[] = [
   {
+    id: "commit-24",
+    date: "2026-08-26",
+    displayDate: "Aug 26, 2026 • 20:45 IST",
+    tags: ["MAJOR", "ADDITION"],
+    title: "Added Theme Toggle Redesign",
+    summary: "Introduced an architectural redesign for light and dark mode toggles with physical 3D dial and lamp cord variants.",
+    affectedSlugs: ["theme-toggle-redesign"],
+    items: [
+      "Tactile 3D Push Dial with mechanical plunge and circular expanding wave transition",
+      "Interactive Lamp Pull Cord with realistic beaded chain physics and acoustic snaps",
+      "Selectable variants in the parameters drawer for instant customization",
+      "Added dedicated Recreation chapter on the Collection page",
+    ],
+  },
+  {
     id: "commit-23",
     date: "2026-08-26",
     displayDate: "Aug 26, 2026 • 14:55 IST",

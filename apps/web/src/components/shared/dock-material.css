@@ -110,6 +110,14 @@
   text-transform: uppercase;
 }
 
+.headline-s6 {
+  font-family: var(--font-section);
+  font-size: 38px;
+  color: #fbbf24;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
 /* Dock Navbar Styles */
 .dock-wrapper {
   position: fixed;
@@ -1215,7 +1223,7 @@ body.ruler-drawer-open .ruler-drawer {
 
 .specimen-rail {
   position: fixed;
-  bottom: 24px;
+  bottom: 12px;
   left: 50vw;
   transform: translateX(-50%);
   z-index: 200;

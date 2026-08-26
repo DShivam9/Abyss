@@ -1,7 +1,7 @@
 export interface VibeSection {
   id: string;
   title: string;
-  headlineClass: "headline-s1" | "headline-s2" | "headline-s3" | "headline-s4" | "headline-s5";
+  headlineClass: "headline-s1" | "headline-s2" | "headline-s3" | "headline-s4" | "headline-s5" | "headline-s6";
   count: number;
   slugs: string[];
 }
@@ -55,6 +55,15 @@ export const VIBE_SECTIONS: VibeSection[] = [
       "gimbal-stream",
       "3d-shatter-sphere",
       "tracklist-gallery",
+    ],
+  },
+  {
+    id: "recreation",
+    title: "Recreation",
+    headlineClass: "headline-s6", // radiant solar gold
+    count: 1,
+    slugs: [
+      "theme-toggle-redesign",
     ],
   },
   {

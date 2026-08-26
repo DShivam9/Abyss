@@ -38,6 +38,7 @@ export * from "./components/abyss-cursor-fall";
 export * from "./components/hover-media-stream";
 export * from "./components/gimbal-stream";
 export * from "./components/cascade-gallery";
+export * from "./components/theme-toggle-redesign";
 
 
 
