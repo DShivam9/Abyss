@@ -28,6 +28,21 @@ export interface CommitEntry {
 
 export const CHANGELOG_DATA: CommitEntry[] = [
   {
+    id: "commit-23",
+    date: "2026-08-26",
+    displayDate: "Aug 26, 2026 • 14:55 IST",
+    tags: ["MAJOR", "ADDITION"],
+    title: "Added Cascade Gallery",
+    summary: "Added Cascade Gallery, an editorial diagonal stream showcase with continuous conveyor motion and interactive photo inspection.",
+    affectedSlugs: ["cascade-gallery"],
+    items: [
+      "Diagonal conveyor stream with continuous scrolling and momentum physics",
+      "Click any photograph to expand into focused inspection with paired editorial captions",
+      "Interactive cursor pill with fluid tilting and live context labels",
+      "Real-time controls for card density, hover tab pull, and domino inertia lean",
+    ],
+  },
+  {
     id: "commit-22",
     date: "2026-08-24",
     displayDate: "Aug 24, 2026 • 21:15 IST",

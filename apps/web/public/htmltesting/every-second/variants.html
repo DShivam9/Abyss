@@ -1,0 +1,1075 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cascade Gallery — 5 Radical Entrance Choreographies</title>
+  <link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=switzer@400,500,600,700&f[]=ranade@600,700&display=swap">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Allura&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=Playfair+Display:ital,wght@0,400;0,600;1,400;1,600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+  <style>
+    @font-face {
+      font-family: 'Allura';
+      src: url('/fonts/allura/Allura-Regular.ttf') format('truetype');
+      font-weight: normal;
+      font-style: normal;
+    }
+
+    @font-face {
+      font-family: 'SaintRegus';
+      src: url('/fonts/saint-regus/sonar-hubermann-saintregus-semibold.otf') format('opentype');
+      font-weight: 600;
+    }
+
+    :root {
+      --font-body: 'Switzer', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: var(--font-body);
+      overflow: hidden;
+      width: 100vw;
+      height: 100vh;
+      --halo-r: 42;
+      --halo-g: 75;
+      --halo-b: 160;
+      --halo-opacity: 0.085;
+      background: linear-gradient(rgba(0, 0, 0, 0.025) 1px, transparent 1px),
+                  linear-gradient(90deg, rgba(0, 0, 0, 0.025) 1px, transparent 1px),
+                  radial-gradient(circle at 48% 50%, rgba(var(--halo-r), var(--halo-g), var(--halo-b), var(--halo-opacity)) 0%, rgba(var(--halo-r), var(--halo-g), var(--halo-b), 0.02) 42%, transparent 68%),
+                  radial-gradient(circle at 86% 86%, rgba(0, 0, 0, 0.048) 0%, rgba(0, 0, 0, 0.015) 45%, transparent 74%),
+                  radial-gradient(circle at 14% 14%, rgba(255, 255, 255, 0.65) 0%, transparent 60%),
+                  #f4f1ea;
+      background-size: 32px 32px, 32px 32px, 100% 100%, 100% 100%, 100% 100%, 100% 100%;
+      color: #111113;
+    }
+
+    #webgl-canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
+      outline: none;
+      z-index: 3;
+    }
+
+    .hud {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 20;
+      padding: 24px 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      opacity: 1;
+    }
+
+    .date-time {
+      display: flex;
+      flex-direction: column;
+      font-size: 12px;
+      line-height: 1.35;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      font-variant-numeric: tabular-nums;
+      text-transform: uppercase;
+      color: #1a1a1a;
+    }
+
+    .date-time .time-val {
+      font-family: var(--font-mono);
+      font-size: 13.5px;
+      font-weight: 500;
+      letter-spacing: 0.10em;
+      margin-top: 2px;
+      opacity: 0.75;
+    }
+
+    .controls-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      pointer-events: auto;
+    }
+
+    .anim-switcher {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px;
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(20px) saturate(180%);
+      -webkit-backdrop-filter: blur(20px) saturate(180%);
+      border: 1px solid rgba(0, 0, 0, 0.08);
+      border-radius: 999px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+      gap: 3px;
+    }
+
+    .anim-btn {
+      appearance: none;
+      border: none;
+      background: transparent;
+      padding: 7px 14px;
+      border-radius: 999px;
+      font-family: var(--font-body);
+      font-size: 11.5px;
+      font-weight: 500;
+      letter-spacing: 0.02em;
+      color: #555555;
+      cursor: pointer;
+      transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+      user-select: none;
+      white-space: nowrap;
+    }
+
+    .anim-btn:hover {
+      color: #111111;
+      background: rgba(0, 0, 0, 0.04);
+    }
+
+    .anim-btn.active {
+      color: #111111;
+      background: #ffffff;
+      font-weight: 600;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+
+    .retrigger-btn {
+      appearance: none;
+      border: 1px solid rgba(0, 0, 0, 0.08);
+      background: #ffffff;
+      color: #111111;
+      padding: 8px 18px;
+      border-radius: 999px;
+      font-family: var(--font-body);
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+      transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .retrigger-btn:hover {
+      transform: scale(1.03);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.09);
+    }
+
+    .retrigger-btn:active {
+      transform: scale(0.97);
+    }
+
+    .corner-watermark {
+      position: fixed;
+      bottom: -1vw;
+      right: 3.2vw;
+      font-family: 'SaintRegus', 'Outfit', sans-serif;
+      font-size: clamp(140px, 17.5vw, 280px);
+      font-weight: 400;
+      color: rgba(18, 18, 18, 0.12);
+      line-height: 1;
+      letter-spacing: -0.06em;
+      pointer-events: none;
+      z-index: 1;
+      user-select: none;
+      display: flex;
+      align-items: baseline;
+      height: 0.84em;
+      overflow: hidden;
+      opacity: 0;
+      transform: translateY(40px);
+    }
+
+    .ticker-col {
+      display: inline-block;
+      height: 1em;
+      line-height: 1em;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .ticker-strip {
+      display: flex;
+      flex-direction: column;
+      transform: translateY(0em);
+      transition: transform 0.55s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .ticker-strip span {
+      display: block;
+      height: 1em;
+      line-height: 1em;
+      text-align: center;
+    }
+
+    #backdrop-phrase-wrapper {
+      position: fixed;
+      top: 48%;
+      left: 0;
+      width: 100vw;
+      transform: translateY(-50%);
+      z-index: 2;
+      pointer-events: none;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 4.5vw;
+      box-sizing: border-box;
+    }
+
+    .phrase-flank {
+      font-family: 'Allura', cursive;
+      font-size: clamp(34px, 4.2vw, 68px);
+      color: rgba(18, 18, 18, 0.90);
+      line-height: 1.15;
+      max-width: 25vw;
+      filter: blur(20px);
+      opacity: 0;
+      user-select: none;
+    }
+
+    #phrase-left {
+      text-align: right;
+      transform: translateX(-24px);
+    }
+
+    #phrase-right {
+      text-align: left;
+      transform: translateX(24px);
+    }
+
+    .anim-banner {
+      position: fixed;
+      bottom: 28px;
+      left: 32px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: rgba(18, 18, 18, 0.65);
+      z-index: 10;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="hud">
+    <div class="date-time">
+      <div id="date-display">AUG 25, 2026</div>
+      <div class="time-val" id="clock">16:30:00</div>
+    </div>
+
+    <!-- 5 Distinct Entrance Choreographies -->
+    <div class="controls-wrapper">
+      <div class="anim-switcher">
+        <button class="anim-btn active" data-anim="0">1: Domino Ripple</button>
+        <button class="anim-btn" data-anim="1">2: Slit-Scan Beam</button>
+        <button class="anim-btn" data-anim="2">3: Darkroom Sweep</button>
+        <button class="anim-btn" data-anim="3">4: Thermal Emulsion</button>
+        <button class="anim-btn" data-anim="4">5: Monograph Bifold</button>
+      </div>
+      <button class="retrigger-btn" id="retrigger-btn">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/>
+        </svg>
+        Replay
+      </button>
+    </div>
+  </div>
+
+  <div class="anim-banner" id="anim-banner">Active Sequence: 01 / Domino Ripple</div>
+
+  <div class="corner-watermark">
+    <div class="ticker-col" id="col-tens">
+      <div class="ticker-strip" id="strip-tens">
+        <span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span>
+      </div>
+    </div>
+    <div class="ticker-col" id="col-units">
+      <div class="ticker-strip" id="strip-units" style="transform: translateY(-1em);">
+        <span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span>
+      </div>
+    </div>
+  </div>
+
+  <div id="backdrop-phrase-wrapper">
+    <div id="phrase-left" class="phrase-flank">
+      In the silent strike,
+    </div>
+    <div id="phrase-right" class="phrase-flank">
+      the spirit remains unyielding.
+    </div>
+  </div>
+
+  <canvas id="webgl-canvas"></canvas>
+
+  <script>
+    const IMAGES = Array.from({ length: 24 }, (_, i) => 
+      `/images/components/cascade-gallery/photo-${String(i + 1).padStart(2, '0')}.webp`
+    );
+
+    const canvas = document.getElementById("webgl-canvas");
+    const renderer = new THREE.WebGLRenderer({
+      canvas,
+      antialias: true,
+      alpha: true,
+      powerPreference: "high-performance",
+    });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setSize(window.innerWidth, window.innerHeight);
+
+    const scene = new THREE.Scene();
+
+    const camera = new THREE.PerspectiveCamera(17, window.innerWidth / window.innerHeight, 0.1, 200);
+    camera.position.set(0, 0, 42);
+
+    const cardWidth = 3.0;
+    const cardHeight = 1.6875;
+    const cardGeo = new THREE.PlaneGeometry(cardWidth, cardHeight);
+    cardGeo.translate(0, cardHeight / 2, 0);
+
+    const proxyGeo = new THREE.PlaneGeometry(cardWidth * 1.05, cardHeight * 1.15);
+    proxyGeo.translate(0, cardHeight / 2, 0);
+    const hitProxies = [];
+
+    const dirX = 1.62;
+    const dirY = 0.90;
+    const dirZ = -0.05;
+    const stepDist = 0.22;
+    const totalCards = 96;
+    const cards = [];
+
+    let currentAnimPreset = 0;
+    let masterEntranceTL = null;
+
+    const animNames = [
+      "01 / Domino Ripple (Elastic Tilt Wave)",
+      "02 / Slit-Scan Beam (Laser Width Expansion)",
+      "03 / Darkroom Sweep (Luminescent Exposure Wave)",
+      "04 / Thermal Emulsion (Chemical Crystallization)",
+      "05 / Monograph Bifold (Lookbook Spindle Unfold)"
+    ];
+
+    const glassVertexShader = `
+      varying vec2 vUv;
+      varying vec3 vNormal;
+      varying vec3 vViewPosition;
+
+      void main() {
+        vUv = uv;
+        vNormal = normalize(normalMatrix * normal);
+        vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+        vViewPosition = -mvPosition.xyz;
+        gl_Position = projectionMatrix * mvPosition;
+      }
+    `;
+
+    const glassFragmentShader = `
+      uniform sampler2D uTexture;
+      uniform float uBlur;
+      uniform float uAspect;
+      uniform float uDepthAlpha;
+      uniform float uIntroFade;
+      uniform float uExposureGlow;
+      uniform float uThermalNeg; // Chromatic thermal negative blend
+      varying vec2 vUv;
+      varying vec3 vNormal;
+      varying vec3 vViewPosition;
+
+      float roundedBoxSDF(vec2 p, vec2 b, float r) {
+        vec2 q = abs(p) - b + r;
+        return min(max(q.x, q.y), 0.0) + length(max(q, 0.0)) - r;
+      }
+
+      void main() {
+        vec2 p = (vUv - 0.5) * vec2(uAspect, 1.0);
+        vec2 size = vec2(uAspect * 0.5, 0.5);
+        float radius = 0.0;
+
+        float dist = roundedBoxSDF(p, size, radius);
+        float edgeAlpha = smoothstep(0.0015, -0.0015, dist);
+        if (edgeAlpha <= 0.0) discard;
+
+        vec2 uv = vUv;
+        float blur = uBlur * 0.0012;
+        vec4 col = texture2D(uTexture, uv);
+        if (blur > 0.0001) {
+          col = texture2D(uTexture, uv) * 0.40
+              + texture2D(uTexture, uv + vec2(blur, blur)) * 0.15
+              + texture2D(uTexture, uv + vec2(-blur, blur)) * 0.15
+              + texture2D(uTexture, uv + vec2(blur, -blur)) * 0.15
+              + texture2D(uTexture, uv + vec2(-blur, -blur)) * 0.15;
+        }
+
+        vec3 viewDir = normalize(vViewPosition);
+        float fresnel = pow(1.0 - max(dot(viewDir, vNormal), 0.0), 3.0) * 0.06;
+
+        vec3 finalColor = col.rgb;
+
+        // Thermal Chemical Negative Inversion Mode
+        if (uThermalNeg > 0.001) {
+          vec3 inverted = vec3(1.0) - finalColor;
+          vec3 thermal = vec3(inverted.r * 0.2, inverted.g * 0.8, inverted.b * 1.2);
+          finalColor = mix(finalColor, thermal, uThermalNeg);
+        }
+
+        // Darkroom Exposure Glow Mode
+        if (uExposureGlow > 0.001) {
+          finalColor = mix(finalColor, vec3(1.0, 0.98, 0.94), uExposureGlow);
+        }
+
+        finalColor += vec3(fresnel);
+        float alpha = edgeAlpha * 0.98 * uDepthAlpha * uIntroFade;
+
+        gl_FragColor = vec4(finalColor, alpha);
+      }
+    `;
+
+    function createCard(tex) {
+      const mat = new THREE.ShaderMaterial({
+        vertexShader: glassVertexShader,
+        fragmentShader: glassFragmentShader,
+        uniforms: {
+          uTexture: { value: tex },
+          uBlur: { value: 0.0 },
+          uAspect: { value: cardWidth / cardHeight },
+          uDepthAlpha: { value: 1.0 },
+          uIntroFade: { value: 1.0 },
+          uExposureGlow: { value: 0.0 },
+          uThermalNeg: { value: 0.0 },
+        },
+        transparent: true,
+        side: THREE.DoubleSide,
+        depthTest: true,
+        depthWrite: true,
+      });
+
+      const mesh = new THREE.Mesh(cardGeo, mat);
+      const group = new THREE.Group();
+      group.rotation.set(0.14, -0.84, -0.15);
+      group.add(mesh);
+
+      scene.add(group);
+      return { group, mesh, mat };
+    }
+
+    const globalIntro = {
+      blur: 0.0,
+      fade: 1.0,
+    };
+
+    function triggerEntrance(presetIndex) {
+      if (masterEntranceTL) masterEntranceTL.kill();
+      masterEntranceTL = gsap.timeline();
+
+      currentAnimPreset = presetIndex;
+      document.getElementById("anim-banner").textContent = `Active Sequence: ${animNames[presetIndex]}`;
+
+      gsap.set(".corner-watermark", { opacity: 0, y: 50 });
+
+      if (isHeroActive) closeHero();
+
+      targetProgress = 0;
+      currentProgress = 0;
+
+      if (presetIndex === 0) {
+        // --- 1. DOMINO RIPPLE (Elastic Tilt Wave) ---
+        cards.forEach((card, idx) => {
+          card.introPitch = 1.35;
+          card.introScaleX = 1.0;
+          card.introRotY = 0.0;
+          card.introFade = 0.0;
+          card.introGlow = 0.0;
+          card.introThermal = 0.0;
+
+          const delay = 0.08 + (idx % 24) * 0.038;
+          masterEntranceTL.to(card, {
+            introPitch: 0.0,
+            introFade: 1.0,
+            duration: 1.25,
+            ease: "back.out(2.2)",
+          }, delay);
+        });
+
+        masterEntranceTL.fromTo(globalIntro, { blur: 4.0 }, { blur: 0.0, duration: 1.6, ease: "power2.out" }, 0);
+        masterEntranceTL.fromTo(camera.position, { z: 45, y: -1.0 }, { z: 42, y: 0.0, duration: 1.8, ease: "power3.out" }, 0);
+
+      } else if (presetIndex === 1) {
+        // --- 2. SLIT-SCAN BEAM (Hairline Laser Width Expansion) ---
+        cards.forEach((card, idx) => {
+          card.introPitch = 0.0;
+          card.introScaleX = 0.002; // hairline vertical filament
+          card.introRotY = 0.0;
+          card.introFade = 0.0;
+          card.introGlow = 0.85;    // intense luminous laser edge
+          card.introThermal = 0.0;
+
+          const delay = 0.06 + (idx % 24) * 0.040;
+          masterEntranceTL.to(card, {
+            introScaleX: 1.0,
+            introFade: 1.0,
+            introGlow: 0.0,
+            duration: 1.5,
+            ease: "expo.out",
+          }, delay);
+        });
+
+        masterEntranceTL.fromTo(globalIntro, { blur: 6.0 }, { blur: 0.0, duration: 2.0, ease: "power2.out" }, 0);
+        masterEntranceTL.fromTo(camera.position, { z: 40 }, { z: 42, duration: 2.2, ease: "power3.out" }, 0);
+
+      } else if (presetIndex === 2) {
+        // --- 3. DARKROOM SWEEP (Luminescent Exposure Wave) ---
+        cards.forEach((card, idx) => {
+          card.introPitch = 0.0;
+          card.introScaleX = 1.0;
+          card.introRotY = 0.0;
+          card.introFade = 1.0;
+          card.introGlow = 1.0;     // pure white photo paper
+          card.introThermal = 0.0;
+
+          const delay = 0.05 + (idx % 24) * 0.048;
+          masterEntranceTL.to(card, {
+            introGlow: 0.0,
+            duration: 1.45,
+            ease: "power2.out",
+          }, delay);
+        });
+
+        masterEntranceTL.fromTo(globalIntro, { blur: 5.0 }, { blur: 0.0, duration: 1.8, ease: "power2.out" }, 0);
+
+      } else if (presetIndex === 3) {
+        // --- 4. THERMAL EMULSION (Chemical Negative Crystallization) ---
+        cards.forEach((card, idx) => {
+          card.introPitch = 0.15;
+          card.introScaleX = 1.0;
+          card.introRotY = 0.0;
+          card.introFade = 0.0;
+          card.introGlow = 0.0;
+          card.introThermal = 1.0;  // starts as glowing inverted thermal emulsion
+
+          const delay = 0.06 + (idx % 24) * 0.045;
+          masterEntranceTL.to(card, {
+            introThermal: 0.0,      // crystallizes into true photo
+            introPitch: 0.0,
+            introFade: 1.0,
+            duration: 1.85,
+            ease: "power2.inOut",
+          }, delay);
+        });
+
+        masterEntranceTL.fromTo(globalIntro, { blur: 8.0 }, { blur: 0.0, duration: 2.4, ease: "power3.out" }, 0);
+        masterEntranceTL.fromTo(camera.position, { z: 47 }, { z: 42, duration: 2.4, ease: "power3.out" }, 0);
+
+      } else if (presetIndex === 4) {
+        // --- 5. MONOGRAPH BIFOLD (3D Lookbook Spindle Unfold) ---
+        cards.forEach((card, idx) => {
+          card.introPitch = 0.0;
+          card.introScaleX = 0.15;
+          card.introRotY = Math.PI * 0.48; // folded tightly like a book page
+          card.introFade = 0.0;
+          card.introGlow = 0.0;
+          card.introThermal = 0.0;
+
+          const delay = 0.08 + (idx % 24) * 0.042;
+          masterEntranceTL.to(card, {
+            introRotY: 0.0,         // swings open
+            introScaleX: 1.0,
+            introFade: 1.0,
+            duration: 1.6,
+            ease: "power3.out",
+          }, delay);
+        });
+
+        masterEntranceTL.fromTo(globalIntro, { blur: 4.0 }, { blur: 0.0, duration: 1.8, ease: "power2.out" }, 0);
+        masterEntranceTL.fromTo(camera.position, { x: 3.0, z: 45 }, { x: 0.0, z: 42, duration: 2.2, ease: "power3.out" }, 0);
+      }
+
+      masterEntranceTL.to(".corner-watermark", { opacity: 1, y: 0, duration: 1.6, ease: "power3.out" }, 0.9);
+    }
+
+    function startApp(loadedTextures) {
+      for (let i = 0; i < totalCards; i++) {
+        const tex = loadedTextures[i % loadedTextures.length];
+        const cardObj = createCard(tex);
+        
+        const proxyMat = new THREE.MeshBasicMaterial({ visible: false });
+        const proxyMesh = new THREE.Mesh(proxyGeo, proxyMat);
+        proxyMesh.userData = { cardIndex: i };
+        cardObj.group.add(proxyMesh);
+        hitProxies.push(proxyMesh);
+
+        cards.push({
+          ...cardObj,
+          index: i,
+          localPitch: 0,
+          hoverLift: 0,
+          introPitch: 0,
+          introRotY: 0,
+          introScaleX: 1,
+          introFade: 1,
+          introGlow: 0,
+          introThermal: 0,
+        });
+      }
+
+      triggerEntrance(0);
+      animate();
+    }
+
+    const textureLoader = new THREE.TextureLoader();
+    function loadSingleTexture(src) {
+      return new Promise((resolve) => {
+        textureLoader.load(src, (tex) => {
+          tex.generateMipmaps = true;
+          tex.minFilter = THREE.LinearMipmapLinearFilter;
+          resolve(tex);
+        });
+      });
+    }
+
+    Promise.all(IMAGES.map(loadSingleTexture)).then((loadedTextures) => {
+      startApp(loadedTextures);
+    });
+
+    const raycaster = new THREE.Raycaster();
+    const mouse = new THREE.Vector2(-1000, -1000);
+    let selectedHoverIndex = null;
+
+    window.addEventListener("pointermove", (e) => {
+      mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+      mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+    });
+
+    window.addEventListener("pointerleave", () => {
+      mouse.set(-1000, -1000);
+      selectedHoverIndex = null;
+    });
+
+    let activeHeroIndex = null;
+    let isHeroActive = false;
+    let heroTimeline = null;
+
+    const heroAnim = {
+      gapOpening: 0,
+      liftY: 0,
+      flyProgress: 0,
+      expandScale: 0,
+    };
+
+    const photoCaptions = [
+      { left: "In the silent strike,", right: "the spirit remains unyielding." },
+      { left: "Every choice in motion,", right: "shapes what cannot be undone." },
+      { left: "At the edge of velocity,", right: "the world turns to stillness." },
+      { left: "Alone beneath the cosmos,", right: "witnessing the architecture of time." },
+      { left: "Cold stone and silent peaks,", right: "standing against the wind." },
+      { left: "When conviction is tested,", right: "only the resolve endures." },
+      { left: "Beneath the smoke and fire,", right: "victory needs no defense." },
+      { left: "In the arena of giants,", right: "fear gives way to defiance." },
+      { left: "The only rival that matters", right: "is the shadow within." },
+      { left: "Behind the visor,", right: "the mind locks into clarity." },
+      { left: "Quiet watchful eyes,", right: "seeing what shadows conceal." },
+      { left: "A spark of lighthearted mischief", right: "in a serious world." },
+      { left: "Unbroken in spirit,", right: "running wild across the crimson." },
+      { left: "A fleeting apparition,", right: "dissolving into memory." },
+      { left: "A sea of faces,", right: "each carrying a universe." },
+      { left: "Sacred geometry and shadow,", right: "poised in timeless grace." },
+      { left: "Under the midnight moon,", right: "embracing the dusk." },
+      { left: "Defined by the shadows,", right: "revealed by the edge of light." },
+      { left: "Energy distilled to momentum,", right: "transcending human limits." },
+      { left: "Sculpted in ambition,", right: "cast against the darkness." },
+      { left: "A flash of burning fury,", right: "roaring into legend." },
+      { left: "A battle of wills,", right: "suspended in the dust." },
+      { left: "Drawing a solitary line", right: "across the silent slope." },
+      { left: "Wings against the deep canopy,", right: "rising in unison." },
+    ];
+
+    const phraseLeftEl = document.getElementById("phrase-left");
+    const phraseRightEl = document.getElementById("phrase-right");
+    const stripTens = document.getElementById("strip-tens");
+    const stripUnits = document.getElementById("strip-units");
+    let lastRenderedTickerIdx = -1;
+
+    const PHOTO_COLORS = [
+      [42, 75, 160], [45, 80, 140], [70, 85, 110], [190, 55, 45],
+      [65, 95, 125], [90, 85, 80], [75, 60, 150], [140, 60, 60],
+      [175, 115, 35], [130, 45, 35], [90, 95, 105], [175, 135, 80],
+      [215, 25, 25], [75, 75, 85], [180, 110, 60], [185, 130, 45],
+      [150, 75, 30], [80, 85, 95], [45, 110, 120], [120, 80, 50],
+      [195, 55, 25], [110, 100, 85], [95, 110, 125], [35, 115, 55]
+    ];
+
+    let currentHaloR = 42, currentHaloG = 75, currentHaloB = 160;
+    let currentHaloOp = 0.085;
+
+    function openHero(index) {
+      if (heroTimeline) heroTimeline.kill();
+      activeHeroIndex = index;
+      isHeroActive = true;
+
+      gsap.to(".corner-watermark", { opacity: 0.22, duration: 0.5, ease: "power2.out" });
+
+      const cap = photoCaptions[index % photoCaptions.length];
+      phraseLeftEl.textContent = cap.left;
+      phraseRightEl.textContent = cap.right;
+
+      const half = totalCards / 2;
+      let offset = index - currentProgress;
+      offset = ((((offset + half) % totalCards) + totalCards) % totalCards) - half;
+
+      const absOffset = Math.abs(offset);
+      const scrollDuration = THREE.MathUtils.clamp(0.75 + absOffset * 0.04, 0.75, 1.6);
+
+      heroTimeline = gsap.timeline();
+
+      heroAnim.gapOpening = 0;
+      heroAnim.liftY = 0;
+      heroAnim.flyProgress = 0;
+      heroAnim.expandScale = 0;
+
+      const scrollObj = { p: currentProgress };
+      heroTimeline.to(scrollObj, {
+        p: currentProgress + offset,
+        duration: scrollDuration,
+        ease: "power2.inOut",
+        onUpdate: () => {
+          currentProgress = scrollObj.p;
+          targetProgress = scrollObj.p;
+        }
+      }, 0);
+
+      const arriveTime = scrollDuration;
+      heroTimeline.to(heroAnim, { gapOpening: 0.5, duration: 0.85, ease: "power2.out" }, arriveTime);
+      heroTimeline.to(heroAnim, { liftY: 2.2, duration: 0.55, ease: "power1.out" }, arriveTime);
+      heroTimeline.to(heroAnim, { liftY: 0.0, duration: 0.55, ease: "power2.inOut" }, arriveTime + 0.55);
+      heroTimeline.to(heroAnim, { flyProgress: 1.0, duration: 0.95, ease: "power2.out" }, arriveTime);
+
+      const bloomTime = arriveTime + 0.90;
+      heroTimeline.to(heroAnim, { expandScale: 1.0, duration: 0.70, ease: "power2.out" }, bloomTime);
+      heroTimeline.to(heroAnim, { gapOpening: 1.0, duration: 0.70, ease: "power2.out" }, bloomTime);
+
+      heroTimeline.fromTo([phraseLeftEl, phraseRightEl], 
+        { opacity: 0, filter: "blur(22px) contrast(220%)" }, 
+        { opacity: 0.88, filter: "blur(0px) contrast(100%)", duration: 1.25, ease: "power2.out" }, 
+        bloomTime + 0.05
+      );
+
+      heroTimeline.fromTo(phraseLeftEl, { x: -32 }, { x: 0, duration: 1.25, ease: "power2.out" }, bloomTime + 0.05);
+      heroTimeline.fromTo(phraseRightEl, { x: 32 }, { x: 0, duration: 1.25, ease: "power2.out" }, bloomTime + 0.05);
+    }
+
+    function closeHero(onCompleteCallback) {
+      if (heroTimeline) heroTimeline.kill();
+      isHeroActive = false;
+
+      heroTimeline = gsap.timeline({
+        onComplete: () => {
+          heroAnim.gapOpening = 0;
+          heroAnim.liftY = 0;
+          heroAnim.flyProgress = 0;
+          heroAnim.expandScale = 0;
+          if (activeHeroIndex !== null && cards[activeHeroIndex]) {
+            cards[activeHeroIndex].hoverLift = 0;
+            cards[activeHeroIndex].mesh.position.set(0, 0, 0);
+            cards[activeHeroIndex].mesh.scale.setScalar(1.0);
+            cards[activeHeroIndex].mesh.material.depthTest = true;
+          }
+          activeHeroIndex = null;
+          if (typeof onCompleteCallback === "function") {
+            onCompleteCallback();
+          }
+        }
+      });
+
+      gsap.to(".corner-watermark", { opacity: 1.0, duration: 0.7, ease: "power2.out" });
+      heroTimeline.to([phraseLeftEl, phraseRightEl], {
+        opacity: 0,
+        filter: "blur(14px)",
+        duration: 0.28,
+        ease: "power2.in"
+      }, 0);
+      heroTimeline.to(phraseLeftEl, { x: -20, duration: 0.28, ease: "power2.in" }, 0);
+      heroTimeline.to(phraseRightEl, { x: 20, duration: 0.28, ease: "power2.in" }, 0);
+
+      heroTimeline.to(heroAnim, { expandScale: 0.0, duration: 0.38, ease: "power2.inOut" }, 0);
+      heroTimeline.to(heroAnim, { liftY: 2.5, duration: 0.30, ease: "power2.out" }, 0.20);
+      heroTimeline.to(heroAnim, { flyProgress: 0.0, duration: 0.58, ease: "power2.inOut" }, 0.25);
+      heroTimeline.to(heroAnim, { liftY: 0.0, duration: 0.35, ease: "power2.in" }, 0.80);
+      heroTimeline.to(heroAnim, { gapOpening: 0.0, duration: 0.45, ease: "power2.out" }, 1.05);
+    }
+
+    function switchHero(newIndex) {
+      closeHero(() => {
+        openHero(newIndex);
+      });
+    }
+
+    window.addEventListener("click", (e) => {
+      if (e.target.closest(".controls-wrapper")) return;
+      if (selectedHoverIndex !== null) {
+        if (!isHeroActive) {
+          openHero(selectedHoverIndex);
+        } else if (selectedHoverIndex === activeHeroIndex) {
+          closeHero();
+        } else {
+          switchHero(selectedHoverIndex);
+        }
+      } else if (isHeroActive) {
+        closeHero();
+      }
+    });
+
+    window.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && isHeroActive) {
+        closeHero();
+      } else if (e.key === "ArrowRight" && !isHeroActive) {
+        targetProgress += 1.8;
+        userScrollVelocity += 35;
+      } else if (e.key === "ArrowLeft" && !isHeroActive) {
+        targetProgress -= 1.8;
+        userScrollVelocity -= 35;
+      } else if (e.key === " " && !isHeroActive) {
+        e.preventDefault();
+        targetProgress += 2.5;
+        userScrollVelocity += 45;
+      }
+    });
+
+    let targetProgress = 0;
+    let currentProgress = 0;
+    let userScrollVelocity = 0;
+
+    const scrollSensitivity = 0.0065;
+    const ambientDriftSpeed = 0.007;
+
+    window.addEventListener("wheel", (e) => {
+      e.preventDefault();
+      if (isHeroActive) return;
+      
+      const delta = THREE.MathUtils.clamp(e.deltaY * scrollSensitivity, -4.0, 4.0);
+      targetProgress += delta;
+      userScrollVelocity += delta * 18;
+    }, { passive: false });
+
+    document.querySelectorAll(".anim-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const preset = parseInt(btn.dataset.anim, 10);
+        document.querySelectorAll(".anim-btn").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        triggerEntrance(preset);
+      });
+    });
+
+    document.getElementById("retrigger-btn").addEventListener("click", () => {
+      triggerEntrance(currentAnimPreset);
+    });
+
+    const clockEl = document.getElementById("clock");
+    const dateEl = document.getElementById("date-display");
+
+    function updateRealTime() {
+      const now = new Date();
+      const options = { month: 'short', day: '2-digit', year: 'numeric' };
+      dateEl.textContent = now.toLocaleDateString('en-US', options).toUpperCase();
+      
+      const hours = String(now.getHours()).padStart(2, '0');
+      const mins = String(now.getMinutes()).padStart(2, '0');
+      const secs = String(now.getSeconds()).padStart(2, '0');
+      clockEl.textContent = `${hours}:${mins}:${secs}`;
+    }
+    updateRealTime();
+    setInterval(updateRealTime, 1000);
+
+    let lastTime = performance.now();
+
+    function animate() {
+      requestAnimationFrame(animate);
+
+      const now = performance.now();
+      const dt = Math.min((now - lastTime) / 1000, 0.1);
+      lastTime = now;
+
+      if (!isHeroActive) {
+        const driftMultiplier = selectedHoverIndex !== null ? 0.15 : 1.0;
+        targetProgress += ambientDriftSpeed * driftMultiplier * dt * 60;
+      }
+
+      const activeTickerIdx = (Math.round(currentProgress) % 24 + 24) % 24 + 1;
+      if (activeTickerIdx !== lastRenderedTickerIdx) {
+        lastRenderedTickerIdx = activeTickerIdx;
+        const tens = Math.floor(activeTickerIdx / 10);
+        const units = activeTickerIdx % 10;
+        if (stripTens) stripTens.style.transform = `translateY(-${tens}em)`;
+        if (stripUnits) stripUnits.style.transform = `translateY(-${units}em)`;
+      }
+
+      const fIdx = (currentProgress % 24 + 24) % 24;
+      const i0 = Math.floor(fIdx);
+      const i1 = (i0 + 1) % 24;
+      const tCol = fIdx - i0;
+
+      const targetR = PHOTO_COLORS[i0][0] * (1 - tCol) + PHOTO_COLORS[i1][0] * tCol;
+      const targetG = PHOTO_COLORS[i0][1] * (1 - tCol) + PHOTO_COLORS[i1][1] * tCol;
+      const targetB = PHOTO_COLORS[i0][2] * (1 - tCol) + PHOTO_COLORS[i1][2] * tCol;
+      const targetOp = isHeroActive ? 0.14 : 0.085;
+
+      const colDamp = 1 - Math.pow(1 - 0.12, dt * 60);
+      currentHaloR += (targetR - currentHaloR) * colDamp;
+      currentHaloG += (targetG - currentHaloG) * colDamp;
+      currentHaloB += (targetB - currentHaloB) * colDamp;
+      currentHaloOp += (targetOp - currentHaloOp) * colDamp;
+
+      document.body.style.setProperty("--halo-r", Math.round(currentHaloR));
+      document.body.style.setProperty("--halo-g", Math.round(currentHaloG));
+      document.body.style.setProperty("--halo-b", Math.round(currentHaloB));
+      document.body.style.setProperty("--halo-opacity", currentHaloOp.toFixed(3));
+
+      const damp = 1 - Math.pow(1 - 0.16, dt * 60);
+      currentProgress += (targetProgress - currentProgress) * damp;
+
+      const velDamp = 1 - Math.pow(1 - 0.14, dt * 60);
+      userScrollVelocity += (0 - userScrollVelocity) * velDamp;
+
+      const targetDominoBend = THREE.MathUtils.clamp(-userScrollVelocity * 0.025, -0.09, 0.09);
+
+      raycaster.setFromCamera(mouse, camera);
+      const intersects = raycaster.intersectObjects(hitProxies);
+
+      if (intersects.length > 0) {
+        selectedHoverIndex = intersects[0].object.userData.cardIndex;
+      } else {
+        selectedHoverIndex = null;
+      }
+
+      document.body.style.cursor = (selectedHoverIndex !== null || isHeroActive) ? "pointer" : "default";
+
+      const half = totalCards / 2;
+
+      for (let i = 0; i < totalCards; i++) {
+        const card = cards[i];
+        let offset = i - currentProgress;
+        offset = ((((offset + half) % totalCards) + totalCards) % totalCards) - half;
+
+        card.localPitch += (targetDominoBend - card.localPitch) * (1 - Math.pow(1 - 0.20, dt * 60));
+        card.mesh.rotation.x = card.localPitch + (card.introPitch || 0);
+        card.mesh.rotation.y = (card.introRotY || 0);
+
+        if (card.mat && card.mat.uniforms) {
+          if (card.mat.uniforms.uBlur) card.mat.uniforms.uBlur.value = globalIntro.blur;
+          if (card.mat.uniforms.uIntroFade) card.mat.uniforms.uIntroFade.value = (card.introFade !== undefined ? card.introFade : 1.0);
+          if (card.mat.uniforms.uExposureGlow) card.mat.uniforms.uExposureGlow.value = (card.introGlow !== undefined ? card.introGlow : 0.0);
+          if (card.mat.uniforms.uThermalNeg) card.mat.uniforms.uThermalNeg.value = (card.introThermal !== undefined ? card.introThermal : 0.0);
+        }
+
+        const isThisHero = (i === activeHeroIndex);
+
+        if (isThisHero && activeHeroIndex !== null) {
+          const fp = heroAnim.flyProgress;
+          const curScale = THREE.MathUtils.lerp(1.0, 1.85, heroAnim.expandScale);
+
+          const slotX = offset * stepDist * dirX;
+          const slotY = offset * stepDist * dirY + heroAnim.liftY;
+          const slotZ = offset * stepDist * dirZ;
+
+          const targetHeroX = 0;
+          const targetHeroY = -(cardHeight * curScale) / 2;
+          const targetHeroZ = 16;
+
+          const curX = THREE.MathUtils.lerp(slotX, targetHeroX, fp);
+          const curY = THREE.MathUtils.lerp(slotY, targetHeroY, fp);
+          const curZ = THREE.MathUtils.lerp(slotZ, targetHeroZ, fp);
+          card.group.position.set(curX, curY, curZ);
+
+          card.group.rotation.set(
+            THREE.MathUtils.lerp(0.14, 0, fp),
+            THREE.MathUtils.lerp(-0.84, 0, fp),
+            THREE.MathUtils.lerp(-0.15, 0, fp)
+          );
+
+          card.mesh.scale.set(
+            curScale * (card.introScaleX !== undefined ? card.introScaleX : 1.0),
+            curScale,
+            curScale
+          );
+          card.mesh.position.set(0, 0, 0);
+
+          if (card.mat && card.mat.uniforms) {
+            if (card.mat.uniforms.uBlur) card.mat.uniforms.uBlur.value = THREE.MathUtils.lerp(1.0, 0.0, fp);
+            if (card.mat.uniforms.uIntroFade) card.mat.uniforms.uIntroFade.value = 1.0;
+          }
+
+          card.group.renderOrder = 10000;
+          const dtVal = (heroAnim.liftY < 0.05 && fp < 0.05);
+          card.mat.depthTest = dtVal;
+
+        } else {
+          const isThisHovered = (i === selectedHoverIndex && i !== activeHeroIndex);
+          const targetHover = isThisHovered ? 1.0 : 0.0;
+          card.hoverLift += (targetHover - card.hoverLift) * (1 - Math.pow(1 - 0.08, dt * 60));
+
+          const normalD = offset * stepDist;
+          let compressedD = normalD;
+          if (activeHeroIndex !== null) {
+            const centerOpening = 3.8;
+            const compressedStep = 0.12;
+            const absOffset = Math.abs(offset);
+            compressedD = offset >= 0 ? centerOpening + absOffset * compressedStep : -centerOpening - absOffset * compressedStep;
+          }
+
+          const finalD = THREE.MathUtils.lerp(normalD, compressedD, heroAnim.gapOpening);
+          card.group.position.set(
+            finalD * dirX, 
+            finalD * dirY, 
+            finalD * dirZ
+          );
+          card.group.rotation.set(0.14, -0.84, -0.15);
+
+          card.mesh.position.x = card.hoverLift * 1.75;
+          card.mesh.position.y = card.hoverLift * 0.40;
+          card.mesh.position.z = card.hoverLift * 0.20;
+          card.mesh.scale.set(
+            card.introScaleX !== undefined ? card.introScaleX : 1.0,
+            1.0,
+            1.0
+          );
+
+          if (card.hoverLift > 0.02) {
+            card.group.renderOrder = 2000 + Math.round(card.hoverLift * 500);
+          } else {
+            card.group.renderOrder = Math.round(1000 - offset * 10);
+          }
+          card.mat.depthTest = true;
+        }
+      }
+
+      renderer.render(scene, camera);
+    }
+
+    window.addEventListener("resize", () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+  </script>
+</body>
+</html>

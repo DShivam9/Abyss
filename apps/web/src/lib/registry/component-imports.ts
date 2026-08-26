@@ -34,6 +34,7 @@ export const COMPONENT_IMPORTS: Record<string, React.ComponentType<VesselCompone
   "tracklist-gallery": dynamic(() => import("../../../../../packages/core/src/components/tracklist-gallery"), { ssr: false }),
   "hover-media-stream": dynamic(() => import("../../../../../packages/core/src/components/hover-media-stream"), { ssr: false }),
   "gimbal-stream": dynamic(() => import("../../../../../packages/core/src/components/gimbal-stream"), { ssr: false }),
+  "cascade-gallery": dynamic(() => import("../../../../../packages/core/src/components/cascade-gallery"), { ssr: false }),
 };
 
 

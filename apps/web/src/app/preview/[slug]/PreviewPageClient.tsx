@@ -112,8 +112,10 @@ export default function PreviewPageClient({ slug }: PreviewPageClientProps) {
     );
   };
 
+  const isLightBg = slug === "cascade-gallery";
+
   return (
-    <main className={`w-full min-h-screen bg-[#070708] ${isScroll ? "" : "h-screen overflow-hidden"}`}>
+    <main className={`w-full min-h-screen ${isLightBg ? "bg-[#f4f1ea]" : "bg-[#070708]"} ${isScroll ? "" : "h-screen overflow-hidden"}`}>
       <ComponentErrorBoundary fallbackSlug={slug}>
         {renderLayout()}
       </ComponentErrorBoundary>

@@ -494,6 +494,22 @@ export const COMPONENT_DETAILS: Record<string, ComponentDetail> = {
       { type: "slider", key: "waveBrightness", label: "Nebula Wave Brightness", default: 1.0, min: 0.30, max: 2.5, step: 0.05 },
       { type: "slider", key: "waveSpeed", label: "Nebula Wave Speed", default: 1.0, min: 0.20, max: 3.50, step: 0.10 }
     ]
+  },
+  "cascade-gallery": {
+    id: "76",
+    label: "Cascade Gallery",
+    filename: "components/cascade-gallery/hero.webp",
+    desc: "A timeless, editorial 3D diagonal stream conveyor gallery inspired by Apparatus Studio with thermal emulsion chemical crystallization sequence, tactile lateral tab pull, staged 4-step hero expansion, floating optical studio glass pill, and a live mechanical precision chronometer.",
+    slug: "cascade-gallery",
+    category: "3d",
+    subtype: "gallery",
+    tags: ["Three.js", "Cascade Gallery", "Thermal Emulsion", "Optical Glass", "Editorial Conveyor", "Mechanical Clock", "3D WebGL", "GSAP 3D Choreography"],
+    controls: [
+      { type: "slider", key: "stepDist", label: "Rack Card Density", default: 0.22, min: 0.20, max: 0.28, step: 0.01 },
+      { type: "slider", key: "hoverLiftMultiplier", label: "Hover Tab Pull", default: 1.75, min: 0.8, max: 3.0, step: 0.1 },
+      { type: "slider", key: "dominoLean", label: "Domino Inertia Lean", default: 1.0, min: 0.5, max: 2.5, step: 0.1 },
+      { type: "slider", key: "ambientDriftSpeed", label: "Conveyor Drift Speed", default: 0.016, min: 0.0, max: 0.05, step: 0.002 }
+    ]
   }
 };
 

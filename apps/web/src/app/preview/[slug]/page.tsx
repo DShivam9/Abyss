@@ -20,8 +20,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function PreviewPage({ params }: PageProps) {
   const { slug } = await params;
+  const isLightBg = slug === "cascade-gallery";
   return (
-    <Suspense fallback={<div className="min-h-screen bg-[#070708]" />}>
+    <Suspense fallback={<div className={`min-h-screen ${isLightBg ? "bg-[#f4f1ea]" : "bg-[#070708]"}`} />}>
       <PreviewPageClient slug={slug} />
     </Suspense>
   );

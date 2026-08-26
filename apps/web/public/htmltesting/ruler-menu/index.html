@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Abyss Ruler Menu Redesign Sandbox</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg-dark: #070708;
+      --bg-paper: #f4f1ea;
+      --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-body);
+      background-color: var(--bg-dark);
+      color: #ffffff;
+      min-height: 100vh;
+      overflow: hidden;
+      user-select: none;
+      -webkit-font-smoothing: antialiased;
+      transition: background-color 400ms var(--ease-out);
+    }
+
+    body.theme-paper {
+      background-color: var(--bg-paper);
+      color: #1a1a1e;
+    }
+
+    /* Top-Left Menu Keycap Button */
+    .top-left-menu {
+      position: fixed;
+      top: 24px;
+      left: 24px;
+      z-index: 300;
+    }
+
+    .keycap-symbol {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      background: #141416;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: #e4e4e7;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+      transition: transform 200ms var(--ease-out), background 200ms ease;
+    }
+
+    .keycap-symbol:hover {
+      background: #1c1c20;
+      transform: scale(1.05);
+    }
+
+    .keycap-symbol svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    /* Control HUD for Testing */
+    .hud-controls {
+      position: fixed;
+      top: 24px;
+      right: 24px;
+      z-index: 300;
+      display: flex;
+      gap: 12px;
+    }
+
+    .hud-btn {
+      padding: 8px 16px;
+      background: #141416;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 9999px;
+      color: #a1a1aa;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 200ms ease;
+    }
+
+    .hud-btn:hover, .hud-btn.active {
+      background: #27272a;
+      color: #ffffff;
+      border-color: rgba(255, 255, 255, 0.25);
+    }
+
+    /* Background Mockup Cards */
+    .viewport-canvas {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      padding-left: 120px;
+      pointer-events: none;
+    }
+
+    .mock-card {
+      width: 220px;
+      height: 320px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
+      border: 1px solid rgba(255,255,255,0.08);
+      box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 20px;
+      color: #71717a;
+      font-size: 13px;
+    }
+
+    body.theme-paper .mock-card {
+      background: #ffffff;
+      border: 1px solid rgba(0,0,0,0.08);
+      box-shadow: 0 16px 36px rgba(0,0,0,0.08);
+      color: #71717a;
+    }
+
+    /* =========================================
+       CURRENT RULER DRAWER CODE EXTRACTION
+       ========================================= */
+
+    .ruler-drawer {
+      position: fixed;
+      top: 24px;
+      bottom: 24px;
+      left: 0;
+      z-index: 290;
+      width: 290px;
+      height: calc(100vh - 48px);
+      background: linear-gradient(180deg, #141416 0%, #0e0e11 100%);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-left: none;
+      border-radius: 0 28px 28px 0;
+      padding: 0 16px 0 24px;
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.05),
+        0 8px 24px -4px rgba(0, 0, 0, 0.35);
+      display: flex;
+      flex-direction: column;
+      opacity: 1;
+      visibility: hidden;
+      pointer-events: none;
+      transform: translateX(-320px);
+      transition: transform 600ms cubic-bezier(0.16, 1, 0.3, 1), visibility 600ms step-end;
+      overflow: hidden;
+    }
+
+    body.ruler-drawer-open .ruler-drawer {
+      visibility: visible;
+      pointer-events: auto;
+      transform: translateX(0);
+      transition: transform 600ms cubic-bezier(0.16, 1, 0.3, 1), visibility 0ms;
+    }
+
+    .ruler-list-wrap {
+      flex: 1;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      -webkit-overflow-scrolling: touch;
+      pointer-events: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+      padding-top: 180px;
+      padding-bottom: 120px;
+      mask-image: linear-gradient(to bottom, transparent 0%, transparent 40px, black 120px, black calc(100% - 80px), transparent 100%);
+      -webkit-mask-image: linear-gradient(to bottom, transparent 0%, transparent 40px, black 120px, black calc(100% - 80px), transparent 100%);
+    }
+
+    .ruler-list-wrap::-webkit-scrollbar {
+      display: none;
+    }
+
+    .ruler-row {
+      display: flex;
+      align-items: center;
+      height: 24px;
+    }
+
+    .ruler-row.interactive {
+      cursor: pointer;
+      background: transparent;
+      border: none;
+      width: 100%;
+      text-align: left;
+      padding: 0;
+      font-family: inherit;
+    }
+
+    .ruler-row.placeholder {
+      pointer-events: none;
+    }
+
+    .line-wrapper {
+      width: 28px;
+      display: flex;
+      justify-content: flex-start;
+      margin-right: 8px;
+      flex-shrink: 0;
+    }
+
+    .ruler-line {
+      width: 28px;
+      height: 1.5px;
+      background-color: rgba(255, 255, 255, 0.22);
+      transform-origin: left center;
+      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.25s ease;
+    }
+
+    .ruler-text {
+      font-family: var(--font-body);
+      font-size: 15px;
+      white-space: nowrap;
+      letter-spacing: -0.01em;
+      color: rgba(255, 255, 255, 0.65);
+      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), color 0.25s ease;
+    }
+
+    .ruler-row.interactive:hover .ruler-line,
+    .ruler-row.interactive.active .ruler-line {
+      transform: scaleX(1.5);
+      background-color: #9be5fb !important;
+    }
+
+    .ruler-row.interactive:hover .ruler-text,
+    .ruler-row.interactive.active .ruler-text {
+      transform: translateX(16px);
+      color: #9be5fb !important;
+      font-weight: 600;
+    }
+
+    /* Thick Collection Navigation Header */
+    .ruler-row.collection-header {
+      margin-bottom: 20px;
+    }
+
+    .ruler-row.collection-header .ruler-line {
+      height: 3px;
+      background-color: #52525b;
+      border-radius: 2px;
+    }
+
+    .ruler-row.collection-header .ruler-text {
+      font-weight: 600;
+      color: #a1a1aa;
+    }
+
+    .ruler-row.collection-header:hover .ruler-line {
+      transform: scaleX(1.6);
+      background-color: #9be5fb !important;
+    }
+
+    .ruler-row.collection-header:hover .ruler-text {
+      transform: translateX(16px);
+      color: #9be5fb !important;
+    }
+
+    /* Celestial Starburst Logo */
+    .abyss-celestial-logo {
+      display: inline-flex;
+      color: #ffffff;
+      animation: celestial-pulse 4s ease-in-out infinite;
+    }
+
+    @keyframes celestial-pulse {
+      0%, 100% { opacity: 0.8; transform: scale(1); }
+      50% { opacity: 1; transform: scale(1.08); filter: drop-shadow(0 0 8px rgba(155, 229, 251, 0.4)); }
+    }
+  </style>
+</head>
+<body class="ruler-drawer-open">
+
+  <!-- Top-Left Menu Trigger Button -->
+  <div class="top-left-menu">
+    <button type="button" class="keycap-symbol" id="toggleBtn" title="Toggle Navigator (ESC)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="4" x2="20" y1="12" y2="12"></line>
+        <line x1="4" x2="20" y1="6" y2="6"></line>
+        <line x1="4" x2="20" y1="18" y2="18"></line>
+      </svg>
+    </button>
+  </div>
+
+  <!-- HUD Controls -->
+  <div class="hud-controls">
+    <button class="hud-btn active" id="themeDark">Dark Obsidian</button>
+    <button class="hud-btn" id="themePaper">Warm Paper (#f4f1ea)</button>
+  </div>
+
+  <!-- Background Mockup Canvas -->
+  <div class="viewport-canvas">
+    <div class="mock-card">01 Shatter Sphere Specimen</div>
+    <div class="mock-card" style="transform: translateY(-20px);">05 Cascade Gallery Active</div>
+    <div class="mock-card">12 Dual Wave Shimmer</div>
+  </div>
+
+  <!-- RULER DRAWER COMPONENT -->
+  <aside class="ruler-drawer" id="rulerDrawer" aria-label="Component Navigator">
+    <div class="ruler-list-wrap" id="rulerListWrap">
+      
+      <!-- Brand Logo -->
+      <div style="padding-left: 4px; margin-bottom: 28px;">
+        <div class="abyss-celestial-logo" aria-hidden="true">
+          <svg width="24" height="24" viewBox="0 0 100 100" fill="currentColor">
+            <path d="m50 7.5234 2.2461 29.645 5.9648-15.68-5.2891 24.566 0.089844 1.0898 37.09-22.633-27.855 22.355 20.266-5.3906-24.645 10.09 42.133 11.113-39.566-5.5469 21.109 12.812-25.188-11.445 15.898 34.777-19.363-30.055 3.1523 22.242-7.2656-24.844-21.031 32.656 14.41-31.531-16.945 14.586 17.043-19.578-42.254 5.9141 36.457-9.6016-24.191-3.6328 29.801 0.89844-32.168-25.82 28.945 17.656-11.887-17.145 19.934 22.055 0.097656 0.066406z" fill-rule="evenodd" />
+          </svg>
+        </div>
+      </div>
+
+      <!-- Top Collection Header Link -->
+      <button type="button" class="ruler-row interactive collection-header">
+        <div class="line-wrapper"><div class="ruler-line"></div></div>
+        <span class="ruler-text">Collection</span>
+      </button>
+
+      <!-- Separator Placeholder -->
+      <div class="ruler-row placeholder"><div class="line-wrapper"><div class="ruler-line"></div></div></div>
+
+      <!-- Specimen Items List -->
+      <div id="itemsContainer"></div>
+
+    </div>
+  </aside>
+
+  <script>
+    const SPECIMENS = [
+      { id: "01", label: "3d Shatter Sphere", slug: "3d-shatter-sphere" },
+      { id: "02", label: "Abyss Cursor Fall", slug: "abyss-cursor-fall" },
+      { id: "03", label: "Bas-Relief Emboss", slug: "bas-relief-emboss" },
+      { id: "04", label: "Bronze Patina", slug: "bronze-patina" },
+      { id: "05", label: "Cascade Gallery", slug: "cascade-gallery", active: true },
+      { id: "06", label: "Chromepunk Normal Map", slug: "chromepunk-normal-map" },
+      { id: "07", label: "Clip Morph", slug: "clip-morph" },
+      { id: "08", label: "Curved Scroll Wipe", slug: "curved-scroll-wipe" },
+      { id: "09", label: "Cylinder Scroll", slug: "cylinder-scroll" },
+      { id: "10", label: "Depth Silhouette", slug: "depth-silhouette" },
+      { id: "11", label: "Depth Swim", slug: "depth-swim" },
+      { id: "12", label: "Dual Wave", slug: "dual-wave" },
+      { id: "13", label: "Erosion Map", slug: "erosion-map" },
+      { id: "14", label: "Gimbal Stream", slug: "gimbal-stream" },
+      { id: "15", label: "Gold Gilding", slug: "gold-gilding" },
+      { id: "16", label: "Gravity Cursor", slug: "gravity-cursor" },
+      { id: "17", label: "Hover Media Stream", slug: "hover-media-stream" },
+      { id: "18", label: "Image Snake Trail", slug: "image-snake-trail" },
+      { id: "19", label: "Infrared Thermal", slug: "infrared-thermal" },
+      { id: "20", label: "Knight Wind Banner", slug: "knight-wind-banner" },
+      { id: "21", label: "Leonardo Sketch", slug: "leonardo-sketch" },
+      { id: "22", label: "Molten Mercury", slug: "molten-mercury" },
+      { id: "23", label: "Parallax Bleed", slug: "parallax-bleed" },
+      { id: "24", label: "Parallax Column", slug: "parallax-column" },
+      { id: "25", label: "Pillar Gallery", slug: "pillar-gallery" },
+      { id: "26", label: "Procedural Atlas", slug: "procedural-atlas" },
+      { id: "27", label: "Ripple Scramble", slug: "ripple-scramble" },
+      { id: "28", label: "Steel Intaglio", slug: "steel-intaglio" }
+    ];
+
+    const container = document.getElementById("itemsContainer");
+    let activeRowEl = null;
+
+    SPECIMENS.forEach((comp) => {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = `ruler-row interactive ${comp.active ? "active" : ""}`;
+      btn.innerHTML = `
+        <div class="line-wrapper"><div class="ruler-line"></div></div>
+        <span class="ruler-text">${comp.id} ${comp.label}</span>
+      `;
+
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".ruler-row.interactive").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        btn.scrollIntoView({ block: "center", behavior: "smooth" });
+      });
+
+      if (comp.active) {
+        activeRowEl = btn;
+      }
+
+      container.appendChild(btn);
+
+      const placeholder = document.createElement("div");
+      placeholder.className = "ruler-row placeholder";
+      placeholder.innerHTML = `<div class="line-wrapper"><div class="ruler-line"></div></div>`;
+      container.appendChild(placeholder);
+    });
+
+    // Auto center active
+    setTimeout(() => {
+      if (activeRowEl) {
+        activeRowEl.scrollIntoView({ block: "center", behavior: "smooth" });
+      }
+    }, 150);
+
+    // Toggle Button
+    const toggleBtn = document.getElementById("toggleBtn");
+    toggleBtn.addEventListener("click", () => {
+      document.body.classList.toggle("ruler-drawer-open");
+    });
+
+    // ESC to close
+    window.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        document.body.classList.remove("ruler-drawer-open");
+      }
+    });
+
+    // Theme Switchers
+    const themeDark = document.getElementById("themeDark");
+    const themePaper = document.getElementById("themePaper");
+
+    themeDark.addEventListener("click", () => {
+      document.body.classList.remove("theme-paper");
+      themeDark.classList.add("active");
+      themePaper.classList.remove("active");
+    });
+
+    themePaper.addEventListener("click", () => {
+      document.body.classList.add("theme-paper");
+      themePaper.classList.add("active");
+      themeDark.classList.remove("active");
+    });
+  </script>
+</body>
+</html>

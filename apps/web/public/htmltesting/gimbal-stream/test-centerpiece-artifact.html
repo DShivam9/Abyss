@@ -1,4 +1,3 @@
-<!--
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -42,14 +41,12 @@
       position: absolute;
       bottom: 24px;
       left: 28px;
-      display: flex;
-      gap: 8px;
       z-index: 10;
     }
     .btn {
       background: rgba(18, 18, 18, 0.85);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      color: #e5e7eb;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #a1a1aa;
       padding: 6px 14px;
       font-size: 11px;
       letter-spacing: 0.08em;
@@ -66,14 +63,8 @@
   </style>
 </head>
 <body>
-  <div class="hud">ABYSS CELESTIAL LOGO // <span>TRUE LIQUID MIRROR MERCURY &bull; DRAG TO ORBIT</span></div>
-  
   <div class="controls-panel">
-    <button class="btn" id="btn-front">FRONT VIEW</button>
-    <button class="btn" id="btn-side">SIDE VIEW</button>
-    <button class="btn" id="btn-persp">3/4 ANGLE</button>
-    <button class="btn" id="btn-wire">TOGGLE WIREFRAME</button>
-    <button class="btn" id="btn-spin">TOGGLE SLOW DRIFT</button>
+    <button class="btn" id="btn-wire">WIREFRAME</button>
   </div>
 
   <canvas id="canvas"></canvas>
@@ -311,30 +302,12 @@
     const wireMesh = new THREE.Mesh(geometry, wireMat);
     logoGroup.add(wireMesh);
 
-    document.getElementById('btn-front').addEventListener('click', () => {
-      controls.reset();
-      camera.position.set(0, 0, 10);
-    });
-
-    document.getElementById('btn-side').addEventListener('click', () => {
-      controls.reset();
-      camera.position.set(10, 0, 0);
-    });
-
-    document.getElementById('btn-persp').addEventListener('click', () => {
-      controls.reset();
-      camera.position.set(5, 3.0, 8.0);
-    });
-
     let wireVisible = false;
-    document.getElementById('btn-wire').addEventListener('click', () => {
+    const wireBtn = document.getElementById('btn-wire');
+    wireBtn.addEventListener('click', () => {
       wireVisible = !wireVisible;
       wireMesh.visible = wireVisible;
-    });
-
-    let autoSpin = true;
-    document.getElementById('btn-spin').addEventListener('click', () => {
-      autoSpin = !autoSpin;
+      wireBtn.classList.toggle('active', wireVisible);
     });
 
     let lastT = performance.now();
@@ -345,9 +318,9 @@
       lastT = now;
       const t = now * 0.001;
 
-      if (autoSpin) {
-        logoGroup.rotation.y += delta * 0.12;
-        logoGroup.rotation.x = Math.sin(t * 0.4) * 0.12;
+      if (!controls.state || controls.state === -1) {
+        logoGroup.rotation.y += delta * 0.08;
+        logoGroup.rotation.x = Math.sin(t * 0.4) * 0.06;
       }
 
       customUniforms.uTime.value = t;
@@ -365,5 +338,3 @@
   </script>
 </body>
 </html>
-
--->
