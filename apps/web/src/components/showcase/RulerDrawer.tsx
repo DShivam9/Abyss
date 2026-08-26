@@ -110,7 +110,7 @@ export function RulerDrawer({ currentSlug, onClose }: RulerDrawerProps) {
                 <polyline points="7 7 17 7 17 17" />
               </svg>
             </span>
-            <span className="label">Documentation</span>
+            <span className="label">Docs</span>
           </button>
           <button
             type="button"

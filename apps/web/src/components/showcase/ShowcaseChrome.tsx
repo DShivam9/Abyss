@@ -75,9 +75,7 @@ export function ShowcaseChrome({
           title={drawerOpen ? "Close Navigator (ESC)" : "Open Component Navigator"}
           aria-label="Component Navigator"
         >
-          <span className="icon-bar" />
-          <span className="icon-bar" />
-          <span className="icon-bar" />
+          <Menu size={19} strokeWidth={1.75} />
         </button>
       </div>
 

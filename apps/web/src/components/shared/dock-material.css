@@ -767,56 +767,67 @@
 }
 
 .top-left-menu .keycap-symbol {
-  width: 38px;
-  height: 38px;
-  background: linear-gradient(180deg, #161619 0%, #0c0c0e 100%);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  width: 36px;
+  height: 36px;
+  background: linear-gradient(180deg, #141416 0%, #0d0d0f 100%);
+  border: 1px solid rgba(255, 255, 255, 0.05);
   border-radius: 10px;
-  color: #9be5fb;
+  color: #8e8e93;
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.12),
-    0 4px 12px rgba(0, 0, 0, 0.7);
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.5),
+    0 8px 24px rgba(0, 0, 0, 0.6);
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 3.5px;
   cursor: pointer;
   transform: translateY(0) scale(1);
   transition:
-    transform 120ms ease,
-    background 140ms ease,
-    border-color 140ms ease,
-    box-shadow 140ms ease;
+    transform 140ms cubic-bezier(0.16, 1, 0.3, 1),
+    background 180ms ease,
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    color 180ms ease;
 }
 
-.top-left-menu .icon-bar {
-  width: 15px;
-  height: 1.6px;
-  background-color: #9be5fb;
-  border-radius: 1px;
-  transition: background-color 140ms ease;
+.top-left-menu .keycap-symbol svg {
+  color: #8e8e93;
+  transition: color 140ms ease, transform 140ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @media (hover: hover) and (pointer: fine) {
   .top-left-menu .keycap-symbol:hover {
-    background: linear-gradient(180deg, #1a1a1e 0%, #0e0e11 100%);
-    border-color: rgba(155, 229, 251, 0.4);
-    transform: scale(1.05);
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+    transform: translateY(-1px) scale(1.02);
+  }
+
+  .top-left-menu .keycap-symbol:hover svg {
+    color: #ffffff;
   }
 }
 
 .top-left-menu .keycap-symbol:active {
-  transform: scale(0.96);
+  transform: scale(0.94);
   background: #08080a;
+  color: #9be5fb;
+  transition: transform 60ms cubic-bezier(0.05, 0.7, 0.1, 1);
+}
+
+.top-left-menu .keycap-symbol:active svg {
+  color: #9be5fb;
 }
 
 body.ruler-drawer-open .top-left-menu .keycap-symbol {
-  background: linear-gradient(180deg, #18181c 0%, #0e0e11 100%);
-  border-color: rgba(155, 229, 251, 0.3);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.1),
-    0 4px 14px rgba(0, 0, 0, 0.8);
+  background: #161619;
+  border-color: rgba(255, 255, 255, 0.06);
+  color: #9be5fb;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+body.ruler-drawer-open .top-left-menu .keycap-symbol svg {
+  color: #9be5fb;
 }
 
 /* =========================================
