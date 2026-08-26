@@ -18,16 +18,16 @@ export function useSmoothScroll<T extends HTMLElement>() {
       const deltaMs = Math.min(32, Math.max(1, now - lastTime));
       lastTime = now;
 
+      // Smooth critically-damped spring interpolation
       const diff = targetScroll - currentScroll;
-      if (Math.abs(diff) > 0.2) {
-        // Frame-rate independent exponential smoothing (120Hz & 60Hz calibrated)
-        const lerpFactor = 1 - Math.exp(-0.018 * deltaMs);
-        currentScroll += diff * Math.max(0.12, Math.min(0.4, lerpFactor * 10));
+      if (Math.abs(diff) > 0.1) {
+        const factor = 1 - Math.exp(-0.014 * deltaMs);
+        currentScroll += diff * factor;
         el.scrollTop = currentScroll;
         rafId = requestAnimationFrame(animate);
       } else {
         currentScroll = targetScroll;
-        el.scrollTop = currentScroll;
+        el.scrollTop = targetScroll;
         rafId = null;
       }
     };
@@ -36,8 +36,12 @@ export function useSmoothScroll<T extends HTMLElement>() {
       e.stopPropagation();
       e.preventDefault();
 
+      // Normalize wheel delta for high-precision trackpads and notched wheels
+      const delta = Math.abs(e.deltaY) < 40 ? e.deltaY * 1.8 : e.deltaY * 0.85;
       const maxScroll = el.scrollHeight - el.clientHeight;
-      targetScroll = Math.max(0, Math.min(maxScroll, targetScroll + e.deltaY * 0.9));
+      
+      // Update target relative to where current visual scroll is
+      targetScroll = Math.max(0, Math.min(maxScroll, (rafId ? targetScroll : currentScroll) + delta));
       lastTime = performance.now();
 
       if (rafId === null) {

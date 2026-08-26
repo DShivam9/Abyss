@@ -45,6 +45,16 @@ export function RulerDrawer({ currentSlug, onClose }: RulerDrawerProps) {
     router.push("/collection");
   };
 
+  const handleGoDocs = () => {
+    onClose();
+    router.push("/docs");
+  };
+
+  const handleGoChangelog = () => {
+    onClose();
+    router.push("/changelog");
+  };
+
   return (
     <aside
       className="ruler-drawer"
@@ -53,8 +63,8 @@ export function RulerDrawer({ currentSlug, onClose }: RulerDrawerProps) {
       onTouchMove={(e) => e.stopPropagation()}
     >
       <div ref={listRef} className="ruler-list-wrap">
-        {/* Brand Logo with Celestial Refraction (Decorative Ambient) */}
-        <div style={{ paddingLeft: "4px", marginBottom: "28px" }}>
+        {/* Brand Logo with Authentic Celestial Chromatic Refraction Animation */}
+        <div style={{ paddingLeft: "4px", marginBottom: "20px" }}>
           <div
             className="abyss-celestial-logo"
             aria-hidden="true"
@@ -74,57 +84,76 @@ export function RulerDrawer({ currentSlug, onClose }: RulerDrawerProps) {
           </div>
         </div>
 
-        {/* Top Collection Link */}
-        <button
-          type="button"
-          className="ruler-row interactive collection-header"
-          onClick={handleGoCollection}
-        >
-          <div className="line-wrapper">
-            <div className="ruler-line" />
-          </div>
-          <span className="ruler-text">
-            Collection
-          </span>
-        </button>
+        {/* Top Primary Navigation Links */}
+        <div className="top-links-group">
+          <button
+            type="button"
+            className="top-nav-link"
+            onClick={handleGoCollection}
+          >
+            <span className="arrow-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="7" y1="17" x2="17" y2="7" />
+                <polyline points="7 7 17 7 17 17" />
+              </svg>
+            </span>
+            <span className="label">Collection</span>
+          </button>
+          <button
+            type="button"
+            className="top-nav-link"
+            onClick={handleGoDocs}
+          >
+            <span className="arrow-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="7" y1="17" x2="17" y2="7" />
+                <polyline points="7 7 17 7 17 17" />
+              </svg>
+            </span>
+            <span className="label">Documentation</span>
+          </button>
+          <button
+            type="button"
+            className="top-nav-link"
+            onClick={handleGoChangelog}
+          >
+            <span className="arrow-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="7" y1="17" x2="17" y2="7" />
+                <polyline points="7 7 17 7 17 17" />
+              </svg>
+            </span>
+            <span className="label">Changelog</span>
+          </button>
+        </div>
 
-        {/* Separator placeholder */}
-        <div className="ruler-row placeholder">
-          <div className="line-wrapper">
-            <div className="ruler-line" />
-          </div>
+        {/* Section Divider: COLLECTION */}
+        <div className="section-divider">
+          <div className="divider-line line-left" />
+          <span className="divider-label">Collection</span>
+          <div className="divider-line line-right" />
         </div>
 
         {/* Numbered Components List */}
-        {ALL_COMPONENTS.map((comp, idx) => {
-          const isActive = comp.slug === currentSlug;
-          const formattedIdx = String(idx + 1).padStart(2, "0");
+        <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
+          {ALL_COMPONENTS.map((comp, idx) => {
+            const isActive = comp.slug === currentSlug;
+            const formattedIdx = String(idx + 1).padStart(2, "0");
 
-          return (
-            <React.Fragment key={comp.slug}>
+            return (
               <button
+                key={comp.slug}
                 ref={isActive ? activeItemRef : null}
                 type="button"
-                className={`ruler-row interactive ${isActive ? "active" : ""}`}
+                className={`nav-item ${isActive ? "active" : ""}`}
                 onClick={() => handleSelect(comp.slug)}
               >
-                <div className="line-wrapper">
-                  <div className="ruler-line" />
-                </div>
-                <span className="ruler-text">
-                  {formattedIdx} {comp.label}
-                </span>
+                <span className="bracket">[{formattedIdx}]</span>
+                <span className="title">{comp.label}</span>
               </button>
-
-              {/* Placeholder row for spacing rhythm */}
-              <div className="ruler-row placeholder">
-                <div className="line-wrapper">
-                  <div className="ruler-line" />
-                </div>
-              </div>
-            </React.Fragment>
-          );
-        })}
+            );
+          })}
+        </div>
       </div>
     </aside>
   );
