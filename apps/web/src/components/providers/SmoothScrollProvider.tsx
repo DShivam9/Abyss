@@ -38,7 +38,23 @@ export function SmoothScrollProvider({ children }: { children: ReactNode }) {
     gsap.ticker.add(updateTicker);
     gsap.ticker.lagSmoothing(500, 33);
 
+    // Native ResizeObserver: automatically track DOM mutations, images, fonts, and grid expansion
+    let resizeTimer: NodeJS.Timeout;
+    const ro = new ResizeObserver(() => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => {
+        lenis.resize();
+        ScrollTrigger.refresh();
+      }, 50);
+    });
+
+    if (document.body) {
+      ro.observe(document.body);
+    }
+
     return () => {
+      ro.disconnect();
+      clearTimeout(resizeTimer);
       lenis.destroy();
       gsap.ticker.remove(updateTicker);
       delete (window as unknown as { lenis?: Lenis }).lenis;
