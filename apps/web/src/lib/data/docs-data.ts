@@ -1,5 +1,5 @@
-import { COMPONENT_DETAILS } from "./registry";
-import { ComponentDetail } from "./registry/types";
+import { COMPONENT_DETAILS } from "../registry";
+import { ComponentDetail } from "../registry/types";
 
 export interface PeerDep {
   name: string;

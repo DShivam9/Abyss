@@ -24,8 +24,38 @@ export function BottomControlPill({
   sortMode,
   onToggleSort,
 }: BottomControlPillProps) {
+  const [lift, setLift] = React.useState(0);
+
+  React.useEffect(() => {
+    let rAF = 0;
+    const handleScroll = () => {
+      cancelAnimationFrame(rAF);
+      rAF = requestAnimationFrame(() => {
+        const sheet = document.getElementById("mainSheet");
+        if (!sheet) return;
+        const rect = sheet.getBoundingClientRect();
+        const windowHeight = window.innerHeight;
+        if (rect.bottom < windowHeight) {
+          setLift(windowHeight - rect.bottom);
+        } else {
+          setLift(0);
+        }
+      });
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll();
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      cancelAnimationFrame(rAF);
+    };
+  }, []);
+
   return (
-    <div className="control-bar-wrap">
+    <div
+      className="control-bar-wrap"
+      style={{ transform: `translate(-50%, -${lift}px)` }}
+    >
       <div className="control-pill">
         {/* Search input */}
         <div className="pill-search-box">

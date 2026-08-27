@@ -1,24 +1,17 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import { getComponent } from "@/lib/registry";
-import { ShaderShowcaseLayout } from "@/components/showcase/ShaderShowcaseLayout";
-import { ScrollShowcaseLayout } from "@/components/showcase/ScrollShowcaseLayout";
-import { GalleryShowcaseLayout } from "@/components/showcase/GalleryShowcaseLayout";
-import { TransitionShowcaseLayout } from "@/components/showcase/TransitionShowcaseLayout";
+import { getComponent, getLayoutType } from "@/lib/registry";
+import { ShaderShowcaseLayout } from "@/components/showcase/layouts/ShaderShowcaseLayout";
+import { ScrollShowcaseLayout } from "@/components/showcase/layouts/ScrollShowcaseLayout";
+import { GalleryShowcaseLayout } from "@/components/showcase/layouts/GalleryShowcaseLayout";
+import { TransitionShowcaseLayout } from "@/components/showcase/layouts/TransitionShowcaseLayout";
 import { ComponentErrorBoundary } from "@/components/showcase/ComponentErrorBoundary";
+import "@/components/showcase/showcase.css";
 
 interface PreviewPageClientProps {
   slug: string;
 }
-
-const SELF_CONTAINED_SCROLL = new Set([
-  "dual-wave",
-  "depth-swim",
-  "cylinder-scroll",
-  "parallax-bleed",
-  "curved-scroll-wipe"
-]);
 
 export default function PreviewPageClient({ slug }: PreviewPageClientProps) {
   const { Component, meta } = getComponent(slug);
@@ -53,12 +46,7 @@ export default function PreviewPageClient({ slug }: PreviewPageClientProps) {
       ? `/images/${meta.filename}`
       : `/images/components images/${meta.filename}`;
 
-  const isSelfContainedScroll = SELF_CONTAINED_SCROLL.has(slug);
-  const previewType = meta.previewType || (meta.category === "scroll" ? "scroll" : meta.category === "text" ? "text" : "shader");
-  const isText = meta.category === "text" || previewType === "text";
-  const isScroll = !isText && !isSelfContainedScroll && (previewType === "scroll" || meta.category === "scroll");
-  const isGallery = !isText && !isScroll && (isSelfContainedScroll || meta.category === "gallery" || meta.category === "svg" || previewType === "gallery" || (meta.category !== "scroll" && (meta.subtype === "gallery" || meta.subtype === "ring")));
-  const isTransition = !isText && !isSelfContainedScroll && (meta.category === "transition" || previewType === "transition");
+  const { isSelfContainedScroll, isText, isScroll, isGallery, isTransition } = getLayoutType(meta, slug);
 
   const renderComponent = () => {
     return <Component imageSrc={defaultImageSrc} {...controlValues} onControlChange={handleControlChange} />;

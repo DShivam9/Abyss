@@ -1,5 +1,6 @@
 @import "tailwindcss";
-@import "../components/shared/dock-material.css";
+@import "../components/layout/tokens.css";
+@import "../components/layout/layout.css";
 @source "../../../../packages/core/src/**/*.{ts,tsx}";
 @source "../../../packages/core/src/**/*.{ts,tsx}";
 @source "../../packages/core/src/**/*.{ts,tsx}";
@@ -7,22 +8,6 @@
 @import "shadcn/tailwind.css";
 
 @custom-variant dark (&:is(.dark *));
-
-@font-face {
-  font-family: 'Hatton';
-  src: url('/fonts/hatton-font-family/PP Hatton Ultralight 200.otf') format('opentype');
-  font-weight: 200;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'Larken';
-  src: url('/fonts/larken-typeface/larken.otf') format('opentype');
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
 
 @font-face {
   font-family: 'Saint Regus';
@@ -34,7 +19,7 @@
 
 @theme {
   /* Font families */
-  --font-sans: var(--font-satoshi), system-ui, -apple-system, sans-serif;
+  --font-sans: 'Switzer', system-ui, -apple-system, sans-serif;
   --font-mono: var(--font-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 
   /* Vessel color tokens → Tailwind utilities */

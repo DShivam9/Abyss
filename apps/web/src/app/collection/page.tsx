@@ -1,13 +1,15 @@
 "use client";
 
 import React, { useState, useEffect, useMemo, Suspense } from "react";
-import { AnimatePresence, motion } from "framer-motion";
-import { COMPONENT_DETAILS, VIBE_SECTIONS } from "@/lib/registry";
-import { DockNavbar } from "@/components/shared/DockNavbar";
+import { COMPONENT_DETAILS, VIBE_SECTIONS, SEARCH_INDEX } from "@/lib/registry";
+import { DockNavbar } from "@/components/layout/DockNavbar";
 import { SectionHeader } from "@/components/collection/SectionHeader";
 import { CollectionCard } from "@/components/collection/CollectionCard";
 import { BottomControlPill } from "@/components/collection/BottomControlPill";
-import { CommandPalette } from "@/components/catalog/CommandPalette";
+import { CommandPalette } from "@/components/command-palette/CommandPalette";
+import { SiteFooter } from "@/components/layout/SiteFooter";
+import { CollectionFinaleHorizon } from "@/components/collection/CollectionFinaleHorizon";
+import "@/components/collection/collection.css";
 
 const ALL_COMPONENTS = Object.values(COMPONENT_DETAILS);
 
@@ -15,11 +17,6 @@ function CollectionContent() {
   const [searchQuery, setSearchQuery] = useState("");
   const [sortMode, setSortMode] = useState<"curated" | "asc" | "desc">("curated");
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
-
-  // Set tab title
-  useEffect(() => {
-    document.title = "Collection ✶ Abyss";
-  }, []);
 
   // Command palette keyboard shortcut (Cmd+K)
   useEffect(() => {
@@ -41,7 +38,7 @@ function CollectionContent() {
     });
   };
 
-  // ponytail: resize Lenis scroll boundaries on filter/sort changes
+  // Trigger Lenis scroll recalculation on filter/search changes
   useEffect(() => {
     const lenis = (window as unknown as { lenis?: { resize: () => void } }).lenis;
     if (lenis) {
@@ -68,7 +65,7 @@ function CollectionContent() {
       c.label.toLowerCase().includes(query) ||
       c.desc?.toLowerCase().includes(query) ||
       c.category?.toLowerCase().includes(query) ||
-      c.tags?.some((t) => t.toLowerCase().includes(query))
+      c.tags?.some((t: string) => t.toLowerCase().includes(query))
     );
   }, [sortMode, query]);
 
@@ -99,35 +96,59 @@ function CollectionContent() {
       ? sortedAllComponents.length > 0
       : curatedChapters.length > 0;
 
-  return (
-    <div className="min-h-screen w-full bg-[#0d0d0f] text-white">
-      {/* Floating Dock Navbar */}
-      <DockNavbar onOpenSearch={() => setCommandPaletteOpen(true)} />
+  const showCurtainFooter = !query;
 
-      {/* Main Collection Container */}
-      <main className="collection-container" id="mainContainer">
-        <AnimatePresence mode="wait">
+  return (
+    <div
+      style={{
+        position: "relative",
+        width: "100%",
+        minHeight: "100vh",
+        background: showCurtainFooter ? "#9be5fb" : "#0d0d0f",
+        color: "#ffffff",
+      }}
+    >
+      {/* Foreground Main Sheet with Rounded Bottom Corners */}
+      <div
+        id="mainSheet"
+        style={{
+          position: "relative",
+          zIndex: 2,
+          minHeight: "100vh",
+          background: "#0d0d0f",
+          borderBottomLeftRadius: showCurtainFooter ? "36px" : "0px",
+          borderBottomRightRadius: showCurtainFooter ? "36px" : "0px",
+          borderBottom: showCurtainFooter
+            ? "1px solid rgba(255, 255, 255, 0.06)"
+            : "none",
+          boxShadow: showCurtainFooter
+            ? "0 20px 40px -10px rgba(0, 0, 0, 0.35)"
+            : "none",
+          overflow: "hidden",
+        }}
+      >
+        {/* Floating Top Dock Navbar */}
+        <DockNavbar onOpenSearch={() => setCommandPaletteOpen(true)} />
+
+        {/* Main Collection Container */}
+        <main className="collection-container" id="mainContainer">
           {!hasResults ? (
-            <motion.div
-              key="no-results"
-              initial={{ opacity: 0, scale: 0.98 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.98 }}
-              transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-              className="no-results-box"
-            >
-              No specimens found matching your search.
-            </motion.div>
+            <div className="no-results-box">
+              <p className="no-results-title">No specimens found</p>
+              <p className="no-results-sub">
+                No artifacts matching &ldquo;{searchQuery}&rdquo;
+              </p>
+              <button
+                type="button"
+                className="no-results-clear-btn"
+                onClick={() => setSearchQuery("")}
+              >
+                Clear Search
+              </button>
+            </div>
           ) : sortMode !== "curated" || (query && curatedChapters.length === 0) ? (
             /* Alphabetical / Search Flat Grid */
-            <motion.section
-              key={`flat-${sortMode}-${query}`}
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -6 }}
-              transition={{ duration: 0.24, ease: [0.16, 1, 0.3, 1] }}
-              className="vibe-section"
-            >
+            <section key={`flat-${sortMode}-${query}`} className="vibe-section">
               <SectionHeader
                 title={sortMode === "desc" ? "All Components (Z → A)" : "All Components"}
                 count={sortedAllComponents.length}
@@ -143,28 +164,12 @@ function CollectionContent() {
                   />
                 ))}
               </div>
-            </motion.section>
+            </section>
           ) : (
             /* Curated Vibe Chapters */
-            <motion.div
-              key="curated"
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -6 }}
-              transition={{ duration: 0.24, ease: [0.16, 1, 0.3, 1] }}
-            >
-              {curatedChapters.map((section, idx) => (
-                <motion.section
-                  key={section.id}
-                  className="vibe-section"
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{
-                    duration: 0.3,
-                    delay: idx * 0.03,
-                    ease: [0.16, 1, 0.3, 1],
-                  }}
-                >
+            <div>
+              {curatedChapters.map((section) => (
+                <section key={section.id} className="vibe-section">
                   <SectionHeader
                     title={section.title}
                     count={section.items.length}
@@ -180,14 +185,20 @@ function CollectionContent() {
                       />
                     ))}
                   </div>
-                </motion.section>
+                </section>
               ))}
-            </motion.div>
+            </div>
           )}
-        </AnimatePresence>
-      </main>
 
-      {/* Floating Bottom Control Pill */}
+          {/* Collection Finale Horizon Poster (shown only on full catalog view) */}
+          {showCurtainFooter && <CollectionFinaleHorizon />}
+        </main>
+      </div>
+
+      {/* Sticky Reveal Curtain Footer (shown only on full catalog view) */}
+      {showCurtainFooter && <SiteFooter activePage="/collection" />}
+
+      {/* Floating Bottom Control Pill with Dynamic Sheet Tracking */}
       <BottomControlPill
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
@@ -199,7 +210,7 @@ function CollectionContent() {
       <CommandPalette
         isOpen={commandPaletteOpen}
         onClose={() => setCommandPaletteOpen(false)}
-        components={ALL_COMPONENTS}
+        components={SEARCH_INDEX}
         onSelectComponent={() => {}}
       />
     </div>

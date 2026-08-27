@@ -1,20 +1,14 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { DockNavbar } from "@/components/shared/DockNavbar";
-import { CommandPalette } from "@/components/catalog/CommandPalette";
-import { COMPONENT_DETAILS } from "@/lib/registry";
+import { DockNavbar } from "@/components/layout/DockNavbar";
+import { CommandPalette } from "@/components/command-palette/CommandPalette";
+import { SEARCH_INDEX } from "@/lib/registry";
 import { DocsSections } from "@/components/docs/DocsSections";
-import { DocsFooter } from "@/components/docs/DocsFooter";
-
-const ALL_COMPONENTS = Object.values(COMPONENT_DETAILS);
+import { SiteFooter } from "@/components/layout/SiteFooter";
 
 export default function DocsPage() {
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
-
-  useEffect(() => {
-    document.title = "Docs ✶ Abyss";
-  }, []);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -58,13 +52,13 @@ export default function DocsPage() {
       </div>
 
       {/* Sticky Reveal Curtain Footer on Solid Ice Blue Background */}
-      <DocsFooter />
+      <SiteFooter />
 
       {/* Universal Search Command Palette */}
       <CommandPalette
         isOpen={commandPaletteOpen}
         onClose={() => setCommandPaletteOpen(false)}
-        components={ALL_COMPONENTS}
+        components={SEARCH_INDEX}
       />
     </div>
   );

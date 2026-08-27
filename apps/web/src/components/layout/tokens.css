@@ -1,0 +1,177 @@
+/* =========================================
+   Abyss Shared Design Tokens & Global Primitives
+   ========================================= */
+
+:root {
+  /* Smoked Onyx Deep Matte Palette */
+  --bg: #0d0d0f;
+  --card-slab: #121215;
+  --preview-bg: #070709;
+  --dock-surface: #1a1a1c;
+  --surface-elevated: #16161a;
+  --border-subtle: #1f1f28;
+  --border-hairline: rgba(255, 255, 255, 0.06);
+  --text-primary: #ffffff;
+  --text-muted: #8e8e93;
+  --text-title-muted: #a1a1aa;
+  --card-text: #d4d4d8;
+  --card-text-hover: #ffffff;
+  --accent: #9be5fb;
+
+  /* Typography */
+  --font-display: 'Ranade', -apple-system, sans-serif;
+  --font-body: 'Switzer', -apple-system, sans-serif;
+  --font-section: var(--font-saint-regus), 'Saint Regus', sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+  /* Easing curves */
+  --ease-emil: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Floating Dock Material Base */
+.dock-material {
+  background: linear-gradient(180deg, #141416 0%, #0d0d0f 100%);
+  border-radius: 14px;
+  border: none;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.5),
+    0 16px 36px rgba(0, 0, 0, 0.7);
+}
+
+/* Diagonal Skew Shutter Hover Animation */
+.shutter-hover {
+  position: relative;
+  overflow: hidden;
+  z-index: 1;
+  transition: color 200ms var(--ease-out), font-weight 200ms var(--ease-out);
+}
+
+.shutter-hover::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: #9be5fb !important;
+  border-radius: inherit;
+  transform: translate3d(-105%, 105%, 0) skewX(-18deg);
+  transition: transform 240ms var(--ease-out);
+  z-index: -1;
+  pointer-events: none;
+}
+
+.shutter-hover:hover::before {
+  transform: translate3d(0, 0, 0) skewX(0deg);
+}
+
+.shutter-hover:hover {
+  color: #000000 !important;
+  font-weight: 600;
+}
+
+/* =========================================
+   Abyss Celestial Starburst Animation
+   ========================================= */
+
+@keyframes celestialRotate {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes chromaticRefract {
+  0% {
+    color: #ffffff;
+    filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.7)) drop-shadow(0 0 8px rgba(155, 229, 251, 0.3));
+  }
+
+  30% {
+    color: #9be5fb;
+    filter: drop-shadow(0 0 5px rgba(155, 229, 251, 0.85)) drop-shadow(0 0 12px rgba(155, 229, 251, 0.45));
+  }
+
+  55% {
+    color: #f0f9ff;
+    filter: drop-shadow(0 0 3px rgba(240, 249, 255, 0.8)) drop-shadow(0 0 9px rgba(155, 229, 251, 0.35));
+  }
+
+  80% {
+    color: #38bdf8;
+    filter: drop-shadow(0 0 6px rgba(56, 189, 248, 0.85)) drop-shadow(0 0 14px rgba(56, 189, 248, 0.5));
+  }
+
+  100% {
+    color: #ffffff;
+    filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.7)) drop-shadow(0 0 8px rgba(155, 229, 251, 0.3));
+  }
+}
+
+.abyss-celestial-logo {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  animation: chromaticRefract 5.4s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+  transition: transform 220ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes subtleChromaticRefract {
+  0% {
+    color: #ffffff;
+    filter: drop-shadow(0 0 1px rgba(255, 255, 255, 0.4));
+  }
+
+  30% {
+    color: #9be5fb;
+    filter: drop-shadow(0 0 2px rgba(155, 229, 251, 0.4));
+  }
+
+  55% {
+    color: #f0f9ff;
+    filter: drop-shadow(0 0 1.5px rgba(240, 249, 255, 0.4));
+  }
+
+  80% {
+    color: #7dd3fc;
+    filter: drop-shadow(0 0 2.5px rgba(56, 189, 248, 0.4));
+  }
+
+  100% {
+    color: #ffffff;
+    filter: drop-shadow(0 0 1px rgba(255, 255, 255, 0.4));
+  }
+}
+
+.dock-nav .abyss-celestial-logo,
+.search-header .abyss-celestial-logo {
+  animation: subtleChromaticRefract 5.4s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+}
+
+.abyss-celestial-logo:hover {
+  transform: scale(1.14);
+}
+
+.abyss-celestial-logo svg {
+  animation: celestialRotate 26s linear infinite;
+  transform-origin: center center;
+  display: block;
+}
+
+/* =========================================
+   120 FPS & 60 FPS GPU Hardware Compositing
+   ========================================= */
+
+.control-pill,
+.dock-glass-island,
+.menu-keycap,
+.rail-keycap {
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}

@@ -28,6 +28,21 @@ export interface CommitEntry {
 
 export const CHANGELOG_DATA: CommitEntry[] = [
   {
+    id: "commit-25",
+    date: "2026-08-27",
+    displayDate: "Aug 27, 2026 • 22:30 IST",
+    tags: ["MAJOR", "ADDITION", "FIX"],
+    title: "Major Frontend Architecture & Collection Overhaul",
+    summary: "Comprehensive site-wide polish across typography, search performance, showcase drawers, and added 3D collection finale.",
+    items: [
+      "Streamlined global typography with consolidated font loading for faster page rendering",
+      "Added 3D celestial star finale with unrolling kinetic typography to the Collection page",
+      "Faster Command Palette (Cmd+K) search with tiered relevance matching and clean empty states",
+      "Enhanced showcase control drawers with smooth physics dragging and unified matte aesthetic",
+      "Dynamic bottom control bar that smoothly docks above the reveal footer",
+    ],
+  },
+  {
     id: "commit-24",
     date: "2026-08-26",
     displayDate: "Aug 26, 2026 • 20:45 IST",

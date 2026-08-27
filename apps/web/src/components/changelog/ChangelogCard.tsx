@@ -4,7 +4,7 @@ import React from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { Github, ArrowRight } from "lucide-react";
-import { CommitEntry } from "@/lib/changelog-data";
+import { CommitEntry } from "@/lib/data/changelog-data";
 import { COMPONENT_DETAILS } from "@/lib/registry";
 
 interface ChangelogCardProps {

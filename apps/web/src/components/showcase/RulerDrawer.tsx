@@ -3,7 +3,7 @@
 import React, { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { COMPONENT_DETAILS } from "@/lib/registry";
-import { useSmoothScroll } from "@/lib/useSmoothScroll";
+import { useSmoothScroll } from "@/lib/hooks/useSmoothScroll";
 
 interface RulerDrawerProps {
   currentSlug: string;

@@ -8,7 +8,7 @@ import { CliTerminal, PackageManager } from "./CliTerminal";
 // Dynamically import isolated 3D Logo Piece (SSR false)
 const Abyss3DLogoPiece = dynamic(
   () =>
-    import("@/components/shared/Abyss3DLogoPiece").then(
+    import("@/components/layout/Abyss3DLogoPiece").then(
       (mod) => mod.Abyss3DLogoPiece
     ),
   { ssr: false }

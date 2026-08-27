@@ -45,15 +45,15 @@ function HorizonLaserUnrollTypography({
         animate={
           isInView
             ? {
-                clipPath: finalClip,
-                opacity: 1,
-                letterSpacing: "-0.02em",
-              }
+              clipPath: finalClip,
+              opacity: 1,
+              letterSpacing: "-0.02em",
+            }
             : {
-                clipPath: initialClip,
-                opacity: 0,
-                letterSpacing: "-0.05em",
-              }
+              clipPath: initialClip,
+              opacity: 0,
+              letterSpacing: "-0.05em",
+            }
         }
         transition={{
           duration: 1.2,
@@ -62,7 +62,7 @@ function HorizonLaserUnrollTypography({
         }}
         style={{
           fontFamily: "Ranade, -apple-system, sans-serif",
-          fontSize: "clamp(16px, 2.3vw, 36px)",
+          fontSize: "clamp(26px, 3.8vw, 54px)",
           fontWeight: 900,
           lineHeight: 1,
           color: "#ffffff",
@@ -77,7 +77,7 @@ function HorizonLaserUnrollTypography({
   );
 }
 
-export function ChangelogFinaleHorizon() {
+export function CollectionFinaleHorizon() {
   const containerRef = useRef<HTMLDivElement>(null);
   const isInView = useInView(containerRef, {
     once: true,
@@ -89,27 +89,21 @@ export function ChangelogFinaleHorizon() {
     <section
       ref={containerRef}
       style={{
-        width: "100vw",
-        maxWidth: "1280px",
-        position: "relative",
-        left: "50%",
-        transform: "translateX(-50%)",
-        paddingLeft: "32px",
-        paddingRight: "32px",
+        width: "100%",
         boxSizing: "border-box",
-        display: "flex",
-        flexDirection: "row",
+        display: "grid",
+        gridTemplateColumns: "1fr auto 1fr",
         alignItems: "center",
-        justifyContent: "space-between",
-        gap: "16px",
-        paddingTop: "60px",
-        paddingBottom: "50px",
+        gap: "24px",
+        paddingTop: "80px",
+        paddingBottom: "40px",
+        transform: "translateX(-90px)",
       }}
     >
       {/* Left Typography — Horizon Unroll (originates from center star) */}
-      <div style={{ flex: "1 1 0%", display: "flex", justifyContent: "flex-end" }}>
+      <div style={{ justifySelf: "end", display: "flex", justifyContent: "flex-end" }}>
         <HorizonLaserUnrollTypography
-          text="YOU'RE ALL CAUGHT UP"
+          text="FIND YOUR SPARK"
           isInView={isInView}
           origin="right"
           delay={0.15}
@@ -128,30 +122,30 @@ export function ChangelogFinaleHorizon() {
           isInView
             ? { opacity: 1, scale: 1, rotate: 0, filter: "brightness(1)" }
             : {
-                opacity: 0,
-                scale: 0.18,
-                rotate: -180,
-                filter: "brightness(2)",
-              }
+              opacity: 0,
+              scale: 0.18,
+              rotate: -180,
+              filter: "brightness(2)",
+            }
         }
         transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1], delay: 0.05 }}
         style={{
-          width: "200px",
-          height: "200px",
-          flex: "0 0 200px",
+          width: "260px",
+          height: "260px",
+          justifySelf: "center",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
           willChange: "transform, opacity, filter",
         }}
       >
-        <Abyss3DLogoPiece size={200} />
+        <Abyss3DLogoPiece size={260} />
       </motion.div>
 
       {/* Right Typography — Horizon Unroll (originates from center star) */}
-      <div style={{ flex: "1 1 0%", display: "flex", justifyContent: "flex-start" }}>
+      <div style={{ justifySelf: "start", display: "flex", justifyContent: "flex-start" }}>
         <HorizonLaserUnrollTypography
-          text="CRAFTING THE NEXT DROP"
+          text="START CREATING"
           isInView={isInView}
           origin="left"
           delay={0.15}

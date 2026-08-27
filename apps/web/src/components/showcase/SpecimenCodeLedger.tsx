@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { X, Copy, Check } from "lucide-react";
 import { ComponentDetail } from "@/lib/registry";
-import { useSmoothScroll } from "@/lib/useSmoothScroll";
+import { useSmoothScroll } from "@/lib/hooks/useSmoothScroll";
 
 interface SpecimenCodeLedgerProps {
   component: ComponentDetail;
@@ -81,75 +81,75 @@ export default function MyView() {
 
       {/* Scrollable Content Body */}
       <div ref={bodyRef} className="ledger-body">
-        {/* Section 1: Installation */}
-        <div className="ledger-section">
-          <span className="section-tag">INSTALLATION</span>
-          <div className="pkg-tabs">
-            {(["npm", "pnpm", "yarn", "bun"] as PackageManager[]).map((mgr) => (
+          {/* Section 1: Installation */}
+          <div className="ledger-section">
+            <span className="section-tag">INSTALLATION</span>
+            <div className="pkg-tabs">
+              {(["npm", "pnpm", "yarn", "bun"] as PackageManager[]).map((mgr) => (
+                <button
+                  key={mgr}
+                  type="button"
+                  className={`pkg-tab ${pkgManager === mgr ? "active" : ""}`}
+                  onClick={() => setPkgManager(mgr)}
+                >
+                  {mgr}
+                </button>
+              ))}
+            </div>
+            <div className="code-card">
               <button
-                key={mgr}
                 type="button"
-                className={`pkg-tab ${pkgManager === mgr ? "active" : ""}`}
-                onClick={() => setPkgManager(mgr)}
+                className={`code-copy-btn ${copiedId === "install" ? "copied" : ""}`}
+                onClick={() => handleCopy(installCommands[pkgManager], "install")}
+                title="Copy Command"
+                aria-label="Copy Command"
               >
-                {mgr}
+                {copiedId === "install" ? <Check size={14} /> : <Copy size={14} />}
               </button>
-            ))}
+              <pre className="code-pre">
+                <code>{installCommands[pkgManager]}</code>
+              </pre>
+            </div>
           </div>
-          <div className="code-card">
-            <button
-              type="button"
-              className={`code-copy-btn ${copiedId === "install" ? "copied" : ""}`}
-              onClick={() => handleCopy(installCommands[pkgManager], "install")}
-              title="Copy Command"
-              aria-label="Copy Command"
-            >
-              {copiedId === "install" ? <Check size={14} /> : <Copy size={14} />}
-            </button>
-            <pre className="code-pre">
-              <code>{installCommands[pkgManager]}</code>
-            </pre>
-          </div>
-        </div>
 
-        {/* Section 2: Basic Usage */}
-        <div className="ledger-section">
-          <span className="section-tag">BASIC USAGE</span>
-          <div className="code-card">
-            <button
-              type="button"
-              className={`code-copy-btn ${copiedId === "usage" ? "copied" : ""}`}
-              onClick={() => handleCopy(usageSnippet, "usage")}
-              title="Copy Snippet"
-              aria-label="Copy Usage Snippet"
-            >
-              {copiedId === "usage" ? <Check size={14} /> : <Copy size={14} />}
-            </button>
-            <pre className="code-pre">
-              <code>{usageSnippet}</code>
-            </pre>
+          {/* Section 2: Basic Usage */}
+          <div className="ledger-section">
+            <span className="section-tag">BASIC USAGE</span>
+            <div className="code-card">
+              <button
+                type="button"
+                className={`code-copy-btn ${copiedId === "usage" ? "copied" : ""}`}
+                onClick={() => handleCopy(usageSnippet, "usage")}
+                title="Copy Snippet"
+                aria-label="Copy Usage Snippet"
+              >
+                {copiedId === "usage" ? <Check size={14} /> : <Copy size={14} />}
+              </button>
+              <pre className="code-pre">
+                <code>{usageSnippet}</code>
+              </pre>
+            </div>
           </div>
-        </div>
 
-        {/* Section 3: Controlled Props */}
-        <div className="ledger-section">
-          <span className="section-tag">CONTROLLED PROPERTIES</span>
-          <div className="code-card">
-            <button
-              type="button"
-              className={`code-copy-btn ${copiedId === "controlled" ? "copied" : ""}`}
-              onClick={() => handleCopy(controlledSnippet, "controlled")}
-              title="Copy Props Snippet"
-              aria-label="Copy Props Snippet"
-            >
-              {copiedId === "controlled" ? <Check size={14} /> : <Copy size={14} />}
-            </button>
-            <pre className="code-pre">
-              <code>{controlledSnippet}</code>
-            </pre>
+          {/* Section 3: Controlled Props */}
+          <div className="ledger-section">
+            <span className="section-tag">CONTROLLED PROPERTIES</span>
+            <div className="code-card">
+              <button
+                type="button"
+                className={`code-copy-btn ${copiedId === "controlled" ? "copied" : ""}`}
+                onClick={() => handleCopy(controlledSnippet, "controlled")}
+                title="Copy Props Snippet"
+                aria-label="Copy Props Snippet"
+              >
+                {copiedId === "controlled" ? <Check size={14} /> : <Copy size={14} />}
+              </button>
+              <pre className="code-pre">
+                <code>{controlledSnippet}</code>
+              </pre>
+            </div>
           </div>
         </div>
-      </div>
     </aside>
   );
 }

@@ -363,8 +363,8 @@ export function ThemeToggleRedesign({
       ref={containerRef}
       className={`relative w-full h-full min-h-[480px] max-h-[85vh] rounded-[32px] flex items-center justify-center overflow-hidden select-none transition-colors duration-500 ${
         theme === "dark"
-          ? "bg-[#131316] border border-white/[0.06] text-[#f4f4f5]"
-          : "bg-[#f4f4f7] border border-black/[0.06] text-[#09090b]"
+          ? "bg-[#131316] text-[#f4f4f5]"
+          : "bg-[#f4f4f7] text-[#09090b]"
       } ${className}`}
       style={style}
     >

@@ -10,14 +10,14 @@ import {
   ArrowRight,
   CornerDownLeft,
 } from "lucide-react";
-import { useScrollLock } from "@/lib/useScrollLock";
-import { useSmoothScroll } from "@/lib/useSmoothScroll";
-import { ComponentDetail } from "@/lib/registry";
+import { useScrollLock } from "@/lib/hooks/useScrollLock";
+import { useSmoothScroll } from "@/lib/hooks/useSmoothScroll";
+import { ComponentDetail, SearchIndexItem } from "@/lib/registry";
 
 interface CommandPaletteProps {
   isOpen: boolean;
   onClose: () => void;
-  components: ComponentDetail[];
+  components: (SearchIndexItem | ComponentDetail)[];
   onSelectComponent?: (slug: string) => void;
 }
 
@@ -45,7 +45,6 @@ export function CommandPalette({
   const [query, setQuery] = useState("");
   const deferredQuery = useDeferredValue(query);
   const [selectedIndex, setSelectedIndex] = useState(0);
-  const [placeholder, setPlaceholder] = useState(TYPEWRITER_PHRASES[0]);
   const [cursorPos, setCursorPos] = useState(0);
   const [caretOffset, setCaretOffset] = useState(0);
   const [isFocused, setIsFocused] = useState(false);
@@ -70,7 +69,7 @@ export function CommandPalette({
     }
   };
 
-  // Dynamic Typewriter Effect for placeholder
+  // Dynamic Typewriter Effect directly on input DOM element (0 React re-renders)
   useEffect(() => {
     if (!isOpen) return;
 
@@ -84,7 +83,9 @@ export function CommandPalette({
 
       if (!isDeleting) {
         charIdx++;
-        setPlaceholder(currentPhrase.slice(0, charIdx));
+        if (inputRef.current) {
+          inputRef.current.placeholder = currentPhrase.slice(0, charIdx);
+        }
 
         if (charIdx === currentPhrase.length) {
           isDeleting = true;
@@ -94,7 +95,9 @@ export function CommandPalette({
         timeoutId = setTimeout(tick, 55);
       } else {
         charIdx--;
-        setPlaceholder(currentPhrase.slice(0, charIdx));
+        if (inputRef.current) {
+          inputRef.current.placeholder = currentPhrase.slice(0, charIdx);
+        }
 
         if (charIdx === 0) {
           isDeleting = false;
@@ -106,6 +109,9 @@ export function CommandPalette({
       }
     };
 
+    if (inputRef.current) {
+      inputRef.current.placeholder = TYPEWRITER_PHRASES[0];
+    }
     timeoutId = setTimeout(tick, 800);
     return () => clearTimeout(timeoutId);
   }, [isOpen]);
@@ -127,23 +133,61 @@ export function CommandPalette({
 
   const cleanQuery = deferredQuery.toLowerCase().trim();
 
-  // Filtered pages
+  // Filtered pages with relevance scoring
   const filteredPages = useMemo(() => {
-    return STATIC_PAGES.filter((p) => {
-      if (!cleanQuery) return true;
-      return p.name.toLowerCase().includes(cleanQuery);
-    });
+    if (!cleanQuery) return STATIC_PAGES;
+    const scored: Array<{ item: (typeof STATIC_PAGES)[0]; score: number }> = [];
+
+    for (const p of STATIC_PAGES) {
+      const nameLower = p.name.toLowerCase();
+      let score = 0;
+      if (nameLower === cleanQuery) score = 1000;
+      else if (nameLower.startsWith(cleanQuery)) score = 600;
+      else if (nameLower.includes(` ${cleanQuery}`)) score = 400;
+      else if (nameLower.includes(cleanQuery)) score = 250;
+
+      if (score > 0) scored.push({ item: p, score });
+    }
+
+    scored.sort((a, b) => b.score - a.score);
+    return scored.map((s) => s.item);
   }, [cleanQuery]);
 
-  // Filtered components
+  // Filtered components with relevance scoring
   const filteredComponents = useMemo(() => {
-    return components.filter((c) => {
-      if (!cleanQuery) return true;
-      const nameMatch = c.label.toLowerCase().includes(cleanQuery);
-      const descMatch = c.desc ? c.desc.toLowerCase().includes(cleanQuery) : false;
-      const tagMatch = c.tags?.some((t) => t.toLowerCase().includes(cleanQuery));
-      return nameMatch || descMatch || tagMatch;
-    });
+    if (!cleanQuery) return components;
+    const scored: Array<{ item: SearchIndexItem | ComponentDetail; score: number }> = [];
+
+    for (const c of components) {
+      const labelLower = c.label.toLowerCase();
+      const descLower = c.desc ? c.desc.toLowerCase() : "";
+      const exactTag = c.tags?.some((t) => t.toLowerCase() === cleanQuery);
+      const tagIncludes = c.tags?.some((t) => t.toLowerCase().includes(cleanQuery));
+
+      let score = 0;
+      if (labelLower === cleanQuery) {
+        score = 1000;
+      } else if (labelLower.startsWith(cleanQuery)) {
+        score = 600;
+      } else if (labelLower.includes(` ${cleanQuery}`) || labelLower.includes(`-${cleanQuery}`)) {
+        score = 400;
+      } else if (labelLower.includes(cleanQuery)) {
+        score = 250;
+      } else if (exactTag) {
+        score = 120;
+      } else if (tagIncludes) {
+        score = 60;
+      } else if (descLower.includes(cleanQuery)) {
+        score = 20;
+      }
+
+      if (score > 0) {
+        scored.push({ item: c, score });
+      }
+    }
+
+    scored.sort((a, b) => b.score - a.score);
+    return scored.map((s) => s.item);
   }, [components, cleanQuery]);
 
   const allItems = useMemo(() => [
@@ -254,7 +298,7 @@ export function CommandPalette({
               ref={inputRef}
               type="text"
               className="search-input"
-              placeholder={placeholder}
+              placeholder={TYPEWRITER_PHRASES[0]}
               value={query}
               onChange={(e) => {
                 setQuery(e.target.value);

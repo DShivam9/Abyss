@@ -2,11 +2,11 @@
 
 import React, { useState, useEffect, useMemo } from "react";
 import { Sparkles } from "lucide-react";
-import { CHANGELOG_DATA, CommitEntry } from "@/lib/changelog-data";
-import { COMPONENT_DETAILS } from "@/lib/registry";
-import { DockNavbar } from "@/components/shared/DockNavbar";
-import { CommandPalette } from "@/components/catalog/CommandPalette";
-import { DocsFooter } from "@/components/docs/DocsFooter";
+import { CHANGELOG_DATA, CommitEntry } from "@/lib/data/changelog-data";
+import { SEARCH_INDEX } from "@/lib/registry";
+import { DockNavbar } from "@/components/layout/DockNavbar";
+import { CommandPalette } from "@/components/command-palette/CommandPalette";
+import { SiteFooter } from "@/components/layout/SiteFooter";
 import { ChangelogHeader } from "@/components/changelog/ChangelogHeader";
 import { ScrollToTopButton } from "@/components/changelog/ScrollToTopButton";
 import { ChangelogCard, getEntryTags } from "@/components/changelog/ChangelogCard";
@@ -15,8 +15,6 @@ import {
   ChangelogControlConsole,
   TagFilter,
 } from "@/components/changelog/ChangelogControlConsole";
-
-const ALL_COMPONENTS = Object.values(COMPONENT_DETAILS);
 
 function getMonthYear(dateStr: string): string {
   const d = new Date(dateStr);
@@ -30,10 +28,6 @@ export default function ChangelogPage() {
   const [componentFilter, setComponentFilter] = useState<string>("ALL");
   const [monthFilter, setMonthFilter] = useState<string>("ALL");
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
-
-  useEffect(() => {
-    document.title = "Changelog — Abyss";
-  }, []);
 
   // Global Cmd+K shortcut for Universal Search Command Palette
   useEffect(() => {
@@ -247,13 +241,13 @@ export default function ChangelogPage() {
       </div>
 
       {/* Sticky Reveal Curtain Footer on Solid Ice Blue Background */}
-      <DocsFooter activePage="/changelog" />
+      <SiteFooter activePage="/changelog" />
 
       {/* Universal Search Command Palette Modal */}
       <CommandPalette
         isOpen={commandPaletteOpen}
         onClose={() => setCommandPaletteOpen(false)}
-        components={ALL_COMPONENTS}
+        components={SEARCH_INDEX}
       />
     </div>
   );

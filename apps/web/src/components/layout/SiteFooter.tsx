@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState } from "react";
-
 import { usePathname } from "next/navigation";
 
 // Editorial Typographic Bloom & Corner Star Accents (Matches Hand-Drawn Sketch)
@@ -91,7 +90,7 @@ export function RollingLink({
   );
 }
 
-export function DocsFooter({ activePage }: { activePage?: string }) {
+export function SiteFooter({ activePage }: { activePage?: string }) {
   const pathname = usePathname();
   const current = activePage || pathname;
 
@@ -229,3 +228,6 @@ export function DocsFooter({ activePage }: { activePage?: string }) {
     </footer>
   );
 }
+
+// Backward-compatible alias
+export { SiteFooter as DocsFooter };
