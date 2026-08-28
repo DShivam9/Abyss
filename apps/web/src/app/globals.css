@@ -74,7 +74,16 @@
 
   body {
     @apply font-sans antialiased bg-background text-foreground;
-    @apply selection:bg-vessel-text-primary selection:text-vessel-base;
+  }
+
+  ::selection {
+    background-color: #9be5fb !important;
+    color: #09090b !important;
+  }
+
+  ::-moz-selection {
+    background-color: #9be5fb !important;
+    color: #09090b !important;
   }
 
   /* ─── Reduced Motion Fallbacks ─── */

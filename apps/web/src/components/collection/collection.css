@@ -242,12 +242,7 @@
   font-family: var(--font-body);
   font-size: 13.5px;
   font-weight: 500;
-  width: 150px;
-  transition: width 240ms var(--ease-emil);
-}
-
-.live-search-input:focus {
-  width: 190px;
+  width: 170px;
 }
 
 .live-search-input::placeholder {

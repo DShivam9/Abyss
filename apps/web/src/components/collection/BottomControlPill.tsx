@@ -72,6 +72,10 @@ export function BottomControlPill({
             <motion.button
               type="button"
               className="pill-clear-btn"
+              onMouseDown={(e) => {
+                e.preventDefault();
+                onSearchChange("");
+              }}
               onClick={() => onSearchChange("")}
               aria-label="Clear search"
               whileTap={{ scale: 0.85 }}

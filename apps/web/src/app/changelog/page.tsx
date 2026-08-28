@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
-import { Sparkles } from "lucide-react";
+import { ArrowUpRight } from "lucide-react";
 import { CHANGELOG_DATA, CommitEntry } from "@/lib/data/changelog-data";
 import { SEARCH_INDEX } from "@/lib/registry";
 import { DockNavbar } from "@/components/layout/DockNavbar";
@@ -9,7 +9,7 @@ import { CommandPalette } from "@/components/command-palette/CommandPalette";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { ChangelogHeader } from "@/components/changelog/ChangelogHeader";
 import { ScrollToTopButton } from "@/components/changelog/ScrollToTopButton";
-import { ChangelogCard, getEntryTags } from "@/components/changelog/ChangelogCard";
+import { ChangelogEntry, getEntryTags } from "@/components/changelog/ChangelogEntry";
 import { ChangelogFinaleHorizon } from "@/components/changelog/ChangelogFinaleHorizon";
 import {
   ChangelogControlConsole,
@@ -142,6 +142,17 @@ export default function ChangelogPage() {
         color: "#ffffff",
       }}
     >
+      <style>{`
+        @media (max-width: 768px) {
+          .changelog-entry-row {
+            grid-template-columns: 1fr !important;
+            gap: 12px !important;
+            padding-top: 28px !important;
+            padding-bottom: 28px !important;
+          }
+        }
+      `}</style>
+
       {/* Foreground Main Sheet with Rounded Bottom Corners */}
       <div
         style={{
@@ -182,24 +193,56 @@ export default function ChangelogPage() {
             onResetFilters={handleResetFilters}
           />
 
-          {/* Grouped Month Feed — 2-Column Responsive CSS Masonry Grid */}
-          <section className="space-y-12">
+          {/* Grouped Month Feed — Flat Git-Log Timeline */}
+          <section className="space-y-16">
             {filteredEntries.length === 0 ? (
-              <div className="text-center py-16 px-6 bg-[#101013] border border-[rgba(255,255,255,0.05)] rounded-2xl space-y-4">
-                <Sparkles className="w-8 h-8 text-[#55555c] mx-auto" />
-                <div className="space-y-1">
-                  <h3 className="text-base font-medium text-white font-['Ranade',sans-serif]">
-                    No release entries found
-                  </h3>
-                  <p className="text-xs text-[#8e8e93]">
-                    No log updates match your active search and filter combinations.
-                  </p>
-                </div>
-                <button
-                  onClick={handleResetFilters}
-                  className="px-4 py-1.5 rounded-lg bg-[#18181c] border border-[rgba(255,255,255,0.08)] text-xs font-mono text-white hover:text-[#9be5fb] transition-colors cursor-pointer"
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  textAlign: "center",
+                  padding: "90px 24px",
+                  gap: "16px",
+                }}
+              >
+                <h3
+                  style={{
+                    fontFamily: "Ranade, -apple-system, sans-serif",
+                    fontSize: "26px",
+                    fontWeight: 700,
+                    color: "#ffffff",
+                    letterSpacing: "-0.02em",
+                    margin: 0,
+                    lineHeight: 1.3,
+                  }}
                 >
-                  Reset all filters
+                  Looked everywhere. Checked under the rug too. Nothing.
+                </h3>
+                <button
+                  type="button"
+                  onClick={handleResetFilters}
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "5px",
+                    background: "transparent",
+                    border: "none",
+                    fontFamily: "var(--font-mono, monospace)",
+                    fontSize: "13px",
+                    fontWeight: 450,
+                    color: "#9be5fb",
+                    borderBottom: "1px solid rgba(155, 229, 251, 0.45)",
+                    paddingBottom: "2px",
+                    cursor: "pointer",
+                    transition: "border-color 150ms ease",
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget.style.borderBottomColor = "#9be5fb")}
+                  onMouseLeave={(e) => (e.currentTarget.style.borderBottomColor = "rgba(155, 229, 251, 0.45)")}
+                >
+                  <span>Clear filters and try again</span>
+                  <ArrowUpRight className="w-3.5 h-3.5 text-[#9be5fb] shrink-0" />
                 </button>
               </div>
             ) : (
@@ -207,24 +250,38 @@ export default function ChangelogPage() {
                 <div
                   key={group.month}
                   id={`month-section-${group.month.replace(/\s+/g, "-")}`}
-                  className="space-y-4 scroll-mt-28"
+                  className="space-y-6 scroll-mt-28"
                 >
                   {/* Month Milestone Separator */}
-                  <div className="flex items-center gap-3 pt-2">
-                    <div className="font-mono text-xs uppercase tracking-widest text-[#8e8e93] font-semibold bg-[#101013] px-3 py-1 rounded-md border border-[rgba(255,255,255,0.05)]">
+                  <div className="flex items-center justify-between pb-2">
+                    <span
+                      style={{
+                        fontFamily: "var(--font-mono, monospace)",
+                        fontSize: "13px",
+                        letterSpacing: "0.14em",
+                        textTransform: "uppercase",
+                        color: "#8e8e93",
+                        fontWeight: 600,
+                      }}
+                    >
                       {group.month}
-                    </div>
-                    <div className="h-px flex-1 bg-[rgba(255,255,255,0.05)]" />
-                    <span className="font-mono text-[11px] text-[#55555c]">
+                    </span>
+                    <span
+                      style={{
+                        fontFamily: "var(--font-mono, monospace)",
+                        fontSize: "12px",
+                        color: "#52525b",
+                      }}
+                    >
                       {group.entries.length}{" "}
                       {group.entries.length === 1 ? "release" : "releases"}
                     </span>
                   </div>
 
-                  {/* CSS Masonry Columns */}
-                  <div className="columns-1 md:columns-2 gap-4.5 space-y-4.5 [column-fill:_balance]">
+                  {/* Single-Column Flat Git-Log List */}
+                  <div>
                     {group.entries.map((entry) => (
-                      <ChangelogCard key={entry.id} entry={entry} />
+                      <ChangelogEntry key={entry.id} entry={entry} />
                     ))}
                   </div>
                 </div>

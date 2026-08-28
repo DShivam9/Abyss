@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo, Suspense } from "react";
+import { ArrowUpRight } from "lucide-react";
 import { COMPONENT_DETAILS, VIBE_SECTIONS, SEARCH_INDEX } from "@/lib/registry";
 import { DockNavbar } from "@/components/layout/DockNavbar";
 import { SectionHeader } from "@/components/collection/SectionHeader";
@@ -133,17 +134,90 @@ function CollectionContent() {
         {/* Main Collection Container */}
         <main className="collection-container" id="mainContainer">
           {!hasResults ? (
-            <div className="no-results-box">
-              <p className="no-results-title">No specimens found</p>
-              <p className="no-results-sub">
-                No artifacts matching &ldquo;{searchQuery}&rdquo;
-              </p>
+            <div
+              style={{
+                minHeight: "calc(100vh - 220px)",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+                textAlign: "center",
+                padding: "20px 24px 80px 24px",
+                gap: "20px",
+              }}
+            >
+              <h3
+                style={{
+                  fontFamily: "Ranade, -apple-system, sans-serif",
+                  fontSize: "30px",
+                  fontWeight: 700,
+                  color: "#ffffff",
+                  letterSpacing: "-0.02em",
+                  margin: 0,
+                  lineHeight: 1.35,
+                  maxWidth: "620px",
+                }}
+              >
+                Component not found. We probably need a coffee before building that.
+              </h3>
               <button
                 type="button"
-                className="no-results-clear-btn"
                 onClick={() => setSearchQuery("")}
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  background: "transparent",
+                  border: "none",
+                  fontFamily: "var(--font-mono, monospace)",
+                  fontSize: "13.5px",
+                  fontWeight: 450,
+                  color: "#9be5fb",
+                  position: "relative",
+                  paddingBottom: "3px",
+                  cursor: "pointer",
+                }}
+                onMouseEnter={(e) => {
+                  const line = e.currentTarget.querySelector<HTMLElement>(".reset-line");
+                  if (line) line.style.transform = "scaleX(1)";
+                  const arrow = e.currentTarget.querySelector<HTMLElement>(".reset-arrow");
+                  if (arrow) arrow.style.transform = "translate(2px, -2px)";
+                }}
+                onMouseLeave={(e) => {
+                  const line = e.currentTarget.querySelector<HTMLElement>(".reset-line");
+                  if (line) line.style.transform = "scaleX(0)";
+                  const arrow = e.currentTarget.querySelector<HTMLElement>(".reset-arrow");
+                  if (arrow) arrow.style.transform = "translate(0, 0)";
+                }}
               >
-                Clear Search
+                <span>Reset search</span>
+                <span
+                  className="reset-arrow"
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    transform: "translate(0, 0)",
+                    transition: "transform 200ms ease",
+                  }}
+                >
+                  <ArrowUpRight className="w-3.5 h-3.5 text-[#9be5fb] shrink-0" />
+                </span>
+                <span
+                  className="reset-line"
+                  style={{
+                    position: "absolute",
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    height: "1.5px",
+                    background: "#9be5fb",
+                    borderRadius: "1px",
+                    transform: "scaleX(0)",
+                    transformOrigin: "left",
+                    transition: "transform 600ms cubic-bezier(0.22, 1, 0.36, 1)",
+                    pointerEvents: "none",
+                  }}
+                />
               </button>
             </div>
           ) : sortMode !== "curated" || (query && curatedChapters.length === 0) ? (

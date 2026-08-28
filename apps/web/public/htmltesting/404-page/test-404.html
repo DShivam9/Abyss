@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>404 — Abyss (Cinematic Atmospheric Void)</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://api.fontshare.com/v2/css?f[]=switzer@400,500,600&display=swap" rel="stylesheet">
+
+  <!-- Three.js & GSAP -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+
+  <!-- Local Saint Regus Font -->
+  <style>
+    @font-face {
+      font-family: 'Saint Regus';
+      src: url('/fonts/saint-regus/sonar-hubermann-saintregus-semibold.otf') format('opentype');
+      font-weight: 600;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    @font-face {
+      font-family: 'Saint Regus Expanded';
+      src: url('/fonts/saint-regus/sonar-hubermann-saintregus-semiboldexpanded.otf') format('opentype');
+      font-weight: 600;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    :root {
+      --bg: #060608;
+      --accent: #9be5fb;
+      --text-white: #ededee;
+      --text-muted: #8e8e93;
+      --font-display: 'Saint Regus', 'Saint Regus Expanded', serif;
+      --font-body: 'Switzer', -apple-system, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    ::selection {
+      background: #9be5fb !important;
+      color: #09090b !important;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text-white);
+      font-family: var(--font-body);
+      min-height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    /* Ambient Shader Background Canvas (Reveals with Cinematic Bloom) */
+    #shader-bg {
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 1;
+      pointer-events: none;
+      opacity: 0;
+      user-select: none;
+    }
+
+    /* Central Editorial Content (Elevated for optimal vertical rhythm) */
+    .hero-content {
+      position: relative;
+      z-index: 10;
+      text-align: center;
+      max-width: 960px;
+      padding: 0 24px;
+      transform: translateY(-45px);
+    }
+
+    /* Giant 404 with Crisp Stepped Trailing Depth Layers (1:1 Reference Match) */
+    .hero-title {
+      font-family: 'Saint Regus Expanded', 'Saint Regus', serif;
+      font-size: clamp(130px, 24vw, 240px);
+      font-weight: 600;
+      line-height: 0.88;
+      letter-spacing: 0.22em;
+      color: #ededee;
+      margin-bottom: 32px;
+      padding-left: 0.22em;
+      /* Balance wide tracking optical center */
+      display: block;
+      user-select: none;
+      -webkit-user-select: none;
+      /* 9 Discrete Stepped Offset Extrusion Plates */
+      text-shadow:
+        0 3px 0 #c2d3dd,
+        0 6px 0 #9cb4c2,
+        0 9px 0 #7895a6,
+        0 12px 0 #58778b,
+        0 15px 0 #3e5c70,
+        0 18px 0 #2a4456,
+        0 21px 0 #1b303f,
+        0 24px 0 #10202c,
+        0 27px 0 #09131c,
+        0 30px 0 #04090e,
+        0 42px 35px rgba(0, 0, 0, 0.95);
+    }
+
+    .hero-desc {
+      font-family: var(--font-body);
+      font-size: 19px;
+      line-height: 1.55;
+      color: var(--text-muted);
+      max-width: 480px;
+      margin: 0 auto 36px auto;
+      letter-spacing: -0.015em;
+      text-shadow: 0 4px 16px rgba(0, 0, 0, 0.8);
+    }
+
+    .hero-actions {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 32px;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    .link-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-family: var(--font-mono);
+      font-size: 13px;
+      font-weight: 450;
+      color: var(--accent);
+      text-decoration: none;
+      position: relative;
+      padding-bottom: 3px;
+      cursor: pointer;
+    }
+
+    .link-btn .line {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 1.5px;
+      background: var(--accent);
+      border-radius: 1px;
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 600ms cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .link-btn:hover .line {
+      transform: scaleX(1);
+    }
+
+    .link-btn .arrow {
+      display: inline-flex;
+      align-items: center;
+      transition: transform 250ms cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .link-btn:hover .arrow {
+      transform: translate(2.5px, -2.5px);
+    }
+
+    .link-btn-secondary {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-family: var(--font-mono);
+      font-size: 13px;
+      font-weight: 450;
+      color: var(--text-muted);
+      text-decoration: none;
+      position: relative;
+      padding-bottom: 3px;
+      cursor: pointer;
+      transition: color 200ms ease;
+    }
+
+    .link-btn-secondary:hover {
+      color: #ffffff;
+    }
+
+    .link-btn-secondary .line {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 1.5px;
+      background: #ffffff;
+      border-radius: 1px;
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 600ms cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .link-btn-secondary:hover .line {
+      transform: scaleX(1);
+    }
+
+    .link-btn-secondary .arrow {
+      display: inline-flex;
+      align-items: center;
+      transition: transform 250ms cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .link-btn-secondary:hover .arrow {
+      transform: translate(2.5px, -2.5px);
+    }
+
+    /* DOM Spatial Anchor for 3D Star Precision Alignment */
+    .logo-3d-anchor {
+      width: 200px;
+      height: 180px;
+      margin: 20px auto 0 auto;
+      pointer-events: none;
+      visibility: hidden;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Full-Screen Ambient Fluid Shader + 3D Floating Chrome Star Canvas -->
+  <canvas id="shader-bg"></canvas>
+
+  <!-- Central Editorial Hero with Saint Regus -->
+  <main class="hero-content">
+    <h1 class="hero-title" id="hero-title">404</h1>
+
+    <p class="hero-desc">
+      Are you lost, or did you just want to see what our 404 looks like?
+    </p>
+
+    <div class="hero-actions">
+      <a href="/collection" class="link-btn">
+        <span>Return to Collection</span>
+        <span class="arrow">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <line x1="7" y1="17" x2="17" y2="7"></line>
+            <polyline points="7 7 17 7 17 17"></polyline>
+          </svg>
+        </span>
+        <span class="line"></span>
+      </a>
+
+      <a href="/docs" class="link-btn-secondary">
+        <span>Documentation</span>
+        <span class="arrow">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <line x1="7" y1="17" x2="17" y2="7"></line>
+            <polyline points="7 7 17 7 17 17"></polyline>
+          </svg>
+        </span>
+        <span class="line"></span>
+      </a>
+    </div>
+
+    <!-- Spatial Anchor: 3D logo centers mathematically inside this box -->
+    <div class="logo-3d-anchor" id="logo-anchor"></div>
+  </main>
+
+  <script>
+    // =========================================================================
+    // UNIFIED WEBGL RENDERER: AMBIENT FLUID + FLOATING 3D LIQUID CHROME STAR
+    // =========================================================================
+    const canvas = document.getElementById('shader-bg');
+    const renderer = new THREE.WebGLRenderer({
+      canvas,
+      antialias: true,
+      alpha: false,
+      powerPreference: 'high-performance',
+      precision: 'highp'
+    });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.outputEncoding = THREE.sRGBEncoding;
+
+    // 1. Background Scene (Fluid Shader Quad)
+    const bgScene = new THREE.Scene();
+    const bgCamera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+
+    const uniforms = {
+      uTime: { value: 0.0 },
+      uResolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) },
+      uMouse: { value: new THREE.Vector2(0.5, 0.5) },
+      uExposure: { value: 0.0 },
+      uShockwavePos: { value: new THREE.Vector2(0.5, 0.35) },
+      uShockwaveProgress: { value: 0.0 },
+      uShockwaveAmp: { value: 0.0 }
+    };
+
+    const vertexShader = `
+      varying vec2 vUv;
+      void main() {
+        vUv = uv;
+        gl_Position = vec4(position, 1.0);
+      }
+    `;
+
+    const fragmentShader = `
+      precision highp float;
+      uniform float uTime;
+      uniform float uExposure;
+      uniform vec2 uResolution;
+      uniform vec2 uMouse;
+      uniform vec2 uShockwavePos;
+      uniform float uShockwaveProgress;
+      uniform float uShockwaveAmp;
+      varying vec2 vUv;
+
+      const vec3 uBgDark       = vec3(0.006, 0.008, 0.014);
+      const vec3 uBgMid        = vec3(0.035, 0.082, 0.145);
+      const vec3 uCausticColor = vec3(0.361, 0.722, 0.973);
+      const vec3 uWireGlow     = vec3(0.608, 0.898, 0.984);
+
+      float hash(vec3 p) {
+        p = fract(p * 0.3183099 + 0.1);
+        p *= 17.0;
+        return fract(p.x * p.y * p.z * (p.x + p.y + p.z));
+      }
+
+      float noise3D(vec3 x) {
+        vec3 p = floor(x);
+        vec3 f = fract(x);
+        f = f * f * (3.0 - 2.0 * f);
+        vec3 u = f;
+        return mix(
+          mix(mix(hash(p + vec3(0,0,0)), hash(p + vec3(1,0,0)), u.x),
+              mix(hash(p + vec3(0,1,0)), hash(p + vec3(1,1,0)), u.x), u.y),
+          mix(mix(hash(p + vec3(0,0,1)), hash(p + vec3(1,0,1)), u.x),
+              mix(hash(p + vec3(0,1,1)), hash(p + vec3(1,1,1)), u.x), u.y), u.z
+        );
+      }
+
+      float getSurfaceHeight(vec2 uv, float t, vec2 rawUV, float aspect) {
+        vec2 p = uv * 3.2;
+        float w1 = sin(p.x * 2.8 + t * 0.95 + sin(p.y * 2.2));
+        float w2 = cos(p.y * 3.2 - t * 0.85 + cos(p.x * 2.4));
+        float n = noise3D(vec3(p * 1.6, t * 0.40));
+        float baseH = smoothstep(-0.12, 0.58, (w1 + w2) * 0.38 + n * 0.42);
+
+        // Dynamic fluid shockwave when 3D star breaches forward
+        float distToStar = length((rawUV - uShockwavePos) * vec2(aspect, 1.0));
+        float ring = sin(distToStar * 28.0 - uShockwaveProgress * 12.0);
+        float falloff = exp(-pow(distToStar - uShockwaveProgress * 0.38, 2.0) * 35.0);
+        baseH += ring * falloff * uShockwaveAmp;
+
+        return baseH;
+      }
+
+      void main() {
+        vec2 uv = gl_FragCoord.xy / uResolution.xy;
+        float aspect = uResolution.x / uResolution.y;
+        vec2 p = (uv - 0.5) * vec2(aspect, 1.0);
+        float t = uTime * 1.35;
+
+        float h = getSurfaceHeight(p, t, uv, aspect);
+
+        float eps = 0.015;
+        float hX = getSurfaceHeight(p + vec2(eps, 0.0), t, uv + vec2(eps / aspect, 0.0), aspect);
+        float hY = getSurfaceHeight(p + vec2(0.0, eps), t, uv + vec2(0.0, eps), aspect);
+
+        vec3 geomNormal = vec3(0.0, 0.0, 1.0);
+        vec3 surfNormal = normalize(geomNormal + vec3((h - hX), (h - hY), 0.0) * 2.8);
+
+        vec3 keyLightDir = normalize(vec3(0.18, 0.55, 0.82));
+        float diffuse = pow(max(dot(surfNormal, keyLightDir), 0.0), 1.4);
+        float fresnel = pow(1.0 - max(dot(surfNormal, vec3(0.0, 0.0, 1.0)), 0.0), 3.0);
+
+        vec2 gridUV = uv * vec2(aspect * 24.0, 24.0);
+        float microGrain = hash(vec3(gl_FragCoord.xy * 0.12, t * 0.05)) * 0.024;
+        float microWeave = (sin(gridUV.x * 32.0 + gridUV.y * 16.0) * 0.5 + 0.5) * 0.016;
+        vec3 luxuryGrain = vec3(0.04, 0.07, 0.12) * (microGrain + microWeave) * (1.0 - h * 0.5);
+
+        vec3 chamberSurface = mix(uBgDark, uBgMid, smoothstep(0.05, 0.85, h)) + luxuryGrain;
+        chamberSurface += uCausticColor * pow(h, 2.4) * (diffuse * 0.95 + 0.20) * 0.58;
+        chamberSurface += uWireGlow * fresnel * 0.22;
+
+        float centerVignette = smoothstep(0.08, 0.85, length(p * vec2(0.9, 1.5)));
+        vec3 finalColor = mix(uBgDark + chamberSurface * 0.45, chamberSurface, centerVignette);
+
+        float dither = (fract(sin(dot(gl_FragCoord.xy, vec2(12.9898, 78.233))) * 43758.5453) - 0.5) * 0.003;
+        finalColor += vec3(dither);
+        finalColor *= uExposure;
+
+        gl_FragColor = vec4(finalColor, 1.0);
+      }
+    `;
+
+    const bgMaterial = new THREE.ShaderMaterial({
+      uniforms,
+      vertexShader,
+      fragmentShader,
+      depthWrite: false,
+      depthTest: false
+    });
+
+    const bgMesh = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), bgMaterial);
+    bgScene.add(bgMesh);
+
+    // 2. 3D Floating Celestial Star Scene (Perspective Camera)
+    const mainScene = new THREE.Scene();
+    const mainCamera = new THREE.PerspectiveCamera(34, window.innerWidth / window.innerHeight, 0.1, 1000);
+    mainCamera.position.set(0, 0, 9.5);
+
+    const renderTarget = new THREE.WebGLRenderTarget(
+      window.innerWidth * Math.min(window.devicePixelRatio, 2),
+      window.innerHeight * Math.min(window.devicePixelRatio, 2),
+      {
+        format: THREE.RGBAFormat,
+        type: THREE.UnsignedByteType,
+        minFilter: THREE.LinearFilter,
+        magFilter: THREE.LinearFilter
+      }
+    );
+
+    function createCleanAbyssLogoShape() {
+      const relCommands = [
+        [50, 7.5234], [2.2461, 29.645], [5.9648, -15.68], [-5.2891, 24.566],
+        [0.089844, 1.0898], [37.09, -22.633], [-27.855, 22.355], [20.266, -5.3906],
+        [-24.645, 10.09], [42.133, 11.113], [-39.566, -5.5469], [21.109, 12.812],
+        [-25.188, -11.445], [15.898, 34.777], [-19.363, -30.055], [3.1523, 22.242],
+        [-7.2656, -24.844], [-21.031, 32.656], [14.41, -31.531], [-16.945, 14.586],
+        [17.043, -19.578], [-42.254, 5.9141], [36.457, -9.6016], [-24.191, -3.6328],
+        [29.801, 0.89844], [-32.168, -25.82], [28.945, 17.656], [-11.887, -17.145],
+        [19.934, 22.055], [0.097656, 0.066406]
+      ];
+
+      // Calibrated exact proportional scale
+      const scale = 0.024;
+      const shape = new THREE.Shape();
+      let curX = relCommands[0][0];
+      let curY = relCommands[0][1];
+
+      shape.moveTo((curX - 50) * scale, -(curY - 50) * scale);
+      for (let i = 1; i < relCommands.length; i++) {
+        curX += relCommands[i][0];
+        curY += relCommands[i][1];
+        shape.lineTo((curX - 50) * scale, -(curY - 50) * scale);
+      }
+      shape.closePath();
+      return shape;
+    }
+
+    const logoShape = createCleanAbyssLogoShape();
+    const extrudeSettings = {
+      steps: 1,
+      depth: 0.18,
+      bevelEnabled: true,
+      bevelThickness: 0.18,
+      bevelSize: 0.12,
+      bevelSegments: 16,
+      curveSegments: 32
+    };
+
+    const logoGeometry = new THREE.ExtrudeGeometry(logoShape, extrudeSettings);
+    logoGeometry.center();
+    logoGeometry.computeVertexNormals();
+
+    const logoGroup = new THREE.Group();
+    mainScene.add(logoGroup);
+
+    // 1:1 Exact Liquid Chrome Hybrid Shader Material with Physical Liquid Piercing
+    const chromeHybridMaterial = new THREE.ShaderMaterial({
+      uniforms: {
+        uSceneTexture: { value: renderTarget.texture },
+        uResolution: uniforms.uResolution,
+        uRefractPower: { value: 0.85 },
+        uIceColor: { value: new THREE.Color(0x9be5fb) },
+        uExposure: uniforms.uExposure,
+        uClipActive: { value: 1.0 },
+        uWaterLevel: { value: 0.0 }
+      },
+      vertexShader: `
+        varying vec3 vWorldNormal;
+        varying vec3 vViewDirection;
+        varying vec3 vWorldPosition;
+
+        void main() {
+          vec4 worldPos = modelMatrix * vec4(position, 1.0);
+          vWorldPosition = worldPos.xyz;
+          vWorldNormal = normalize(mat3(modelMatrix) * normal);
+          vViewDirection = normalize(cameraPosition - worldPos.xyz);
+          gl_Position = projectionMatrix * viewMatrix * worldPos;
+        }
+      `,
+      fragmentShader: `
+        uniform sampler2D uSceneTexture;
+        uniform vec2 uResolution;
+        uniform float uRefractPower;
+        uniform vec3 uIceColor;
+        uniform float uExposure;
+        uniform float uClipActive;
+        uniform float uWaterLevel;
+
+        varying vec3 vWorldNormal;
+        varying vec3 vViewDirection;
+        varying vec3 vWorldPosition;
+
+        void main() {
+          // Strict zero-dot surface clipping - completely discards submerged subpixels
+          if (uClipActive > 0.5 && vWorldPosition.z <= uWaterLevel + 0.005) discard;
+
+          // Luminous liquid meniscus where model slices through the surface
+          float meniscus = 0.0;
+          if (uClipActive > 0.5) {
+            meniscus = smoothstep(uWaterLevel + 0.12, uWaterLevel + 0.005, vWorldPosition.z);
+          }
+
+          vec2 screenUV = gl_FragCoord.xy / uResolution;
+          vec3 normal = normalize(vWorldNormal);
+          vec3 viewDir = normalize(vViewDirection);
+
+          float NdotV = max(dot(normal, viewDir), 0.0);
+          float fresnel = pow(1.0 - NdotV, 2.2);
+
+          vec2 refractOffset = normal.xy * (uRefractPower * 1.4);
+          vec3 refractedColor = texture2D(uSceneTexture, screenUV + refractOffset).rgb;
+
+          vec3 chromeReflection = vec3(fresnel * 1.5) + uIceColor * (fresnel * 0.4);
+          vec3 finalColor = mix(refractedColor, chromeReflection, smoothstep(0.25, 0.85, fresnel));
+          finalColor += vec3(fresnel * 0.35);
+          finalColor += uIceColor * (meniscus * 1.5);
+          finalColor *= uExposure;
+
+          gl_FragColor = vec4(finalColor, 1.0);
+        }
+      `,
+      transparent: true,
+      side: THREE.DoubleSide
+    });
+
+    const logoMesh = new THREE.Mesh(logoGeometry, chromeHybridMaterial);
+    logoGroup.add(logoMesh);
+
+    let mouseTarget = { x: 0.5, y: 0.5 };
+    window.addEventListener('mousemove', (e) => {
+      mouseTarget.x = e.clientX / window.innerWidth;
+      mouseTarget.y = 1.0 - (e.clientY / window.innerHeight);
+    });
+
+    // Cache anchor position for 60/120fps performance (Zero DOM layout thrashing, zero GC)
+    const clock = new THREE.Clock();
+    const cachedWorldPos = new THREE.Vector3(0, 0, 0);
+    const tempV = new THREE.Vector3();
+
+    function updateLogoPosition() {
+      const anchor = document.getElementById('logo-anchor');
+      if (!anchor) return;
+      const rect = anchor.getBoundingClientRect();
+      const cx = rect.left + rect.width / 2;
+      const cy = rect.top + rect.height / 2;
+      uniforms.uShockwavePos.value.set(cx / window.innerWidth, 1.0 - (cy / window.innerHeight));
+
+      const ndcX = (cx / window.innerWidth) * 2 - 1;
+      const ndcY = -(cy / window.innerHeight) * 2 + 1;
+
+      tempV.set(ndcX, ndcY, 0.5).unproject(mainCamera);
+      tempV.sub(mainCamera.position).normalize();
+      const distance = -mainCamera.position.z / tempV.z;
+      cachedWorldPos.copy(mainCamera.position).addScaledVector(tempV, distance);
+      logoGroup.position.x = cachedWorldPos.x;
+      // Exact locked vertical clearance below action buttons
+      logoGroup.position.y = cachedWorldPos.y - 0.65;
+    }
+
+    updateLogoPosition();
+    if (document.fonts) {
+      document.fonts.ready.then(() => updateLogoPosition());
+    }
+
+    // =========================================================================
+    // BESPOKE EMIL KOWALSKI CRAFT ENTRANCE CHOREOGRAPHY (DELIBERATE PACING)
+    // =========================================================================
+    const tl = gsap.timeline({ defaults: { ease: "power3.out" } });
+    const heroTitleEl = document.getElementById('hero-title');
+
+    // Pre-warm WebGL pipelines to eliminate frame 1 shader compilation micro-hang
+    renderer.compile(bgScene, bgCamera);
+    renderer.compile(mainScene, mainCamera);
+
+    // Dynamic animation parameters
+    uniforms.uExposure.value = 0.0;
+    const starZ = { value: -0.90 }; // Just beneath water surface for progressive piercing
+    const shadowAnim = { progress: 0.0 };
+    const spinWeight = { value: 0.0 };
+    const mouseSmooth = { x: 0.0, y: 0.0 };
+
+    function updateSteppedShadow(p, mx = 0.0, my = 0.0) {
+      if (!heroTitleEl) return;
+      const dx = mx * 1.6;
+      const dy = my * 1.2;
+      heroTitleEl.style.textShadow = `
+        ${-1 * dx * p}px ${(3 - 1 * dy) * p}px 0 #c2d3dd,
+        ${-2 * dx * p}px ${(6 - 2 * dy) * p}px 0 #9cb4c2,
+        ${-3 * dx * p}px ${(9 - 3 * dy) * p}px 0 #7895a6,
+        ${-4 * dx * p}px ${(12 - 4 * dy) * p}px 0 #58778b,
+        ${-5 * dx * p}px ${(15 - 5 * dy) * p}px 0 #3e5c70,
+        ${-6 * dx * p}px ${(18 - 6 * dy) * p}px 0 #2a4456,
+        ${-7 * dx * p}px ${(21 - 7 * dy) * p}px 0 #1b303f,
+        ${-8 * dx * p}px ${(24 - 8 * dy) * p}px 0 #10202c,
+        ${-9 * dx * p}px ${(27 - 9 * dy) * p}px 0 #09131c,
+        ${-10 * dx * p}px ${(30 - 10 * dy) * p}px 0 #04090e,
+        ${-14 * dx * p}px ${(42 - 14 * dy) * p}px 35px rgba(0, 0, 0, ${0.95 * p})
+      `;
+    }
+
+    gsap.set("#shader-bg", { opacity: 1 });
+    gsap.set(".hero-title", {
+      y: -30,
+      opacity: 0,
+      filter: "blur(4px)"
+    });
+    updateSteppedShadow(0, 0, 0);
+    gsap.set(".hero-desc", { y: 18, opacity: 0, filter: "blur(6px)" });
+    gsap.set([".link-btn", ".link-btn-secondary"], { y: 14, opacity: 0 });
+
+    // Initial submerged heavy refraction
+    chromeHybridMaterial.uniforms.uRefractPower.value = 0.85;
+
+    // Step 1: Caustic Atmosphere Blooms (Slow, majestic exposure)
+    tl.to(uniforms.uExposure, {
+      value: 1.0,
+      duration: 2.2,
+      ease: "power2.inOut"
+    }, 0.05)
+
+      // Step 2: 404 Monolith Lands & Stepped Layers Smoothly Unfurl (2.4s deliberate cascade)
+      .to(".hero-title", {
+        y: 0,
+        opacity: 1,
+        filter: "blur(0px)",
+        duration: 1.0,
+        ease: "power3.out"
+      }, 0.25)
+      .to(shadowAnim, {
+        progress: 1.0,
+        duration: 2.4,
+        ease: "elastic.out(1, 0.85)",
+        onUpdate: () => updateSteppedShadow(shadowAnim.progress)
+      }, 0.45)
+
+      // Step 3: 3D Star Progressively Pierces & Rises from Liquid (Visible growing breach)
+      .to(starZ, {
+        value: 0.0,
+        duration: 1.8,
+        ease: "power2.out"
+      }, 0.40)
+
+      // Step 4: Fluid Caustic Shockwave Fires as Spikes Penetrate Surface (t = 1.0s)
+      .to(uniforms.uShockwaveAmp, {
+        value: 0.50,
+        duration: 0.15,
+        ease: "power1.out"
+      }, 1.00)
+      .to(uniforms.uShockwaveProgress, {
+        value: 2.8,
+        duration: 2.6,
+        ease: "power2.out"
+      }, 1.00)
+      .to(uniforms.uShockwaveAmp, {
+        value: 0.0,
+        duration: 2.0,
+        ease: "sine.inOut"
+      }, 1.20)
+      .to(chromeHybridMaterial.uniforms.uRefractPower, {
+        value: 0.12,
+        duration: 1.4,
+        ease: "power2.out"
+      }, 1.00)
+      // Deactivate surface clipping once star body is fully above surface
+      .to(chromeHybridMaterial.uniforms.uClipActive, {
+        value: 0.0,
+        duration: 0.1
+      }, 2.20)
+
+      // Step 5: Editorial Copy & Links Unfold
+      .to(".hero-desc", {
+        y: 0,
+        opacity: 1,
+        filter: "blur(0px)",
+        duration: 1.0,
+        ease: "power3.out"
+      }, 0.9)
+      .to([".link-btn", ".link-btn-secondary"], {
+        y: 0,
+        opacity: 1,
+        duration: 0.9,
+        stagger: 0.12,
+        ease: "power2.out"
+      }, 1.05)
+
+      // Step 6: Delayed Turntable Spin Begins Smoothly after Full Arrival
+      .to(spinWeight, {
+        value: 1.0,
+        duration: 1.8,
+        ease: "sine.inOut"
+      }, 2.40);
+
+    // =========================================================================
+    // UNIFIED 60/120FPS ANIMATION LOOP WITH RESPONSIVE CURSOR PARALLAX
+    // =========================================================================
+    function renderLoop() {
+      requestAnimationFrame(renderLoop);
+      const elapsed = clock.getElapsedTime();
+
+      // Smooth cursor interpolation
+      uniforms.uMouse.value.x += (mouseTarget.x - uniforms.uMouse.value.x) * 0.04;
+      uniforms.uMouse.value.y += (mouseTarget.y - uniforms.uMouse.value.y) * 0.04;
+
+      mouseSmooth.x += ((mouseTarget.x - 0.5) * 2.0 - mouseSmooth.x) * 0.04;
+      mouseSmooth.y += ((mouseTarget.y - 0.5) * 2.0 - mouseSmooth.y) * 0.04;
+
+      // Dynamic reactive 404 extrusion plates
+      updateSteppedShadow(shadowAnim.progress, mouseSmooth.x, mouseSmooth.y);
+
+      // Background Fluid Shader
+      uniforms.uTime.value = elapsed;
+
+      // Update 3D star position (Locked directly to DOM layout)
+      logoGroup.position.x = cachedWorldPos.x;
+      logoGroup.position.y = cachedWorldPos.y - 0.65;
+      logoGroup.position.z = starZ.value;
+      logoGroup.scale.set(1.0, 1.0, 1.0);
+
+      // Pure turntable spin (zero mouse tilt on 3D star)
+      logoGroup.rotation.x = 0.0;
+      logoGroup.rotation.z = 0.0;
+      logoGroup.rotation.y = elapsed * 0.35 * spinWeight.value;
+
+      // PASS 1: Render background fluid into RenderTarget texture
+      renderer.setRenderTarget(renderTarget);
+      renderer.render(bgScene, bgCamera);
+
+      // PASS 2: Render background fluid to screen
+      renderer.setRenderTarget(null);
+      renderer.render(bgScene, bgCamera);
+
+      // PASS 3: Render 3D Liquid Chrome Hybrid logo refracting the live background
+      renderer.autoClear = false;
+      renderer.clearDepth();
+      renderer.render(mainScene, mainCamera);
+      renderer.autoClear = true;
+    }
+
+    renderLoop();
+
+    window.addEventListener('resize', () => {
+      const w = window.innerWidth;
+      const h = window.innerHeight;
+      mainCamera.aspect = w / h;
+      mainCamera.updateProjectionMatrix();
+      renderer.setSize(w, h);
+      renderTarget.setSize(
+        w * Math.min(window.devicePixelRatio, 2),
+        h * Math.min(window.devicePixelRatio, 2)
+      );
+      uniforms.uResolution.value.set(w, h);
+      updateLogoPosition();
+    });
+  </script>
+</body>
+
+</html>

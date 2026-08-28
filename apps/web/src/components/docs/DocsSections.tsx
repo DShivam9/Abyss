@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useRef } from "react";
+import Link from "next/link";
 import dynamic from "next/dynamic";
 import { motion, useInView } from "framer-motion";
 import { CliTerminal, PackageManager } from "./CliTerminal";
@@ -50,8 +51,6 @@ function HorizonLaserUnrollTypography({
   origin: "left" | "right";
   delay?: number;
 }) {
-  // If origin is "right", unmask flows from right to left (originating from center star)
-  // If origin is "left", unmask flows from left to right (originating from center star)
   const initialClip = origin === "right" ? "inset(0 0% 0 100%)" : "inset(0 100% 0 0)";
   const finalClip = "inset(0 0% 0 0%)";
 
@@ -129,7 +128,7 @@ function FinaleHorizonSection() {
         alignItems: "center",
         justifyContent: "space-between",
         gap: "20px",
-        paddingTop: "120px",
+        paddingTop: "40px",
         paddingBottom: "70px",
       }}
     >
@@ -174,6 +173,23 @@ function FinaleHorizonSection() {
   );
 }
 
+function SectionLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <div
+      style={{
+        fontFamily: "var(--font-mono, monospace)",
+        fontSize: "13.5px",
+        fontWeight: 500,
+        letterSpacing: "0.12em",
+        textTransform: "uppercase",
+        color: "#8e8e93",
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
 export function DocsSections() {
   return (
     <main
@@ -189,23 +205,12 @@ export function DocsSections() {
         boxSizing: "border-box",
         display: "flex",
         flexDirection: "column",
-        gap: "150px",
+        gap: "100px",
       }}
     >
       {/* Block 01: Quick Intro */}
       <section style={{ width: "100%", display: "flex", flexDirection: "column", gap: "20px" }}>
-        <div
-          style={{
-            fontFamily: "var(--font-mono, monospace)",
-            fontSize: "13.5px",
-            fontWeight: 500,
-            letterSpacing: "0.12em",
-            textTransform: "uppercase",
-            color: "#8e8e93",
-          }}
-        >
-          Quick Intro
-        </div>
+        <SectionLabel>[01] Quick Intro</SectionLabel>
 
         <div
           style={{
@@ -220,28 +225,17 @@ export function DocsSections() {
           }}
         >
           <p style={{ margin: 0 }}>
-            <strong style={{ color: "#ffffff", fontWeight: 600 }}>Abyss</strong> is a creative collection of interactive components. We draw inspiration from across the web, redesigning and reshaping each piece with our own vision, craft, and taste.
+            <strong style={{ color: "#9be5fb", fontWeight: 600 }}>Abyss</strong> is a creative collection of interactive components. We draw inspiration from across the web, redesigning and reshaping each piece with our own vision, craft, and taste.
           </p>
           <p style={{ margin: 0, color: "#a1a1aa" }}>
-            Every component is free to use, adapt, and customize to your liking.
+            Every component is <strong style={{ color: "#9be5fb", fontWeight: 600 }}>free to use</strong>, adapt, and customize to your liking.
           </p>
         </div>
       </section>
 
       {/* Block 02: How It Works */}
       <section style={{ width: "100%", display: "flex", flexDirection: "column", gap: "20px" }}>
-        <div
-          style={{
-            fontFamily: "var(--font-mono, monospace)",
-            fontSize: "13.5px",
-            fontWeight: 500,
-            letterSpacing: "0.12em",
-            textTransform: "uppercase",
-            color: "#8e8e93",
-          }}
-        >
-          How It Works
-        </div>
+        <SectionLabel>[02] How It Works</SectionLabel>
 
         <div
           style={{
@@ -256,10 +250,10 @@ export function DocsSections() {
           }}
         >
           <p style={{ margin: 0 }}>
-            Pick a component you like from the collection, copy the code, and paste it into your project. That&apos;s pretty much it.
+            Pick a component you like from the collection, <strong style={{ color: "#9be5fb", fontWeight: 600 }}>copy the code</strong>, and paste it into your project. That&apos;s pretty much it.
           </p>
           <p style={{ margin: 0, color: "#a1a1aa" }}>
-            You can tweak parameters live in the preview to test different settings, but for full customization, feel free to edit the code directly to fit your exact needs and aesthetics.
+            You can <strong style={{ color: "#9be5fb", fontWeight: 600 }}>tweak parameters live</strong> in the preview to test different settings, but for full customization, feel free to edit the code directly to fit your exact needs and aesthetics.
           </p>
         </div>
       </section>
@@ -269,18 +263,7 @@ export function DocsSections() {
         id="installation-and-cli"
         style={{ width: "100%", display: "flex", flexDirection: "column", gap: "28px" }}
       >
-        <div
-          style={{
-            fontFamily: "var(--font-mono, monospace)",
-            fontSize: "13.5px",
-            fontWeight: 500,
-            letterSpacing: "0.12em",
-            textTransform: "uppercase",
-            color: "#8e8e93",
-          }}
-        >
-          Installation &amp; CLI
-        </div>
+        <SectionLabel>[03] Installation &amp; CLI</SectionLabel>
 
         {/* Method 1: Add a specific component */}
         <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
@@ -293,7 +276,7 @@ export function DocsSections() {
               fontWeight: 500,
             }}
           >
-            Add a specific component directly into your project:
+            Add a <strong style={{ color: "#9be5fb", fontWeight: 600 }}>specific component</strong> directly into your project:
           </span>
 
           <CliTerminal
@@ -313,7 +296,7 @@ export function DocsSections() {
               fontWeight: 500,
             }}
           >
-            Or install the full core package:
+            Or install the <strong style={{ color: "#9be5fb", fontWeight: 600 }}>full core package</strong>:
           </span>
 
           <CliTerminal
@@ -325,18 +308,7 @@ export function DocsSections() {
 
       {/* Block 04: Built With */}
       <section style={{ width: "100%", display: "flex", flexDirection: "column", gap: "20px" }}>
-        <div
-          style={{
-            fontFamily: "var(--font-mono, monospace)",
-            fontSize: "13.5px",
-            fontWeight: 500,
-            letterSpacing: "0.12em",
-            textTransform: "uppercase",
-            color: "#8e8e93",
-          }}
-        >
-          Built With
-        </div>
+        <SectionLabel>[04] Built With</SectionLabel>
 
         <div
           style={{
@@ -351,16 +323,16 @@ export function DocsSections() {
           }}
         >
           <p style={{ margin: 0 }}>
-            Not every component uses all of these technologies. Each piece only includes what it actually needs.
+            Not every component uses all of these technologies. Each piece only includes <strong style={{ color: "#9be5fb", fontWeight: 600 }}>what it actually needs</strong>.
           </p>
         </div>
 
         <div
           style={{
-            display: "flex",
-            flexWrap: "wrap",
-            gap: "10px",
-            marginTop: "4px",
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))",
+            gap: "20px 28px",
+            marginTop: "12px",
           }}
         >
           {TECH_STACK.map((tech) => (
@@ -369,29 +341,38 @@ export function DocsSections() {
               style={{
                 display: "inline-flex",
                 alignItems: "center",
-                gap: "8px",
-                background: "#111114",
-                border: "1px solid rgba(255, 255, 255, 0.06)",
-                borderRadius: "8px",
-                padding: "7px 13px",
-                boxShadow: "0 2px 6px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.03)",
-                color: "#ededee",
+                gap: "10px",
+                color: "#71717a",
                 fontFamily: "Switzer, -apple-system, sans-serif",
-                fontSize: "13.5px",
+                fontSize: "16.5px",
                 fontWeight: 500,
-                letterSpacing: "-0.01em",
-                transition: "all 180ms ease",
+                letterSpacing: "-0.015em",
                 cursor: "default",
+                transition: "color 180ms ease, transform 180ms ease",
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.background = "#17171b";
-                e.currentTarget.style.borderColor = "rgba(255, 255, 255, 0.12)";
-                e.currentTarget.style.transform = "translateY(-1px)";
+                const target = e.currentTarget;
+                target.style.color = "#ffffff";
+                target.style.transform = "translateY(-1px)";
+                const underline = target.querySelector<HTMLElement>(".tech-underline");
+                if (underline) underline.style.transform = "scaleX(1)";
+                const img = target.querySelector<HTMLImageElement>("img");
+                if (img) {
+                  img.style.filter = "grayscale(0%)";
+                  img.style.opacity = "1";
+                }
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.background = "#111114";
-                e.currentTarget.style.borderColor = "rgba(255, 255, 255, 0.06)";
-                e.currentTarget.style.transform = "translateY(0)";
+                const target = e.currentTarget;
+                target.style.color = "#71717a";
+                target.style.transform = "translateY(0)";
+                const underline = target.querySelector<HTMLElement>(".tech-underline");
+                if (underline) underline.style.transform = "scaleX(0)";
+                const img = target.querySelector<HTMLImageElement>("img");
+                if (img) {
+                  img.style.filter = "grayscale(100%)";
+                  img.style.opacity = "0.55";
+                }
               }}
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -399,13 +380,39 @@ export function DocsSections() {
                 src={tech.iconSrc}
                 alt={tech.name}
                 style={{
-                  width: tech.name.includes("WebGL") ? "22px" : "15px",
-                  height: "15px",
+                  width: tech.name.includes("WebGL") ? "24px" : "18px",
+                  height: "18px",
                   display: "block",
                   objectFit: "contain",
+                  filter: "grayscale(100%)",
+                  opacity: 0.55,
+                  transition: "filter 180ms ease, opacity 180ms ease",
                 }}
               />
-              <span>{tech.name}</span>
+              <span
+                style={{
+                  position: "relative",
+                  display: "inline-block",
+                }}
+              >
+                <span>{tech.name}</span>
+                <span
+                  className="tech-underline"
+                  style={{
+                    position: "absolute",
+                    left: 0,
+                    right: 0,
+                    bottom: "-3px",
+                    height: "2px",
+                    background: "#9be5fb",
+                    borderRadius: "1px",
+                    transform: "scaleX(0)",
+                    transformOrigin: "left",
+                    transition: "transform 1000ms cubic-bezier(0.22, 1, 0.36, 1)",
+                    pointerEvents: "none",
+                  }}
+                />
+              </span>
             </div>
           ))}
         </div>
@@ -413,18 +420,7 @@ export function DocsSections() {
 
       {/* Block 05: Credits */}
       <section style={{ width: "100%", display: "flex", flexDirection: "column", gap: "20px" }}>
-        <div
-          style={{
-            fontFamily: "var(--font-mono, monospace)",
-            fontSize: "13.5px",
-            fontWeight: 500,
-            letterSpacing: "0.12em",
-            textTransform: "uppercase",
-            color: "#8e8e93",
-          }}
-        >
-          Credits
-        </div>
+        <SectionLabel>[05] Credits</SectionLabel>
 
         <div
           style={{
@@ -442,7 +438,7 @@ export function DocsSections() {
             Many of these components are inspired by creative experiments, designers, and developers across the web.
           </p>
           <p style={{ margin: 0, color: "#a1a1aa" }}>
-            Full respect and credit goes to the original creators who push web design forward. If you recognize an interaction or built the original concept, reach out and we will gladly add direct attribution.
+            Full respect and credit goes to the <strong style={{ color: "#9be5fb", fontWeight: 600 }}>original creators</strong> who push web design forward. If you recognize an interaction or built the original concept, reach out and we will gladly add <strong style={{ color: "#9be5fb", fontWeight: 600 }}>direct attribution</strong>.
           </p>
         </div>
       </section>
@@ -452,18 +448,7 @@ export function DocsSections() {
         id="contribute-&-usage"
         style={{ width: "100%", display: "flex", flexDirection: "column", gap: "20px" }}
       >
-        <div
-          style={{
-            fontFamily: "var(--font-mono, monospace)",
-            fontSize: "13.5px",
-            fontWeight: 500,
-            letterSpacing: "0.12em",
-            textTransform: "uppercase",
-            color: "#8e8e93",
-          }}
-        >
-          Contribute &amp; Usage
-        </div>
+        <SectionLabel>[06] Contribute &amp; Usage</SectionLabel>
 
         <div
           style={{
@@ -478,15 +463,77 @@ export function DocsSections() {
           }}
         >
           <p style={{ margin: 0 }}>
-            Abyss is completely open source and free for personal and commercial projects. You are free to use any component in your work and contribute new ideas or fixes on GitHub.
+            Abyss is <strong style={{ color: "#9be5fb", fontWeight: 600 }}>completely open source</strong> and free for personal and commercial projects. You are free to use any component in your work and contribute new ideas or fixes on GitHub.
           </p>
           <p style={{ margin: 0, color: "#a1a1aa" }}>
-            If you use these components in your work, please make sure proper attribution is given. All we ask is that you do not resell or redistribute them as standalone paid libraries.
+            If you use these components in your work, please make sure proper attribution is given. All we ask is that you <strong style={{ color: "#9be5fb", fontWeight: 600 }}>do not resell</strong> or redistribute them as standalone paid libraries.
           </p>
         </div>
       </section>
 
-      {/* Block 07: Finale — Wide Horizon Poster with 3D Centerpiece */}
+      {/* Block 07: Legal & Policies */}
+      <section
+        id="legal-and-policies"
+        style={{ width: "100%", display: "flex", flexDirection: "column", gap: "20px" }}
+      >
+        <SectionLabel>[07] Legal &amp; Policies</SectionLabel>
+
+        <div
+          style={{
+            fontFamily: "Switzer, -apple-system, sans-serif",
+            fontSize: "22px",
+            lineHeight: 1.6,
+            color: "#ededee",
+            display: "flex",
+            flexDirection: "column",
+            gap: "20px",
+            letterSpacing: "-0.015em",
+          }}
+        >
+          <p style={{ margin: 0 }}>
+            Abyss is built with a commitment to <strong style={{ color: "#9be5fb", fontWeight: 600 }}>privacy and simplicity</strong>. We collect no personal data, embed zero tracking, and release everything under the MIT License.
+          </p>
+          <p style={{ margin: 0, color: "#a1a1aa" }}>
+            For detailed terms and data handling practices, read our{" "}
+            <Link
+              href="/privacy"
+              style={{
+                color: "#9be5fb",
+                textDecoration: "underline",
+                textUnderlineOffset: "4px",
+                textDecorationColor: "rgba(155, 229, 251, 0.4)",
+                fontWeight: 500,
+                whiteSpace: "nowrap",
+                transition: "text-decoration-color 150ms ease",
+              }}
+              onMouseEnter={(e) => (e.currentTarget.style.textDecorationColor = "#9be5fb")}
+              onMouseLeave={(e) => (e.currentTarget.style.textDecorationColor = "rgba(155, 229, 251, 0.4)")}
+            >
+              Privacy Policy
+            </Link>{" "}
+            and{" "}
+            <Link
+              href="/terms"
+              style={{
+                color: "#9be5fb",
+                textDecoration: "underline",
+                textUnderlineOffset: "4px",
+                textDecorationColor: "rgba(155, 229, 251, 0.4)",
+                fontWeight: 500,
+                whiteSpace: "nowrap",
+                transition: "text-decoration-color 150ms ease",
+              }}
+              onMouseEnter={(e) => (e.currentTarget.style.textDecorationColor = "#9be5fb")}
+              onMouseLeave={(e) => (e.currentTarget.style.textDecorationColor = "rgba(155, 229, 251, 0.4)")}
+            >
+              Terms of Service
+            </Link>
+            .
+          </p>
+        </div>
+      </section>
+
+      {/* Block 08: Finale — Wide Horizon Poster with 3D Centerpiece */}
       <FinaleHorizonSection />
     </main>
   );

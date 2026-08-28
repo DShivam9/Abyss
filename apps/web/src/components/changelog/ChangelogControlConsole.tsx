@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { Search, X, Calendar, Layers, ChevronDown, Check } from "lucide-react";
+import { Search, X, ChevronDown, Check } from "lucide-react";
 
 export type TagFilter = "ALL" | "MAJOR" | "ADDITION" | "FIX" | "REMOVAL";
 
@@ -40,30 +40,11 @@ export function ChangelogControlConsole({
   hasActiveFilters,
   onResetFilters,
 }: ChangelogControlConsoleProps) {
-  const [cursorPos, setCursorPos] = useState(0);
-  const [caretOffset, setCaretOffset] = useState(0);
-  const [isFocused, setIsFocused] = useState(false);
-
   const [isComponentDropdownOpen, setIsComponentDropdownOpen] = useState(false);
   const [isMonthDropdownOpen, setIsMonthDropdownOpen] = useState(false);
 
-  const inputRef = useRef<HTMLInputElement>(null);
-  const mirrorRef = useRef<HTMLSpanElement>(null);
   const componentDropdownRef = useRef<HTMLDivElement>(null);
   const monthDropdownRef = useRef<HTMLDivElement>(null);
-
-  // Measure caret offset whenever searchQuery or cursorPos changes
-  useEffect(() => {
-    if (mirrorRef.current) {
-      setCaretOffset(mirrorRef.current.offsetWidth);
-    }
-  }, [searchQuery, cursorPos]);
-
-  const updateCursorPosition = () => {
-    if (inputRef.current) {
-      setCursorPos(inputRef.current.selectionStart ?? searchQuery.length);
-    }
-  };
 
   // Close dropdowns on outside click
   useEffect(() => {
@@ -87,55 +68,74 @@ export function ChangelogControlConsole({
   }, []);
 
   return (
-    <section className="bg-[#101013] border border-[rgba(255,255,255,0.05)] rounded-2xl p-3 md:p-3.5 space-y-3 relative z-30">
-      <div className="flex flex-col md:flex-row items-stretch md:items-center gap-2.5">
-        {/* Search Input Box with Smooth Gliding Caret */}
-        <div className="relative flex-1 flex items-center bg-[#0a0a0c] border border-[rgba(255,255,255,0.05)] focus-within:border-[rgba(255,255,255,0.18)] rounded-xl transition-colors">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#55555c] pointer-events-none" />
-          <div className="relative flex-1 flex items-center ml-10 mr-2 py-2 overflow-hidden">
-            {/* Invisible text mirror for precise cursor measurement */}
-            <span
-              ref={mirrorRef}
-              className="absolute invisible pointer-events-none whitespace-pre text-xs font-['Switzer',sans-serif] tracking-normal"
-              aria-hidden="true"
-            >
-              {searchQuery.slice(0, cursorPos)}
-            </span>
-            {/* Smooth Gliding Caret */}
-            {isFocused && (
-              <span
-                className="absolute left-0 top-[calc(50%-7px)] w-[1.5px] h-[14px] bg-white rounded-full pointer-events-none transition-transform duration-100 ease-out animate-[smoothCaretBlink_1.1s_ease-in-out_infinite] z-10"
-                style={{ transform: `translateX(${caretOffset}px)` }}
-                aria-hidden="true"
-              />
-            )}
-            <input
-              ref={inputRef}
-              type="text"
-              placeholder="Search releases, components, or updates..."
-              value={searchQuery}
-              onChange={(e) => {
-                onSearchChange(e.target.value);
-                setCursorPos(e.target.selectionStart ?? e.target.value.length);
-              }}
-              onSelect={updateCursorPosition}
-              onKeyUp={updateCursorPosition}
-              onFocus={() => {
-                setIsFocused(true);
-                updateCursorPosition();
-              }}
-              onBlur={() => setIsFocused(false)}
-              className="w-full bg-transparent border-none outline-none text-xs font-['Switzer',sans-serif] text-white placeholder-[#55555c] caret-transparent"
-            />
-          </div>
+    <section
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        gap: "18px",
+        paddingTop: "8px",
+        paddingBottom: "16px",
+        position: "relative",
+        zIndex: 30,
+      }}
+    >
+      {/* Top Strip: Frameless Search + Text Selectors */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          flexWrap: "wrap",
+          gap: "16px",
+        }}
+      >
+        {/* Frameless Monospace Search Line */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "10px",
+            flex: "1 1 320px",
+            minWidth: "260px",
+            background: "transparent",
+            borderBottom: "1px solid rgba(255, 255, 255, 0.08)",
+            paddingBottom: "8px",
+            transition: "border-color 150ms ease",
+          }}
+          onFocusCapture={(e) => {
+            e.currentTarget.style.borderColor = "rgba(155, 229, 251, 0.4)";
+          }}
+          onBlurCapture={(e) => {
+            e.currentTarget.style.borderColor = "rgba(255, 255, 255, 0.08)";
+          }}
+        >
+          <Search className="w-3.5 h-3.5 text-[#71717a] shrink-0" />
+          <input
+            type="text"
+            placeholder="Search releases, updates, or components..."
+            value={searchQuery}
+            onChange={(e) => onSearchChange(e.target.value)}
+            style={{
+              width: "100%",
+              background: "transparent",
+              border: "none",
+              outline: "none",
+              fontFamily: "var(--font-mono, monospace)",
+              fontSize: "13px",
+              color: "#ffffff",
+              caretColor: "#9be5fb",
+            }}
+          />
           {searchQuery && (
             <button
-              onClick={() => {
-                onSearchChange("");
-                setCursorPos(0);
-                setCaretOffset(0);
+              onClick={() => onSearchChange("")}
+              style={{
+                background: "transparent",
+                border: "none",
+                color: "#71717a",
+                cursor: "pointer",
+                padding: "2px",
               }}
-              className="mr-3 text-[#55555c] hover:text-white transition-colors cursor-pointer"
               title="Clear search"
             >
               <X className="w-3.5 h-3.5" />
@@ -143,9 +143,9 @@ export function ChangelogControlConsole({
           )}
         </div>
 
-        {/* Right Controls: Month Selector + Component Selector */}
-        <div className="flex items-center gap-2 justify-end">
-          {/* Month Dropdown Menu */}
+        {/* Right Selectors: Month & Component Text Triggers */}
+        <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
+          {/* Month Text Trigger */}
           <div className="relative" ref={monthDropdownRef}>
             <button
               type="button"
@@ -153,24 +153,35 @@ export function ChangelogControlConsole({
                 setIsMonthDropdownOpen((prev) => !prev);
                 setIsComponentDropdownOpen(false);
               }}
-              className={`flex items-center gap-2 pl-3.5 pr-3 py-2 rounded-xl bg-[#0a0a0c] border text-xs font-mono transition-colors cursor-pointer ${
-                isMonthDropdownOpen || monthFilter !== "ALL"
-                  ? "border-[rgba(255,255,255,0.18)] text-white shadow-sm"
-                  : "border-[rgba(255,255,255,0.05)] text-[#d4d4d8] hover:border-[rgba(255,255,255,0.12)]"
-              }`}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "6px",
+                background: "transparent",
+                border: "none",
+                fontFamily: "var(--font-mono, monospace)",
+                fontSize: "12.5px",
+                color: monthFilter !== "ALL" ? "#9be5fb" : "#8e8e93",
+                cursor: "pointer",
+                padding: "4px 0",
+                transition: "color 150ms ease",
+              }}
+              onMouseEnter={(e) => {
+                if (monthFilter === "ALL") e.currentTarget.style.color = "#ffffff";
+              }}
+              onMouseLeave={(e) => {
+                if (monthFilter === "ALL") e.currentTarget.style.color = "#8e8e93";
+              }}
             >
-              <Calendar className="w-3.5 h-3.5 text-[#55555c] shrink-0" />
-              <span className="truncate">
-                {monthFilter === "ALL" ? "All Months" : monthFilter}
-              </span>
+              <span>Month: {monthFilter === "ALL" ? "All" : monthFilter}</span>
               <ChevronDown
-                className={`w-3.5 h-3.5 text-[#55555c] transition-transform duration-200 shrink-0 ${
+                className={`w-3 h-3 text-[#71717a] transition-transform duration-200 ${
                   isMonthDropdownOpen ? "rotate-180 text-white" : ""
                 }`}
               />
             </button>
 
-            {/* Floating Month Dropdown Panel */}
+            {/* Floating Month Menu */}
             {isMonthDropdownOpen && (
               <div
                 data-lenis-prevent
@@ -224,7 +235,7 @@ export function ChangelogControlConsole({
             )}
           </div>
 
-          {/* Component Dropdown Menu */}
+          {/* Component Text Trigger */}
           <div className="relative" ref={componentDropdownRef}>
             <button
               type="button"
@@ -232,26 +243,35 @@ export function ChangelogControlConsole({
                 setIsComponentDropdownOpen((prev) => !prev);
                 setIsMonthDropdownOpen(false);
               }}
-              className={`flex items-center gap-2 pl-3.5 pr-3 py-2 rounded-xl bg-[#0a0a0c] border text-xs font-mono transition-colors cursor-pointer ${
-                isComponentDropdownOpen || componentFilter !== "ALL"
-                  ? "border-[rgba(255,255,255,0.18)] text-white shadow-sm"
-                  : "border-[rgba(255,255,255,0.05)] text-[#d4d4d8] hover:border-[rgba(255,255,255,0.12)]"
-              }`}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "6px",
+                background: "transparent",
+                border: "none",
+                fontFamily: "var(--font-mono, monospace)",
+                fontSize: "12.5px",
+                color: componentFilter !== "ALL" ? "#9be5fb" : "#8e8e93",
+                cursor: "pointer",
+                padding: "4px 0",
+                transition: "color 150ms ease",
+              }}
+              onMouseEnter={(e) => {
+                if (componentFilter === "ALL") e.currentTarget.style.color = "#ffffff";
+              }}
+              onMouseLeave={(e) => {
+                if (componentFilter === "ALL") e.currentTarget.style.color = "#8e8e93";
+              }}
             >
-              <Layers className="w-3.5 h-3.5 text-[#55555c] shrink-0" />
-              <span className="truncate max-w-[140px]">
-                {componentFilter === "ALL"
-                  ? "All Components"
-                  : componentFilter}
-              </span>
+              <span>Scope: {componentFilter === "ALL" ? "All" : componentFilter}</span>
               <ChevronDown
-                className={`w-3.5 h-3.5 text-[#55555c] transition-transform duration-200 shrink-0 ${
+                className={`w-3 h-3 text-[#71717a] transition-transform duration-200 ${
                   isComponentDropdownOpen ? "rotate-180 text-white" : ""
                 }`}
               />
             </button>
 
-            {/* Floating Component Dropdown Panel (Isolated scroll) */}
+            {/* Floating Component Menu */}
             {isComponentDropdownOpen && (
               <div
                 data-lenis-prevent
@@ -313,47 +333,105 @@ export function ChangelogControlConsole({
         </div>
       </div>
 
-      {/* Segmented Type Filters Row */}
-      <div className="flex flex-wrap items-center justify-between gap-2 pt-2.5 border-t border-[rgba(255,255,255,0.04)] font-mono text-xs">
-        <div className="flex flex-wrap items-center gap-1.5">
+      {/* Bottom Strip: Mono Tag Tokens with Slow Underline + Result Counter */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          flexWrap: "wrap",
+          gap: "12px",
+          fontFamily: "var(--font-mono, monospace)",
+          fontSize: "12.5px",
+        }}
+      >
+        {/* Monospace Tag Filter Tokens */}
+        <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
           {(
             [
-              { id: "ALL", label: "All Types" },
-              { id: "MAJOR", label: "Major" },
-              { id: "ADDITION", label: "Additions" },
-              { id: "FIX", label: "Fixes" },
-              { id: "REMOVAL", label: "Removals" },
+              { id: "ALL", label: "[ALL]" },
+              { id: "MAJOR", label: "[MAJOR]" },
+              { id: "ADDITION", label: "[ADD]" },
+              { id: "FIX", label: "[FIX]" },
+              { id: "REMOVAL", label: "[REM]" },
             ] as const
           ).map((tab) => {
             const isActive = tagFilter === tab.id;
             return (
               <button
                 key={tab.id}
+                type="button"
                 onClick={() => onTagFilterChange(tab.id)}
-                className={`px-3 py-1.5 rounded-lg text-xs transition-all cursor-pointer ${
-                  isActive
-                    ? "bg-[#18181c] text-white border border-[rgba(255,255,255,0.12)] font-medium"
-                    : "bg-transparent text-[#8e8e93] hover:text-white border border-transparent hover:border-[rgba(255,255,255,0.06)]"
-                }`}
+                style={{
+                  position: "relative",
+                  background: "transparent",
+                  border: "none",
+                  padding: "4px 0",
+                  fontFamily: "var(--font-mono, monospace)",
+                  fontSize: "12px",
+                  fontWeight: isActive ? 600 : 400,
+                  letterSpacing: "0.08em",
+                  color: isActive ? "#ffffff" : "#71717a",
+                  cursor: "pointer",
+                  transition: "color 150ms ease",
+                }}
+                onMouseEnter={(e) => {
+                  if (!isActive) e.currentTarget.style.color = "#d4d4d8";
+                }}
+                onMouseLeave={(e) => {
+                  if (!isActive) e.currentTarget.style.color = "#71717a";
+                }}
               >
-                {tab.label}
+                <span>{tab.label}</span>
+                {/* Slow Ink-Draw Underline */}
+                <span
+                  style={{
+                    position: "absolute",
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    height: "1.5px",
+                    background: "#9be5fb",
+                    transform: isActive ? "scaleX(1)" : "scaleX(0)",
+                    transformOrigin: "left",
+                    transition: "transform 400ms cubic-bezier(0.22, 1, 0.36, 1)",
+                    pointerEvents: "none",
+                  }}
+                />
               </button>
             );
           })}
         </div>
 
-        {/* Results Count & Clear */}
-        <div className="flex items-center gap-3 text-xs text-[#8e8e93]">
+        {/* Results Counter & Reset */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "12px",
+            color: "#71717a",
+            fontSize: "12px",
+          }}
+        >
           <span>
-            Showing{" "}
-            <strong className="text-white font-mono">{filteredCount}</strong> of{" "}
-            {totalCount}
+            <strong style={{ color: "#ffffff", fontWeight: 600 }}>{filteredCount}</strong> of{" "}
+            {totalCount} releases
           </span>
 
           {hasActiveFilters && (
             <button
               onClick={onResetFilters}
-              className="text-xs text-[#9be5fb] hover:underline cursor-pointer font-mono"
+              style={{
+                background: "transparent",
+                border: "none",
+                color: "#9be5fb",
+                textDecoration: "underline",
+                textUnderlineOffset: "3px",
+                cursor: "pointer",
+                fontFamily: "var(--font-mono, monospace)",
+                fontSize: "12px",
+                padding: 0,
+              }}
             >
               Reset
             </button>

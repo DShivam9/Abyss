@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef } from "react";
 import * as THREE from "three";
+import { ABYSS_LOGO_REL_COMMANDS } from "./abyssLogoPath";
 
 interface Abyss3DLogoPieceProps {
   size?: number;
@@ -90,49 +91,16 @@ export function Abyss3DLogoPiece({
     scene.environment = studioEnvMap;
 
     // 1:1 SVG Shape Extrusion
-    const relCommands = [
-      [50, 7.5234],
-      [2.2461, 29.645],
-      [5.9648, -15.68],
-      [-5.2891, 24.566],
-      [0.089844, 1.0898],
-      [37.09, -22.633],
-      [-27.855, 22.355],
-      [20.266, -5.3906],
-      [-24.645, 10.09],
-      [42.133, 11.113],
-      [-39.566, -5.5469],
-      [21.109, 12.812],
-      [-25.188, -11.445],
-      [15.898, 34.777],
-      [-19.363, -30.055],
-      [3.1523, 22.242],
-      [-7.2656, -24.844],
-      [-21.031, 32.656],
-      [14.41, -31.531],
-      [-16.945, 14.586],
-      [17.043, -19.578],
-      [-42.254, 5.9141],
-      [36.457, -9.6016],
-      [-24.191, -3.6328],
-      [29.801, 0.89844],
-      [-32.168, -25.82],
-      [28.945, 17.656],
-      [-11.887, -17.145],
-      [19.934, 22.055],
-      [0.097656, 0.066406],
-    ];
-
     const scale = 0.046;
     const shape = new THREE.Shape();
-    let curX = relCommands[0][0];
-    let curY = relCommands[0][1];
+    let curX = ABYSS_LOGO_REL_COMMANDS[0][0];
+    let curY = ABYSS_LOGO_REL_COMMANDS[0][1];
 
     shape.moveTo((curX - 50) * scale, -(curY - 50) * scale);
 
-    for (let i = 1; i < relCommands.length; i++) {
-      curX += relCommands[i][0];
-      curY += relCommands[i][1];
+    for (let i = 1; i < ABYSS_LOGO_REL_COMMANDS.length; i++) {
+      curX += ABYSS_LOGO_REL_COMMANDS[i][0];
+      curY += ABYSS_LOGO_REL_COMMANDS[i][1];
       shape.lineTo((curX - 50) * scale, -(curY - 50) * scale);
     }
     shape.closePath();

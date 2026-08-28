@@ -28,6 +28,20 @@ export interface CommitEntry {
 
 export const CHANGELOG_DATA: CommitEntry[] = [
   {
+    id: "commit-26",
+    date: "2026-08-28",
+    displayDate: "Aug 28, 2026 • 15:35 IST",
+    tags: ["MAJOR", "ADDITION"],
+    title: "Website Refresh & Legal Pages",
+    summary: "Refreshed docs and changelog layouts, and added a custom 404 page alongside dedicated legal pages.",
+    items: [
+      "Added a custom 404 page",
+      "Redesigned docs layout for cleaner reading and navigation",
+      "Streamlined changelog design with quick search and filter tags",
+      "Added Terms of Service and Privacy Policy pages",
+    ],
+  },
+  {
     id: "commit-25",
     date: "2026-08-27",
     displayDate: "Aug 27, 2026 • 22:30 IST",

@@ -220,8 +220,8 @@ export function SiteFooter({ activePage }: { activePage?: string }) {
             LEGAL &amp; PRIVACY
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: "9px" }}>
-            <RollingLink href="#" label="Privacy Policy" />
-            <RollingLink href="#" label="Terms of Service" />
+            <RollingLink href="/privacy" label="Privacy Policy" isSelected={current === "/privacy"} />
+            <RollingLink href="/terms" label="Terms of Service" isSelected={current === "/terms"} />
           </div>
         </div>
       </div>
