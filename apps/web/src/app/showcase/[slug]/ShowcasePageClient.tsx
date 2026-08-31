@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
+import { notFound } from "next/navigation";
 import { getComponent, getLayoutType } from "@/lib/registry";
 import { ShowcaseChrome } from "@/components/showcase/ShowcaseChrome";
 import { ControlsDrawer } from "@/components/showcase/ControlsDrawer";
@@ -37,11 +38,7 @@ export default function ShowcasePageClient({ slug }: { slug: string }) {
   };
 
   if (!meta || !Component) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-[#070708] font-sans text-sm text-neutral-400">
-        Component Not Found
-      </div>
-    );
+    notFound();
   }
 
   const defaultImageSrc = meta.filename
