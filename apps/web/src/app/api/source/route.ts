@@ -23,7 +23,7 @@ export async function GET(req: NextRequest) {
   }
 
   const VALID_TYPES = ["tsx", "glsl", "story"] as const;
-  if (type && !VALID_TYPES.includes(type as any)) {
+  if (type && !VALID_TYPES.includes(type as (typeof VALID_TYPES)[number])) {
     return NextResponse.json({ error: "Invalid type" }, { status: 400 });
   }
 

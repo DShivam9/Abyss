@@ -34,8 +34,6 @@ export default function CascadeGallery({
 }: CascadeGalleryProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const pillRef = useRef<HTMLDivElement>(null);
-  const pillLabelRef = useRef<HTMLSpanElement>(null);
   const dateRef = useRef<HTMLDivElement>(null);
   const phraseLeftRef = useRef<HTMLDivElement>(null);
   const phraseRightRef = useRef<HTMLDivElement>(null);
@@ -64,13 +62,11 @@ export default function CascadeGallery({
   useEffect(() => {
     const canvas = canvasRef.current;
     const container = containerRef.current;
-    const floatingPillEl = pillRef.current;
-    const pillLabelEl = pillLabelRef.current;
     const phraseLeftEl = phraseLeftRef.current;
     const phraseRightEl = phraseRightRef.current;
     const dateEl = dateRef.current;
 
-    if (!canvas || !container || !floatingPillEl) return;
+    if (!canvas || !container) return;
 
     let isDisposed = false;
     let animationFrameId: number;
@@ -132,32 +128,6 @@ export default function CascadeGallery({
 
     const introBloom = { fade: 0.0, blur: 6.0 };
 
-    // --- 2. Floating Pill QuickSetters & Label Morph ---
-    const setPillX = gsap.quickSetter(floatingPillEl, "x", "px");
-    const setPillY = gsap.quickSetter(floatingPillEl, "y", "px");
-    const setPillRotation = gsap.quickSetter(floatingPillEl, "rotation", "deg");
-
-    let currentPillText = "expand";
-    let isPillVisible = false;
-
-    function setPillLabel(newText: string) {
-      if (currentPillText === newText) return;
-      currentPillText = newText;
-      if (!pillLabelEl) return;
-      pillLabelEl.classList.add("is-changing");
-      setTimeout(() => {
-        if (!pillLabelEl) return;
-        pillLabelEl.textContent = newText;
-        pillLabelEl.classList.remove("is-changing");
-      }, 100);
-    }
-
-    let clientMouseX = window.innerWidth / 2;
-    let clientMouseY = window.innerHeight / 2;
-    let pillCurrentX = window.innerWidth / 2;
-    let pillCurrentY = window.innerHeight / 2;
-    let pillCurrentTilt = 0;
-
     const raycaster = new THREE.Raycaster();
     const mouse = new THREE.Vector2(-1000, -1000);
     let selectedHoverIndex: number | null = null;
@@ -165,6 +135,8 @@ export default function CascadeGallery({
     // --- 3. Hero State & Choreography ---
     let activeHeroIndex: number | null = null;
     let isHeroActive = false;
+    let isHeroClosing = false;
+    let onHeroCloseCallback: (() => void) | null = null;
     let heroTimeline: gsap.core.Timeline | null = null;
 
     const heroAnim = {
@@ -178,6 +150,8 @@ export default function CascadeGallery({
       if (heroTimeline) heroTimeline.kill();
       activeHeroIndex = index;
       isHeroActive = true;
+      isHeroClosing = false;
+      onHeroCloseCallback = null;
 
       const cap = PHOTO_CAPTIONS[index % PHOTO_CAPTIONS.length];
       if (phraseLeftEl) phraseLeftEl.textContent = cap.left;
@@ -237,8 +211,22 @@ export default function CascadeGallery({
     }
 
     function closeHero(onCompleteCallback?: () => void) {
+      if (isHeroClosing) {
+        if (onCompleteCallback) {
+          onHeroCloseCallback = onCompleteCallback;
+        }
+        return;
+      }
+
+      if (!isHeroActive && activeHeroIndex === null) {
+        if (onCompleteCallback) onCompleteCallback();
+        return;
+      }
+
       if (heroTimeline) heroTimeline.kill();
       isHeroActive = false;
+      isHeroClosing = true;
+      onHeroCloseCallback = onCompleteCallback || null;
 
       heroTimeline = gsap.timeline({
         onComplete: () => {
@@ -253,8 +241,11 @@ export default function CascadeGallery({
             cards[activeHeroIndex].mat.depthTest = true;
           }
           activeHeroIndex = null;
-          if (typeof onCompleteCallback === "function") {
-            onCompleteCallback();
+          isHeroClosing = false;
+          const cb = onHeroCloseCallback;
+          onHeroCloseCallback = null;
+          if (typeof cb === "function") {
+            cb();
           }
         }
       });
@@ -284,8 +275,6 @@ export default function CascadeGallery({
 
     // --- 4. Event Listeners ---
     const handlePointerMove = (e: PointerEvent) => {
-      clientMouseX = e.clientX;
-      clientMouseY = e.clientY;
       mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
       mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
     };
@@ -293,33 +282,35 @@ export default function CascadeGallery({
     const handlePointerLeave = () => {
       mouse.set(-1000, -1000);
       selectedHoverIndex = null;
-      floatingPillEl.classList.remove("is-visible");
+      container.style.cursor = "default";
     };
 
     const handleClick = () => {
       if (selectedHoverIndex !== null) {
-        if (!isHeroActive) {
+        if (isHeroClosing) {
+          switchHero(selectedHoverIndex);
+        } else if (!isHeroActive) {
           openHero(selectedHoverIndex);
         } else if (selectedHoverIndex === activeHeroIndex) {
           closeHero();
         } else {
           switchHero(selectedHoverIndex);
         }
-      } else if (isHeroActive) {
+      } else if (isHeroActive || isHeroClosing) {
         closeHero();
       }
     };
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && isHeroActive) {
+      if (e.key === "Escape" && (isHeroActive || isHeroClosing)) {
         closeHero();
-      } else if (e.key === "ArrowRight" && !isHeroActive) {
+      } else if (e.key === "ArrowRight" && !isHeroActive && !isHeroClosing) {
         targetProgress += 1.8;
         userScrollVelocity += 35;
-      } else if (e.key === "ArrowLeft" && !isHeroActive) {
+      } else if (e.key === "ArrowLeft" && !isHeroActive && !isHeroClosing) {
         targetProgress -= 1.8;
         userScrollVelocity -= 35;
-      } else if (e.key === " " && !isHeroActive) {
+      } else if (e.key === " " && !isHeroActive && !isHeroClosing) {
         e.preventDefault();
         targetProgress += 2.5;
         userScrollVelocity += 45;
@@ -332,7 +323,7 @@ export default function CascadeGallery({
 
     const handleWheel = (e: WheelEvent) => {
       e.preventDefault();
-      if (isHeroActive) return;
+      if (isHeroActive || isHeroClosing) return;
       const delta = THREE.MathUtils.clamp(e.deltaY * scrollSensitivityRef.current, -4.0, 4.0);
       targetProgress += delta;
       userScrollVelocity += delta * 18;
@@ -400,40 +391,10 @@ export default function CascadeGallery({
         selectedHoverIndex = null;
       }
 
-      const targetPillX = clientMouseX + 16;
-      const targetPillY = clientMouseY + 16;
-      const pillDamp = 1 - Math.pow(1 - 0.11, dt * 60);
-
-      const prevPillX = pillCurrentX;
-      pillCurrentX += (targetPillX - pillCurrentX) * pillDamp;
-      pillCurrentY += (targetPillY - pillCurrentY) * pillDamp;
-
-      const pillVelX = (pillCurrentX - prevPillX) / Math.max(dt, 0.001);
-      const targetTilt = THREE.MathUtils.clamp(pillVelX * 0.015, -12, 12);
-      pillCurrentTilt += (targetTilt - pillCurrentTilt) * pillDamp;
-
-      setPillX(pillCurrentX);
-      setPillY(pillCurrentY);
-      setPillRotation(pillCurrentTilt);
-
-      const shouldPillBeVisible = isHeroActive || selectedHoverIndex !== null;
-      if (shouldPillBeVisible !== isPillVisible) {
-        isPillVisible = shouldPillBeVisible;
-        if (isPillVisible) {
-          floatingPillEl.classList.add("is-visible");
-        } else {
-          floatingPillEl.classList.remove("is-visible");
-        }
-      }
-
-      if (isHeroActive) {
-        if (selectedHoverIndex !== null && selectedHoverIndex !== activeHeroIndex) {
-          setPillLabel("expand");
-        } else {
-          setPillLabel("close");
-        }
-      } else if (selectedHoverIndex !== null) {
-        setPillLabel("expand");
+      if (selectedHoverIndex !== null || isHeroActive) {
+        container.style.cursor = "pointer";
+      } else {
+        container.style.cursor = "default";
       }
 
       const half = totalCards / 2;
@@ -717,28 +678,6 @@ export default function CascadeGallery({
         >
           the spirit stays unyielding.
         </div>
-      </div>
-
-      {/* Handcrafted Optical Crystal Glass Floating Pill Badge */}
-      <div
-        ref={pillRef}
-        className="fixed top-0 left-0 pointer-events-none z-[999999] will-change-transform px-[16px] rounded-full text-white font-sans text-[11px] font-semibold tracking-[0.08em] uppercase flex items-center justify-center opacity-0 transition-opacity duration-200 select-none whitespace-nowrap h-[30px] [&.is-visible]:opacity-100"
-        style={{
-          background: 'rgba(22, 22, 26, 0.62)',
-          backdropFilter: 'blur(24px) saturate(190%) contrast(105%)',
-          WebkitBackdropFilter: 'blur(24px) saturate(190%) contrast(105%)',
-          border: '1px solid rgba(255, 255, 255, 0.22)',
-          borderTop: '1.2px solid rgba(255, 255, 255, 0.75)',
-          borderBottom: '1px solid rgba(255, 255, 255, 0.12)',
-          boxShadow: '0 14px 32px -4px rgba(0, 0, 0, 0.28), 0 4px 10px rgba(0, 0, 0, 0.12), inset 0 1px 1px 0 rgba(255, 255, 255, 0.45), inset 0 -1px 1px 0 rgba(0, 0, 0, 0.10)'
-        }}
-      >
-        <span
-          ref={pillLabelRef}
-          className="inline-block leading-none transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] [&.is-changing]:opacity-0 [&.is-changing]:-translate-y-1 [&.is-changing]:scale-90"
-        >
-          expand
-        </span>
       </div>
 
       <canvas ref={canvasRef} className="absolute inset-0 w-full h-full block outline-none z-[3] opacity-0 transition-opacity duration-500" />
