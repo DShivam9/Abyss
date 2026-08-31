@@ -28,6 +28,19 @@ export interface CommitEntry {
 
 export const CHANGELOG_DATA: CommitEntry[] = [
   {
+    id: "commit-27",
+    date: "2026-08-31",
+    displayDate: "Aug 31, 2026 • 19:15 IST",
+    tags: ["MAJOR", "ADDITION"],
+    title: "Open Source Release & Documentation",
+    summary: "Updated documentation, component guides, and added official Apache 2.0 licensing for the open-source release.",
+    items: [
+      "Updated project README with complete architecture overview and installation guides",
+      "Added official Apache 2.0 license for open-source distribution",
+      "General performance, accessibility, and smooth navigation polish",
+    ],
+  },
+  {
     id: "commit-26",
     date: "2026-08-28",
     displayDate: "Aug 28, 2026 • 15:35 IST",

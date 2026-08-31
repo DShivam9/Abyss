@@ -4,8 +4,6 @@
 @source "../../../../packages/core/src/**/*.{ts,tsx}";
 @source "../../../packages/core/src/**/*.{ts,tsx}";
 @source "../../packages/core/src/**/*.{ts,tsx}";
-@import "tw-animate-css";
-@import "shadcn/tailwind.css";
 
 @custom-variant dark (&:is(.dark *));
 

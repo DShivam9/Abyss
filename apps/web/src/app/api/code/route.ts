@@ -1,38 +1,45 @@
 import { NextRequest, NextResponse } from "next/server";
 import fs from "fs";
 import path from "path";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 export async function GET(req: NextRequest) {
+  const ip = req.headers.get("x-forwarded-for") ?? req.headers.get("x-real-ip") ?? "127.0.0.1";
+  const { success, remaining } = await checkRateLimit(ip);
+
+  if (!success) {
+    return NextResponse.json(
+      { error: "Too many requests" },
+      { status: 429, headers: { "X-RateLimit-Remaining": String(remaining) } }
+    );
+  }
+
   const { searchParams } = new URL(req.url);
   const slug = searchParams.get("slug");
   const type = searchParams.get("type"); // 'tsx' | 'glsl'
 
-  if (!slug) {
-    return NextResponse.json({ error: "Missing slug" }, { status: 400 });
+  if (!slug || !/^[a-z0-9][a-z0-9-]*$/.test(slug)) {
+    return NextResponse.json({ error: "Invalid slug" }, { status: 400 });
   }
 
-  // Resolve placeholder slugs to their actual implementation folders
-  const SLUG_TO_FOLDER: Record<string, string> = {
-    // Placeholders mapping to merlin-knights
-    "depth-silhouette": "merlin-knights",
-    "stippled-dark": "merlin-knights",
-    "dajd": "merlin-knights",
-    "jjjj": "merlin-knights",
-    "procedural-atlas": "merlin-knights",
-    "underscore": "merlin-knights",
-    "stshsh": "merlin-knights",
-    "merged-v3": "merlin-knights",
-    "ldhad": "merlin-knights",
-  };
+  const VALID_TYPES = ["tsx", "glsl", "story"] as const;
+  if (type && !VALID_TYPES.includes(type as any)) {
+    return NextResponse.json({ error: "Invalid type" }, { status: 400 });
+  }
 
-  const resolvedSlug = SLUG_TO_FOLDER[slug] || slug;
+  const resolvedSlug = slug;
 
   // Resolve packages/core path depending on whether process.cwd() is the monorepo root or apps/web
   const baseCorePath = fs.existsSync(path.join(process.cwd(), "packages/core"))
     ? path.join(process.cwd(), "packages/core")
     : path.resolve(process.cwd(), "../../packages/core");
 
-  const componentPath = path.join(baseCorePath, "src/components", resolvedSlug);
+  const allowedBase = path.resolve(baseCorePath, "src/components");
+  const componentPath = path.resolve(allowedBase, resolvedSlug);
+
+  if (!componentPath.startsWith(allowedBase)) {
+    return NextResponse.json({ error: "Invalid path" }, { status: 400 });
+  }
 
   try {
     if (type === "story") {

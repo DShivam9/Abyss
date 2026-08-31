@@ -15,6 +15,10 @@ export function SmoothScrollProvider({ children }: { children: ReactNode }) {
   const pathname = usePathname();
 
   useGSAP(() => {
+    if (typeof window === "undefined") return;
+    const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (prefersReduced) return;
+
     // ponytail: natural 1:1 wheel multiplier + crisp duration for responsive scrolling
     const lenis = new Lenis({
       duration: 0.85,

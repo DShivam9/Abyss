@@ -22,6 +22,18 @@ export function SpecimenCodeLedger({
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const bodyRef = useSmoothScroll<HTMLDivElement>();
 
+  React.useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        onClose();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, onClose]);
+
   if (!component) return null;
 
   const componentExportName = component.label

@@ -27,7 +27,17 @@ export function ControlsDrawer({
   const [position, setPosition] = useState<{ x: number; y: number } | null>(null);
   const [isDragging, setIsDragging] = useState(false);
 
-  if (!controls || controls.length === 0) return null;
+  React.useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        onClose();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, onClose]);
 
   // Header dragging logic (Pointer Capture with zero frame drop)
   const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {

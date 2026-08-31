@@ -18,6 +18,18 @@ export function SpecimenInfoLedger({
 }: SpecimenInfoLedgerProps) {
   const bodyRef = useSmoothScroll<HTMLDivElement>();
 
+  React.useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        onClose();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, onClose]);
+
   if (!component) return null;
 
   return (
@@ -115,7 +127,7 @@ export function SpecimenInfoLedger({
           <div className="ledger-section" style={{ borderTop: "1px solid rgba(255,255,255,0.06)", paddingTop: "24px" }}>
             <span className="section-tag">LICENSE & USAGE</span>
             <p className="ledger-desc" style={{ fontSize: "14px", lineHeight: "1.7", color: "var(--text-muted)" }}>
-              Released under MIT License for open-source and commercial use in modern web applications.
+              Released under Apache License 2.0 for open-source and commercial use in modern web applications.
             </p>
           </div>
         </div>

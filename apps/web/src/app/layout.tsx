@@ -5,7 +5,8 @@ import "./globals.css";
 import { SmoothScrollProvider } from "@/components/providers/SmoothScrollProvider";
 import { CursorProvider } from "@/components/providers/CursorProvider";
 import { TabVisibilityTitle } from "@/components/providers/TabVisibilityTitle";
-import { cn } from "@/lib/utils";
+import { Analytics } from "@vercel/analytics/react";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 // Navbar import removed
 
@@ -39,12 +40,18 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning className={cn("h-full", "antialiased", jetbrainsMono.variable, "font-sans", saintRegus.variable)}>
+    <html lang="en" suppressHydrationWarning className={`h-full antialiased font-sans ${jetbrainsMono.variable} ${saintRegus.variable}`}>
       <head>
         <link rel="preconnect" href="https://api.fontshare.com" />
         <link href="https://api.fontshare.com/v2/css?f[]=switzer@400,500,600,700&f[]=ranade@400,500,600,700,900&display=swap" rel="stylesheet" />
       </head>
       <body suppressHydrationWarning className="min-h-full flex flex-col bg-[#0d0d0f] text-[#ffffff] font-sans">
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[9999] focus:px-4 focus:py-2 focus:bg-white focus:text-black focus:font-semibold focus:text-xs focus:rounded-full focus:shadow-lg"
+        >
+          Skip to content
+        </a>
         <div className="noise-bg" />
         <TabVisibilityTitle />
         <SmoothScrollProvider>
@@ -52,6 +59,8 @@ export default function RootLayout({
             {children}
           </CursorProvider>
         </SmoothScrollProvider>
+        <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );

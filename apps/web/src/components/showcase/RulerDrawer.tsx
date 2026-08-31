@@ -19,6 +19,18 @@ export function RulerDrawer({ currentSlug, onClose }: RulerDrawerProps) {
   const listRef = useSmoothScroll<HTMLDivElement>();
   const activeItemRef = useRef<HTMLButtonElement | null>(null);
 
+  // Keyboard Escape to close
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        onClose();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [onClose]);
+
   // Auto-center active specimen row when drawer is opened or slug changes
   useEffect(() => {
     const timer = setTimeout(() => {

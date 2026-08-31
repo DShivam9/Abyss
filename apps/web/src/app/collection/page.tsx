@@ -132,7 +132,7 @@ function CollectionContent() {
         <DockNavbar onOpenSearch={() => setCommandPaletteOpen(true)} />
 
         {/* Main Collection Container */}
-        <main className="collection-container" id="mainContainer">
+        <main className="collection-container" id="main-content">
           {!hasResults ? (
             <div
               style={{

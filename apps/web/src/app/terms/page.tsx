@@ -218,10 +218,10 @@ export default function TermsPage() {
             </p>
           </LedgerSection>
 
-          {/* MIT License & Commercial Rights */}
+          {/* Apache 2.0 License & Commercial Rights */}
           <LedgerSection label="License & Usage">
             <p style={{ margin: 0 }}>
-              All Abyss components, shader modules, and animation hooks are <span className="highlight-phrase">released under the MIT License</span>. You are <span className="highlight-phrase">free to use them in personal and commercial projects</span> with full rights to modify and adapt the code to your specifications.
+              All Abyss components, shader modules, and animation hooks are <span className="highlight-phrase">released under the Apache License 2.0</span>. You are <span className="highlight-phrase">free to use them in personal and commercial projects</span> with full rights to modify and adapt the code to your specifications.
             </p>
             <p style={{ margin: 0, color: "#a1a1aa" }}>
               The complete license terms are maintained within our public repository on GitHub.
