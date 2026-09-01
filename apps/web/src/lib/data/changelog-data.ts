@@ -28,6 +28,21 @@ export interface CommitEntry {
 
 export const CHANGELOG_DATA: CommitEntry[] = [
   {
+    id: "commit-28",
+    date: "2026-09-01",
+    displayDate: "Sep 01, 2026 • 23:10 IST",
+    tags: ["MAJOR", "ADDITION", "FIX"],
+    title: "Added Mosaic Loader & Performance Polish",
+    summary: "Introduced the Mosaic Loader preloader component, refined curtain parallax transitions, and improved asset delivery pipelines.",
+    affectedSlugs: ["mosaic-loader"],
+    items: [
+      "Added Mosaic Loader with 18-card quantum cycling and inline image previews",
+      "Refined upward curtain parallax roll-up and unclipped continuous counter",
+      "Introduced skeleton loaders across showcase views for zero layout shift",
+      "Optimized WebP image delivery and eager asset prefetching pipelines",
+    ],
+  },
+  {
     id: "commit-27",
     date: "2026-08-31",
     displayDate: "Aug 31, 2026 • 19:15 IST",

@@ -229,12 +229,13 @@ function CollectionContent() {
                 headlineClass="headline-s1"
               />
               <div className="card-grid">
-                {sortedAllComponents.map((comp) => (
+                {sortedAllComponents.map((comp, idx) => (
                   <CollectionCard
                     key={comp.slug}
                     slug={comp.slug}
                     title={comp.label}
                     filename={comp.filename}
+                    priority={idx < 6}
                   />
                 ))}
               </div>
@@ -242,7 +243,7 @@ function CollectionContent() {
           ) : (
             /* Curated Vibe Chapters */
             <div>
-              {curatedChapters.map((section) => (
+              {curatedChapters.map((section, sIdx) => (
                 <section key={section.id} className="vibe-section">
                   <SectionHeader
                     title={section.title}
@@ -250,12 +251,13 @@ function CollectionContent() {
                     headlineClass={section.headlineClass}
                   />
                   <div className="card-grid">
-                    {section.items.map((comp) => (
+                    {section.items.map((comp, cIdx) => (
                       <CollectionCard
                         key={comp.slug}
                         slug={comp.slug}
                         title={comp.label}
                         filename={comp.filename}
+                        priority={sIdx === 0 && cIdx < 6}
                       />
                     ))}
                   </div>

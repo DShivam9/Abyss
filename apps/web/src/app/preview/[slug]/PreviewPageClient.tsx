@@ -54,8 +54,9 @@ export default function PreviewPageClient({ slug }: PreviewPageClientProps) {
 
   const renderLayout = () => {
     if (isSelfContainedScroll) {
+      const bgClass = slug === "mosaic-loader" ? "bg-white" : "bg-[#070708]";
       return (
-        <div className="relative w-full min-h-screen h-screen bg-[#070708] overflow-hidden">
+        <div className={`relative w-full min-h-screen h-screen ${bgClass} overflow-hidden`}>
           {renderComponent()}
         </div>
       );
@@ -100,10 +101,11 @@ export default function PreviewPageClient({ slug }: PreviewPageClientProps) {
     );
   };
 
-  const isLightBg = slug === "cascade-gallery";
+  const isLightBg = slug === "cascade-gallery" || slug === "mosaic-loader";
+  const mainBgClass = slug === "mosaic-loader" ? "bg-white" : isLightBg ? "bg-[#f4f1ea]" : "bg-[#070708]";
 
   return (
-    <main className={`w-full min-h-screen ${isLightBg ? "bg-[#f4f1ea]" : "bg-[#070708]"} ${isScroll ? "" : "h-screen overflow-hidden"}`}>
+    <main className={`w-full min-h-screen ${mainBgClass} ${isScroll ? "" : "h-screen overflow-hidden"}`}>
       <ComponentErrorBoundary fallbackSlug={slug}>
         {renderLayout()}
       </ComponentErrorBoundary>

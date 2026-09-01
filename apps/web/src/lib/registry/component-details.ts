@@ -538,6 +538,16 @@ export const COMPONENT_DETAILS: Record<string, ComponentDetail> = {
         default: true
       }
     ]
+  },
+  "mosaic-loader": {
+    id: "78",
+    label: "Mosaic Loader",
+    filename: "components/mosaic-loader/hero.webp",
+    desc: "A bespoke editorial preloader with 18 organic aspect-ratio cards, high-speed quantum cycling, a central 8-point octagram star HUD step-locked to a precision mechanical odometer drum, and unhurried Saint Regus typography.",
+    slug: "mosaic-loader",
+    category: "interaction",
+    subtype: "loaders",
+    tags: ["Mosaic Loader", "Preloader", "Odometer Drum", "Octagram Star", "Saint Regus", "Constellation Grid", "Gravitational Implosion"]
   }
 };
 

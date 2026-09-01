@@ -1,6 +1,4 @@
-"use client";
-
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { ThemeToggleRedesignProps } from "./types";
 import { DEFAULT_THEME_TOGGLE_CONFIG } from "./constants";
 

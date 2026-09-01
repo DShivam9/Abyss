@@ -8,6 +8,7 @@ export const SELF_CONTAINED_SCROLL = new Set([
   "curved-scroll-wipe",
   "erosion-map",
   "clip-morph",
+  "mosaic-loader",
 ]);
 
 export function getLayoutType(meta: ComponentDetail, slug: string) {
