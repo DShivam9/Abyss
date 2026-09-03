@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cinema Aisle — Abyss Prototype</title>
+  <style>
+    @font-face {
+      font-family: 'Allura';
+      src: url('/fonts/allura/Allura-Regular.ttf') format('truetype');
+      font-weight: 400;
+      font-style: normal;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: #000000;
+      color: #ffffff;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      overflow: hidden;
+      height: 100vh;
+      width: 100vw;
+      user-select: none;
+    }
+
+    #canvas-container {
+      width: 100vw;
+      height: 100vh;
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+
+    .brand-header {
+      position: fixed;
+      top: 36px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-8px);
+      font-family: 'Allura', cursive;
+      font-size: 40px;
+      color: rgba(255, 255, 255, 0.94);
+      letter-spacing: 0.18em;
+      filter: blur(14px);
+      z-index: 100;
+      pointer-events: none;
+      user-select: none;
+      opacity: 0;
+      transition: 
+        opacity 2.4s cubic-bezier(0.16, 1, 0.3, 1),
+        filter 2.4s cubic-bezier(0.16, 1, 0.3, 1),
+        letter-spacing 2.6s cubic-bezier(0.16, 1, 0.3, 1),
+        transform 2.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .brand-header.visible {
+      opacity: 0.92;
+      filter: blur(0px);
+      letter-spacing: 0.04em;
+      transform: translateX(-50%) translateY(0px);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="brand-header">Cinema Aisle</div>
+  <div id="canvas-container"></div>
+
+  <script type="module">
+    import * as THREE from '/three.module.min.js';
+
+    // --- SCENE SETUP ---
+    const container = document.getElementById('canvas-container');
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x000000);
+    const FOG_DENSITY = 0.034;
+    scene.fog = new THREE.FogExp2(0x000000, FOG_DENSITY);
+
+    // Camera completely anchored at center
+    const camera = new THREE.PerspectiveCamera(65, window.innerWidth / window.innerHeight, 0.1, 100);
+    camera.position.set(0, 0, 4);
+    camera.lookAt(0, 0, -12);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    container.appendChild(renderer.domElement);
+
+    const clock = new THREE.Clock();
+
+    // --- 16 VIDEO TEXTURE STREAM ENGINE ---
+    const TOTAL_VIDEOS = 16;
+    const videoFiles = Array.from({ length: TOTAL_VIDEOS }, (_, i) => 
+      `/videos/components/runway-corridor/clip-${String(i + 1).padStart(2, '0')}.mp4`
+    );
+
+    const videoElements = [];
+    const videoTextures = [];
+
+    videoFiles.forEach((src) => {
+      const vid = document.createElement('video');
+      vid.src = src;
+      vid.crossOrigin = 'anonymous';
+      vid.loop = true;
+      vid.muted = true;
+      vid.playsInline = true;
+      vid.setAttribute('playsinline', '');
+      vid.setAttribute('webkit-playsinline', '');
+      vid.autoplay = true;
+
+      const playPromise = vid.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(() => {
+          window.addEventListener('pointerdown', () => vid.play(), { once: true });
+          window.addEventListener('wheel', () => vid.play(), { once: true });
+        });
+      }
+
+      const tex = new THREE.VideoTexture(vid);
+      tex.minFilter = THREE.LinearFilter;
+      tex.magFilter = THREE.LinearFilter;
+      tex.anisotropy = renderer.capabilities.getMaxAnisotropy();
+      tex.generateMipmaps = false;
+
+      videoElements.push(vid);
+      videoTextures.push(tex);
+    });
+
+    // --- CORRIDOR CONFIG ---
+    const BASE_WALL_X = 3.5; 
+    const TOTAL_COLUMNS = 22;
+    const Z_STEP = 2.4;
+    const TOTAL_DEPTH = TOTAL_COLUMNS * Z_STEP;
+    const FRONT_WRAP = 8;
+    const BACK_WRAP = FRONT_WRAP - TOTAL_DEPTH;
+    const WRAP_RANGE = FRONT_WRAP - BACK_WRAP;
+    const FLOOR_Y = -2.60;
+
+    // 1. Primary Wall Video Shader
+    function createCurvedMaterial(tex, isLeft) {
+      return new THREE.ShaderMaterial({
+        uniforms: {
+          map: { value: tex },
+          isLeft: { value: isLeft ? 1.0 : 0.0 },
+          uCurvePower: { value: 6.2 },
+          uFocus: { value: 1.0 },
+          fogColor: { value: new THREE.Color(0x000000) },
+          fogDensity: { value: FOG_DENSITY }
+        },
+        vertexShader: `
+          uniform float isLeft;
+          uniform float uCurvePower;
+          varying vec2 vUv;
+          varying float vFogDepth;
+
+          void main() {
+            vUv = uv;
+            vec4 worldPos = modelMatrix * vec4(position, 1.0);
+            float t = clamp((worldPos.z + 7.5) / 14.5, 0.0, 1.0);
+            float flare = pow(t, 2.1) * uCurvePower;
+            worldPos.x += (isLeft > 0.5) ? -flare : flare;
+            vec4 viewPos = viewMatrix * worldPos;
+            vFogDepth = -viewPos.z;
+            gl_Position = projectionMatrix * viewPos;
+          }
+        `,
+        fragmentShader: `
+          uniform sampler2D map;
+          uniform float uFocus;
+          uniform vec3 fogColor;
+          uniform float fogDensity;
+          varying vec2 vUv;
+          varying float vFogDepth;
+
+          void main() {
+            vec4 texColor = texture2D(map, vUv);
+            // Gallery Glance focus: lift luminance on hovered clip, dim neighbors
+            texColor.rgb *= uFocus;
+            float fogFactor = 1.0 - exp(-fogDensity * fogDensity * vFogDepth * vFogDepth);
+            fogFactor = clamp(fogFactor, 0.0, 1.0);
+            gl_FragColor = vec4(mix(texColor.rgb, fogColor, fogFactor), texColor.a);
+          }
+        `,
+        side: THREE.DoubleSide
+      });
+    }
+
+    // 2. Anisotropic Satin Floor Reflection Shader
+    function createReflectedVideoMaterial(tex, isLeft) {
+      return new THREE.ShaderMaterial({
+        uniforms: {
+          map: { value: tex },
+          isLeft: { value: isLeft ? 1.0 : 0.0 },
+          uCurvePower: { value: 6.2 },
+          uFocus: { value: 1.0 },
+          fogColor: { value: new THREE.Color(0x000000) },
+          fogDensity: { value: FOG_DENSITY }
+        },
+        vertexShader: `
+          uniform float isLeft;
+          uniform float uCurvePower;
+          varying vec2 vUv;
+          varying float vFogDepth;
+          varying float vWorldY;
+
+          void main() {
+            vUv = uv;
+            vec4 worldPos = modelMatrix * vec4(position, 1.0);
+            float t = clamp((worldPos.z + 7.5) / 14.5, 0.0, 1.0);
+            float flare = pow(t, 2.1) * uCurvePower;
+            worldPos.x += (isLeft > 0.5) ? -flare : flare;
+            vWorldY = worldPos.y;
+            vec4 viewPos = viewMatrix * worldPos;
+            vFogDepth = -viewPos.z;
+            gl_Position = projectionMatrix * viewPos;
+          }
+        `,
+        fragmentShader: `
+          uniform sampler2D map;
+          uniform float uFocus;
+          uniform vec3 fogColor;
+          uniform float fogDensity;
+          varying vec2 vUv;
+          varying float vFogDepth;
+          varying float vWorldY;
+
+          void main() {
+            vec2 reflUv = vec2(vUv.x, 1.0 - vUv.y);
+
+            // Anisotropic dispersion: spreads horizontally across the polished floor surface
+            float bx = 0.0055;
+            float by = 0.0022;
+            vec4 col = texture2D(map, reflUv) * 0.36;
+            col += texture2D(map, reflUv + vec2(-bx, -by)) * 0.16;
+            col += texture2D(map, reflUv + vec2( bx, -by)) * 0.16;
+            col += texture2D(map, reflUv + vec2(-bx * 1.4, by)) * 0.16;
+            col += texture2D(map, reflUv + vec2( bx * 1.4, by)) * 0.16;
+
+            // Physical floor-depth falloff: 100% full reflection right at the floor level (-2.60)
+            float floorLevel = -2.60;
+            float distBelow = max(0.0, floorLevel - vWorldY);
+            float verticalFalloff = 1.0 - clamp(distBelow / 3.4, 0.0, 1.0);
+            verticalFalloff = pow(verticalFalloff, 1.2);
+
+            // Reduced fog for floor reflections: preserves bright colors and contrast
+            float reflFogDensity = fogDensity * 0.52;
+            float fogFactor = 1.0 - exp(-reflFogDensity * reflFogDensity * vFogDepth * vFogDepth);
+            fogFactor = clamp(fogFactor, 0.0, 1.0);
+
+            // High luminosity satin sheen: floor never dims, only hovered card gains slight highlight
+            float reflMultiplier = max(1.0, uFocus);
+            vec3 reflectedRgb = mix(col.rgb * 0.88 * reflMultiplier, fogColor, fogFactor);
+            float alpha = verticalFalloff * 0.72 * (1.0 - fogFactor * 0.6);
+
+            gl_FragColor = vec4(reflectedRgb, alpha);
+          }
+        `,
+        transparent: true,
+        depthWrite: false,
+        side: THREE.DoubleSide
+      });
+    }
+
+    const baseProportions = [
+      { w: 2.8, h: 3.8 },
+      { w: 3.6, h: 2.5 },
+      { w: 2.5, h: 3.2 },
+      { w: 3.2, h: 2.4 },
+      { w: 2.9, h: 3.6 },
+      { w: 2.7, h: 2.7 },
+      { w: 3.5, h: 2.6 },
+      { w: 2.4, h: 3.4 }
+    ];
+
+    const items = [];
+
+    function pickDistinctVideo(colIndex, isLeft) {
+      const forbidden = new Set();
+      for (let offset = -3; offset <= 3; offset++) {
+        if (offset === 0 && !isLeft && items[colIndex]) {
+          forbidden.add(items[colIndex].idxL);
+        }
+        const neighborIdx = (colIndex + offset + TOTAL_COLUMNS) % TOTAL_COLUMNS;
+        const neighbor = items[neighborIdx];
+        if (neighbor) {
+          if (neighbor.idxL !== undefined) forbidden.add(neighbor.idxL);
+          if (neighbor.idxR !== undefined) forbidden.add(neighbor.idxR);
+        }
+      }
+
+      const available = [];
+      for (let i = 0; i < TOTAL_VIDEOS; i++) {
+        if (!forbidden.has(i)) available.push(i);
+      }
+
+      const pool = available.length > 0 ? available : [Math.floor(Math.random() * TOTAL_VIDEOS)];
+      return pool[Math.floor(Math.random() * pool.length)];
+    }
+
+    const SURGE_START_Z = -58.0;
+
+    const hitMaterial = new THREE.MeshBasicMaterial({ transparent: true, opacity: 0, depthWrite: false });
+    const primaryPickMeshes = [];
+
+    for (let i = 0; i < TOTAL_COLUMNS; i++) {
+      const restingZ = -i * Z_STEP;
+      const initialZ = SURGE_START_Z - (i * Z_STEP);
+
+      const propL = baseProportions[Math.floor(Math.random() * baseProportions.length)];
+      const propR = baseProportions[Math.floor(Math.random() * baseProportions.length)];
+
+      // Left Primary
+      const idxL = pickDistinctVideo(i, true);
+      const geomL = new THREE.PlaneGeometry(propL.w, propL.h, 28, 1);
+      const matL = createCurvedMaterial(videoTextures[idxL], true);
+      const meshL = new THREE.Mesh(geomL, matL);
+      meshL.rotation.y = Math.PI / 2;
+      meshL.position.set(-(BASE_WALL_X), 0, initialZ);
+      scene.add(meshL);
+
+      // Left Hitbox Proxy (accurately aligned to GPU curve)
+      const meshL_hit = new THREE.Mesh(geomL, hitMaterial);
+      meshL_hit.userData = { colIndex: i, isLeft: true };
+      scene.add(meshL_hit);
+      primaryPickMeshes.push(meshL_hit);
+
+      // Left Inverted Real-Time Floor Mirror
+      const matL_refl = createReflectedVideoMaterial(videoTextures[idxL], true);
+      const meshL_refl = new THREE.Mesh(geomL, matL_refl);
+      meshL_refl.rotation.y = Math.PI / 2;
+      meshL_refl.position.set(-(BASE_WALL_X), FLOOR_Y - 0.8, initialZ);
+      scene.add(meshL_refl);
+
+      items[i] = { idxL };
+
+      // Right Primary
+      const idxR = pickDistinctVideo(i, false);
+      const geomR = new THREE.PlaneGeometry(propR.w, propR.h, 28, 1);
+      const matR = createCurvedMaterial(videoTextures[idxR], false);
+      const meshR = new THREE.Mesh(geomR, matR);
+      meshR.rotation.y = -Math.PI / 2;
+      meshR.position.set(+(BASE_WALL_X), 0, initialZ);
+      scene.add(meshR);
+
+      // Right Hitbox Proxy (accurately aligned to GPU curve)
+      const meshR_hit = new THREE.Mesh(geomR, hitMaterial);
+      meshR_hit.userData = { colIndex: i, isLeft: false };
+      scene.add(meshR_hit);
+      primaryPickMeshes.push(meshR_hit);
+
+      // Right Inverted Real-Time Floor Mirror
+      const matR_refl = createReflectedVideoMaterial(videoTextures[idxR], false);
+      const meshR_refl = new THREE.Mesh(geomR, matR_refl);
+      meshR_refl.rotation.y = -Math.PI / 2;
+      meshR_refl.position.set(+(BASE_WALL_X), FLOOR_Y - 0.8, initialZ);
+      scene.add(meshR_refl);
+
+      const lY = -0.55 + Math.random() * 1.4;
+      const rY = -0.55 + Math.random() * 1.4;
+      const lOffset = (Math.random() - 0.5) * 0.16;
+      const rOffset = (Math.random() - 0.5) * 0.16;
+
+      const baseScaleL = 0.88 + Math.random() * 0.28;
+      const baseScaleR = 0.88 + Math.random() * 0.28;
+      meshL.scale.set(baseScaleL, baseScaleL, 1);
+      meshL_refl.scale.set(baseScaleL, baseScaleL, 1);
+      meshL_hit.scale.set(baseScaleL, baseScaleL, 1);
+      meshR.scale.set(baseScaleR, baseScaleR, 1);
+      meshR_refl.scale.set(baseScaleR, baseScaleR, 1);
+      meshR_hit.scale.set(baseScaleR, baseScaleR, 1);
+
+      const initialWrapCount = Math.floor((restingZ - BACK_WRAP) / WRAP_RANGE);
+
+      items[i] = {
+        meshL, meshL_hit, meshL_refl,
+        meshR, meshR_hit, meshR_refl,
+        restingZ, initialZ,
+        idxL, idxR,
+        lY, rY, lOffset, rOffset,
+        baseScaleL, baseScaleR,
+        focusL: 1.0, focusR: 1.0,
+        hoverPopL: 0.0, hoverPopR: 0.0,
+        lastWrapCount: initialWrapCount
+      };
+    }
+
+    // --- PURE DARK GLASS OBSIDIAN FLOOR ---
+    const floorGlassMaterial = new THREE.ShaderMaterial({
+      uniforms: {
+        uScroll: { value: 0.0 },
+        uIntroEase: { value: 0.0 },
+        fogColor: { value: new THREE.Color(0x000000) },
+        fogDensity: { value: FOG_DENSITY }
+      },
+      vertexShader: `
+        varying vec3 vWorldPos;
+        varying float vFogDepth;
+        void main() {
+          vec4 worldPos = modelMatrix * vec4(position, 1.0);
+          vWorldPos = worldPos.xyz;
+          vec4 viewPos = viewMatrix * worldPos;
+          vFogDepth = -viewPos.z;
+          gl_Position = projectionMatrix * viewPos;
+        }
+      `,
+      fragmentShader: `
+        uniform float uScroll;
+        uniform float uIntroEase;
+        uniform vec3 fogColor;
+        uniform float fogDensity;
+        varying vec3 vWorldPos;
+        varying float vFogDepth;
+
+        void main() {
+          float x = vWorldPos.x;
+          float z = vWorldPos.z;
+
+          // Single Center Road Dashes (1.0 unit long with 1.4 unit gap)
+          float dashPeriod = 2.4;
+          float dashLength = 1.0;
+          float dashCycle = mod(z - uScroll, dashPeriod);
+          float dashCap = smoothstep(0.0, 0.08, dashCycle) * smoothstep(dashLength, dashLength - 0.08, dashCycle);
+          float dashWidth = smoothstep(0.016, 0.0, abs(x));
+          
+          // Smooth emergence from void with surge flight
+          float lineEmergence = smoothstep(0.08, 0.72, uIntroEase);
+          float centerDashes = dashWidth * dashCap * 0.45 * lineEmergence;
+
+          // Distant horizon specular sheen on dark obsidian glass
+          float distNorm = clamp(-z / 48.0, 0.0, 1.0);
+          float horizonSheen = pow(distNorm, 2.2) * 0.06;
+
+          vec3 surfaceColor = vec3(centerDashes * 0.92) + vec3(horizonSheen * 0.8);
+
+          // Distance fog
+          float fogFactor = 1.0 - exp(-fogDensity * fogDensity * vFogDepth * vFogDepth);
+          fogFactor = clamp(fogFactor, 0.0, 1.0);
+
+          vec3 finalRgb = mix(surfaceColor, fogColor, fogFactor);
+          // Dark obsidian glass plane: transparent so live video reflections shine clearly
+          gl_FragColor = vec4(finalRgb, 0.30);
+        }
+      `,
+      transparent: true,
+      depthWrite: false,
+      side: THREE.DoubleSide
+    });
+
+    const floorGlassGeom = new THREE.PlaneGeometry(32, 100);
+    const floorGlassMesh = new THREE.Mesh(floorGlassGeom, floorGlassMaterial);
+    floorGlassMesh.rotation.x = -Math.PI / 2;
+    floorGlassMesh.position.set(0, FLOOR_Y, -26.0);
+    scene.add(floorGlassMesh);
+
+    async function initExperience() {
+      await document.fonts.load("120px 'Allura'");
+      await document.fonts.ready;
+      // Trigger header unfurl at second 2.2 as the flight hits its gentle deceleration curve
+      setTimeout(() => {
+        const header = document.querySelector('.brand-header');
+        if (header) header.classList.add('visible');
+      }, 2100);
+    }
+
+    initExperience();
+
+    // --- DIRECT MOUSE TRACKING & GALLERY GLANCE RAYCASTER ---
+    const raycaster = new THREE.Raycaster();
+    const mousePointer = new THREE.Vector2(-999, -999);
+
+    let targetMouseX = 0;
+    let targetMouseY = 0;
+    let currentMouseX = 0;
+    let currentMouseY = 0;
+    let pointerDirty = true;
+
+    window.addEventListener('pointermove', (e) => {
+      targetMouseX = (e.clientX / window.innerWidth) * 2 - 1;
+      targetMouseY = -(e.clientY / window.innerHeight) * 2 + 1;
+      mousePointer.x = targetMouseX;
+      mousePointer.y = targetMouseY;
+      pointerDirty = true;
+
+      if (isDown && !introActive) {
+        const delta = e.clientY - startY;
+        targetScroll -= delta * 0.024;
+        startY = e.clientY;
+      }
+    });
+
+    window.addEventListener('pointerleave', () => {
+      mousePointer.set(-999, -999);
+      pointerDirty = true;
+    });
+
+    // --- SCROLL / DRAG ---
+    let targetScroll = 0;
+    let currentScroll = 0;
+    let isDown = false;
+    let startY = 0;
+    let wheelVelocity = 0;
+
+    window.addEventListener('wheel', (e) => {
+      if (introActive) return;
+      wheelVelocity += e.deltaY * 0.0025;
+    }, { passive: true });
+
+    window.addEventListener('pointerdown', (e) => {
+      if (introActive) return;
+      isDown = true;
+      startY = e.clientY;
+    });
+
+    window.addEventListener('pointerup', () => { isDown = false; });
+
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+
+    function wrap(val, min, max) {
+      const range = max - min;
+      return ((((val - min) % range) + range) % range) + min;
+    }
+
+    // --- DEEP-ABYSS FLIGHT ENGINE (3.8s) ---
+    let introActive = true;
+    const INTRO_DURATION = 3800;
+    let appStartTime = null;
+
+    function easeInOutCubic(t) {
+      return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+    }
+
+    let hoveredIndex = -1;
+    let hoveredIsLeft = false;
+
+    // Adaptive 60 / 120 FPS Lock (hard cap at 120 FPS, native 60 FPS on 60Hz displays)
+    const MAX_FPS = 120;
+    const MIN_FRAME_MS = 1000 / MAX_FPS; // 8.33ms
+    let lastRenderTimestamp = 0;
+
+    // --- RENDER LOOP ---
+    function animate(timestamp) {
+      requestAnimationFrame(animate);
+
+      if (!lastRenderTimestamp) lastRenderTimestamp = timestamp;
+      const timeSinceLast = timestamp - lastRenderTimestamp;
+      if (timeSinceLast < MIN_FRAME_MS - 0.8) return;
+
+      const dt = Math.min(0.05, Math.max(0.001, timeSinceLast * 0.001));
+      lastRenderTimestamp = timestamp;
+
+      if (!appStartTime) appStartTime = timestamp;
+      const totalElapsed = timestamp - appStartTime;
+
+      let surgeProgress = 1.0;
+      if (introActive) {
+        surgeProgress = Math.min(1.0, totalElapsed / INTRO_DURATION);
+        if (surgeProgress >= 1.0) {
+          introActive = false;
+          targetScroll = 0;
+          currentScroll = 0;
+          wheelVelocity = 0;
+        }
+      }
+
+      const surgeEase = easeInOutCubic(surgeProgress);
+
+      // Ambient Auto-Drift after intro completes
+      if (!introActive && !isDown) {
+        const driftMultiplier = hoveredIndex !== -1 ? 0.30 : 1.0;
+        targetScroll += 0.0070 * driftMultiplier;
+      }
+
+      targetScroll += wheelVelocity;
+      wheelVelocity *= 0.84;
+
+      currentScroll += (targetScroll - currentScroll) * 0.07;
+      currentMouseX += (targetMouseX - currentMouseX) * 0.055;
+      currentMouseY += (targetMouseY - currentMouseY) * 0.055;
+
+      const introDashOffset = introActive ? (surgeEase - 1.0) * 58.0 : 0.0;
+      floorGlassMaterial.uniforms.uScroll.value = currentScroll + introDashOffset;
+      floorGlassMaterial.uniforms.uIntroEase.value = introActive ? surgeEase : 1.0;
+
+      // Gallery Glance: Raycast against pixel-accurate hit proxies (throttled to active motion)
+      const isMotionActive = Math.abs(wheelVelocity) > 0.0005 || Math.abs(targetScroll - currentScroll) > 0.001;
+      if (pointerDirty || isMotionActive) {
+        if (!isDown && mousePointer.x > -900) {
+          raycaster.setFromCamera(mousePointer, camera);
+          const hits = raycaster.intersectObjects(primaryPickMeshes);
+          if (hits.length > 0) {
+            hoveredIndex = hits[0].object.userData.colIndex;
+            hoveredIsLeft = hits[0].object.userData.isLeft;
+            document.body.style.cursor = 'pointer';
+          } else {
+            hoveredIndex = -1;
+            document.body.style.cursor = 'default';
+          }
+        } else {
+          hoveredIndex = -1;
+          document.body.style.cursor = isDown ? 'grabbing' : 'default';
+        }
+        pointerDirty = false;
+      }
+
+      const hasHover = (hoveredIndex !== -1);
+
+      // Wall Video Panels & Real-Time Mirrored Under-Planes
+      for (let i = 0; i < items.length; i++) {
+        const item = items[i];
+
+        // Dynamic Gallery Glance: only hovered card lifts (+10%), remaining videos rest at 0.94
+        const isHoverL = hasHover && (hoveredIndex === i) && hoveredIsLeft;
+        const isHoverR = hasHover && (hoveredIndex === i) && !hoveredIsLeft;
+
+        const targetFocusL = isHoverL ? 1.10 : (hasHover ? 0.94 : 1.0);
+        const targetFocusR = isHoverR ? 1.10 : (hasHover ? 0.94 : 1.0);
+        const targetPopL = isHoverL ? 1.0 : 0.0;
+        const targetPopR = isHoverR ? 1.0 : 0.0;
+
+        item.focusL += (targetFocusL - item.focusL) * 0.09;
+        item.focusR += (targetFocusR - item.focusR) * 0.09;
+        item.hoverPopL += (targetPopL - item.hoverPopL) * 0.10;
+        item.hoverPopR += (targetPopR - item.hoverPopR) * 0.10;
+
+        item.meshL.material.uniforms.uFocus.value = item.focusL;
+        item.meshL_refl.material.uniforms.uFocus.value = item.focusL;
+        item.meshR.material.uniforms.uFocus.value = item.focusR;
+        item.meshR_refl.material.uniforms.uFocus.value = item.focusR;
+
+        let z;
+        if (introActive) {
+          const targetZ = item.restingZ + currentScroll;
+          z = item.initialZ + (targetZ - item.initialZ) * surgeEase;
+        } else {
+          const rawZ = item.restingZ + currentScroll;
+          z = wrap(rawZ, BACK_WRAP, FRONT_WRAP);
+
+          const currentWrap = Math.floor((rawZ - BACK_WRAP) / WRAP_RANGE);
+          if (item.lastWrapCount !== currentWrap) {
+            item.lastWrapCount = currentWrap;
+
+            item.idxL = pickDistinctVideo(i, true);
+            const texL = videoTextures[item.idxL];
+            item.meshL.material.uniforms.map.value = texL;
+            item.meshL_refl.material.uniforms.map.value = texL;
+
+            item.idxR = pickDistinctVideo(i, false);
+            const texR = videoTextures[item.idxR];
+            item.meshR.material.uniforms.map.value = texR;
+            item.meshR_refl.material.uniforms.map.value = texR;
+
+            item.lY = -0.55 + Math.random() * 1.4;
+            item.rY = -0.55 + Math.random() * 1.4;
+            item.lOffset = (Math.random() - 0.5) * 0.16;
+            item.rOffset = (Math.random() - 0.5) * 0.16;
+
+            item.baseScaleL = 0.88 + Math.random() * 0.28;
+            item.baseScaleR = 0.88 + Math.random() * 0.28;
+          }
+        }
+
+        // Frustum Depth Culling: bypass GPU draw calls when behind camera or beyond fog
+        const isVisible = (z >= -44.0 && z <= 4.5);
+        item.meshL.visible = isVisible;
+        item.meshL_refl.visible = isVisible;
+        item.meshR.visible = isVisible;
+        item.meshR_refl.visible = isVisible;
+        item.meshL_hit.visible = isVisible;
+        item.meshR_hit.visible = isVisible;
+
+        if (!isVisible) continue;
+
+        // Subtle scale boost: barely minimal 3%
+        const curScaleL = item.baseScaleL * (1.0 + item.hoverPopL * 0.03);
+        item.meshL.scale.set(curScaleL, curScaleL, 1);
+        item.meshL_refl.scale.set(curScaleL, curScaleL, 1);
+        item.meshL_hit.scale.set(curScaleL, curScaleL, 1);
+
+        const curScaleR = item.baseScaleR * (1.0 + item.hoverPopR * 0.03);
+        item.meshR.scale.set(curScaleR, curScaleR, 1);
+        item.meshR_refl.scale.set(curScaleR, curScaleR, 1);
+        item.meshR_hit.scale.set(curScaleR, curScaleR, 1);
+
+        const depthWeight = Math.max(0.12, 1.0 - Math.min(1.0, Math.abs(z - 1.5) / 18.0));
+        // Whisper Depth-Float: subtle 3D breathing, zero tilting
+        const slideX = currentMouseX * 0.12 * depthWeight;
+        const slideY = currentMouseY * 0.10 * depthWeight;
+
+        // GPU Parabolic Curve Flare Calculation for exact hitbox sync
+        const flareT = Math.max(0.0, Math.min(1.0, (z + 7.5) / 14.5));
+        const curveFlare = Math.pow(flareT, 2.1) * 6.2;
+
+        // 1. Primary Left Video (Subtle inward step 0.15 + elevation lift 0.09)
+        const primaryX_L = -(BASE_WALL_X + item.lOffset) - slideX + (item.hoverPopL * 0.15);
+        const primaryY_L = item.lY + slideY + (item.hoverPopL * 0.09);
+        item.meshL.position.set(primaryX_L, primaryY_L, z);
+        item.meshL.rotation.z = 0;
+
+        // Sync Left Hitbox to exact flared screen position
+        item.meshL_hit.position.set(primaryX_L - curveFlare, primaryY_L, z);
+        item.meshL_hit.rotation.y = Math.PI / 2;
+        item.meshL_hit.rotation.z = 0;
+
+        // 2. Mirrored Left Video (Physical reflection plane at FLOOR_Y = -2.60)
+        const reflY_L = 2.0 * FLOOR_Y - primaryY_L;
+        item.meshL_refl.position.set(primaryX_L, reflY_L, z);
+        item.meshL_refl.rotation.z = 0;
+
+        // 3. Primary Right Video (Subtle inward step 0.15 + elevation lift 0.09)
+        const primaryX_R = +(BASE_WALL_X - item.rOffset) + slideX - (item.hoverPopR * 0.15);
+        const primaryY_R = item.rY + slideY + (item.hoverPopR * 0.09);
+        item.meshR.position.set(primaryX_R, primaryY_R, z);
+        item.meshR.rotation.z = 0;
+
+        // Sync Right Hitbox to exact flared screen position
+        item.meshR_hit.position.set(primaryX_R + curveFlare, primaryY_R, z);
+        item.meshR_hit.rotation.y = -Math.PI / 2;
+        item.meshR_hit.rotation.z = 0;
+
+        // 4. Mirrored Right Video (Physical reflection plane at FLOOR_Y = -2.60)
+        const reflY_R = 2.0 * FLOOR_Y - primaryY_R;
+        item.meshR_refl.position.set(primaryX_R, reflY_R, z);
+        item.meshR_refl.rotation.z = 0;
+      }
+
+      renderer.render(scene, camera);
+    }
+
+    requestAnimationFrame(animate);
+  </script>
+
+</body>
+</html>

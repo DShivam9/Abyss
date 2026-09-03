@@ -49,12 +49,13 @@ export const VIBE_SECTIONS: VibeSection[] = [
     id: "beyond-the-grid",
     title: "Beyond the Grid",
     headlineClass: "headline-s3", // indigo
-    count: 4,
+    count: 5,
     slugs: [
       "cascade-gallery",
       "gimbal-stream",
       "3d-shatter-sphere",
       "tracklist-gallery",
+      "cinema-aisle",
     ],
   },
   {

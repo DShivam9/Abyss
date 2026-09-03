@@ -548,6 +548,63 @@ export const COMPONENT_DETAILS: Record<string, ComponentDetail> = {
     category: "interaction",
     subtype: "loaders",
     tags: ["Mosaic Loader", "Preloader", "Odometer Drum", "Octagram Star", "Saint Regus", "Constellation Grid", "Gravitational Implosion"]
+  },
+  "cinema-aisle": {
+    id: "79",
+    label: "Cinema Aisle",
+    filename: "components/cinema-aisle/hero.png",
+    desc: "An endless 3D cinematic corridor featuring 16 streaming video panels along curved parabolic gallery walls, live 60/120 FPS video reflections across a dark obsidian glass runway, synchronized flight in-animation, and whisper depth-float parallax.",
+    slug: "cinema-aisle",
+    category: "interaction",
+    subtype: "galleries",
+    tags: ["3D Runway", "Video Corridor", "Parabolic Walls", "Obsidian Glass", "Live Reflections", "Gallery Glance", "High Refresh"],
+    controls: [
+      {
+        type: "slider",
+        key: "curveFlare",
+        label: "Wall Flare",
+        default: 6.2,
+        min: 0.0,
+        max: 10.0,
+        step: 0.2
+      },
+      {
+        type: "slider",
+        key: "scrollSpeed",
+        label: "Scroll Velocity",
+        default: 1.0,
+        min: 0.5,
+        max: 2.0,
+        step: 0.1
+      },
+      {
+        type: "slider",
+        key: "reflectionSheen",
+        label: "Floor Reflection",
+        default: 0.88,
+        min: 0.0,
+        max: 1.0,
+        step: 0.05
+      },
+      {
+        type: "slider",
+        key: "corridorWidth",
+        label: "Corridor Width",
+        default: 3.5,
+        min: 2.4,
+        max: 5.2,
+        step: 0.1
+      },
+      {
+        type: "slider",
+        key: "driftSpeed",
+        label: "Auto Drift",
+        default: 2.0,
+        min: 0.0,
+        max: 4.0,
+        step: 0.1
+      }
+    ]
   }
 };
 

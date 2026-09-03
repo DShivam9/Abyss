@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Abyss - Mosaic Loader</title>
+  <style>
+    @font-face {
+      font-family: 'Saint Regus';
+      src: url('/fonts/saint-regus/sonar-hubermann-saintregus-semiboldexpanded.otf') format('opentype');
+      font-weight: 600;
+      font-style: normal;
+      font-display: block;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    :root {
+      --digit-h: clamp(36px, 4.2vw, 48px);
+    }
+    body {
+      background: #ffffff;
+      min-height: 100vh;
+      width: 100vw;
+      overflow: hidden;
+      font-family: 'Saint Regus', -apple-system, sans-serif;
+      position: relative;
+      user-select: none;
+      color: #0c0c0e;
+      perspective: 1200px;
+    }
+
+    /* ==========================================================================
+       CENTER 8-POINT OCTAGRAM STAR HUD & MECHANICAL ODOMETER
+       ========================================================================== */
+    .center-hud {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate3d(-50%, -50%, 0) scale(1);
+      width: clamp(220px, 24vw, 290px);
+      height: clamp(220px, 24vw, 290px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 35;
+      pointer-events: none;
+      font-family: 'Saint Regus', sans-serif;
+      will-change: transform, opacity;
+      backface-visibility: hidden;
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    /* Precision Mechanical Odometer Drum (Saint Regus) */
+    .odometer-wrap {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(1);
+      z-index: 2;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: var(--digit-h);
+      overflow: hidden;
+      opacity: 1;
+      filter: blur(0);
+      will-change: transform, opacity, filter;
+      backface-visibility: hidden;
+      transition: opacity 0.28s ease-out,
+                  filter 0.28s ease-out,
+                  transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .odometer-wrap.is-faded-out {
+      opacity: 0;
+      filter: blur(4px);
+      transform: translate(-50%, -50%) scale(0.9);
+    }
+
+    .digit-col {
+      height: var(--digit-h);
+      overflow: hidden;
+      display: inline-block;
+      width: clamp(32px, 3.8vw, 50px);
+      text-align: center;
+    }
+    .digit-track {
+      display: flex;
+      flex-direction: column;
+      will-change: transform;
+      transition: transform 0.12s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .digit-track span {
+      display: block;
+      height: var(--digit-h);
+      line-height: var(--digit-h);
+      font-size: clamp(30px, 3.6vw, 42px);
+      font-weight: 600;
+      color: #09090b;
+      font-family: 'Saint Regus', sans-serif;
+      font-variant-numeric: tabular-nums;
+      text-align: center;
+    }
+
+    /* ==========================================================================
+       CONSTELLATION IMAGES (Handcrafted Dimensions & Aspect Ratios)
+       ========================================================================== */
+    .constellation-img {
+      position: fixed;
+      width: var(--w, 116px);
+      height: var(--h, 116px);
+      object-fit: cover;
+      display: none;
+      pointer-events: none;
+      z-index: 20;
+      transform: translate3d(-50%, -50%, 0);
+      border-radius: 0;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+      border: 1px solid rgba(0, 0, 0, 0.04);
+      will-change: transform, opacity, filter;
+      backface-visibility: hidden;
+    }
+    .constellation-img.is-entered {
+      display: block;
+    }
+
+    .constellation-img.is-imploding {
+      transform: translate3d(-50%, -50%, 0) scale(0.96) !important;
+      opacity: 0 !important;
+      filter: blur(8px) !important;
+      transition: opacity 0.44s cubic-bezier(0.16, 1, 0.3, 1),
+                  filter 0.44s cubic-bezier(0.16, 1, 0.3, 1),
+                  transform 0.44s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    }
+
+    /* ==========================================================================
+       EDITORIAL MAGAZINE ARRIVAL (Clean Solid Saint Regus Typography)
+       ========================================================================== */
+    .editorial-arrival-wrap {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate3d(-50%, -50%, 0);
+      z-index: 25;
+      text-align: center;
+      width: 90vw;
+      max-width: 1300px;
+      pointer-events: none;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      will-change: transform;
+      backface-visibility: hidden;
+    }
+
+    .editorial-title {
+      font-family: 'Saint Regus', sans-serif;
+      font-size: clamp(38px, 6.2vw, 92px);
+      line-height: 1.05;
+      letter-spacing: -0.01em;
+      text-transform: uppercase;
+      color: #09090b;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: clamp(14px, 2.5vw, 36px);
+    }
+
+    .word-wrap {
+      display: inline-flex;
+      overflow: hidden;
+      padding-bottom: 6px;
+    }
+    .char-mask {
+      display: inline-block;
+      overflow: hidden;
+      line-height: 1.05;
+    }
+    .char {
+      display: inline-block;
+      transform: translate3d(0, 24px, 0) scale(0.92);
+      filter: blur(8px);
+      opacity: 0;
+      will-change: transform, filter, opacity;
+      color: #09090b;
+      transition: transform 0.82s cubic-bezier(0.16, 1, 0.3, 1),
+                  filter 0.72s cubic-bezier(0.16, 1, 0.3, 1),
+                  opacity 0.6s ease-out;
+      transition-delay: calc(var(--char-idx) * 22ms);
+    }
+    .editorial-arrival-wrap.is-revealed .char {
+      transform: translate3d(0, 0, 0) scale(1);
+      filter: blur(0);
+      opacity: 1;
+    }
+    .editorial-arrival-wrap.is-dismounting .char {
+      transform: translate3d(0, -18px, 0) scale(0.95) !important;
+      filter: blur(6px) !important;
+      opacity: 0 !important;
+      transition: transform 0.28s cubic-bezier(0.7, 0, 0.84, 0),
+                  filter 0.24s ease-in,
+                  opacity 0.22s ease-in !important;
+      transition-delay: 0s !important;
+    }
+
+    /* Centered Replay Pill */
+    .replay-mask {
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      margin-top: 32px;
+    }
+    .replay-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 10px 22px;
+      background: #09090b;
+      border: 1px solid #18181b;
+      border-radius: 100px;
+      color: #fafafa;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.10);
+      pointer-events: none;
+      transform: translateY(130%);
+      will-change: transform;
+      transition: transform 0.65s cubic-bezier(0.19, 1, 0.22, 1) 0.42s,
+                  background 0.2s ease,
+                  box-shadow 0.2s ease;
+    }
+    .editorial-arrival-wrap.is-revealed .replay-btn {
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+    .editorial-arrival-wrap.is-dismounting .replay-btn {
+      transform: translateY(130%) !important;
+      pointer-events: none !important;
+      transition: transform 0.22s cubic-bezier(0.7, 0, 0.84, 0) !important;
+    }
+    .replay-btn:hover {
+      background: #27272a;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.16);
+    }
+    .replay-btn:active {
+      transform: scale(0.97) translateY(0);
+    }
+    .replay-icon {
+      width: 12px;
+      height: 12px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2.2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Mechanical Odometer Counter (Saint Regus) -->
+  <div class="center-hud" id="centerHud">
+    <div class="odometer-wrap" id="odometerWrap">
+      <div class="digit-col" id="colHundreds" style="display: none;">
+        <div class="digit-track" id="trackHundreds">
+          <span>0</span><span>1</span>
+        </div>
+      </div>
+      <div class="digit-col" id="colTens" style="display: none;">
+        <div class="digit-track" id="trackTens">
+          <span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span>
+        </div>
+      </div>
+      <div class="digit-col" id="colOnes">
+        <div class="digit-track" id="trackOnes">
+          <span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Editorial Magazine Arrival (Clean Saint Regus Typography) -->
+  <main class="editorial-arrival-wrap" id="arrivalWrap">
+    <h1 class="editorial-title" id="editorialTitle">
+      <span class="word-wrap" id="wordMosaic"></span>
+      <span class="word-wrap" id="wordLoader"></span>
+    </h1>
+    <div class="replay-mask">
+      <button class="replay-btn" id="replayBtn">
+        <svg class="replay-icon" viewBox="0 0 24 24">
+          <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+          <path d="M3 3v5h5"/>
+        </svg>
+        Replay Intro
+      </button>
+    </div>
+  </main>
+
+  <script>
+    function createTypesetWord(word, startIdx, containerEl) {
+      word.split('').forEach((char, i) => {
+        const mask = document.createElement('span');
+        mask.className = 'char-mask';
+        const span = document.createElement('span');
+        span.className = 'char';
+        span.textContent = char;
+        span.style.setProperty('--char-idx', startIdx + i);
+        mask.appendChild(span);
+        containerEl.appendChild(mask);
+      });
+    }
+    createTypesetWord("MOSAIC", 0, document.getElementById('wordMosaic'));
+    createTypesetWord("LOADER", 6, document.getElementById('wordLoader'));
+
+    const IMAGE_POOL = Array.from({ length: 24 }, (_, i) => 
+      `/images/components/mosaic-loader/photo-${String(i + 1).padStart(2, '0')}.webp`
+    );
+
+    IMAGE_POOL.forEach(src => {
+      const p = new Image();
+      p.src = src;
+    });
+
+    // Bespoke Handcrafted 18-Card Layout (Specific dimensions & subject framing)
+    const POSITIONS = [
+      // Row 0 (Top: 4 cards)
+      { xPct: 8.0,  yPct: 11, w: 104, h: 152, rot: 0, depthFactor: 0.6,  spawnDelay: 0,    initialIdx: 0  },
+      { xPct: 34.0, yPct: 11, w: 148, h: 106, rot: 0, depthFactor: 1.3,  spawnDelay: 100,  initialIdx: 12 },
+      { xPct: 66.0, yPct: 11, w: 118, h: 118, rot: 0, depthFactor: 1.0,  spawnDelay: 200,  initialIdx: 2  },
+      { xPct: 92.0, yPct: 11, w: 96,  h: 164, rot: 0, depthFactor: 1.4,  spawnDelay: 300,  initialIdx: 14 },
+
+      // Row 1 (Upper-mid: 4 cards)
+      { xPct: 18.0, yPct: 31, w: 114, h: 144, rot: 0, depthFactor: 1.5,  spawnDelay: 420,  initialIdx: 3  },
+      { xPct: 42.0, yPct: 28, w: 152, h: 104, rot: 0, depthFactor: 0.8,  spawnDelay: 520,  initialIdx: 21 },
+      { xPct: 58.0, yPct: 28, w: 118, h: 118, rot: 0, depthFactor: 0.8,  spawnDelay: 620,  initialIdx: 17 },
+      { xPct: 82.0, yPct: 31, w: 104, h: 152, rot: 0, depthFactor: 1.4,  spawnDelay: 720,  initialIdx: 7  },
+
+      // Row 2 (Flanks: 2 cards)
+      { xPct: 6.5,  yPct: 50, w: 146, h: 108, rot: 0, depthFactor: 0.7,  spawnDelay: 820,  initialIdx: 20 },
+      { xPct: 93.5, yPct: 50, w: 96,  h: 164, rot: 0, depthFactor: 0.7,  spawnDelay: 920,  initialIdx: 16 },
+
+      // Row 3 (Lower-mid: 4 cards)
+      { xPct: 18.0, yPct: 69, w: 104, h: 152, rot: 0, depthFactor: 1.2,  spawnDelay: 1020, initialIdx: 9  },
+      { xPct: 42.0, yPct: 72, w: 118, h: 118, rot: 0, depthFactor: 0.9,  spawnDelay: 1120, initialIdx: 1  },
+      { xPct: 58.0, yPct: 72, w: 114, h: 144, rot: 0, depthFactor: 0.9,  spawnDelay: 1220, initialIdx: 4  },
+      { xPct: 82.0, yPct: 69, w: 104, h: 152, rot: 0, depthFactor: 1.3,  spawnDelay: 1320, initialIdx: 19 },
+
+      // Row 4 (Bottom: 4 cards)
+      { xPct: 8.0,  yPct: 89, w: 114, h: 144, rot: 0, depthFactor: 1.3,  spawnDelay: 1420, initialIdx: 8  },
+      { xPct: 34.0, yPct: 89, w: 118, h: 118, rot: 0, depthFactor: 0.6,  spawnDelay: 1520, initialIdx: 6  },
+      { xPct: 66.0, yPct: 89, w: 104, h: 152, rot: 0, depthFactor: 1.4,  spawnDelay: 1620, initialIdx: 22 },
+      { xPct: 92.0, yPct: 89, w: 114, h: 144, rot: 0, depthFactor: 1.0,  spawnDelay: 1720, initialIdx: 11 }
+    ];
+
+    const centerHud = document.getElementById('centerHud');
+    const colHundreds = document.getElementById('colHundreds');
+    const trackHundreds = document.getElementById('trackHundreds');
+    const colTens = document.getElementById('colTens');
+    const trackTens = document.getElementById('trackTens');
+    const colOnes = document.getElementById('colOnes');
+    const trackOnes = document.getElementById('trackOnes');
+    const odometerWrap = document.getElementById('odometerWrap');
+
+    const starTrack = document.getElementById('starTrack');
+    const starProgress = document.getElementById('starProgress');
+    const arrivalWrap = document.getElementById('arrivalWrap');
+    const replayBtn = document.getElementById('replayBtn');
+
+    function setOdometer(val) {
+      const v = Math.min(Math.max(val, 0), 100);
+      const duration = (v < 80) ? "0.045s" : (v < 95) ? "0.12s" : "0.22s";
+      const timing = (v < 80) ? "linear" : "cubic-bezier(0.16, 1, 0.3, 1)";
+      trackHundreds.style.transition = `transform ${duration} ${timing}`;
+      trackTens.style.transition = `transform ${duration} ${timing}`;
+      trackOnes.style.transition = `transform ${duration} ${timing}`;
+
+      if (v < 10) {
+        colHundreds.style.display = 'none';
+        colTens.style.display = 'none';
+        colOnes.style.display = 'inline-block';
+        trackOnes.style.transform = `translateY(-${v * 10}%)`;
+      } else if (v < 100) {
+        colHundreds.style.display = 'none';
+        colTens.style.display = 'inline-block';
+        colOnes.style.display = 'inline-block';
+        const tens = Math.floor(v / 10);
+        const ones = v % 10;
+        trackTens.style.transform = `translateY(-${tens * 10}%)`;
+        trackOnes.style.transform = `translateY(-${ones * 10}%)`;
+      } else {
+        colHundreds.style.display = 'inline-block';
+        colTens.style.display = 'inline-block';
+        colOnes.style.display = 'inline-block';
+        trackHundreds.style.transform = `translateY(-50%)`;
+        trackTens.style.transform = `translateY(0%)`;
+        trackOnes.style.transform = `translateY(0%)`;
+      }
+    }
+
+    const slots = POSITIONS.map((pos, i) => {
+      const img = document.createElement('img');
+      img.className = 'constellation-img';
+      img.src = IMAGE_POOL[pos.initialIdx % IMAGE_POOL.length];
+      img.style.left = `${pos.xPct}vw`;
+      img.style.top = `${pos.yPct}vh`;
+
+      const dx = 50 - pos.xPct;
+      const dy = 50 - pos.yPct;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+
+      const normDist = Math.min(Math.max((dist - 20) / 38, 0), 1);
+      const flightDur = (0.62 + normDist * 0.28).toFixed(2);
+      const fadeDelay = (flightDur - 0.20).toFixed(2);
+
+      img.style.setProperty('--w', `${pos.w}px`);
+      img.style.setProperty('--h', `${pos.h}px`);
+      img.style.setProperty('--dx', `${dx}vw`);
+      img.style.setProperty('--dy', `${dy}vh`);
+      img.style.setProperty('--rot', `${pos.rot}deg`);
+      img.style.setProperty('--flight-dur', `${flightDur}s`);
+      img.style.setProperty('--fade-delay', `${fadeDelay}s`);
+
+      document.body.appendChild(img);
+      return {
+        el: img,
+        pos: pos,
+        spawnDelay: pos.spawnDelay,
+        depthFactor: pos.depthFactor,
+        isSpawned: false,
+        currentIndex: pos.initialIdx % IMAGE_POOL.length,
+        baseSpeed: 34 + (i * 7) % 24,
+        lastSwapTime: 0
+      };
+    });
+
+    let viewWidth = window.innerWidth;
+    let viewHeight = window.innerHeight;
+    window.addEventListener('resize', () => {
+      viewWidth = window.innerWidth;
+      viewHeight = window.innerHeight;
+    }, { passive: true });
+
+    let mouseTargetX = 0;
+    let mouseTargetY = 0;
+    let mouseCurrentX = 0;
+    let mouseCurrentY = 0;
+
+    window.addEventListener('mousemove', (e) => {
+      mouseTargetX = (e.clientX / viewWidth - 0.5) * 2;
+      mouseTargetY = (e.clientY / viewHeight - 0.5) * 2;
+    }, { passive: true });
+
+    function swapSlot(slot) {
+      let nextIdx = Math.floor(Math.random() * IMAGE_POOL.length);
+      if (nextIdx === slot.currentIndex) nextIdx = (nextIdx + 1) % IMAGE_POOL.length;
+      slot.currentIndex = nextIdx;
+      slot.el.src = IMAGE_POOL[slot.currentIndex];
+    }
+
+    let animId = null;
+    let isSequenceActive = true;
+    let isImplodingTriggered = false;
+
+    const STAGE_1_DUR = 1800;
+    const STAGE_2_DUR = 1400;
+    const STAGE_3_DUR = 1500;
+    const STAGE_4_DUR = 1500;
+
+    function getContinuousPercentage(elapsed) {
+      if (elapsed <= STAGE_1_DUR) {
+        const t = elapsed / STAGE_1_DUR;
+        return t * 40;
+      } else if (elapsed <= STAGE_1_DUR + STAGE_2_DUR) {
+        const t = (elapsed - STAGE_1_DUR) / STAGE_2_DUR;
+        return 40 + t * 20;
+      } else if (elapsed <= STAGE_1_DUR + STAGE_2_DUR + STAGE_3_DUR) {
+        const t = (elapsed - (STAGE_1_DUR + STAGE_2_DUR)) / STAGE_3_DUR;
+        return 60 + t * 20;
+      } else {
+        const t = Math.min((elapsed - (STAGE_1_DUR + STAGE_2_DUR + STAGE_3_DUR)) / STAGE_4_DUR, 1);
+        const ease = 1 - Math.pow(1 - t, 1.8);
+        return 80 + ease * 20;
+      }
+    }
+
+    function runSequence() {
+      if (animId) cancelAnimationFrame(animId);
+
+      // Reset DOM state
+      centerHud.classList.remove('is-rotating-expand', 'is-absorbing');
+      odometerWrap.classList.remove('is-faded-out');
+      arrivalWrap.classList.remove('is-revealed', 'is-dismounting');
+      isSequenceActive = true;
+      isImplodingTriggered = false;
+      let hasLockedFinalUnique = false;
+
+      slots.forEach(slot => {
+        slot.el.classList.remove('is-entered', 'is-imploding');
+        slot.isSpawned = false;
+        slot.lastSwapTime = 0;
+      });
+
+      setOdometer(0);
+
+      const startTime = performance.now();
+
+      function tick(now) {
+        const elapsed = now - startTime;
+
+        mouseCurrentX += (mouseTargetX - mouseCurrentX) * 0.08;
+        mouseCurrentY += (mouseTargetY - mouseCurrentY) * 0.08;
+
+        if (isSequenceActive) {
+          // 1. Spawning & Parallax
+          slots.forEach(slot => {
+            if (elapsed >= slot.spawnDelay && !slot.isSpawned) {
+              slot.isSpawned = true;
+              slot.el.classList.add('is-entered');
+              slot.lastSwapTime = now;
+              swapSlot(slot);
+            }
+
+            if (slot.isSpawned && !isImplodingTriggered) {
+              const px = mouseCurrentX * 14 * slot.depthFactor;
+              const py = mouseCurrentY * 14 * slot.depthFactor;
+              slot.el.style.transform = `translate3d(calc(-50% + ${px.toFixed(1)}px), calc(-50% + ${py.toFixed(1)}px), 0) rotate(${slot.pos.rot}deg)`;
+            }
+          });
+
+          // HUD Parallax
+          if (!isImplodingTriggered) {
+            const hudPx = mouseCurrentX * 7;
+            const hudPy = mouseCurrentY * 7;
+            centerHud.style.transform = `translate3d(calc(-50% + ${hudPx.toFixed(1)}px), calc(-50% + ${hudPy.toFixed(1)}px), 0)`;
+          }
+
+          const exactPct = Math.min(getContinuousPercentage(elapsed), 100);
+          const intPct = Math.floor(exactPct);
+          setOdometer(intPct);
+
+          let currentInterval;
+          if (intPct < 40) currentInterval = 110;
+          else if (intPct < 60) currentInterval = 110 + ((intPct - 40) / 20) * 75;
+          else if (intPct < 80) currentInterval = 185 + ((intPct - 60) / 20) * 115;
+          else currentInterval = 300 + ((intPct - 80) / 20) * 180;
+
+          // Image swapping
+          if (intPct < 96) {
+            slots.forEach(slot => {
+              if (slot.isSpawned && (now - slot.lastSwapTime >= (currentInterval + (slot.baseSpeed % 25)))) {
+                slot.lastSwapTime = now;
+                swapSlot(slot);
+              }
+            });
+          } else if (!hasLockedFinalUnique) {
+            // Lock 18 distinct unique images across all slots (zero duplicates)
+            hasLockedFinalUnique = true;
+            const poolIndices = Array.from({ length: IMAGE_POOL.length }, (_, k) => k);
+            for (let k = poolIndices.length - 1; k > 0; k--) {
+              const j = Math.floor(Math.random() * (k + 1));
+              [poolIndices[k], poolIndices[j]] = [poolIndices[j], poolIndices[k]];
+            }
+            slots.forEach((slot, idx) => {
+              slot.currentIndex = poolIndices[idx % poolIndices.length];
+              slot.el.src = IMAGE_POOL[slot.currentIndex];
+            });
+          }
+
+          if (intPct >= 100 && !isImplodingTriggered) {
+            // Reached 100%! Paced Climax Arc
+            isSequenceActive = false;
+            setOdometer(100);
+
+            setTimeout(() => {
+              isImplodingTriggered = true;
+
+              slots.forEach(slot => {
+                slot.el.classList.add('is-imploding');
+              });
+              odometerWrap.classList.add('is-faded-out');
+
+              setTimeout(() => {
+                slots.forEach(slot => {
+                  slot.el.style.display = 'none';
+                });
+                odometerWrap.style.display = 'none';
+              }, 450);
+
+              setTimeout(() => {
+                arrivalWrap.classList.add('is-revealed');
+              }, 520);
+            }, 140);
+          }
+        } else {
+          // Post-reveal Interactive Mouse Parallax
+          const titlePx = mouseCurrentX * 10;
+          const titlePy = mouseCurrentY * 10;
+          arrivalWrap.style.transform = `translate3d(calc(-50% + ${titlePx.toFixed(1)}px), calc(-50% + ${titlePy.toFixed(1)}px), 0)`;
+        }
+
+        animId = requestAnimationFrame(tick);
+      }
+
+      animId = requestAnimationFrame(tick);
+    }
+
+    runSequence();
+
+    // Graceful Replay Click
+    replayBtn.addEventListener('click', () => {
+      arrivalWrap.classList.add('is-dismounting');
+      arrivalWrap.classList.remove('is-revealed');
+
+      setTimeout(() => {
+        runSequence();
+      }, 360);
+    });
+  </script>
+</body>
+</html>

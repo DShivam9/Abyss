@@ -9,6 +9,7 @@ export const SELF_CONTAINED_SCROLL = new Set([
   "erosion-map",
   "clip-morph",
   "mosaic-loader",
+  "cinema-aisle",
 ]);
 
 export function getLayoutType(meta: ComponentDetail, slug: string) {

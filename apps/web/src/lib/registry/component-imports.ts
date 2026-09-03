@@ -37,6 +37,7 @@ export const COMPONENT_IMPORTS: Record<string, React.ComponentType<VesselCompone
   "cascade-gallery": dynamic(() => import("../../../../../packages/core/src/components/cascade-gallery"), { ssr: false }),
   "theme-toggle-redesign": dynamic(() => import("../../../../../packages/core/src/components/theme-toggle-redesign"), { ssr: false }),
   "mosaic-loader": dynamic(() => import("../../../../../packages/core/src/components/mosaic-loader"), { ssr: false }),
+  "cinema-aisle": dynamic(() => import("../../../../../packages/core/src/components/cinema-aisle"), { ssr: false }),
 };
 
 

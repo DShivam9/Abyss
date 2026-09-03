@@ -28,6 +28,21 @@ export interface CommitEntry {
 
 export const CHANGELOG_DATA: CommitEntry[] = [
   {
+    id: "commit-29",
+    date: "2026-09-03",
+    displayDate: "Sep 03, 2026 • 18:15 IST",
+    tags: ["MAJOR", "ADDITION"],
+    title: "Added Cinema Aisle",
+    summary: "Introduced Cinema Aisle, an infinite 3D video corridor with real-time floor reflections and interactive controls.",
+    affectedSlugs: ["cinema-aisle"],
+    items: [
+      "Added 3D video corridor with curved gallery walls and continuous scrolling",
+      "Real-time video floor reflections across an obsidian glass runway",
+      "Ambient auto-drift tracking flight with responsive drag and wheel controls",
+      "Interactive parameters for wall flare, velocity, reflection sheen, and width",
+    ],
+  },
+  {
     id: "commit-28",
     date: "2026-09-01",
     displayDate: "Sep 01, 2026 • 23:10 IST",
