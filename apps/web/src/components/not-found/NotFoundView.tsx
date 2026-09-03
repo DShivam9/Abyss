@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { DockNavbar } from "@/components/layout/DockNavbar";
+import { ProgressiveEdgeBlur } from "@/components/layout/ProgressiveEdgeBlur";
 import { CommandPalette } from "@/components/command-palette/CommandPalette";
 import { SEARCH_INDEX } from "@/lib/registry";
 import { NotFoundCanvas } from "./NotFoundCanvas";
@@ -50,6 +51,9 @@ export function NotFoundView() {
       <div ref={navRef} className={styles.navWrapper}>
         <DockNavbar onOpenSearch={() => setCommandPaletteOpen(true)} />
       </div>
+
+      {/* Liquid Caustic Top Edge Vignette */}
+      <ProgressiveEdgeBlur position="top" variant="liquid" height={210} zIndex={150} />
 
       {/* WebGL Three.js Ambient Fluid + 3D Liquid Chrome Star */}
       <NotFoundCanvas

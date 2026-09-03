@@ -4,6 +4,7 @@ import React, { useState, useEffect, useMemo, Suspense } from "react";
 import { ArrowUpRight } from "lucide-react";
 import { COMPONENT_DETAILS, VIBE_SECTIONS, SEARCH_INDEX } from "@/lib/registry";
 import { DockNavbar } from "@/components/layout/DockNavbar";
+import { ProgressiveEdgeBlur } from "@/components/layout/ProgressiveEdgeBlur";
 import { SectionHeader } from "@/components/collection/SectionHeader";
 import { CollectionCard } from "@/components/collection/CollectionCard";
 import { BottomControlPill } from "@/components/collection/BottomControlPill";
@@ -128,8 +129,11 @@ function CollectionContent() {
           overflow: "hidden",
         }}
       >
-        {/* Floating Top Dock Navbar */}
+        {/* Floating Top Dock Navbar (Foreground z-1000) */}
         <DockNavbar onOpenSearch={() => setCommandPaletteOpen(true)} />
+
+        {/* Reusable Liquid Caustic Edge Vignette (Fixed behind DockNavbar at z-150) */}
+        <ProgressiveEdgeBlur position="top" variant="liquid" height={210} zIndex={150} />
 
         {/* Main Collection Container */}
         <main className="collection-container" id="main-content">

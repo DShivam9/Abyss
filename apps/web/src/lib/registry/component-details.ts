@@ -300,7 +300,20 @@ export const COMPONENT_DETAILS: Record<string, ComponentDetail> = {
     controls: [
       { type: "slider", key: "parallaxIntensity", label: "Internal Parallax", default: 45, min: 10, max: 100, step: 5, unit: "%" },
       { type: "slider", key: "blurDepth", label: "Progressive Blur", default: 280, min: 120, max: 400, step: 20, unit: "px" },
-      { type: "slider", key: "imageBrightness", label: "Image Brightness", default: 90, min: 50, max: 120, step: 5, unit: "%" }
+      { type: "slider", key: "imageBrightness", label: "Image Brightness", default: 90, min: 50, max: 120, step: 5, unit: "%" },
+      {
+        type: "select",
+        key: "blurVariant",
+        label: "Edge Falloff",
+        default: "pure",
+        options: [
+          { label: "Pure Blur", value: "pure" },
+          { label: "Refractive Glass", value: "refractive" },
+          { label: "Liquid Caustic", value: "liquid" },
+          { label: "Line Glass (CRT)", value: "crt" },
+          { label: "Thermal Haze", value: "thermal" }
+        ]
+      }
     ]
   },
   "gravity-cursor": {

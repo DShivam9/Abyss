@@ -8,6 +8,8 @@ export interface BleedSection {
   image: string;
 }
 
+export type BleedBlurVariant = "pure" | "refractive" | "liquid" | "crt" | "thermal";
+
 export interface ApparatusParallaxBleedProps extends VesselComponentProps {
   /**
    * Array of bleed sections.
@@ -23,6 +25,11 @@ export interface ApparatusParallaxBleedProps extends VesselComponentProps {
    * @default 280
    */
   blurDepth?: number;
+  /**
+   * Optical edge vignette variant.
+   * @default "pure"
+   */
+  blurVariant?: BleedBlurVariant;
   /**
    * Scroll indicator visual style.
    * @default "dots"

@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Progressive Blur — Abyss</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg-color: #08080a;
+      --text-main: #f4f4f6;
+      --text-muted: #71717a;
+      --accent: #38bdf8;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+      line-height: 1.2;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* --- REAL DOCUMENT SCROLLING RUNWAY --- */
+    main {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 240px 32px 420px 32px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .specimen-section {
+      display: flex;
+      flex-direction: column;
+      gap: 68px;
+    }
+
+    .heading-group {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .heading-tag {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+    }
+
+    h1 {
+      font-size: clamp(44px, 6.5vw, 80px);
+      font-weight: 900;
+      letter-spacing: -0.04em;
+      color: #ffffff;
+      line-height: 1.02;
+    }
+
+    h2 {
+      font-size: clamp(34px, 5vw, 56px);
+      font-weight: 800;
+      letter-spacing: -0.035em;
+      color: rgba(255, 255, 255, 0.95);
+      line-height: 1.06;
+    }
+
+    h3 {
+      font-size: clamp(28px, 4.2vw, 44px);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      color: rgba(255, 255, 255, 0.88);
+      line-height: 1.12;
+    }
+
+    h4 {
+      font-size: clamp(22px, 3.2vw, 32px);
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      color: rgba(255, 255, 255, 0.80);
+      line-height: 1.20;
+    }
+
+    h5 {
+      font-size: clamp(17px, 2.4vw, 22px);
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      color: rgba(255, 255, 255, 0.70);
+      line-height: 1.30;
+    }
+
+    h6 {
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.50);
+      line-height: 1.40;
+    }
+
+    .divider-line {
+      height: 1px;
+      background: rgba(255, 255, 255, 0.08);
+      margin: 32px 0;
+    }
+
+    /* =======================================================
+       BASE PROGRESSIVE BLUR CONTAINERS (FIXED, NON-BLOCKING)
+       ======================================================= */
+    .progressive-blur {
+      position: fixed;
+      z-index: 10;
+      right: 0;
+      left: 0;
+      height: 220px;
+      overflow: hidden;
+      pointer-events: none;
+    }
+
+    .progressive-blur.top-blur {
+      --blur-direction: to bottom;
+      top: -32px;
+    }
+
+    .progressive-blur.bottom-blur {
+      --blur-direction: to top;
+      bottom: -32px;
+    }
+
+    .progressive-blur .layer {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+
+    /* 8 CANONICAL LAYERS (LOCKED & PRESERVED) */
+    .progressive-blur .blur-1 {
+      z-index: 1;
+      -webkit-backdrop-filter: blur(0.078125px);
+      backdrop-filter: blur(0.078125px);
+      -webkit-mask-image: linear-gradient(var(--blur-direction), transparent 87.5%, #000 100%);
+      mask-image: linear-gradient(var(--blur-direction), transparent 87.5%, #000 100%);
+    }
+    .progressive-blur .blur-2 {
+      z-index: 2;
+      -webkit-backdrop-filter: blur(0.15625px);
+      backdrop-filter: blur(0.15625px);
+      -webkit-mask-image: linear-gradient(var(--blur-direction), transparent 75%, #000 87.5% 100%);
+      mask-image: linear-gradient(var(--blur-direction), transparent 75%, #000 87.5% 100%);
+    }
+    .progressive-blur .blur-3 {
+      z-index: 3;
+      -webkit-backdrop-filter: blur(0.3125px);
+      backdrop-filter: blur(0.3125px);
+      -webkit-mask-image: linear-gradient(var(--blur-direction), transparent 62.5%, #000 75% 87.5%, transparent 100%);
+      mask-image: linear-gradient(var(--blur-direction), transparent 62.5%, #000 75% 87.5%, transparent 100%);
+    }
+    .progressive-blur .blur-4 {
+      z-index: 4;
+      -webkit-backdrop-filter: blur(0.625px);
+      backdrop-filter: blur(0.625px);
+      -webkit-mask-image: linear-gradient(var(--blur-direction), transparent 50%, #000 62.5% 75%, transparent 87.5%);
+      mask-image: linear-gradient(var(--blur-direction), transparent 50%, #000 62.5% 75%, transparent 87.5%);
+    }
+    .progressive-blur .blur-5 {
+      z-index: 5;
+      -webkit-backdrop-filter: blur(1.25px);
+      backdrop-filter: blur(1.25px);
+      -webkit-mask-image: linear-gradient(var(--blur-direction), transparent 37.5%, #000 50% 62.5%, transparent 75%);
+      mask-image: linear-gradient(var(--blur-direction), transparent 37.5%, #000 50% 62.5%, transparent 75%);
+    }
+    .progressive-blur .blur-6 {
+      z-index: 6;
+      -webkit-backdrop-filter: blur(2.5px);
+      backdrop-filter: blur(2.5px);
+      -webkit-mask-image: linear-gradient(var(--blur-direction), transparent 25%, #000 37.5% 50%, transparent 62.5%);
+      mask-image: linear-gradient(var(--blur-direction), transparent 25%, #000 37.5% 50%, transparent 62.5%);
+    }
+    .progressive-blur .blur-7 {
+      z-index: 7;
+      -webkit-backdrop-filter: blur(5px);
+      backdrop-filter: blur(5px);
+      -webkit-mask-image: linear-gradient(var(--blur-direction), transparent 12.5%, #000 25% 37.5%, transparent 50%);
+      mask-image: linear-gradient(var(--blur-direction), transparent 12.5%, #000 25% 37.5%, transparent 50%);
+    }
+    .progressive-blur .blur-8 {
+      z-index: 8;
+      -webkit-backdrop-filter: blur(12px);
+      backdrop-filter: blur(12px);
+      -webkit-mask-image: linear-gradient(var(--blur-direction), transparent 0%, #000 12.5% 25%, transparent 37.5%);
+      mask-image: linear-gradient(var(--blur-direction), transparent 0%, #000 12.5% 25%, transparent 37.5%);
+    }
+
+    /* =======================================================
+       THE 5 CURATED FLAGSHIPS
+       ======================================================= */
+    .special-layer {
+      display: none;
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+
+    /* 1. PURE PROGRESSIVE BLUR (LOCKED) */
+    body[data-variant="pure"] .special-layer { display: none; }
+
+    /* 2. REFRACTIVE GLASS (LOCKED) */
+    body[data-variant="refractive"] .special-layer.fx-refractive {
+      display: block;
+      z-index: 0;
+      backdrop-filter: url(#glass-displacement) blur(1.5px);
+      -webkit-backdrop-filter: url(#glass-displacement) blur(1.5px);
+      mask-image: linear-gradient(var(--blur-direction), #000 0%, #000 45%, transparent 85%);
+      -webkit-mask-image: linear-gradient(var(--blur-direction), #000 0%, #000 45%, transparent 85%);
+    }
+
+    /* 3. LIQUID CAUSTIC (LOCKED) */
+    body[data-variant="liquid"] .special-layer.fx-liquid {
+      display: block;
+      z-index: 0;
+      backdrop-filter: url(#caustic-displacement) blur(2px);
+      -webkit-backdrop-filter: url(#caustic-displacement) blur(2px);
+      mask-image: linear-gradient(var(--blur-direction), #000 0%, #000 40%, transparent 80%);
+      -webkit-mask-image: linear-gradient(var(--blur-direction), #000 0%, #000 40%, transparent 80%);
+    }
+
+    /* 4. CRT PHOSPHOR / LOUVER LINE GLASS (POLISHED 3px/2px RATIO - PURE BACKDROP MASK ONLY) */
+    body[data-variant="crt"] .special-layer.fx-crt {
+      display: block;
+      z-index: 9;
+      /* Boosted phosphor contrast and luminance with micro lens bulge */
+      backdrop-filter: url(#louver-bulge) contrast(1.55) brightness(1.22) saturate(1.1);
+      -webkit-backdrop-filter: url(#louver-bulge) contrast(1.55) brightness(1.22) saturate(1.1);
+      /* 3px aperture / 2px gap (5px cycle) - Zero painted pixels */
+      mask-image: repeating-linear-gradient(to bottom, #000 0px, #000 3px, transparent 3px, transparent 5px),
+                  linear-gradient(var(--blur-direction), #000 0%, transparent 85%);
+      -webkit-mask-image: repeating-linear-gradient(to bottom, #000 0px, #000 3px, transparent 3px, transparent 5px),
+                          linear-gradient(var(--blur-direction), #000 0%, transparent 85%);
+      mask-composite: intersect;
+      -webkit-mask-composite: destination-in;
+    }
+
+    /* 5. THERMAL HAZE (LOCKED) */
+    body[data-variant="thermal"] .special-layer.fx-thermal {
+      display: block;
+      z-index: 0;
+      backdrop-filter: url(#thermal-displacement) blur(1px);
+      -webkit-backdrop-filter: url(#thermal-displacement) blur(1px);
+      mask-image: linear-gradient(var(--blur-direction), #000 0%, #000 40%, transparent 80%);
+      -webkit-mask-image: linear-gradient(var(--blur-direction), #000 0%, #000 40%, transparent 80%);
+    }
+
+    /* --- SLEEK 5-VARIANT HUD (TOP-RIGHT) --- */
+    .lab-panel {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      width: 260px;
+      background: rgba(14, 14, 18, 0.92);
+      backdrop-filter: blur(28px);
+      -webkit-backdrop-filter: blur(28px);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 14px;
+      padding: 14px;
+      z-index: 100;
+      box-shadow: 0 24px 50px rgba(0, 0, 0, 0.85);
+    }
+
+    .lab-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .lab-badge {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #e4e4e7;
+    }
+
+    .lab-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #38bdf8;
+      box-shadow: 0 0 8px #38bdf8;
+    }
+
+    .variant-count {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      color: var(--text-muted);
+      background: rgba(255, 255, 255, 0.06);
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+
+    .variant-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .variant-btn {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      color: #a1a1aa;
+      font-family: inherit;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 7px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      text-align: left;
+      transition: all 0.12s ease;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .variant-btn:hover {
+      background: rgba(255, 255, 255, 0.08);
+      color: #ffffff;
+      border-color: rgba(255, 255, 255, 0.12);
+    }
+
+    .variant-btn.active {
+      background: rgba(56, 189, 248, 0.15);
+      border-color: rgba(56, 189, 248, 0.4);
+      color: #38bdf8;
+    }
+
+    .variant-desc {
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      font-size: 11px;
+      color: var(--text-muted);
+      line-height: 1.4;
+      min-height: 32px;
+    }
+  </style>
+</head>
+<body data-variant="crt">
+
+  <!-- =======================================================
+       SVG DISPLACEMENT FILTERS (CURATED)
+       ======================================================= -->
+  <svg style="position: absolute; width: 0; height: 0; pointer-events: none;" aria-hidden="true">
+    <defs>
+      <!-- 2. Refractive Lens Curvature -->
+      <filter id="glass-displacement" x="0%" y="0%" width="100%" height="100%" color-interpolation-filters="sRGB">
+        <feTurbulence type="fractalNoise" baseFrequency="0.018 0.006" numOctaves="2" result="warpNoise" />
+        <feDisplacementMap in="SourceGraphic" in2="warpNoise" scale="16" xChannelSelector="R" yChannelSelector="G" />
+      </filter>
+
+      <!-- 3. Liquid Caustics Undulation -->
+      <filter id="caustic-displacement" x="0%" y="0%" width="100%" height="100%" color-interpolation-filters="sRGB">
+        <feTurbulence type="turbulence" baseFrequency="0.03 0.015" numOctaves="3" result="wave" />
+        <feDisplacementMap in="SourceGraphic" in2="wave" scale="22" xChannelSelector="G" yChannelSelector="R" />
+      </filter>
+
+      <!-- 4. Louver Glass Bulge (Micro Optical Refraction inside Slits) -->
+      <filter id="louver-bulge" x="0%" y="0%" width="100%" height="100%" color-interpolation-filters="sRGB">
+        <feTurbulence type="fractalNoise" baseFrequency="0.008 0.2" numOctaves="1" result="louverNoise" />
+        <feDisplacementMap in="SourceGraphic" in2="louverNoise" scale="2.5" xChannelSelector="R" yChannelSelector="G" />
+      </filter>
+
+      <!-- 5. Thermal Heat Haze Schlieren -->
+      <filter id="thermal-displacement" x="0%" y="0%" width="100%" height="100%" color-interpolation-filters="sRGB">
+        <feTurbulence type="fractalNoise" baseFrequency="0.06 0.03" numOctaves="3" result="heat" />
+        <feDisplacementMap in="SourceGraphic" in2="heat" scale="10" xChannelSelector="R" yChannelSelector="G" />
+      </filter>
+    </defs>
+  </svg>
+
+  <!-- =======================================================
+       PAGE CONTENT RUNWAY
+       ======================================================= -->
+  <main>
+    <section class="specimen-section">
+      
+      <div class="heading-group">
+        <span class="heading-tag">Heading 01 • Monumental Display</span>
+        <h1 id="specimenTitle">CRT Phosphor Scan</h1>
+      </div>
+
+      <div class="heading-group">
+        <span class="heading-tag">Heading 02 • Editorial Title</span>
+        <h2>Micro Cathode-Ray Slit Apertures</h2>
+      </div>
+
+      <div class="heading-group">
+        <span class="heading-tag">Heading 03 • Chapter Subtitle</span>
+        <h3>Continuous Optical Sampling Mechanics</h3>
+      </div>
+
+      <div class="heading-group">
+        <span class="heading-tag">Heading 04 • Section Lead</span>
+        <h4>Non-Blocking Pointer Input Mechanics</h4>
+      </div>
+
+      <div class="heading-group">
+        <span class="heading-tag">Heading 05 • Column Header</span>
+        <h5>Hardware Accelerated Compositor Pipeline</h5>
+      </div>
+
+      <div class="heading-group">
+        <span class="heading-tag">Heading 06 • Eyebrow Specimen</span>
+        <h6>ABYSS OPTICAL SYSTEM • 5 CURATED FLAGSHIPS</h6>
+      </div>
+
+      <div class="divider-line"></div>
+
+      <div class="heading-group">
+        <span class="heading-tag">Heading 01 • Display Second Pass</span>
+        <h1>Tactile Edge Defocus Horizon</h1>
+      </div>
+
+      <div class="heading-group">
+        <span class="heading-tag">Heading 02 • Editorial Title Second Pass</span>
+        <h2>Letters Sliced Into Sub-Pixel Phosphor Lines</h2>
+      </div>
+
+      <div class="heading-group">
+        <span class="heading-tag">Heading 03 • Chapter Subtitle Second Pass</span>
+        <h3>Gradual Transition Across Viewport Boundaries</h3>
+      </div>
+
+      <div class="heading-group">
+        <span class="heading-tag">Heading 04 • Section Lead Second Pass</span>
+        <h4>Full Pointer Pass-Through Selection</h4>
+      </div>
+
+      <div class="heading-group">
+        <span class="heading-tag">Heading 05 • Column Header Second Pass</span>
+        <h5>Fluid 120 FPS Compositing Across Displays</h5>
+      </div>
+
+      <div class="heading-group">
+        <span class="heading-tag">Heading 06 • Eyebrow Specimen Second Pass</span>
+        <h6>END OF TYPOGRAPHIC SPECIMEN RUNWAY</h6>
+      </div>
+
+    </section>
+  </main>
+
+  <!-- =======================================================
+       TOP PROGRESSIVE BLUR VIGNETTE
+       ======================================================= -->
+  <div class="progressive-blur top-blur" aria-hidden="true">
+    <div class="special-layer fx-refractive"></div>
+    <div class="special-layer fx-liquid"></div>
+    <div class="special-layer fx-crt"></div>
+    <div class="special-layer fx-thermal"></div>
+
+    <div class="layer blur-1"></div>
+    <div class="layer blur-2"></div>
+    <div class="layer blur-3"></div>
+    <div class="layer blur-4"></div>
+    <div class="layer blur-5"></div>
+    <div class="layer blur-6"></div>
+    <div class="layer blur-7"></div>
+    <div class="layer blur-8"></div>
+  </div>
+
+  <!-- =======================================================
+       BOTTOM PROGRESSIVE BLUR VIGNETTE
+       ======================================================= -->
+  <div class="progressive-blur bottom-blur" aria-hidden="true">
+    <div class="special-layer fx-refractive"></div>
+    <div class="special-layer fx-liquid"></div>
+    <div class="special-layer fx-crt"></div>
+    <div class="special-layer fx-thermal"></div>
+
+    <div class="layer blur-1"></div>
+    <div class="layer blur-2"></div>
+    <div class="layer blur-3"></div>
+    <div class="layer blur-4"></div>
+    <div class="layer blur-5"></div>
+    <div class="layer blur-6"></div>
+    <div class="layer blur-7"></div>
+    <div class="layer blur-8"></div>
+  </div>
+
+  <!-- =======================================================
+       CURATED 5-VARIANT CONTROL DRAWER
+       ======================================================= -->
+  <aside class="lab-panel">
+    <div class="lab-header">
+      <div class="lab-badge">
+        <div class="lab-dot"></div>
+        <span>Curated Suite</span>
+      </div>
+      <span class="variant-count">5 Modes</span>
+    </div>
+
+    <div class="variant-stack">
+      <button class="variant-btn" data-v="pure">
+        <span>1. Pure Blur</span>
+        <span style="font-size: 9px; opacity: 0.6;">DEFAULT</span>
+      </button>
+      <button class="variant-btn" data-v="refractive">
+        <span>2. Refractive Glass</span>
+        <span style="font-size: 9px; opacity: 0.6;">LENS</span>
+      </button>
+      <button class="variant-btn" data-v="liquid">
+        <span>3. Liquid Caustic</span>
+        <span style="font-size: 9px; opacity: 0.6;">WAVE</span>
+      </button>
+      <button class="variant-btn active" data-v="crt">
+        <span>4. CRT Phosphor</span>
+        <span style="font-size: 9px; opacity: 0.6;">SCAN</span>
+      </button>
+      <button class="variant-btn" data-v="thermal">
+        <span>5. Thermal Haze</span>
+        <span style="font-size: 9px; opacity: 0.6;">SHIMMER</span>
+      </button>
+    </div>
+
+    <div class="variant-desc" id="variantDesc">
+      Calibrated 3px/2px slit apertures with micro louver bulge and high-voltage phosphor luminance.
+    </div>
+  </aside>
+
+  <script>
+    const descriptions = {
+      pure: "Locked Canonical 8-layer progressive blur with doubling power-of-two curve.",
+      refractive: "Locked Physical lens curvature bending letterforms via SVG displacement mapping.",
+      liquid: "Deep water-surface caustic refraction undulating letters into fluid wave lens forms.",
+      crt: "Calibrated 3px/2px slit apertures with micro louver bulge and high-voltage phosphor luminance.",
+      thermal: "High-frequency Schlieren heat-shimmer turbulence vibrating rising air currents."
+    };
+
+    const buttons = document.querySelectorAll('.variant-btn');
+    const descEl = document.getElementById('variantDesc');
+    const titleEl = document.getElementById('specimenTitle');
+
+    buttons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const v = btn.getAttribute('data-v');
+        buttons.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        document.body.setAttribute('data-variant', v);
+        descEl.textContent = descriptions[v] || "";
+        titleEl.textContent = btn.querySelector('span').textContent.replace(/^\d+\.\s*/, '') + " Falloff";
+      });
+    });
+  </script>
+
+</body>
+</html>

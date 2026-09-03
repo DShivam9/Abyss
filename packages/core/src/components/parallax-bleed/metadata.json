@@ -25,6 +25,19 @@
       "max": 3.0,
       "step": 0.1,
       "unit": "x"
+    },
+    {
+      "name": "blurVariant",
+      "label": "Edge Falloff",
+      "type": "select",
+      "defaultValue": "pure",
+      "options": [
+        { "label": "Pure Blur", "value": "pure" },
+        { "label": "Refractive Glass", "value": "refractive" },
+        { "label": "Liquid Caustic", "value": "liquid" },
+        { "label": "Line Glass (CRT)", "value": "crt" },
+        { "label": "Thermal Haze", "value": "thermal" }
+      ]
     }
   ]
 }

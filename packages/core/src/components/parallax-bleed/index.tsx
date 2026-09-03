@@ -5,13 +5,13 @@ import {
   DEFAULT_BLEED_SECTIONS,
   BAKED_SCROLL_SPEED,
   BAKED_INERTIAL_DAMPING,
-  BAKED_MOUSE_DRIFT,
 } from "./constants";
 
 export default function ApparatusParallaxBleed({
   sections = DEFAULT_BLEED_SECTIONS,
   parallaxIntensity = 45, // 0% - 100% intensity
   blurDepth = 280,
+  blurVariant = "pure",
   indicatorStyle = "dots",
   imageBrightness = 90,
   className = "",
@@ -24,11 +24,6 @@ export default function ApparatusParallaxBleed({
   const imageRefs = useRef<(HTMLImageElement | null)[]>([]);
   const textRefs = useRef<(HTMLDivElement | null)[]>([]);
   const dashRefs = useRef<(HTMLDivElement | null)[]>([]);
-
-  // Mouse position state for stationary cursor parallax
-  // ponytail: native mousemove tracking without heavy external libraries
-  const mouseRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
-  const smoothMouseRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
 
   // Accumulator state
   const targetProgressRef = useRef<number>(0);
@@ -72,23 +67,6 @@ export default function ApparatusParallaxBleed({
       targetProgressRef.current = externalProgress;
     }
   }, [externalProgress]);
-
-  // Mouse move listener for stationary cursor depth
-  useEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
-
-    const handleMouseMove = (e: MouseEvent) => {
-      const rect = container.getBoundingClientRect();
-      mouseRef.current = {
-        x: ((e.clientX - rect.left) / rect.width - 0.5) * 2,
-        y: ((e.clientY - rect.top) / rect.height - 0.5) * 2,
-      };
-    };
-
-    container.addEventListener("mousemove", handleMouseMove);
-    return () => container.removeEventListener("mousemove", handleMouseMove);
-  }, []);
 
   // Self-contained container wheel + touch listener
   // ponytail: direct container wheel listener prevents bounds trap and dropdown focus freezes
@@ -135,14 +113,9 @@ export default function ApparatusParallaxBleed({
 
         const { indicatorStyle: indStyle } = propsRef.current;
         const lerpSpeed = BAKED_INERTIAL_DAMPING;
-        const drift = BAKED_MOUSE_DRIFT;
         smoothProgressRef.current += (targetProgressRef.current - smoothProgressRef.current) * (1 - Math.exp(-lerpSpeed * dt));
 
         const p = smoothProgressRef.current;
-
-        // Smooth mouse position interpolation (soft 2D inertial lag coast)
-        smoothMouseRef.current.x += (mouseRef.current.x - smoothMouseRef.current.x) * (1 - Math.exp(-2.5 * dt));
-        smoothMouseRef.current.y += (mouseRef.current.y - smoothMouseRef.current.y) * (1 - Math.exp(-2.5 * dt));
 
         // Velocity calculation for dynamic spatial inertia
         const rawVelocity = (p - lastProgress) / Math.max(dt, 0.001);
@@ -207,15 +180,11 @@ export default function ApparatusParallaxBleed({
             zIndex: zIndex,
           });
 
-          // Expanded Inner Image Parallax Shift + Soft 2D Inertial Drift
+          // Expanded Inner Image Parallax Shift
           const internalImgY = -wrappedPos * parallaxOffsetRatio * 100;
-          const mouseShiftX = smoothMouseRef.current.x * drift;
-          const mouseShiftY = smoothMouseRef.current.y * drift;
 
           gsap.set(imgEl, {
             y: `${internalImgY}%`,
-            x: `${mouseShiftX}px`,
-            yPercent: mouseShiftY,
           });
 
           // Text position glide
@@ -223,7 +192,6 @@ export default function ApparatusParallaxBleed({
             const textBlockY = wrappedPos * 38;
             gsap.set(textEl, {
               y: `${textBlockY}%`,
-              x: `${-mouseShiftX * 0.4}px`,
             });
           }
         });
@@ -249,12 +217,89 @@ export default function ApparatusParallaxBleed({
       className={`relative w-full h-screen bg-[#050505] font-['Syne',sans-serif] text-white overflow-hidden select-none ${className}`}
       style={style}
     >
-      {/* 8-Layer Mathematical Progressive Blur Overlay */}
-      {/* ponytail: 8-step contiguous masked backdrop-filter layers with exponential doubling */}
+      {/* Inline SVG Optical Displacement Filters for Bleed Edge Falloffs */}
+      <svg className="absolute w-0 h-0 pointer-events-none" aria-hidden="true">
+        <defs>
+          <filter id="bleed-glass-displacement" x="0%" y="0%" width="100%" height="100%" colorInterpolationFilters="sRGB">
+            <feTurbulence type="fractalNoise" baseFrequency="0.018 0.006" numOctaves={2} result="warpNoise" />
+            <feDisplacementMap in="SourceGraphic" in2="warpNoise" scale={16} xChannelSelector="R" yChannelSelector="G" />
+          </filter>
+
+          <filter id="bleed-caustic-displacement" x="0%" y="0%" width="100%" height="100%" colorInterpolationFilters="sRGB">
+            <feTurbulence type="turbulence" baseFrequency="0.03 0.015" numOctaves={3} result="wave" />
+            <feDisplacementMap in="SourceGraphic" in2="wave" scale={22} xChannelSelector="G" yChannelSelector="R" />
+          </filter>
+
+          <filter id="bleed-louver-bulge" x="0%" y="0%" width="100%" height="100%" colorInterpolationFilters="sRGB">
+            <feTurbulence type="fractalNoise" baseFrequency="0.008 0.2" numOctaves={1} result="louverNoise" />
+            <feDisplacementMap in="SourceGraphic" in2="louverNoise" scale={2.5} xChannelSelector="R" yChannelSelector="G" />
+          </filter>
+
+          <filter id="bleed-thermal-displacement" x="0%" y="0%" width="100%" height="100%" colorInterpolationFilters="sRGB">
+            <feTurbulence type="fractalNoise" baseFrequency="0.06 0.03" numOctaves={3} result="heat" />
+            <feDisplacementMap in="SourceGraphic" in2="heat" scale={10} xChannelSelector="R" yChannelSelector="G" />
+          </filter>
+        </defs>
+      </svg>
+
+      {/* 8-Layer Mathematical Progressive Blur Overlay + Curated Flagships */}
       <div
         className="absolute inset-x-0 bottom-[-40px] pointer-events-none z-20 overflow-hidden"
         style={{ height: `${blurDepth}px` }}
       >
+        {/* Flagship 2: Refractive Glass */}
+        {blurVariant === "refractive" && (
+          <div
+            className="absolute inset-0 pointer-events-none z-0"
+            style={{
+              backdropFilter: "url(#bleed-glass-displacement) blur(1.5px)",
+              WebkitBackdropFilter: "url(#bleed-glass-displacement) blur(1.5px)",
+              maskImage: "linear-gradient(to top, #000 0%, #000 45%, transparent 85%)",
+              WebkitMaskImage: "linear-gradient(to top, #000 0%, #000 45%, transparent 85%)",
+            }}
+          />
+        )}
+
+        {/* Flagship 3: Liquid Caustic */}
+        {blurVariant === "liquid" && (
+          <div
+            className="absolute inset-0 pointer-events-none z-0"
+            style={{
+              backdropFilter: "url(#bleed-caustic-displacement) blur(2px)",
+              WebkitBackdropFilter: "url(#bleed-caustic-displacement) blur(2px)",
+              maskImage: "linear-gradient(to top, #000 0%, #000 40%, transparent 80%)",
+              WebkitMaskImage: "linear-gradient(to top, #000 0%, #000 40%, transparent 80%)",
+            }}
+          />
+        )}
+
+        {/* Flagship 4: CRT Phosphor / Louver Line Glass */}
+        {blurVariant === "crt" && (
+          <div
+            className="absolute inset-0 pointer-events-none z-[9]"
+            style={{
+              backdropFilter: "url(#bleed-louver-bulge) contrast(1.55) brightness(1.22) saturate(1.1)",
+              WebkitBackdropFilter: "url(#bleed-louver-bulge) contrast(1.55) brightness(1.22) saturate(1.1)",
+              maskImage: "repeating-linear-gradient(to bottom, #000 0px, #000 3px, transparent 3px, transparent 5px), linear-gradient(to top, #000 0%, transparent 85%)",
+              WebkitMaskImage: "repeating-linear-gradient(to bottom, #000 0px, #000 3px, transparent 3px, transparent 5px), linear-gradient(to top, #000 0%, transparent 85%)",
+              maskComposite: "intersect",
+              WebkitMaskComposite: "destination-in",
+            }}
+          />
+        )}
+
+        {/* Flagship 5: Thermal Haze */}
+        {blurVariant === "thermal" && (
+          <div
+            className="absolute inset-0 pointer-events-none z-0"
+            style={{
+              backdropFilter: "url(#bleed-thermal-displacement) blur(1px)",
+              WebkitBackdropFilter: "url(#bleed-thermal-displacement) blur(1px)",
+              maskImage: "linear-gradient(to top, #000 0%, #000 40%, transparent 80%)",
+              WebkitMaskImage: "linear-gradient(to top, #000 0%, #000 40%, transparent 80%)",
+            }}
+          />
+        )}
         <div
           className="absolute inset-0 pointer-events-none z-[1]"
           style={{

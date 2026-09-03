@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import { DockNavbar } from "@/components/layout/DockNavbar";
+import { ProgressiveEdgeBlur } from "@/components/layout/ProgressiveEdgeBlur";
 import { CommandPalette } from "@/components/command-palette/CommandPalette";
 import { SEARCH_INDEX } from "@/lib/registry";
 import { SiteFooter } from "@/components/layout/SiteFooter";
@@ -162,6 +163,9 @@ export default function PrivacyPage() {
         }}
       >
         <DockNavbar onOpenSearch={() => setCommandPaletteOpen(true)} />
+
+        {/* Liquid Caustic Top Edge Vignette */}
+        <ProgressiveEdgeBlur position="top" variant="liquid" height={210} zIndex={150} />
 
         <main
           style={{

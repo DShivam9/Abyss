@@ -5,6 +5,7 @@ import { ArrowUpRight } from "lucide-react";
 import { CHANGELOG_DATA, CommitEntry } from "@/lib/data/changelog-data";
 import { SEARCH_INDEX } from "@/lib/registry";
 import { DockNavbar } from "@/components/layout/DockNavbar";
+import { ProgressiveEdgeBlur } from "@/components/layout/ProgressiveEdgeBlur";
 import { CommandPalette } from "@/components/command-palette/CommandPalette";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { ChangelogHeader } from "@/components/changelog/ChangelogHeader";
@@ -168,6 +169,9 @@ export default function ChangelogPage() {
       >
         {/* Universal Floating Dock Navbar with Search Command Trigger */}
         <DockNavbar onOpenSearch={() => setCommandPaletteOpen(true)} />
+
+        {/* Liquid Caustic Top Edge Vignette */}
+        <ProgressiveEdgeBlur position="top" variant="liquid" height={210} zIndex={150} />
 
         {/* Main Page Container */}
         <main className="max-w-5xl mx-auto px-6 lg:px-8 pt-28 md:pt-36 pb-12 space-y-10">

@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { DockNavbar } from "@/components/layout/DockNavbar";
+import { ProgressiveEdgeBlur } from "@/components/layout/ProgressiveEdgeBlur";
 import { CommandPalette } from "@/components/command-palette/CommandPalette";
 import { SEARCH_INDEX } from "@/lib/registry";
 import { DocsSections } from "@/components/docs/DocsSections";
@@ -46,6 +47,9 @@ export default function DocsPage() {
       >
         {/* Floating Top Dock Navbar */}
         <DockNavbar onOpenSearch={() => setCommandPaletteOpen(true)} />
+
+        {/* Liquid Caustic Top Edge Vignette */}
+        <ProgressiveEdgeBlur position="top" variant="liquid" height={210} zIndex={150} />
 
         {/* Editorial Content Sections & 3D Logo Finale */}
         <DocsSections />
