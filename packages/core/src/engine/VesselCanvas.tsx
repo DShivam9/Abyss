@@ -11,7 +11,7 @@ export interface VesselCanvasProps extends VesselComponentProps {
   subdivisions?: { x: number; y: number };
   customGeometry?: THREE.BufferGeometry;
   onClickCanvas?: (uv: THREE.Vector2, clock: THREE.Clock) => void;
-  onAnimate?: (material: THREE.ShaderMaterial, clock: THREE.Clock) => void;
+  onAnimate?: (material: THREE.ShaderMaterial, clock: THREE.Clock, delta: number) => void;
   ariaLabel?: string;
 }
 
@@ -319,7 +319,7 @@ export const VesselCanvas: React.FC<VesselCanvasProps> = ({
 
       // Allow component-specific updates in animation ticker
       if (onAnimate) {
-        onAnimate(material, clock.current);
+        onAnimate(material, clock.current, delta);
       }
 
       renderer.render(scene, camera);

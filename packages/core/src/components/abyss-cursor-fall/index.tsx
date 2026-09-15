@@ -337,7 +337,7 @@ export const Apparatus3dCursorTrail: React.FC<Apparatus3dCursorTrailProps> = ({
       } = propsRef.current;
 
       const dt = Math.min(deltaTime / 1000, 0.033);
-      const lerpSpeed = 0.08;
+      const lerpFactor = 1 - Math.pow(0.92, dt * 60);
       const speedMag = Math.hypot(pointerVel.x, pointerVel.y);
 
       // --- DYNAMIC 3D CAMERA ORBIT & FPV DOLLY ---
@@ -345,9 +345,9 @@ export const Apparatus3dCursorTrail: React.FC<Apparatus3dCursorTrailProps> = ({
       const targetCamY = pointer.y * curCamParallax * 0.5;
       const targetCamZ = targetZoomZ + speedMag * 2.0 - Math.hypot(pointer.x, pointer.y) * 0.5;
 
-      camera.position.x += (targetCamX - camera.position.x) * lerpSpeed;
-      camera.position.y += (targetCamY - camera.position.y) * lerpSpeed;
-      camera.position.z += (targetCamZ - camera.position.z) * lerpSpeed;
+      camera.position.x += (targetCamX - camera.position.x) * lerpFactor;
+      camera.position.y += (targetCamY - camera.position.y) * lerpFactor;
+      camera.position.z += (targetCamZ - camera.position.z) * lerpFactor;
 
       const lookTargetX = Math.max(-2.5, Math.min(2.5, target3D.x * 0.2));
       const lookTargetY = Math.max(-2.5, Math.min(2.5, target3D.y * 0.2));
@@ -355,7 +355,7 @@ export const Apparatus3dCursorTrail: React.FC<Apparatus3dCursorTrailProps> = ({
 
       const rawRoll = -pointerVel.x * 4.0 - pointer.x * 0.08;
       const targetRoll = Math.max(-0.18, Math.min(0.18, rawRoll));
-      camera.rotation.z += (targetRoll - camera.rotation.z) * lerpSpeed;
+      camera.rotation.z += (targetRoll - camera.rotation.z) * lerpFactor;
 
       // --- 3D VOID FALL PHYSICS & DESATURATION ---
       for (let i = 0; i < poolCapacity; i++) {

@@ -71,7 +71,7 @@ void main() {
   // Deep grooves trap light: compare local luminance to neighborhood average
   float localAvg = (lumLeft + lumRight + lumUp + lumDown) * 0.25;
   float ao = smoothstep(-0.08, 0.06, baseLum - localAvg);
-  float aoFactor = 0.6 + ao * 0.4;
+  float aoFactor = 0.3 + ao * 0.7;
 
   // --- 3. Dynamic Torchlight & Flame Jitter ---
   float flickerTime = uTime * 8.5;
@@ -127,13 +127,13 @@ void main() {
   vec3 lightColor = vec3(0.98, 0.88, 0.70);
   
   // AO-modulated ambient
-  vec3 ambient = stoneColor * 0.26 * aoFactor;
+  vec3 ambient = stoneColor * 0.14 * aoFactor;
   
   // Flame brightness pulse
   float flamePulse = 1.0 + sin(uTime * 12.0) * 0.04 * cos(uTime * 4.3) * 0.03;
   
   // Torchlight: diffuse + specular, shadowed, AO-masked
-  vec3 rakingLight = stoneColor * lightColor * diffuse * shadow * 1.25 * flamePulse * aoFactor;
+  vec3 rakingLight = stoneColor * lightColor * diffuse * shadow * 1.35 * flamePulse * aoFactor;
   rakingLight += stoneColor * lightColor * stoneSpec * shadow;
 
   // --- 8. Idle State: Oblique Ambient Relief ---
@@ -143,7 +143,7 @@ void main() {
   // Subtle idle specular sheen
   vec3 H_ambient = normalize(L_ambient + V);
   float idleSpec = pow(max(dot(N, H_ambient), 0.0), 22.0) * 0.1;
-  vec3 ambientShaded = stoneColor * (0.35 + diffuse_ambient * 0.75 * baseLum) * aoFactor + stoneColor * idleSpec;
+  vec3 ambientShaded = stoneColor * (0.14 + diffuse_ambient * 0.86 * baseLum) * aoFactor + stoneColor * idleSpec;
 
   // Transition from ambient shaded relief (idle) to dynamic torchlit relief (hover)
   vec3 finalColor = mix(ambientShaded, ambient + rakingLight, uHoverActive);

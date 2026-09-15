@@ -9,14 +9,14 @@ export const ApparatusFaf: React.FC<ApparatusFafProps> = (props) => {
   const hoverActiveRef = useRef(0.0);
   const clickWaveRef = useRef(0.0);
 
-  const handleAnimate = (material: THREE.ShaderMaterial) => {
+  const handleAnimate = (material: THREE.ShaderMaterial, _clock: THREE.Clock, delta: number) => {
     const uHover = material.uniforms.uHover.value as number;
 
     // Smoothly interpolate the gilding activation wave front
-    hoverActiveRef.current = THREE.MathUtils.lerp(hoverActiveRef.current, uHover, 0.07);
+    hoverActiveRef.current += (uHover - hoverActiveRef.current) * (1 - Math.pow(0.93, delta * 60));
     
     // Decay the click alchemical surge wave
-    clickWaveRef.current = THREE.MathUtils.lerp(clickWaveRef.current, 0.0, 0.06);
+    clickWaveRef.current *= Math.pow(0.94, delta * 60);
 
     // Update custom uniforms
     if (material.uniforms.uHoverActive) {

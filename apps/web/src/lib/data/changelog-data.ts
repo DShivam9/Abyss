@@ -28,6 +28,21 @@ export interface CommitEntry {
 
 export const CHANGELOG_DATA: CommitEntry[] = [
   {
+    id: "commit-30",
+    date: "2026-09-16",
+    displayDate: "Sep 16, 2026 • 00:40 IST",
+    tags: ["MAJOR", "ADDITION"],
+    title: "Added Cyclorama Matrix",
+    summary: "Introduced Cyclorama Matrix, a curved 3D gallery matrix with liquid momentum drag and perimeter depth blur.",
+    affectedSlugs: ["cyclorama-matrix"],
+    items: [
+      "Added curved 3D gallery matrix with continuous canvas navigation",
+      "Liquid momentum drag physics with fluid spring zoom on hold",
+      "Perimeter depth blur with optical rack-focus edge fading",
+      "Interactive parameter controls for curvature and friction",
+    ],
+  },
+  {
     id: "commit-29",
     date: "2026-09-03",
     displayDate: "Sep 03, 2026 • 18:15 IST",

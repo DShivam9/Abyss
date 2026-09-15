@@ -10,6 +10,7 @@ export const SELF_CONTAINED_SCROLL = new Set([
   "clip-morph",
   "mosaic-loader",
   "cinema-aisle",
+  "cyclorama-matrix",
 ]);
 
 export function getLayoutType(meta: ComponentDetail, slug: string) {

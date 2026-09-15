@@ -11,7 +11,7 @@ export const ApparatusFjvfba: React.FC<ApparatusFjvfbaProps> = (props) => {
   const lastMouseRef = useRef(new THREE.Vector2(0.5, 0.5));
   const velocityRef = useRef(new THREE.Vector2(0.0, 0.0));
 
-  const handleAnimate = (material: THREE.ShaderMaterial) => {
+  const handleAnimate = (material: THREE.ShaderMaterial, _clock: THREE.Clock, delta: number) => {
     const uMouse = material.uniforms.uMouse.value as THREE.Vector2;
     const uHover = material.uniforms.uHover.value as number;
 
@@ -23,19 +23,20 @@ export const ApparatusFjvfba: React.FC<ApparatusFjvfbaProps> = (props) => {
     const targetVelocityX = deltaX * 18.0;
     const targetVelocityY = deltaY * 18.0;
 
+    const vf = 1 - Math.pow(0.92, delta * 60);
     velocityRef.current.set(
-      THREE.MathUtils.lerp(velocityRef.current.x, targetVelocityX, 0.08),
-      THREE.MathUtils.lerp(velocityRef.current.y, targetVelocityY, 0.08)
+      velocityRef.current.x + (targetVelocityX - velocityRef.current.x) * vf,
+      velocityRef.current.y + (targetVelocityY - velocityRef.current.y) * vf
     );
 
     // Save mouse coordinate for the next frame delta
     lastMouseRef.current.copy(uMouse);
 
     // Smoothly interpolate hover state
-    hoverActiveRef.current = THREE.MathUtils.lerp(hoverActiveRef.current, uHover, 0.07);
+    hoverActiveRef.current += (uHover - hoverActiveRef.current) * (1 - Math.pow(0.93, delta * 60));
     
     // Decay click surge
-    clickWaveRef.current = THREE.MathUtils.lerp(clickWaveRef.current, 0.0, 0.06);
+    clickWaveRef.current *= Math.pow(0.94, delta * 60);
 
     if (material.uniforms.uHoverActive) {
       material.uniforms.uHoverActive.value = hoverActiveRef.current;

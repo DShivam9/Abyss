@@ -145,6 +145,7 @@ export default function GimbalStream({
       uniforms: {
         uTime: { value: 0 },
         uScrollY: { value: 0 },
+        uScrollEnergy: { value: 0 },
         uChamberAwake: { value: 0.20 },
         uMorphWeights: { value: new THREE.Vector3(1.0, 0.0, 0.0) },
         uWaveBrightness: { value: 1.0 },
@@ -229,17 +230,19 @@ export default function GimbalStream({
     // --- Virtual Scroll & Mouse Tracking ---
     let targetScrollY = 0;
     let currentScrollY = 0;
-    let scrollVelocity = 0;
-    let lastScroll = 0;
     let lastTouchY = 0;
     let accumulatedAutoTime = 0;
     let accumulatedWaveTime = 0;
-    let currentBend = 0;
     let hasFullyUnlocked = false;
+    let lastUserScrollTime = 0;
+    let autoDriftWeight = 0.0;
+    let lastScroll = 0;
+    let scrollEnergy = 0.0;
 
     const onWheel = (e: WheelEvent) => {
       e.preventDefault();
-      const normalizedDelta = THREE.MathUtils.clamp(e.deltaY, -120, 120) * 0.22 + (e.deltaY * 0.04);
+      lastUserScrollTime = performance.now();
+      const normalizedDelta = THREE.MathUtils.clamp(e.deltaY, -80, 80) * 0.12 + (e.deltaY * 0.018);
       if (!hasFullyUnlocked) targetScrollY = Math.max(0.0, targetScrollY + normalizedDelta);
       else targetScrollY += normalizedDelta;
     };
@@ -279,7 +282,8 @@ export default function GimbalStream({
     };
     const onTouchMove = (e: TouchEvent) => {
       if (e.touches.length === 1) {
-        const deltaY = (e.touches[0].clientY - lastTouchY) * 0.48;
+        lastUserScrollTime = performance.now();
+        const deltaY = (e.touches[0].clientY - lastTouchY) * 0.25;
         if (!hasFullyUnlocked) targetScrollY = Math.max(0.0, targetScrollY - deltaY);
         else targetScrollY -= deltaY;
         lastTouchY = e.touches[0].clientY;
@@ -311,12 +315,24 @@ export default function GimbalStream({
       lastNow = now;
       const t = now * 0.001;
 
-      accumulatedAutoTime += delta * autoRotateSpeedRef.current;
-      currentScrollY = expDamp(currentScrollY, targetScrollY, 2.4, delta);
-      scrollVelocity = currentScrollY - lastScroll;
-      lastScroll = currentScrollY;
+      // Ambient forward drift: disengages during user scroll
+      const isUserActive = (now - lastUserScrollTime) < 1200;
+      const targetAutoDrift = (!isUserActive && hasFullyUnlocked) ? 1.0 : 0.0;
+      autoDriftWeight = THREE.MathUtils.lerp(autoDriftWeight, targetAutoDrift, 1.0 - Math.exp(-2.5 * delta));
+      if (autoDriftWeight > 0.001) {
+        targetScrollY += 14.0 * delta * autoDriftWeight;
+      }
 
-      currentWeights.lerp(targetWeightsRef.current, 0.08);
+      accumulatedAutoTime += delta * autoRotateSpeedRef.current;
+      currentScrollY = expDamp(currentScrollY, targetScrollY, 1.65, delta);
+
+      // Track user scroll momentum for responsive atmosphere
+      const scrollVelocity = Math.abs(currentScrollY - lastScroll);
+      lastScroll = currentScrollY;
+      const targetEnergy = Math.min(1.0, (scrollVelocity / Math.max(delta, 0.001)) * 0.0018);
+      scrollEnergy = expDamp(scrollEnergy, targetEnergy, 3.2, delta);
+
+      currentWeights.lerp(targetWeightsRef.current, 1 - Math.pow(0.92, delta * 60));
 
       if (!hasFullyUnlocked && currentScrollY >= GIMBAL_LAYOUT.explodeThreshold) {
         hasFullyUnlocked = true;
@@ -344,25 +360,25 @@ export default function GimbalStream({
 
       camera.position.x = currentMouseX * 8.0;
       camera.position.y = -currentMouseY * 10.0;
+      camera.position.z = 0.0;
       camera.rotation.y = -currentMouseX * 0.015;
       camera.rotation.x = currentMouseY * 0.014;
+      camera.rotation.z = 0.0;
 
       voyageRoot.rotation.x = currentMouseY * 0.025;
       voyageRoot.rotation.y = currentMouseX * 0.030;
 
-      // Multi-Harmonic Zero-G Gyroscopic Tumbling + Mouse Reaction
+      // Multi-Harmonic Zero-G Gyroscopic Tumbling + Mouse Reaction + Scroll Momentum
+      const energyPitch = Math.sin(t * 2.4) * 0.12 * scrollEnergy;
+      const energyRoll = Math.cos(t * 2.1) * 0.14 * scrollEnergy;
+
       const autoPitch = 0.22 + Math.sin(t * 0.58) * 0.28 + Math.cos(t * 0.31) * 0.18 + Math.sin(currentScrollY * 0.005) * 0.15;
       const autoRoll = 0.38 + Math.cos(t * 0.47) * 0.24 + Math.sin(t * 0.23) * 0.15 + Math.sin(currentScrollY * 0.003) * 0.10;
-      logoMount.rotation.set(autoPitch + currentMouseY * 0.05, currentMouseX * 0.05, autoRoll);
+      logoMount.rotation.set(autoPitch + currentMouseY * 0.05 + energyPitch, currentMouseX * 0.05, autoRoll + energyRoll);
       logoSpinner.rotation.y = -(t * 0.32) + Math.sin(t * 0.42) * 0.35 - currentScrollY * 0.007;
 
-      // Non-linear card bend
-      const targetBend = THREE.MathUtils.clamp(scrollVelocity * 0.18, -0.22, 0.22);
-      const bendRate = Math.abs(targetBend) > Math.abs(currentBend) ? 6.5 : 3.8;
-      currentBend = expDamp(currentBend, targetBend, bendRate, delta);
-      cardBendUniform.uCardBend.value = currentBend * (cardBendMultiplierRef.current / 6.5);
-
-      const currentRadius = THREE.MathUtils.lerp(GIMBAL_LAYOUT.closedRadius, GIMBAL_LAYOUT.openRadius, currentExplodeProg);
+      // Pristine Ring Radius: maintains pure original component structure
+      const baseRadius = THREE.MathUtils.lerp(GIMBAL_LAYOUT.closedRadius, GIMBAL_LAYOUT.openRadius, currentExplodeProg);
       const corridorScroll = hasFullyUnlocked ? (currentScrollY - GIMBAL_LAYOUT.explodeThreshold) : 0.0;
 
       for (let i = 0; i < tiers.length; i++) {
@@ -372,30 +388,44 @@ export default function GimbalStream({
         const wrappedY = (((rawY + halfHeight) % totalVoyageHeight) + totalVoyageHeight) % totalVoyageHeight - halfHeight;
         axis.position.y = wrappedY;
 
-        const tiltProgress = Math.max(0.0, (currentExplodeProg - 0.10) / 0.90);
-        axis.rotation.x = config.tiltX * tiltProgress + currentMouseY * 0.02;
-        axis.rotation.z = config.tiltZ * tiltProgress + currentMouseX * 0.02;
+        // Continuous tidal breathing: subtle alternating radial wave across rings (±5.5%)
+        const tidalPhase = t * 0.45 + i * 0.85;
+        const radialBreath = Math.sin(tidalPhase) * 0.055;
+        const tierRadius = baseRadius * (1.0 + radialBreath);
 
-        const orbitAngle = accumulatedAutoTime * config.direction + currentScrollY * config.speedMultiplier * scrollSpeedRef.current;
+        // Gentle floating zero-G current wobble
+        const tidalTiltX = Math.sin(t * 0.55 + i * 1.1) * 0.035;
+        const tidalTiltZ = Math.cos(t * 0.48 + i * 0.95) * 0.030;
+        const tiltProgress = Math.max(0.0, (currentExplodeProg - 0.10) / 0.90);
+        axis.rotation.x = config.tiltX * tiltProgress + currentMouseY * 0.02 + tidalTiltX;
+        axis.rotation.z = config.tiltZ * tiltProgress + currentMouseX * 0.02 + tidalTiltZ;
+
+        // Subtle organic phase drift so constellation alignments remain fresh
+        const driftFactor = 1.0 + Math.sin(i * 1.6 + t * 0.07) * 0.035;
+        const orbitAngle = accumulatedAutoTime * config.direction * driftFactor + currentScrollY * config.speedMultiplier * scrollSpeedRef.current;
 
         for (let j = 0; j < cards.length; j++) {
           const card = cards[j];
           const theta = card.userData.baseAngle + orbitAngle;
-          card.position.set(Math.cos(theta) * currentRadius, 0, Math.sin(theta) * currentRadius);
+          card.position.set(Math.cos(theta) * tierRadius, 0, Math.sin(theta) * tierRadius);
           card.rotation.y = -theta + Math.PI / 2;
         }
       }
 
       accumulatedAutoTime += delta * autoRotateSpeedRef.current;
-      accumulatedWaveTime += delta * waveSpeedRef.current;
+      accumulatedWaveTime += delta * waveSpeedRef.current * (1.0 + scrollEnergy * 3.8);
 
       customUniforms.uTime.value = t;
       chamberMat.uniforms.uTime.value = accumulatedWaveTime;
-      chamberMat.uniforms.uScrollY.value = currentScrollY * 0.01;
+      chamberMat.uniforms.uScrollY.value = currentScrollY * 0.0035;
+      chamberMat.uniforms.uScrollEnergy.value = scrollEnergy;
       chamberMat.uniforms.uChamberAwake.value = currentExplodeProg;
       chamberMat.uniforms.uMorphWeights.value.copy(currentWeights);
-      chamberMat.uniforms.uWaveBrightness.value = waveBrightnessRef.current;
-      backGlow.intensity = THREE.MathUtils.lerp(0.6, 2.0, currentExplodeProg) * waveBrightnessRef.current;
+
+      // Scroll-driven caustic brightness flare & dynamic back glow
+      const reactiveWaveBoost = 1.0 + scrollEnergy * 0.70;
+      chamberMat.uniforms.uWaveBrightness.value = waveBrightnessRef.current * reactiveWaveBoost;
+      backGlow.intensity = (THREE.MathUtils.lerp(0.6, 2.2, currentExplodeProg) + scrollEnergy * 1.4) * waveBrightnessRef.current;
 
       // 4-Tier Cinematic Slide-Off Physics + Parallax
       const easedProg = Math.pow(currentExplodeProg, 1.6);

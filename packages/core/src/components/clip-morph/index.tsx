@@ -44,15 +44,20 @@ export const ApparatusClipMorph: React.FC<ApparatusClipMorphProps> = ({
     };
   }, [scrollProgress]);
 
-  // Inertial RAF animation loop for smooth 60fps clip morphing
+  // Inertial RAF animation loop for frame-rate independent clip morphing
   useEffect(() => {
     if (scrollProgress !== undefined) return;
     let animId: number;
+    let lastTime = performance.now();
 
     const loop = () => {
+      const now = performance.now();
+      const dt = Math.min((now - lastTime) / 1000, 0.1);
+      lastTime = now;
+
       const diff = targetProgressRef.current - lerpedProgressRef.current;
       if (Math.abs(diff) > 0.0001) {
-        lerpedProgressRef.current += diff * 0.06;
+        lerpedProgressRef.current += diff * (1 - Math.pow(0.94, dt * 60));
         setSmoothProgress(lerpedProgressRef.current);
       } else {
         lerpedProgressRef.current = targetProgressRef.current;

@@ -6,51 +6,31 @@ import vert from "./shader.vert.glsl";
 import frag from "./shader.frag.glsl";
 
 export const ApparatusFblf: React.FC<ApparatusFblfProps> = (props) => {
-  const lastHoverRef = useRef(0.0);
   const entryOriginRef = useRef(new THREE.Vector2(0.5, 0.5));
   const sweepDirRef = useRef(new THREE.Vector2(0.6, 0.4).normalize());
   const maxDistRef = useRef(1.0);
   const revealProgressRef = useRef(0.0);
 
-  const handleAnimate = (material: THREE.ShaderMaterial) => {
+  const handleAnimate = (material: THREE.ShaderMaterial, _clock: THREE.Clock, delta: number) => {
     const uHover = material.uniforms.uHover.value as number;
     const uMouse = material.uniforms.uMouse.value as THREE.Vector2;
 
-    // Capture the entry origin and calculate target direction/distance when hover starts
-    if (uHover > 0.0 && lastHoverRef.current === 0.0) {
-      entryOriginRef.current.copy(uMouse);
+    // Stable, elegant diagonal peel vector from top-left to bottom-right
+    entryOriginRef.current.set(0.0, 1.0);
+    sweepDirRef.current.set(0.7071068, -0.7071068);
+    maxDistRef.current = 1.4142136;
 
-      // Point sweep direction from entry point toward center
-      const dirX = 0.5 - uMouse.x;
-      const dirY = 0.5 - uMouse.y;
-      const length = Math.sqrt(dirX * dirX + dirY * dirY);
-      if (length > 0.02) {
-        sweepDirRef.current.set(dirX / length, dirY / length);
-      } else {
-        sweepDirRef.current.set(0.6, 0.4).normalize();
-      }
-
-      // Project opposite corner along sweep direction to find max sweep distance
-      const oppX = sweepDirRef.current.x >= 0 ? 1.0 : 0.0;
-      const oppY = sweepDirRef.current.y >= 0 ? 1.0 : 0.0;
-      maxDistRef.current = (oppX - uMouse.x) * sweepDirRef.current.x + (oppY - uMouse.y) * sweepDirRef.current.y;
-      if (maxDistRef.current <= 0) maxDistRef.current = 1.0;
-    }
-    lastHoverRef.current = uHover;
-
-    // Calculate current target peel progress based on mouse projection
+    // Smoothly track mouse traversal across the diagonal peel
     let targetProgress = 0.0;
-    if (uHover > 0.0) {
-      const proj = (uMouse.x - entryOriginRef.current.x) * sweepDirRef.current.x + 
-                   (uMouse.y - entryOriginRef.current.y) * sweepDirRef.current.y;
-      targetProgress = Math.max(0.0, Math.min(1.0, proj / maxDistRef.current));
-    } else {
-      targetProgress = 0.0;
+    if (uHover > 0.001) {
+      const cursorProj = (uMouse.x * 0.7071068 + (1.0 - uMouse.y) * 0.7071068) / 1.4142136;
+      // Responsive blend: base hover activation + cursor position tracking
+      targetProgress = THREE.MathUtils.clamp(0.25 + cursorProj * 0.75, 0.0, 1.0) * uHover;
     }
 
-    // Asymmetric organic interpolation: responsive reveal (0.08), slow damped recovery (0.025)
-    const easeFactor = uHover > 0.01 ? 0.08 : 0.025;
-    revealProgressRef.current = THREE.MathUtils.lerp(revealProgressRef.current, targetProgress, easeFactor);
+    // Asymmetric organic interpolation: responsive reveal (0.08), slow damped recovery (0.035)
+    const easeFactor = uHover > 0.01 ? 0.08 : 0.035;
+    revealProgressRef.current += (targetProgress - revealProgressRef.current) * (1 - Math.pow(1 - easeFactor, delta * 60));
 
     if (material.uniforms.uEntryOrigin) {
       material.uniforms.uEntryOrigin.value.copy(entryOriginRef.current);

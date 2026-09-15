@@ -25,3 +25,5 @@ apps/web/public/images/apparatus-tracklist-gallery/*
 # Ignore prototype HTML pages
 apps/web/public/*.html
 
+# Ignored converted video webp files
+apps/web/public/images/components/cyclorama-matrix/video-*.webp

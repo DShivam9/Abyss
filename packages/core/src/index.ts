@@ -41,6 +41,7 @@ export * from "./components/cascade-gallery";
 export * from "./components/theme-toggle-redesign";
 export * from "./components/mosaic-loader";
 export * from "./components/cinema-aisle";
+export * from "./components/cyclorama-matrix";
 
 
 

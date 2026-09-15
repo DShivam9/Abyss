@@ -16,6 +16,7 @@ export const CHAMBER_VERTEX_SHADER = `
 export const CHAMBER_FRAGMENT_SHADER = `
   uniform float uTime;
   uniform float uScrollY;
+  uniform float uScrollEnergy;
   uniform float uChamberAwake;
   uniform vec3 uMorphWeights;
   uniform float uWaveBrightness;
@@ -88,17 +89,24 @@ export const CHAMBER_FRAGMENT_SHADER = `
     float diffuse = max(dot(surfNormal, keyLightDir), 0.0);
     float fresnel = pow(1.0 - max(dot(geomNormal, vViewDir), 0.0), 3.0);
 
-    // A. Swiss Precision Plus (+)
+    // Cell identity for subtle whisper dynamics
+    vec2 cellId = floor(gridUV);
+    float cellPhase = hash(vec3(cellId, 17.3)) * 6.2831853;
+
+    // A. Swiss Precision Plus (+) - Crisp, razor-sharp, dim original look
     vec2 cellFract = abs(fract(gridUV) - 0.5);
     vec2 fw = fwidth(gridUV);
+    float armY = 0.14 * (1.0 + uScrollEnergy * 0.35);
     float hArm = step(cellFract.y, fw.y * 1.1) * (1.0 - step(0.14, cellFract.x));
-    float vArm = step(cellFract.x, fw.x * 1.1) * (1.0 - step(0.14, cellFract.y));
-    float alphaPlus = max(hArm, vArm) * 0.35;
+    float vArm = step(cellFract.x, fw.x * 1.1) * (1.0 - step(armY, cellFract.y));
+    float plusShimmer = 0.92 + 0.16 * sin(uTime * 1.2 + cellPhase);
+    float alphaPlus = max(hArm, vArm) * 0.35 * plusShimmer;
 
-    // B. Ghost Stippled Grid
-    vec2 grid = abs(fract(gridUV - 0.5) - 0.5) / fwidth(gridUV);
-    float dotCadenceX = step(0.40, fract(gridUV.x * 5.0));
-    float dotCadenceY = step(0.40, fract(gridUV.y * 5.0));
+    // B. Ghost Stippled Grid - Subtle ambient data stream
+    vec2 ghostUV = vec2(gridUV.x, gridUV.y + uTime * 0.05 * (1.0 + uScrollEnergy * 1.5));
+    vec2 grid = abs(fract(ghostUV - 0.5) - 0.5) / fwidth(ghostUV);
+    float dotCadenceX = step(0.40, fract(ghostUV.x * 5.0));
+    float dotCadenceY = step(0.40, fract(ghostUV.y * 5.0 - uScrollY * 0.08));
     float hLine = (1.0 - clamp(grid.y, 0.0, 1.0)) * dotCadenceX;
     float vLine = (1.0 - clamp(grid.x, 0.0, 1.0)) * dotCadenceY;
     float alphaGhost = max(hLine, vLine) * (0.08 + pow(h, 2.0) * 0.40);
@@ -112,7 +120,8 @@ export const CHAMBER_FRAGMENT_SHADER = `
     vec2 gv = dot(a, a) < dot(b, b) ? a : b;
     float d = hexDist(gv);
     float hexEdge = abs(d - 0.5);
-    float alphaHex = (1.0 - clamp(hexEdge / (fwidth(d) * 1.3), 0.0, 1.0)) * (0.18 + fresnel * 0.25);
+    float hexShimmer = 0.94 + 0.12 * sin(uTime * 1.0 + cellPhase);
+    float alphaHex = (1.0 - clamp(hexEdge / (fwidth(d) * 1.3), 0.0, 1.0)) * (0.18 + fresnel * 0.25) * hexShimmer;
 
     float patternAlpha = (alphaPlus * uMorphWeights.x + alphaGhost * uMorphWeights.y + alphaHex * uMorphWeights.z) * (0.25 + uChamberAwake * 0.75);
 

@@ -618,6 +618,45 @@ export const COMPONENT_DETAILS: Record<string, ComponentDetail> = {
         step: 0.1
       }
     ]
+  },
+  "cyclorama-matrix": {
+    id: "80",
+    label: "Cyclorama Matrix",
+    filename: "components/cyclorama-matrix/img-01.webp",
+    desc: "A massive 3D amphitheater curved gallery matrix featuring liquid momentum drag, physical contact grounding, sub-pixel vector hairlines, and dynamic optical rack-focus perimeter fog.",
+    slug: "cyclorama-matrix",
+    category: "interaction",
+    subtype: "galleries",
+    tags: ["3D Amphitheater", "Curved Gallery", "Hardware Video Decode Throttling", "Dynamic Fog", "Sub-pixel Hairlines", "Liquid Momentum"],
+    controls: [
+      {
+        type: "slider",
+        key: "radiusX",
+        label: "Curvature X",
+        default: 14.0,
+        min: 8.0,
+        max: 24.0,
+        step: 0.5
+      },
+      {
+        type: "slider",
+        key: "radiusY",
+        label: "Curvature Y",
+        default: 7.0,
+        min: 4.0,
+        max: 14.0,
+        step: 0.5
+      },
+      {
+        type: "slider",
+        key: "friction",
+        label: "Friction",
+        default: 4.8,
+        min: 1.0,
+        max: 10.0,
+        step: 0.2
+      }
+    ]
   }
 };
 

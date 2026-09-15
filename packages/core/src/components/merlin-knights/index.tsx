@@ -165,10 +165,11 @@ export const MerlinKnights: React.FC<MerlinKnightsProps> = ({
     const animate = () => {
       animationId = requestAnimationFrame(animate);
 
+      const dt = clock.getDelta();
       const elapsed = clock.getElapsedTime();
 
       // Smoothly interpolate hover state
-      isHovered.current = THREE.MathUtils.lerp(isHovered.current, targetHover.current, 0.065);
+      isHovered.current += (targetHover.current - isHovered.current) * (1 - Math.pow(0.935, dt * 60));
 
       // Render Final Display Pass
       displayMaterial.uniforms.uHover.value = isHovered.current;
