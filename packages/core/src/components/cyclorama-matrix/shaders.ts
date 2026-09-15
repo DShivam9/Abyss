@@ -29,11 +29,55 @@ export const cardVert = createSharedVertShader("0.04");
 export const bgVert = createSharedVertShader("-0.05");
 export const labelVert = createSharedVertShader("0.06");
 
+export const inkGlsl = `
+  float inkHash(vec2 p) {
+    p = fract(p * vec2(123.34, 456.21));
+    p += dot(p, p + 45.32);
+    return fract(p.x * p.y);
+  }
+
+  float inkNoise(vec2 p) {
+    vec2 i = floor(p);
+    vec2 f = fract(p);
+    vec2 u = f * f * (3.0 - 2.0 * f);
+    return mix(mix(inkHash(i + vec2(0.0, 0.0)), inkHash(i + vec2(1.0, 0.0)), u.x),
+               mix(inkHash(i + vec2(0.0, 1.0)), inkHash(i + vec2(1.0, 1.0)), u.x), u.y);
+  }
+
+  float inkTurbulence(vec2 p) {
+    return inkNoise(p) * 0.65 + inkNoise(p * 2.15 + vec2(1.7, 4.3)) * 0.35;
+  }
+
+  float getInkBloomFade(vec3 pos, float uIntro, float edgeFade) {
+    if (uIntro <= 0.001) return 0.0;
+    if (uIntro >= 0.999) return edgeFade;
+
+    vec2 p = pos.xy * vec2(0.85, 1.0);
+    float dist = length(p);
+
+    // Continuous 2D noise: organic fluid contour that softens as it opens
+    float turb = (inkTurbulence(p * 0.30) - 0.5) * 4.2 * (1.0 - uIntro * 0.6);
+    float effDist = dist + turb;
+
+    // Expanding radius: starts negative so zero cards show on start, blooms to 35.0
+    float radius = uIntro * 35.0 - 2.5 * (1.0 - uIntro);
+    float feather = mix(4.0, 2.2, uIntro);
+
+    float reveal = 1.0 - smoothstep(radius - feather, radius + 1.5, effDist);
+    reveal = clamp(reveal, 0.0, 1.0);
+    reveal = reveal * reveal * (3.0 - 2.0 * reveal);
+
+    return edgeFade * reveal;
+  }
+`;
+
 export const cardFrag = `
   uniform sampler2D uTexture;
   uniform float uCamZ;
+  uniform float uIntro;
   varying vec2 vUv;
   varying vec3 vCurvedPos;
+  ${inkGlsl}
   void main() {
     // Optical Rack-Focus Arrival & Perimeter Depth Blur (Dynamic Zoom-Scaled)
     float holdT = clamp((uCamZ - 12.8) / 4.2, 0.0, 1.0);
@@ -41,6 +85,10 @@ export const cardFrag = `
     float radY = mix(6.0, 7.6, holdT);
     float rad = length(vec2(abs(vCurvedPos.x) / radX, abs(vCurvedPos.y) / radY));
     float edgeFade = 1.0 - smoothstep(mix(0.60, 0.62, holdT), mix(1.12, 1.08, holdT), rad);
+
+    float totalFade = getInkBloomFade(vCurvedPos, uIntro, edgeFade);
+    if (totalFade <= 0.001) discard;
+
     float blur = smoothstep(mix(0.50, 0.55, holdT), mix(1.10, 1.08, holdT), rad) * 0.007;
 
     vec4 col = texture2D(uTexture, vUv) * 0.36;
@@ -49,7 +97,7 @@ export const cardFrag = `
     col += texture2D(uTexture, vUv + vec2( 0.0,  blur)) * 0.16;
     col += texture2D(uTexture, vUv - vec2( 0.0,  blur)) * 0.16;
 
-    gl_FragColor = vec4(col.rgb * edgeFade, col.a * edgeFade);
+    gl_FragColor = vec4(col.rgb * totalFade, col.a * totalFade);
   }
 `;
 
@@ -58,8 +106,10 @@ export const bgFrag = `
   uniform float uHover;
   uniform float uAspect;
   uniform float uCamZ;
+  uniform float uIntro;
   varying vec2 vUv;
   varying vec3 vCurvedPos;
+  ${inkGlsl}
   void main() {
     // Perimeter Optical Fog (Dynamic Zoom-Scaled)
     float holdT = clamp((uCamZ - 12.8) / 4.2, 0.0, 1.0);
@@ -67,6 +117,9 @@ export const bgFrag = `
     float radY = mix(6.0, 7.6, holdT);
     float rad = length(vec2(abs(vCurvedPos.x) / radX, abs(vCurvedPos.y) / radY));
     float edgeFade = 1.0 - smoothstep(mix(0.60, 0.62, holdT), mix(1.12, 1.08, holdT), rad);
+
+    float totalFade = getInkBloomFade(vCurvedPos, uIntro, edgeFade);
+    if (totalFade <= 0.001) discard;
 
     vec2 edge = abs(vUv - 0.5) * 2.0;
     float maxEdge = max(edge.x, edge.y);
@@ -126,9 +179,9 @@ export const bgFrag = `
     finalCol = mix(finalCol, borderCol, borderAlpha);
 
     // Soft perimeter optical falloff
-    finalCol *= edgeFade;
+    finalCol *= totalFade;
 
-    gl_FragColor = vec4(finalCol, 0.96 * edgeFade);
+    gl_FragColor = vec4(finalCol, 0.96 * totalFade);
   }
 `;
 
@@ -136,8 +189,10 @@ export const labelFrag = `
   uniform sampler2D uTexture;
   uniform float uHover;
   uniform float uCamZ;
+  uniform float uIntro;
   varying vec2 vUv;
   varying vec3 vCurvedPos;
+  ${inkGlsl}
   void main() {
     float holdT = clamp((uCamZ - 12.8) / 4.2, 0.0, 1.0);
     float radX = mix(12.0, 14.8, holdT);
@@ -145,9 +200,12 @@ export const labelFrag = `
     float rad = length(vec2(abs(vCurvedPos.x) / radX, abs(vCurvedPos.y) / radY));
     float edgeFade = 1.0 - smoothstep(mix(0.60, 0.62, holdT), mix(1.12, 1.08, holdT), rad);
 
+    float totalFade = getInkBloomFade(vCurvedPos, uIntro, edgeFade);
+    if (totalFade <= 0.001) discard;
+
     vec4 col = texture2D(uTexture, vUv);
     if (col.a <= 0.005) discard;
-    float alpha = col.a * mix(0.74, 1.0, pow(clamp(uHover, 0.0, 1.0), 1.5)) * edgeFade;
-    gl_FragColor = vec4(col.rgb * edgeFade, alpha);
+    float alpha = col.a * mix(0.74, 1.0, pow(clamp(uHover, 0.0, 1.0), 1.5)) * totalFade;
+    gl_FragColor = vec4(col.rgb * totalFade, alpha);
   }
 `;

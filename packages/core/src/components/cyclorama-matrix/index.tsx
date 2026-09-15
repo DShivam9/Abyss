@@ -40,6 +40,7 @@ export default function CycloramaMatrix({
 }: CycloramaMatrixProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const fogVeilRef = useRef<HTMLDivElement>(null);
 
   const radiusXRef = useRef(radiusX);
   const radiusYRef = useRef(radiusY);
@@ -193,6 +194,7 @@ export default function CycloramaMatrix({
       cardLagY = 0;
 
     const camZUniform = { value: baseCamZRef.current };
+    const introUniform = { value: 0.0 };
 
     for (let c = 0; c < COLS; c++) {
       for (let r = 0; r < ROWS; r++) {
@@ -211,7 +213,8 @@ export default function CycloramaMatrix({
             uRadiusY: { value: radiusYRef.current },
             uHover: { value: 0.0 },
             uAspect: { value: media.aspect },
-            uCamZ: camZUniform
+            uCamZ: camZUniform,
+            uIntro: introUniform
           },
           transparent: true,
           depthWrite: false,
@@ -230,7 +233,8 @@ export default function CycloramaMatrix({
             uRadiusX: { value: radiusXRef.current },
             uRadiusY: { value: radiusYRef.current },
             uHover: { value: 0.0 },
-            uCamZ: camZUniform
+            uCamZ: camZUniform,
+            uIntro: introUniform
           },
           transparent: true,
           depthWrite: false,
@@ -249,7 +253,8 @@ export default function CycloramaMatrix({
             uRadiusX: { value: radiusXRef.current },
             uRadiusY: { value: radiusYRef.current },
             uHover: { value: 0.0 },
-            uCamZ: camZUniform
+            uCamZ: camZUniform,
+            uIntro: introUniform
           },
           transparent: true,
           depthWrite: false,
@@ -278,7 +283,7 @@ export default function CycloramaMatrix({
     let targetPanX = 0,
       targetPanY = 0,
       panX = 0,
-      panY = 0;
+      panY = 0.9;
     let velX = 0,
       velY = 0;
     let isDragging = false,
@@ -286,6 +291,7 @@ export default function CycloramaMatrix({
       lastClientY = 0;
 
     const onPointerDown = (e: PointerEvent) => {
+      if (introActive) return;
       isDragging = true;
       lastClientX = e.clientX;
       lastClientY = e.clientY;
@@ -301,6 +307,8 @@ export default function CycloramaMatrix({
       mouseY = e.clientY;
       hasMouse = true;
 
+      if (introActive) return;
+
       if (isDragging) {
         const moveX = e.clientX - lastClientX;
         const moveY = e.clientY - lastClientY;
@@ -315,12 +323,13 @@ export default function CycloramaMatrix({
     const onPointerUp = () => {
       if (isDragging) {
         isDragging = false;
-        container.style.cursor = "grab";
+        container.style.cursor = introActive ? "default" : "grab";
       }
     };
 
     const onWheel = (e: WheelEvent) => {
       e.preventDefault();
+      if (introActive) return;
       let dx = e.deltaX,
         dy = e.deltaY;
       if (e.deltaMode === 1) {
@@ -359,7 +368,7 @@ export default function CycloramaMatrix({
 
     window.addEventListener("resize", handleResize);
 
-    let currentCamZ = baseCamZRef.current,
+    let currentCamZ = baseCamZRef.current + 3.8,
       camZVel = 0;
     let hoveredCard: CardObject | null = null;
 
@@ -377,6 +386,11 @@ export default function CycloramaMatrix({
 
     const projVec = new THREE.Vector3();
     let lastFrame = performance.now();
+    let introElapsed = 0.0;
+    const INTRO_DELAY = 0.45;
+    const INTRO_DURATION = 2.8;
+    let introActive = true;
+    if (container) container.style.cursor = "default";
 
     function animate() {
       if (isDestroyed) return;
@@ -386,13 +400,61 @@ export default function CycloramaMatrix({
       const dtSec = Math.min(0.033, Math.max(0.001, (now - lastFrame) / 1000));
       lastFrame = now;
 
-      // Spring Zoom with Semi-Implicit Euler
-      const targetCamZ = isDragging ? zoomCamZRef.current : baseCamZRef.current;
-      const springAcc = (targetCamZ - currentCamZ) * SPRING_K - camZVel * SPRING_D;
-      camZVel += springAcc * dtSec;
-      currentCamZ += camZVel * dtSec;
-      camera.position.z = currentCamZ;
-      camZUniform.value = currentCamZ;
+      // Curated 3D Cinematic Arrival & Ink-Bloom Experience
+      if (introActive) {
+        introElapsed += dtSec;
+        if (introElapsed > INTRO_DELAY) {
+          const t = Math.min(1.0, (introElapsed - INTRO_DELAY) / INTRO_DURATION);
+          // Silky smooth easeInOutCubic S-curve
+          const ease = t < 0.5 ? 4.0 * t * t * t : 1.0 - Math.pow(-2.0 * t + 2.0, 3.0) / 2.0;
+
+          introUniform.value = ease;
+
+          // Camera glide forward in unison with ink bloom
+          currentCamZ = THREE.MathUtils.lerp(baseCamZRef.current + 4.2, baseCamZRef.current, ease);
+          camera.position.z = currentCamZ;
+          camZUniform.value = currentCamZ;
+
+          // Amphitheater vertical settling in unison
+          panY = THREE.MathUtils.lerp(0.95, 0.0, ease);
+
+          // Fast fade of solid DOM veil so the organic WebGL ink boundary displays seamlessly
+          if (fogVeilRef.current) {
+            const veilOpacity = Math.max(0, 1.0 - ease * 2.2);
+            fogVeilRef.current.style.opacity = veilOpacity.toString();
+          }
+
+          if (t >= 1.0) {
+            introActive = false;
+            introUniform.value = 1.0;
+            currentCamZ = baseCamZRef.current;
+            panY = 0.0;
+            targetPanY = 0.0;
+            if (container) container.style.cursor = "grab";
+            if (fogVeilRef.current) {
+              fogVeilRef.current.style.display = "none";
+            }
+          }
+        } else {
+          // Atmospheric void stillness
+          currentCamZ = baseCamZRef.current + 4.2;
+          camera.position.z = currentCamZ;
+          camZUniform.value = currentCamZ;
+          panY = 0.95;
+          introUniform.value = 0.0;
+          if (fogVeilRef.current) {
+            fogVeilRef.current.style.opacity = "1";
+          }
+        }
+      } else {
+        // Standard interactive spring zoom on drag
+        const targetCamZ = isDragging ? zoomCamZRef.current : baseCamZRef.current;
+        const springAcc = (targetCamZ - currentCamZ) * SPRING_K - camZVel * SPRING_D;
+        camZVel += springAcc * dtSec;
+        currentCamZ += camZVel * dtSec;
+        camera.position.z = currentCamZ;
+        camZUniform.value = currentCamZ;
+      }
 
       // Frame-Rate Independent Liquid Drag & Momentum
       if (isDragging) {
@@ -408,17 +470,19 @@ export default function CycloramaMatrix({
         velX += (instVelX - velX) * velBlend;
         velY += (instVelY - velY) * velBlend;
       } else {
-        targetPanX += velX * dtSec;
-        targetPanY += velY * dtSec;
-        const followRate = 1.0 - Math.exp(-24.0 * dtSec);
-        panX += (targetPanX - panX) * followRate;
-        panY += (targetPanY - panY) * followRate;
+        if (!introActive) {
+          targetPanX += velX * dtSec;
+          targetPanY += velY * dtSec;
+          const followRate = 1.0 - Math.exp(-24.0 * dtSec);
+          panX += (targetPanX - panX) * followRate;
+          panY += (targetPanY - panY) * followRate;
 
-        const decay = Math.exp(-frictionRef.current * dtSec);
-        velX *= decay;
-        velY *= decay;
-        if (Math.abs(velX) < 0.001) velX = 0;
-        if (Math.abs(velY) < 0.001) velY = 0;
+          const decay = Math.exp(-frictionRef.current * dtSec);
+          velX *= decay;
+          velY *= decay;
+          if (Math.abs(velX) < 0.001) velX = 0;
+          if (Math.abs(velY) < 0.001) velY = 0;
+        }
       }
 
       // Parallax Lag (Frame-rate corrected)
@@ -441,7 +505,7 @@ export default function CycloramaMatrix({
 
       // Screen-Space Hit Detection
       hoveredCard = null;
-      if (hasMouse && !isDragging) {
+      if (!introActive && hasMouse && !isDragging) {
         const tanHalfFov = Math.tan((camera.fov * Math.PI) / 360);
         let closestDist = Infinity;
 
@@ -572,10 +636,15 @@ export default function CycloramaMatrix({
   return (
     <div
       ref={containerRef}
-      className={`relative w-full h-full min-h-screen overflow-hidden select-none cursor-grab active:cursor-grabbing bg-[#030305] ${className}`}
-      style={style}
+      className={`relative w-full h-full min-h-screen overflow-hidden select-none bg-[#030305] ${className}`}
+      style={{ cursor: "default", ...style }}
     >
       <canvas ref={canvasRef} className="absolute inset-0 w-full h-full block" />
+      <div
+        ref={fogVeilRef}
+        className="absolute inset-0 pointer-events-none bg-[#030305] z-20 transition-opacity duration-300 ease-out"
+        style={{ opacity: 1 }}
+      />
     </div>
   );
 }
