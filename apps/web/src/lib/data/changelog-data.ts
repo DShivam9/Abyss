@@ -28,6 +28,21 @@ export interface CommitEntry {
 
 export const CHANGELOG_DATA: CommitEntry[] = [
   {
+    id: "commit-32",
+    date: "2026-09-18",
+    displayDate: "Sep 18, 2026 • 19:30 IST",
+    tags: ["ADDITION"],
+    commitHash: "221e1af",
+    title: "Added Cookie Consent & Preferences",
+    summary: "Introduced a site-wide cookie consent card with local storage preference management and footer settings trigger.",
+    items: [
+      "Added obsidian glass cookie consent card with smooth spring physics",
+      "Granular preference controls for necessary storage, speed insights, and analytics",
+      "Site-wide footer trigger allowing visitors to re-open and update cookie preferences anytime",
+      "Linked privacy policy and terms documentation directly within notice copy",
+    ],
+  },
+  {
     id: "commit-31",
     date: "2026-09-18",
     displayDate: "Sep 18, 2026 • 18:05 IST",
