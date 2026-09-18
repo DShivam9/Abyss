@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { usePathname } from "next/navigation";
+import { openCookieSettings } from "./CookieConsentCard";
 
 // Editorial Typographic Bloom & Corner Star Accents (Matches Hand-Drawn Sketch)
 export function RollingLink({
@@ -9,11 +10,13 @@ export function RollingLink({
   label,
   isExternal = false,
   isSelected = false,
+  onClick,
 }: {
   href: string;
   label: string;
   isExternal?: boolean;
   isSelected?: boolean;
+  onClick?: (e: React.MouseEvent) => void;
 }) {
   const [hovered, setHovered] = useState(false);
   const active = hovered || isSelected;
@@ -24,6 +27,12 @@ export function RollingLink({
         href={href}
         target={isExternal ? "_blank" : undefined}
         rel={isExternal ? "noreferrer" : undefined}
+        onClick={(e) => {
+          if (onClick) {
+            e.preventDefault();
+            onClick(e);
+          }
+        }}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
         style={{
@@ -222,6 +231,7 @@ export function SiteFooter({ activePage }: { activePage?: string }) {
           <div style={{ display: "flex", flexDirection: "column", gap: "9px" }}>
             <RollingLink href="/privacy" label="Privacy Policy" isSelected={current === "/privacy"} />
             <RollingLink href="/terms" label="Terms of Service" isSelected={current === "/terms"} />
+            <RollingLink href="#cookies" label="Cookie Preferences" onClick={() => openCookieSettings()} />
           </div>
         </div>
       </div>

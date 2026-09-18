@@ -7,6 +7,7 @@ import { CursorProvider } from "@/components/providers/CursorProvider";
 import { TabVisibilityTitle } from "@/components/providers/TabVisibilityTitle";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import { CookieConsentCard } from "@/components/layout/CookieConsentCard";
 
 // Navbar import removed
 
@@ -64,6 +65,7 @@ export default function RootLayout({
         </SmoothScrollProvider>
         <Analytics />
         <SpeedInsights />
+        <CookieConsentCard />
       </body>
     </html>
   );
