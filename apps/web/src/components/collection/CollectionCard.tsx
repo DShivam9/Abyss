@@ -19,9 +19,7 @@ export function CollectionCard({ slug, title, filename, videoSrc, priority = fal
 
   const imageSrc = filename.startsWith("/")
     ? filename
-    : filename.startsWith("components/")
-      ? `/images/${filename}`
-      : `/images/components images/${filename}`;
+    : `/images/${filename}`;
 
   // Instant 0ms ambient blur-up placeholder
   const blurDataURL = `data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 320 200'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%231c1926'/%3E%3Cstop offset='50%25' stop-color='%23121520'/%3E%3Cstop offset='100%25' stop-color='%230f1418'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='100%25' height='100%25' fill='url(%23g)'/%3E%3C/svg%3E`;

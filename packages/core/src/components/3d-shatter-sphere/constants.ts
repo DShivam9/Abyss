@@ -1,25 +1,4 @@
 // Expanded Dedicated Image Pool (22 Unique High-Res Assets)
-export const GALLERY_IMAGES: string[] = [
-  "/images/components/3d-shatter-sphere/tile-01.webp",
-  "/images/components/3d-shatter-sphere/tile-02.webp",
-  "/images/components/3d-shatter-sphere/tile-03.webp",
-  "/images/components/3d-shatter-sphere/tile-04.webp",
-  "/images/components/3d-shatter-sphere/tile-05.webp",
-  "/images/components/3d-shatter-sphere/tile-06.webp",
-  "/images/components/3d-shatter-sphere/tile-07.webp",
-  "/images/components/3d-shatter-sphere/tile-08.webp",
-  "/images/components/3d-shatter-sphere/tile-09.webp",
-  "/images/components/3d-shatter-sphere/tile-10.webp",
-  "/images/components/3d-shatter-sphere/tile-11.webp",
-  "/images/components/3d-shatter-sphere/tile-12.webp",
-  "/images/components/3d-shatter-sphere/art-01.webp",
-  "/images/components/3d-shatter-sphere/art-02.webp",
-  "/images/components/3d-shatter-sphere/art-03.webp",
-  "/images/components/3d-shatter-sphere/art-04.webp",
-  "/images/components/3d-shatter-sphere/art-05.webp",
-  "/images/components/3d-shatter-sphere/art-06.webp",
-  "/images/components/3d-shatter-sphere/art-07.webp",
-  "/images/components/3d-shatter-sphere/art-08.webp",
-  "/images/components/3d-shatter-sphere/art-09.webp",
-  "/images/components/3d-shatter-sphere/art-10.webp",
-];
+export const GALLERY_IMAGES: string[] = Array.from({ length: 22 }, (_, i) => 
+  `/images/components/3d-shatter-sphere/image-${String(i + 1).padStart(2, "0")}.webp`
+);

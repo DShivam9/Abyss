@@ -2,12 +2,8 @@ import { ComponentDetail } from "./types";
 
 export const SELF_CONTAINED_SCROLL = new Set([
   "dual-wave",
-  "depth-swim",
-  "cylinder-scroll",
   "parallax-bleed",
-  "curved-scroll-wipe",
   "erosion-map",
-  "clip-morph",
   "mosaic-loader",
   "cinema-aisle",
   "cyclorama-matrix",

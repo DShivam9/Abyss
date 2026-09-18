@@ -234,59 +234,6 @@ export const COMPONENT_DETAILS: Record<string, ComponentDetail> = {
       { type: "slider", key: "maxRotation", label: "Tilt Angle", default: 7.0, min: 0, max: 30, step: 0.1, unit: "°" }
     ]
   },
-  "clip-morph": {
-    id: "45",
-    label: "Clip Morph",
-    filename: "components/clip-morph/hero.webp",
-    desc: "Outgoing image is clipped by a shape. The shape morphs — shrinking inward while simultaneously transforming geometry (circle → diamond → thin vertical line → nothing) to reveal the next image.",
-    slug: "clip-morph",
-    category: "transition",
-    subtype: "transition",
-    tags: ["GSAP", "Scroll", "Clip Path", "Morph", "Tactile"],
-    previewType: "transition",
-    controls: [
-      { type: "slider", key: "customRotation", label: "Twist Rotation", default: 180, min: 0, max: 180, step: 5, unit: "°" },
-      { type: "slider", key: "customBleed", label: "Color Bleed", default: 40, min: 0, max: 100, step: 5, unit: "%" },
-      { type: "slider", key: "customGrain", label: "Film Grain", default: 25, min: 0, max: 80, step: 2, unit: "%" }
-    ]
-  },
-  "depth-swim": {
-    id: "47",
-    label: "Depth Swim",
-    filename: "components/depth-swim/hero.webp",
-    desc: "Swim forward through a 3D parallax field of suspended images that dynamically scale, blur, and fade in focus.",
-    slug: "depth-swim",
-    category: "scroll",
-    subtype: "gallery",
-    tags: ["GSAP", "Scroll", "Parallax", "Depth of Field"],
-    previewType: "scroll",
-    controls: [
-      { type: "slider", key: "depthRange", label: "Depth Z-Spread", default: 1600, min: 600, max: 3000, step: 100, unit: "px" },
-      { type: "slider", key: "maxBlur", label: "Max Focal Blur", default: 18, min: 0, max: 30, step: 1, unit: "px" },
-      { type: "slider", key: "cursorParallaxPower", label: "Mouse Parallax", default: 40, min: 0, max: 100, step: 5, unit: "px" },
-      { type: "slider", key: "cardScale", label: "Card Base Scale", default: 1.0, min: 0.5, max: 2.0, step: 0.1 },
-      { type: "slider", key: "hoverTiltMax", label: "Max Hover Tilt", default: 15, min: 0, max: 30, step: 1, unit: "°" },
-      { type: "slider", key: "ambientOpacity", label: "Ambient Opacity", default: 0.45, min: 0.0, max: 0.8, step: 0.05 },
-      { type: "slider", key: "ambientBlur", label: "Ambient Blur", default: 75, min: 0, max: 150, step: 5, unit: "px" }
-    ]
-  },
-  "cylinder-scroll": {
-    id: "48",
-    label: "Cylinder Scroll",
-    filename: "components/cylinder-scroll/hero.webp",
-    desc: "Infinite bidirectional vertical scroll of cards rotating tangentially along a 3D cylindrical drum surface with a lens focus reveal.",
-    slug: "cylinder-scroll",
-    category: "scroll",
-    subtype: "gallery",
-    tags: ["GSAP", "Scroll", "3D Cylinder", "Infinite Scroll", "Depth of Field"],
-    previewType: "scroll",
-    controls: [
-      { type: "slider", key: "baseSigma", label: "Focus Width (Sigma)", default: 350, min: 80, max: 350, step: 10, unit: "px" },
-      { type: "slider", key: "maxBlur", label: "Max Blur Limit", default: 2, min: 0, max: 20, step: 1, unit: "px" },
-      { type: "slider", key: "cardGap", label: "Card Gap Spacing", default: 28, min: 8, max: 48, step: 2, unit: "px" },
-      { type: "slider", key: "pathBend", label: "Path Curvature", default: 0, min: 0, max: 100, step: 5, unit: "%" }
-    ]
-  },
   "parallax-bleed": {
     id: "60",
     label: "Parallax Bleed",
@@ -383,41 +330,6 @@ export const COMPONENT_DETAILS: Record<string, ComponentDetail> = {
       { type: "slider", key: "waveSpeed", label: "Wave Speed", default: 950, min: 400, max: 2000, step: 50, unit: "px/s" },
       { type: "slider", key: "scrambleDuration", label: "Decode Duration", default: 340, min: 80, max: 800, step: 20, unit: "ms" },
       { type: "slider", key: "lineHeightScale", label: "Line Rhythm", default: 1.65, min: 1.3, max: 2.2, step: 0.05, unit: "x" }
-    ]
-  },
-  "curved-scroll-wipe": {
-    id: "68",
-    label: "Curved Scroll Wipe",
-    filename: "components/curved-scroll-wipe/hero.webp",
-    desc: "A scroll-driven multi-section website transition using dynamic SVG curved path clip masks that morph elastically on scroll progress.",
-    slug: "curved-scroll-wipe",
-    category: "transition",
-    subtype: "curved-wipe",
-    tags: ["Scroll", "SVG Path", "Clip Path", "Transition", "Multi-Section"],
-    previewType: "transition",
-    controls: [
-      { type: "slider", key: "curveDepth", label: "Elastic Curve Sag Depth", default: 0.28, min: 0.05, max: 0.50, step: 0.01 },
-      { type: "slider", key: "scrollSpeed", label: "Scroll Inertia Sensitivity", default: 1.0, min: 0.5, max: 2.0, step: 0.1, unit: "x" }
-    ]
-  },
-  "image-snake-trail": {
-    id: "69",
-    label: "Image Snake Trail",
-    filename: "components/image-snake-trail/hero.webp",
-    desc: "Serpentine image chain following cursor with physics momentum and scale decay.",
-    slug: "image-snake-trail",
-    category: "gallery",
-    subtype: "snake-trail",
-    tags: ["Gallery", "Cursor Trail", "Physics", "Snake", "GSAP"],
-    controls: [
-      { type: "slider", key: "worldSize", label: "World Map Size", default: 12000, min: 4000, max: 20000, step: 500, unit: "px" },
-      { type: "slider", key: "initialLength", label: "Initial Trail Length", default: 5, min: 3, max: 12, step: 1 },
-      { type: "slider", key: "collectibleCount", label: "World Food Count", default: 60, min: 15, max: 150, step: 5 },
-      { type: "slider", key: "segmentSize", label: "Image Size", default: 160, min: 80, max: 280, step: 10, unit: "px" },
-      { type: "slider", key: "speed", label: "Snake Speed", default: 220, min: 80, max: 600, step: 20, unit: "px/s" },
-      { type: "slider", key: "damping", label: "Motion Damping", default: 0.15, min: 0.05, max: 0.45, step: 0.01 },
-      { type: "slider", key: "stepDistance", label: "Step Distance", default: 40, min: 0, max: 120, step: 5, unit: "px" },
-      { type: "slider", key: "zoom", label: "Camera Zoom", default: 1.0, min: 0.45, max: 1.35, step: 0.05, unit: "x" }
     ]
   },
   "abyss-cursor-fall": {

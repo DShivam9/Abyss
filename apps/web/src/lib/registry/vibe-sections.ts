@@ -11,26 +11,22 @@ export const VIBE_SECTIONS: VibeSection[] = [
     id: "scroll-into-view",
     title: "Scroll Into View",
     headlineClass: "headline-s2", // blue
-    count: 7,
+    count: 4,
     slugs: [
       "parallax-column",
       "erosion-map",
       "dual-wave",
-      "depth-swim",
-      "cylinder-scroll",
       "parallax-bleed",
-      "curved-scroll-wipe",
     ],
   },
   {
     id: "on-hover",
     title: "On Hover",
     headlineClass: "headline-s4", // coral/red
-    count: 4,
+    count: 3,
     slugs: [
       "hover-media-stream",
       "accordion-wall",
-      "clip-morph",
       "ripple-scramble",
     ],
   },
@@ -38,11 +34,10 @@ export const VIBE_SECTIONS: VibeSection[] = [
     id: "cursor-reactive",
     title: "Cursor Reactive",
     headlineClass: "headline-s5", // cyan
-    count: 3,
+    count: 2,
     slugs: [
       "gravity-cursor",
       "abyss-cursor-fall",
-      "image-snake-trail",
     ],
   },
   {

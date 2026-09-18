@@ -255,10 +255,24 @@ export default function Apparatus3DShatterSphere({
     textMesh.visible = showCenterText;
     structureGroup.add(textMesh);
 
-    // 5. Load Texture Pool & Create Vibrant 3D Image Planes
+    // 5. Load Texture Pool with Adaptive Cover (Prevents Distortion on Arbitrary Image Ratios)
     const textureLoader = new THREE.TextureLoader();
+    const planeAspect = 120 / 155;
     const textures = GALLERY_IMAGES.map((src) => {
-      const tex = textureLoader.load(src);
+      const tex = textureLoader.load(src, (loadedTex) => {
+        const img = loadedTex.image as HTMLImageElement | undefined;
+        if (img?.width && img?.height) {
+          const imgAspect = img.width / img.height;
+          if (imgAspect > planeAspect) {
+            loadedTex.repeat.set(planeAspect / imgAspect, 1);
+            loadedTex.offset.set((1 - loadedTex.repeat.x) / 2, 0);
+          } else {
+            loadedTex.repeat.set(1, imgAspect / planeAspect);
+            loadedTex.offset.set(0, (1 - loadedTex.repeat.y) / 2);
+          }
+          loadedTex.needsUpdate = true;
+        }
+      });
       tex.colorSpace = THREE.SRGBColorSpace;
       return tex;
     });

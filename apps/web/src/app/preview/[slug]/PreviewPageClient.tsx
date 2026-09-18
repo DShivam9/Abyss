@@ -42,9 +42,7 @@ export default function PreviewPageClient({ slug }: PreviewPageClientProps) {
 
   const defaultImageSrc = meta.filename.startsWith("/")
     ? meta.filename
-    : meta.filename.startsWith("components/")
-      ? `/images/${meta.filename}`
-      : `/images/components images/${meta.filename}`;
+    : `/images/${meta.filename}`;
 
   const { isSelfContainedScroll, isText, isScroll, isGallery, isTransition } = getLayoutType(meta, slug);
 

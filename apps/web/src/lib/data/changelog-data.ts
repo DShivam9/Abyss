@@ -28,6 +28,21 @@ export interface CommitEntry {
 
 export const CHANGELOG_DATA: CommitEntry[] = [
   {
+    id: "commit-31",
+    date: "2026-09-18",
+    displayDate: "Sep 18, 2026 • 18:05 IST",
+    tags: ["MAJOR", "FIX", "REMOVAL"],
+    title: "Polished Dual Wave & Asset Cleanup",
+    summary: "Synchronized Dual Wave reel physics, updated gallery assets, and purged obsolete legacy components.",
+    affectedSlugs: ["dual-wave", "3d-shatter-sphere"],
+    items: [
+      "Synchronized Dual Wave column alignment for simultaneous center-focus illumination",
+      "Added smooth shutter entrance transition and animated center card reveals",
+      "Migrated Dual Wave and 3D Shatter Sphere assets to local WebP format",
+      "Purged deprecated experimental components and legacy asset directories",
+    ],
+  },
+  {
     id: "commit-30",
     date: "2026-09-16",
     displayDate: "Sep 16, 2026 • 00:40 IST",

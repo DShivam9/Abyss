@@ -44,9 +44,7 @@ export default function ShowcasePageClient({ slug }: { slug: string }) {
   const defaultImageSrc = meta.filename
     ? meta.filename.startsWith("http") || meta.filename.startsWith("/")
       ? meta.filename
-      : meta.filename.startsWith("components/")
-        ? `/images/${meta.filename}`
-        : `/images/components images/${meta.filename}`
+      : `/images/${meta.filename}`
     : "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1200&q=80";
 
   const { isSelfContainedScroll, isText, isScroll, isGallery, isTransition } = getLayoutType(meta, slug);

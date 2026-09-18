@@ -1,4 +1,5 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { ApparatusDualWaveProps } from "./types";
 import {
   DEFAULT_ITEMS,
@@ -40,14 +41,15 @@ export const ApparatusDualWave: React.FC<ApparatusDualWaveProps> = ({
   const resolvedFontFamily = propFontFamily || "'Hatton', 'Larken', serif";
   const resolvedFontStyle = "normal";
   
-  const displayItems = items && items.length > 0 ? items : [...DEFAULT_ITEMS, ...DEFAULT_ITEMS];
-  const leftColumnItems = displayItems.filter((_, idx) => idx % 2 === 0);
-  const rightColumnItems = displayItems.filter((_, idx) => idx % 2 !== 0);
+  const displayItems = useMemo(
+    () => (items && items.length > 0 ? items : [...DEFAULT_ITEMS, ...DEFAULT_ITEMS]),
+    [items]
+  );
+  const leftColumnItems = useMemo(() => displayItems.filter((_, idx) => idx % 2 === 0), [displayItems]);
+  const rightColumnItems = useMemo(() => displayItems.filter((_, idx) => idx % 2 !== 0), [displayItems]);
 
-  const initialSrc = displayItems[0]?.imageSrc || imageSrc || "";
-  const activeSrcRef = useRef(initialSrc);
-  const prevSrcRef = useRef(initialSrc);
-  const fadeStartTimeRef = useRef(0);
+  const [activeImageIdx, setActiveImageIdx] = useState(0);
+  const activeImageIdxRef = useRef(0);
 
   // Animation loop playheads & layout refs
   const smoothOffsetRef = useRef(0);
@@ -55,17 +57,21 @@ export const ApparatusDualWave: React.FC<ApparatusDualWaveProps> = ({
   const mousePosRef = useRef({ x: 0, y: 0 });
   const smoothMouseRef = useRef({ x: 0, y: 0 });
   const centerImageFrameRef = useRef<HTMLDivElement>(null);
-  const imgLayerARef = useRef<HTMLImageElement>(null);
-  const imgLayerBRef = useRef<HTMLImageElement>(null);
   const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const entranceStartTimeRef = useRef(0);
   
   const dimensionsRef = useRef({ width: 800, height: 600 });
+  const isFullscreenRef = useRef(isFullscreen);
   const waveRangeRef = useRef(waveRange);
   const spacingRef = useRef(spacing);
   const scrollDampingRef = useRef(scrollDamping);
   const wavePatternRef = useRef(propWavePattern);
   const maxBlurRef = useRef(maxBlur);
   const maxRotationRef = useRef(maxRotation);
+
+  useEffect(() => {
+    isFullscreenRef.current = isFullscreen;
+  }, [isFullscreen]);
 
   useEffect(() => {
     dimensionsRef.current = dimensions;
@@ -93,6 +99,16 @@ export const ApparatusDualWave: React.FC<ApparatusDualWaveProps> = ({
       }
     };
   }, []);
+
+  // Preload all unique images into browser memory to eliminate scroll decode lag
+  useEffect(() => {
+    displayItems.forEach((item) => {
+      if (item.imageSrc) {
+        const img = new Image();
+        img.src = item.imageSrc;
+      }
+    });
+  }, [displayItems]);
 
   const scrollOffsetRef = useRef(0);
   const isScrollingRef = useRef(false);
@@ -123,13 +139,13 @@ export const ApparatusDualWave: React.FC<ApparatusDualWaveProps> = ({
       isInteractingRef.current = true;
       isScrollingRef.current = true;
       
-      const deltaY = e.deltaY * 0.45;
+      const deltaY = e.deltaY * 0.22;
       scrollOffsetRef.current += deltaY;
       
       const instantVelocity = deltaY / dt;
-      // Cap maximum velocity to prevent chaotic speedups
-      const cappedVelocity = Math.max(-3000, Math.min(3000, instantVelocity));
-      scrollVelocityRef.current = scrollVelocityRef.current * 0.5 + cappedVelocity * 0.5;
+      // Cap maximum velocity for a heavy, deliberate mechanical reel
+      const cappedVelocity = Math.max(-1400, Math.min(1400, instantVelocity));
+      scrollVelocityRef.current = scrollVelocityRef.current * 0.7 + cappedVelocity * 0.3;
       
       onLifecycleChange?.("buildUp");
       
@@ -153,14 +169,14 @@ export const ApparatusDualWave: React.FC<ApparatusDualWaveProps> = ({
       e.preventDefault();
       const now = performance.now();
       const currentY = e.touches[0].clientY;
-      const deltaY = lastTouchY - currentY;
       const dt = Math.max(1, now - lastTouchTime) / 1000;
       
-      scrollOffsetRef.current += deltaY * 1.5;
+      const deltaY = (lastTouchY - currentY) * 0.85;
+      scrollOffsetRef.current += deltaY;
       
-      const instantVelocity = (deltaY * 1.5) / dt;
-      const cappedVelocity = Math.max(-4000, Math.min(4000, instantVelocity));
-      scrollVelocityRef.current = scrollVelocityRef.current * 0.4 + cappedVelocity * 0.6;
+      const instantVelocity = deltaY / dt;
+      const cappedVelocity = Math.max(-1600, Math.min(1600, instantVelocity));
+      scrollVelocityRef.current = scrollVelocityRef.current * 0.6 + cappedVelocity * 0.4;
       
       lastTouchY = currentY;
       lastTouchTime = now;
@@ -222,6 +238,7 @@ export const ApparatusDualWave: React.FC<ApparatusDualWaveProps> = ({
 
   // Animation ticker loop
   useEffect(() => {
+    entranceStartTimeRef.current = performance.now();
     let animationFrameId: number;
     let lastTime = performance.now();
     
@@ -230,47 +247,35 @@ export const ApparatusDualWave: React.FC<ApparatusDualWaveProps> = ({
       lastTime = now;
       
       if (!isInteractingRef.current) {
-        // Friction decay of momentum (slower decay = heavier glide)
-        scrollVelocityRef.current *= Math.exp(-1.3 * dt);
-        if (Math.abs(scrollVelocityRef.current) < 5) {
+        // Friction decay of momentum (weighted mechanical drag: velvety glide deceleration)
+        scrollVelocityRef.current *= Math.exp(-2.2 * dt);
+        if (Math.abs(scrollVelocityRef.current) < 3) {
           scrollVelocityRef.current = 0;
         }
         scrollOffsetRef.current += scrollVelocityRef.current * dt;
       }
       
-      // Calculate effective rate based on scrollDampingRef (range 0.01 to 0.30)
+      // Calculate effective rate based on scrollDampingRef (calibrated for heavy, smooth mechanical feel)
       const rawDamp = scrollDampingRef.current;
-      const effectiveRate = Math.min(0.50, Math.max(0.005, rawDamp));
+      const effectiveRate = Math.min(0.22, Math.max(0.02, rawDamp * 0.75));
 
-      // Cap target scrollOffset buffer to absorb rapid wheel spikes
-      const maxOffsetBuffer = spacingRef.current * 4.0;
-      if (scrollOffsetRef.current > smoothOffsetRef.current + maxOffsetBuffer) {
-        scrollOffsetRef.current = smoothOffsetRef.current + maxOffsetBuffer;
-      } else if (scrollOffsetRef.current < smoothOffsetRef.current - maxOffsetBuffer) {
-        scrollOffsetRef.current = smoothOffsetRef.current - maxOffsetBuffer;
-      }
-
-      // Left column interpolation with generous velocity cap for responsive buttery motion
+      // Left column interpolation with smooth continuous decay
       const diff = scrollOffsetRef.current - smoothOffsetRef.current;
       if (Math.abs(diff) < 0.05) {
         smoothOffsetRef.current = scrollOffsetRef.current;
       } else {
-        const rawStep = diff * (1 - Math.pow(1 - effectiveRate, dt * 60));
-        const maxPixelsPerFrame = Math.max(12.0, effectiveRate * 120.0);
-        const clampedStep = Math.max(-maxPixelsPerFrame, Math.min(maxPixelsPerFrame, rawStep));
-        smoothOffsetRef.current += clampedStep;
+        const step = diff * (1 - Math.pow(1 - effectiveRate, dt * 60));
+        smoothOffsetRef.current += step;
       }
 
-      // Right column interpolation with generous velocity cap
-      const rightRate = Math.max(0.001, effectiveRate * (1.0 - BAKED_COLUMN_LAG * 0.5));
+      // Right column interpolation with subtle counter-lag
+      const rightRate = Math.max(0.015, effectiveRate * (1.0 - BAKED_COLUMN_LAG * 0.3));
       const diffRight = scrollOffsetRef.current - smoothOffsetRightRef.current;
       if (Math.abs(diffRight) < 0.05) {
         smoothOffsetRightRef.current = scrollOffsetRef.current;
       } else {
-        const rawRightStep = diffRight * (1 - Math.pow(1 - rightRate, dt * 60));
-        const maxRightPixels = Math.max(12.0, rightRate * 120.0);
-        const clampedRightStep = Math.max(-maxRightPixels, Math.min(maxRightPixels, rawRightStep));
-        smoothOffsetRightRef.current += clampedRightStep;
+        const stepRight = diffRight * (1 - Math.pow(1 - rightRate, dt * 60));
+        smoothOffsetRightRef.current += stepRight;
       }
 
       // Smooth LERP mouse movement (subtle magnetic floating offset)
@@ -280,21 +285,39 @@ export const ApparatusDualWave: React.FC<ApparatusDualWaveProps> = ({
       const mouseXPx = smoothMouseRef.current.x * 10;
       const mouseYPx = smoothMouseRef.current.y * 10;
 
-      // Apply physical velocity squeeze, 3D perspective tilt and mouse parallax on center image frame
+      // Cinematic entrance choreography: 1600ms deliberate sweep with blank canvas start
+      const entranceElapsed = now - entranceStartTimeRef.current;
+      const entranceDuration = 1600;
+      const entranceProg = Math.min(1.0, entranceElapsed / entranceDuration);
+      // Precision cubic deceleration curve
+      const entranceEase = 1 - Math.pow(1 - entranceProg, 3.2);
+      const rollIn = 1.0 - entranceEase;
+
+      // Vertical shutter curtain reveal on center card as counter-reels cross the equator
+      const shutterInsetY = (rollIn * 50).toFixed(1);
+      const cardOpacity = Math.min(1.0, entranceProg * 1.6).toFixed(3);
+
+      // Apply physical velocity squeeze and mouse parallax on center image frame
       const velMag = Math.min(1.0, Math.abs(scrollVelocityRef.current) / 2500);
       const velScale = 1.0 - velMag * 0.035 * BAKED_VELOCITY_SQUEEZE;
-      const tiltX = -smoothMouseRef.current.y * 6.0;
-      const tiltY = smoothMouseRef.current.x * 6.0;
       if (centerImageFrameRef.current) {
-        centerImageFrameRef.current.style.transform = `translate3d(calc(-50% + ${mouseXPx.toFixed(1)}px), calc(-50% + ${mouseYPx.toFixed(1)}px), 0) perspective(1000px) rotateX(${tiltX.toFixed(2)}deg) rotateY(${tiltY.toFixed(2)}deg) scale(${velScale.toFixed(4)})`;
+        centerImageFrameRef.current.style.opacity = cardOpacity;
+        centerImageFrameRef.current.style.clipPath = entranceProg < 1.0 ? `inset(${shutterInsetY}% 0% ${shutterInsetY}% 0%)` : "none";
+        centerImageFrameRef.current.style.transform = `translate3d(calc(-50% + ${mouseXPx.toFixed(1)}px), calc(-50% + ${mouseYPx.toFixed(1)}px), 0) scale(${velScale.toFixed(4)})`;
       }
 
       const H = dimensionsRef.current.height;
       const W = dimensionsRef.current.width;
+      const isFs = isFullscreenRef.current;
+      const curImageWidth = isFs
+        ? Math.min(420, Math.max(280, Math.round(W * 0.28)))
+        : Math.min(330, Math.max(240, Math.round(W * 0.24)));
+      const gapFromImage = isFs ? 56 : 52;
+      const pinchX = curImageWidth / 2 + gapFromImage;
       const computedWaveRange = (170 + (Math.max(170, W / 2 - pinchX - 120) - 170) * BAKED_CORNER_ALIGNMENT) * (waveRangeRef.current / 100);
 
-      const mouseContainerX = (smoothMouseRef.current.x * W / 2) + W / 2;
-      const mouseContainerY = (smoothMouseRef.current.y * H / 2) + H / 2;
+      let closestIdx = activeIdxRef.current;
+      let minCenterDist = Infinity;
 
       // Update DOM position styles directly
       for (let originalIdx = 0; originalIdx < displayItems.length; originalIdx++) {
@@ -305,18 +328,23 @@ export const ApparatusDualWave: React.FC<ApparatusDualWaveProps> = ({
         const k = Math.floor(originalIdx / 2);
         
         const totalSpan = (isLeft ? leftColumnItems.length : rightColumnItems.length) * spacingRef.current;
-        let offset = 0;
-        if (isLeft) {
-          offset = k * spacingRef.current - smoothOffsetRef.current;
-        } else {
-          offset = (k + 0.5) * spacingRef.current + smoothOffsetRightRef.current;
-        }
 
-        const wrappedOffset = (((offset + totalSpan / 2) % totalSpan + totalSpan) % totalSpan) - totalSpan / 2;
+        // Base cyclical offset during continuous interaction
+        const baseOffset = isLeft
+          ? (k * spacingRef.current - smoothOffsetRef.current)
+          : (k * spacingRef.current + smoothOffsetRightRef.current);
+
+        const restingWrapped = (((baseOffset + totalSpan / 2) % totalSpan + totalSpan) % totalSpan) - totalSpan / 2;
+
+        // Linear un-wrapped entrance sweep: screen starts 100% blank and reels sweep through
+        const sweepDistance = Math.max(H * 1.15, 800);
+        const entranceTravel = isLeft ? (-rollIn * sweepDistance) : (rollIn * sweepDistance);
+        const wrappedOffset = restingWrapped + entranceTravel;
+
         let y = H / 2 - itemHeight / 2 + wrappedOffset;
 
-        // Viewport Culling (ponytail performance fix): Hide offscreen DOM items to lock 60-120fps
-        if (y < -90 || y > H + 90) {
+        // Viewport Culling (ponytail performance fix): Allow text to stream from off-screen
+        if (y < -140 || y > H + 140) {
           el.style.display = "none";
           continue;
         }
@@ -326,6 +354,11 @@ export const ApparatusDualWave: React.FC<ApparatusDualWaveProps> = ({
         const itemCenterY = y + itemHeight / 2;
         const distToCenter = Math.abs(itemCenterY - centerY);
         const normalizedDist = Math.min(1.0, distToCenter / (H / 2 || 1));
+
+        if (distToCenter < minCenterDist) {
+          minCenterDist = distToCenter;
+          closestIdx = originalIdx;
+        }
 
         const normY = (y - H / 2) / (H / 2 || 1);
         
@@ -347,131 +380,73 @@ export const ApparatusDualWave: React.FC<ApparatusDualWaveProps> = ({
           baseHorizontalOffset = pinchX + (isLeft ? -waveOffset : waveOffset);
           baseAngle = Math.cos(normY * BAKED_DUAL_SINE_WAVENUM * Math.PI * 2.0) * maxRotationRef.current * (isLeft ? -1 : 1);
         } else {
-          // 3. Cylindrical 3D Barrel Drum (Default): Physical mechanical rolling reels flanking center hero card
-          const cylinderRadius = Math.max(340, H * 0.52);
+          // 3. Cylindrical 3D Barrel Drum (Default): Expanded radius streams text continuously off-screen
+          const cylinderRadius = Math.max(480, H * 0.72);
           const theta = wrappedOffset / cylinderRadius;
           
           y = H / 2 - itemHeight / 2 + Math.sin(theta) * cylinderRadius;
-          zPos = (Math.cos(theta) - 1.0) * cylinderRadius * 0.85;
-          pitchX = (-theta * 180 / Math.PI) * (maxRotationRef.current / 9.0);
+          zPos = (Math.cos(theta) - 1.0) * cylinderRadius * 0.75;
+          pitchX = (-theta * 180 / Math.PI) * (maxRotationRef.current / 8.5);
           
           const barrelFlare = (1.0 - Math.cos(theta)) * (waveRangeRef.current * 0.55);
           baseHorizontalOffset = pinchX + barrelFlare;
           baseAngle = Math.sin(theta) * maxRotationRef.current * (isLeft ? -0.3 : 0.3);
         }
 
-        // Calculate item position relative to cursor for Gravitational Wave Lens
-        const itemX = isLeft ? (W / 2 - baseHorizontalOffset) : (W / 2 + baseHorizontalOffset);
-        const itemY = y + itemHeight / 2;
+      const nowMs = performance.now();
+      const ambientDrift = Math.sin(nowMs * 0.0018) * 1.8;
+      const mouseContainerX = (smoothMouseRef.current.x * W / 2) + W / 2;
+      const mouseContainerY = (smoothMouseRef.current.y * H / 2) + H / 2;
 
-        const dx = mouseContainerX - itemX;
-        const dy = mouseContainerY - itemY;
-        const distToMouse = Math.sqrt(dx * dx + dy * dy);
-        
-        // Gaussian bell-curve falloff around cursor location (radius: 140px)
-        const gaussianFocus = Math.exp(-(distToMouse * distToMouse) / (2 * 140 * 140));
+      // Sharp center crosshair focus (tight Gaussian curve focused at exact vertical middle)
+      const centerFocus = Math.exp(-Math.pow(distToCenter / 45, 2));
+      
+      // Base opacity: readable text right up to viewport boundary, fading only at very perimeter
+      const edgeFade = normalizedDist > 0.95 ? Math.max(0, (1.0 - normalizedDist) / 0.05) : 1.0;
+      const opacity = Math.min(1.0, (0.35 + centerFocus * 0.65) * edgeFade);
+      
+      // Progressive blur only at extreme edges (normalizedDist > 0.38)
+      const blurFactor = Math.pow(Math.max(0, (normalizedDist - 0.38) / 0.62), 2.0);
+      const blurAmount = Math.max(0, blurFactor * maxBlurRef.current * 1.5);
 
-        // Gravitational Wave Lens offset (text gracefully bulges outward near cursor)
-        const mouseLensOffset = gaussianFocus * 18;
+      // Kinetic velocity shear: subtle text slant along scroll vector during rapid movement
+      const velShear = (scrollVelocityRef.current / 2000) * (isLeft ? -1 : 1);
+      const cappedSkew = Math.max(-5, Math.min(5, velShear * 6));
 
-        // Subtle directional tilt towards cursor
-        const mouseTiltAngle = (dy / (distToMouse || 1)) * gaussianFocus * (isLeft ? -8 : 8);
-        const totalAngle = baseAngle + mouseTiltAngle;
-        
-        // Sharp center crosshair focus (tight Gaussian curve focused at exact vertical middle)
-        const centerFocus = Math.exp(-Math.pow(distToCenter / 50, 2));
-        const totalHighlight = Math.min(1.0, centerFocus + gaussianFocus * 0.4);
-        
-        // Base opacity: 0.50 for off-center readable items, ramping to 1.0 at center
-        const edgeFade = normalizedDist > 0.85 ? Math.max(0, (1.0 - normalizedDist) / 0.15) : 1.0;
-        const opacity = Math.min(1.0, (0.50 + centerFocus * 0.50 + gaussianFocus * 0.15) * edgeFade);
-        
-        // Progressive blur only at extreme edges (normalizedDist > 0.35)
-        const blurFactor = Math.pow(Math.max(0, (normalizedDist - 0.35) / 0.65), 2.0) * (1.0 - gaussianFocus * 0.8);
-        const blurAmount = Math.max(0, blurFactor * maxBlurRef.current * 1.5);
+      // Calculate cursor proximity for restrained embossed depth lift
+      const itemX = isLeft ? (W / 2 - baseHorizontalOffset) : (W / 2 + baseHorizontalOffset);
+      const itemY = y + itemHeight / 2;
+      const dx = mouseContainerX - itemX;
+      const dy = mouseContainerY - itemY;
+      const distToMouse = Math.sqrt(dx * dx + dy * dy);
+      const hoverProximity = Math.exp(-(distToMouse * distToMouse) / (2 * 120 * 120));
+      const hoverZ = hoverProximity * 16;
+      const effectiveZ = zPos + hoverZ;
 
-        // Kinetic velocity shear: slants text along scroll vector during rapid movement
-        const velShear = (scrollVelocityRef.current / 2000) * (isLeft ? -1 : 1);
-        const cappedSkew = Math.max(-6, Math.min(6, velShear * 8));
+      // Stable authored cylindrical barrel position with ambient breathing and subtle forward lift
+      const renderedY = y + ambientDrift;
+      el.style.transform = isLeft
+        ? `translate3d(calc(-100% - ${baseHorizontalOffset.toFixed(1)}px), ${renderedY.toFixed(1)}px, ${effectiveZ.toFixed(1)}px) rotateX(${pitchX.toFixed(2)}deg) rotate(${baseAngle.toFixed(1)}deg) skewY(${cappedSkew.toFixed(2)}deg)`
+        : `translate3d(${baseHorizontalOffset.toFixed(1)}px, ${renderedY.toFixed(1)}px, ${effectiveZ.toFixed(1)}px) rotateX(${pitchX.toFixed(2)}deg) rotate(${baseAngle.toFixed(1)}deg) skewY(${cappedSkew.toFixed(2)}deg)`;
 
-        const effectiveHorizontalOffset = baseHorizontalOffset + mouseLensOffset;
+      el.style.opacity = Math.min(1.0, opacity + hoverProximity * 0.25).toFixed(3);
+      // GPU Shader Pass Bypass: Skip blur filter when negligible to eliminate GPU overhead
+      el.style.filter = blurAmount > 0.15 ? `blur(${blurAmount.toFixed(1)}px)` : "none";
 
-        // Mutate transform and styles directly on the DOM node for 60fps performance
-        el.style.transform = isLeft
-          ? `translate3d(calc(-100% - ${effectiveHorizontalOffset.toFixed(1)}px), ${y.toFixed(1)}px, ${zPos.toFixed(1)}px) rotateX(${pitchX.toFixed(2)}deg) rotate(${totalAngle.toFixed(1)}deg) skewY(${cappedSkew.toFixed(2)}deg)`
-          : `translate3d(${effectiveHorizontalOffset.toFixed(1)}px, ${y.toFixed(1)}px, ${zPos.toFixed(1)}px) rotateX(${pitchX.toFixed(2)}deg) rotate(${totalAngle.toFixed(1)}deg) skewY(${cappedSkew.toFixed(2)}deg)`;
-
-        el.style.opacity = opacity.toFixed(3);
-        // GPU Shader Pass Bypass: Skip blur filter when negligible to eliminate GPU overhead
-        el.style.filter = blurAmount > 0.15 ? `blur(${blurAmount.toFixed(1)}px)` : "none";
-
-        const textSpan = el.firstElementChild as HTMLElement;
-        if (textSpan) {
-          // Off-center text is readable silver rgb(140, 140, 148), center active text is pure #ffffff rgb(255, 255, 255)
-          const textLuma = Math.round(140 + totalHighlight * 115);
-          const textScale = 1.0 + totalHighlight * 0.12;
-          const letterSpacing = 0.02 + totalHighlight * 0.06;
-
-          textSpan.style.color = `rgb(${textLuma}, ${textLuma}, ${textLuma})`;
-          textSpan.style.letterSpacing = `${letterSpacing.toFixed(3)}em`;
-          textSpan.style.fontWeight = totalHighlight > 0.55 ? "400" : "200";
-          textSpan.style.transform = `scale(${textScale.toFixed(3)})`;
-          textSpan.style.display = "inline-block";
-          textSpan.style.transformOrigin = isLeft ? "right center" : "left center";
-        }
+      const textSpan = el.firstElementChild as HTMLElement;
+      if (textSpan) {
+        // Off-center text is muted silver, center active & hover catch light up to pure #ffffff
+        const textLuma = Math.min(255, Math.round(135 + centerFocus * 120 + hoverProximity * 40));
+        textSpan.style.color = `rgb(${textLuma}, ${textLuma}, ${textLuma})`;
       }
+    }
 
-      // Update active center image strictly from primary scroll playhead (zero column collision)
-      const totalItems = displayItems.length;
-      if (totalItems > 0) {
-        const playheadProg = Math.round(smoothOffsetRef.current / spacingRef.current);
-        const playheadIndex = ((playheadProg % totalItems) + totalItems) % totalItems;
-
-        if (playheadIndex !== activeIdxRef.current) {
-          activeIdxRef.current = playheadIndex;
-          const targetSrc = displayItems[playheadIndex]?.imageSrc || imageSrc || "";
-          if (targetSrc && targetSrc !== activeSrcRef.current) {
-            prevSrcRef.current = activeSrcRef.current;
-            activeSrcRef.current = targetSrc;
-            fadeStartTimeRef.current = performance.now();
-          }
+      // Update active image smoothly on center crossing without double-buffer collision
+      if (closestIdx >= 0 && closestIdx < displayItems.length) {
+        if (closestIdx !== activeImageIdxRef.current && (minCenterDist < 55 || Math.abs(scrollVelocityRef.current) > 80)) {
+          activeImageIdxRef.current = closestIdx;
+          setActiveImageIdx(closestIdx);
         }
-      }
-
-      // Smooth crossfade animation over 340ms (triggered only on item change)
-      const fadeAge = performance.now() - fadeStartTimeRef.current;
-      const rawFade = Math.min(1.0, fadeAge / 340);
-      const easeFade = rawFade * rawFade * (3 - 2 * rawFade);
-
-      // Physical momentum zoom on the image while scrolling
-      const scrollVelMag = Math.min(1.0, Math.abs(scrollVelocityRef.current) / 2500);
-      const momentumZoom = 1.0 + scrollVelMag * 0.05;
-
-      const currentSrc = activeSrcRef.current;
-      const previousSrc = prevSrcRef.current;
-
-      if (imgLayerARef.current && previousSrc) {
-        if (imgLayerARef.current.getAttribute("data-src") !== previousSrc) {
-          imgLayerARef.current.src = encodeURI(previousSrc);
-          imgLayerARef.current.setAttribute("data-src", previousSrc);
-        }
-        const opacityA = (1.0 - easeFade);
-        const scaleA = momentumZoom * (1.0 + easeFade * 0.06);
-        imgLayerARef.current.style.opacity = opacityA.toFixed(3);
-        imgLayerARef.current.style.transform = `scale(${scaleA.toFixed(4)})`;
-        imgLayerARef.current.style.display = opacityA > 0.01 ? "block" : "none";
-      }
-
-      if (imgLayerBRef.current && currentSrc) {
-        if (imgLayerBRef.current.getAttribute("data-src") !== currentSrc) {
-          imgLayerBRef.current.src = encodeURI(currentSrc);
-          imgLayerBRef.current.setAttribute("data-src", currentSrc);
-        }
-        const opacityB = easeFade;
-        const scaleB = momentumZoom * (0.92 + easeFade * 0.08);
-        imgLayerBRef.current.style.opacity = opacityB.toFixed(3);
-        imgLayerBRef.current.style.transform = `scale(${scaleB.toFixed(4)})`;
-        imgLayerBRef.current.style.display = "block";
       }
 
       animationFrameId = requestAnimationFrame(tick);
@@ -490,23 +465,57 @@ export const ApparatusDualWave: React.FC<ApparatusDualWaveProps> = ({
     ? Math.min(420, Math.max(280, Math.round(dimensions.width * 0.28)))
     : Math.min(330, Math.max(240, Math.round(dimensions.width * 0.24)));
   const imageHeight = Math.round(imageWidth * 1.34);
-  const gapFromImage = 36; // Horizontal padding at the pinch point
-  const pinchX = imageWidth / 2 + gapFromImage; // Base horizontal distance from container center
 
   const jumpToItem = (originalIdx: number, isLeft: boolean, k: number) => {
     const colCount = isLeft ? leftColumnItems.length : rightColumnItems.length;
     const totalSpan = colCount * spacingRef.current;
     if (totalSpan <= 0) return;
     
-    const rawTarget = isLeft ? (k * spacingRef.current) : (-(k + 0.5) * spacingRef.current);
+    const rawTarget = isLeft ? (k * spacingRef.current) : (-k * spacingRef.current);
     
     // Shortest path delta modulo totalSpan
     let diff = (rawTarget - scrollOffsetRef.current) % totalSpan;
     if (diff > totalSpan / 2) diff -= totalSpan;
     if (diff < -totalSpan / 2) diff += totalSpan;
 
-    scrollOffsetRef.current += diff;
+    if (Math.abs(diff) < 0.5) return;
+
+    if (presetAnimRef.current !== null) {
+      cancelAnimationFrame(presetAnimRef.current);
+      presetAnimRef.current = null;
+    }
+
+    const startOffset = scrollOffsetRef.current;
+    const targetOffset = startOffset + diff;
+    const startTime = performance.now();
+    const travelDist = Math.abs(diff);
+    // Dynamic weighted duration: 550ms base + scaled up to 880ms for large arcs
+    const duration = Math.min(880, Math.max(550, 480 + (travelDist / totalSpan) * 650));
+
+    const animateArrival = (now: number) => {
+      const elapsed = now - startTime;
+      const progress = Math.min(1.0, elapsed / duration);
+      // Precision mechanical curve: swift initial impulse, weighted deceleration into center notch
+      const ease = 1 - Math.pow(1 - progress, 3.8);
+      scrollOffsetRef.current = startOffset + diff * ease;
+
+      // Realistic kinetic velocity to drive optical depth in sync with wheel transit
+      const remainingProgress = 1.0 - progress;
+      scrollVelocityRef.current = (diff / duration) * remainingProgress * 750;
+
+      if (progress < 1.0) {
+        presetAnimRef.current = requestAnimationFrame(animateArrival);
+      } else {
+        scrollOffsetRef.current = targetOffset;
+        scrollVelocityRef.current = 0;
+        presetAnimRef.current = null;
+      }
+    };
+
+    presetAnimRef.current = requestAnimationFrame(animateArrival);
     activeIdxRef.current = originalIdx;
+    activeImageIdxRef.current = originalIdx;
+    setActiveImageIdx(originalIdx);
   };
 
   return (
@@ -561,7 +570,7 @@ export const ApparatusDualWave: React.FC<ApparatusDualWaveProps> = ({
           );
         })}
 
-        {/* CENTER IMAGE BLOCK: DUAL-BUFFER CONTINUOUS CINEMATIC ZOOM */}
+        {/* CENTER IMAGE BLOCK: CLEAN HARDWARE-ACCELERATED TRANSITION */}
         <div 
           ref={centerImageFrameRef}
           className="absolute pointer-events-auto overflow-hidden bg-black rounded-[2px]"
@@ -576,20 +585,22 @@ export const ApparatusDualWave: React.FC<ApparatusDualWaveProps> = ({
             zIndex: 10,
           }}
         >
-          <img
-            ref={imgLayerARef}
-            src={encodeURI(displayItems[0]?.imageSrc || imageSrc || "")}
-            alt="Layer A"
-            className="absolute inset-0 w-full h-full object-cover select-none pointer-events-none will-change-transform"
-            style={{ transformOrigin: "center center", transform: "scale(1)" }}
-          />
-          <img
-            ref={imgLayerBRef}
-            src={encodeURI(displayItems[1]?.imageSrc || imageSrc || "")}
-            alt="Layer B"
-            className="absolute inset-0 w-full h-full object-cover select-none pointer-events-none will-change-transform"
-            style={{ transformOrigin: "center center", opacity: 0, transform: "scale(0.76)" }}
-          />
+          <AnimatePresence mode="popLayout">
+            <motion.div
+              key={activeImageIdx}
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1.0 }}
+              exit={{ opacity: 0, scale: 1.03 }}
+              transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+              className="absolute inset-0 w-full h-full"
+            >
+              <img
+                src={encodeURI(displayItems[activeImageIdx]?.imageSrc || imageSrc || "")}
+                alt={displayItems[activeImageIdx]?.name || "Active item"}
+                className="w-full h-full object-cover select-none pointer-events-none"
+              />
+            </motion.div>
+          </AnimatePresence>
         </div>
 
         {/* RIGHT COLUMN (Left-aligned relative to center axis) */}
