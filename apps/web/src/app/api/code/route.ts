@@ -89,7 +89,7 @@ export async function GET(req: NextRequest) {
       });
     }
   } catch (err) {
-    console.error("API Code Loader failed:", err);
+    console.error("API Code Loader failed:", err instanceof Error ? err.message : String(err));
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }

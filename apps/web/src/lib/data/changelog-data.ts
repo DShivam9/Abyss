@@ -28,6 +28,21 @@ export interface CommitEntry {
 
 export const CHANGELOG_DATA: CommitEntry[] = [
   {
+    id: "commit-33",
+    date: "2026-09-20",
+    displayDate: "Sep 20, 2026 • 00:35 IST",
+    tags: ["MAJOR", "FIX", "ADDITION"],
+    commitHash: "7ae71ae",
+    title: "Refined Quick Search & Edge Delivery",
+    summary: "Refined universal command palette glass aesthetics, synchronized navigation kinetics, and boosted static edge delivery across showcases.",
+    items: [
+      "Tuned Command Palette search capsule with crystal glass clarity and calibrated geometry",
+      "Integrated continuous celestial kinetic rotation within quick navigation modal",
+      "Pre-rendered showcase architecture for instant zero-latency page transitions",
+      "Hardened platform delivery pipelines, telemetry configurations, and security headers",
+    ],
+  },
+  {
     id: "commit-32",
     date: "2026-09-18",
     displayDate: "Sep 18, 2026 • 19:30 IST",

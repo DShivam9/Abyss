@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Search } from "lucide-react";
+import { GITHUB_REPO_URL } from "@/lib/constants";
 
 interface DockNavbarProps {
   onOpenSearch?: () => void;
@@ -108,7 +109,7 @@ export function DockNavbar({ onOpenSearch, threshold = 40 }: DockNavbarProps) {
             <Search size={15} />
           </button>
           <a
-            href="https://github.com"
+            href={GITHUB_REPO_URL}
             target="_blank"
             rel="noopener noreferrer"
             className="dock-action-btn shutter-hover"

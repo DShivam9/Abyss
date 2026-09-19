@@ -344,7 +344,7 @@ export const VesselCanvas: React.FC<VesselCanvasProps> = ({
     <div
       ref={containerRef}
       role="img"
-      aria-label={ariaLabel || "Interactive Vessel visual shader canvas"}
+      aria-label={ariaLabel || "Interactive Abyss visual canvas"}
       style={{
         aspectRatio: `${imgDimensions.width} / ${imgDimensions.height}`,
         ...style,

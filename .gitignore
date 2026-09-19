@@ -13,6 +13,7 @@ docs/
 !packages/core/**/*.png
 diff.txt
 *.log
+trace.json
 graphify-out/
 MEMORY.md
 skills-lock.json

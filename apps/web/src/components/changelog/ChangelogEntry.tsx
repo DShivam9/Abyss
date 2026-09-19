@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { Github, ArrowUpRight } from "lucide-react";
 import { CommitEntry } from "@/lib/data/changelog-data";
 import { COMPONENT_DETAILS } from "@/lib/registry";
+import { GITHUB_REPO_URL } from "@/lib/constants";
 
 interface ChangelogEntryProps {
   entry: CommitEntry;
@@ -98,7 +99,7 @@ export function ChangelogEntry({ entry }: ChangelogEntryProps) {
         {/* Commit Hash Link */}
         {entry.commitHash && (
           <a
-            href={`https://github.com/Abyss-UI/Abyss/commit/${entry.commitHash}`}
+            href={`${GITHUB_REPO_URL}/commit/${entry.commitHash}`}
             target="_blank"
             rel="noopener noreferrer"
             style={{

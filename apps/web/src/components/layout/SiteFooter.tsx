@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { usePathname } from "next/navigation";
 import { openCookieSettings } from "./CookieConsentCard";
+import { GITHUB_REPO_URL } from "@/lib/constants";
 
 // Editorial Typographic Bloom & Corner Star Accents (Matches Hand-Drawn Sketch)
 export function RollingLink({
@@ -209,8 +210,8 @@ export function SiteFooter({ activePage }: { activePage?: string }) {
             COMMUNITY
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: "9px" }}>
-            <RollingLink href="https://github.com/DShivam9/Abyss" label="GitHub" isExternal />
-            <RollingLink href="https://github.com/DShivam9/Abyss" label="Contribute" isExternal />
+            <RollingLink href={GITHUB_REPO_URL} label="GitHub" isExternal />
+            <RollingLink href={GITHUB_REPO_URL} label="Contribute" isExternal />
           </div>
         </div>
 

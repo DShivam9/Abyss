@@ -164,12 +164,7 @@ export default function HomePage() {
   );
 
   return (
-    <>
-      <link 
-        rel="stylesheet" 
-        href="https://api.fontshare.com/v2/css?f[]=ranade@400,500,700&f[]=switzer@400,500,600&display=swap" 
-      />
-      <div className="min-h-screen bg-[#0A0A0A] text-[#E8E8ED] flex flex-col font-['Switzer',sans-serif] selection:bg-white selection:text-black">
+    <div className="min-h-screen bg-[#0A0A0A] text-[#E8E8ED] flex flex-col font-['Switzer',sans-serif] selection:bg-white selection:text-black">
         {/* Clean Top Navigation - Stays static & immediately visible */}
         <header className="relative z-50 w-full max-w-6xl mx-auto px-6 py-8 flex items-center justify-between pointer-events-auto">
           <Link 
@@ -263,7 +258,6 @@ export default function HomePage() {
           </div>
         </main>
       </div>
-    </>
   );
 }
 

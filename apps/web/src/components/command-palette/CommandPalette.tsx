@@ -2,17 +2,12 @@
 
 import React, { useEffect, useState, useRef, useDeferredValue, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import {
-  FileText,
-  LayoutGrid,
-  BookOpen,
-  ArrowUpRight,
-  ArrowRight,
-  CornerDownLeft,
-} from "lucide-react";
+import { Compass, CornerDownLeft, Cuboid } from "lucide-react";
 import { useScrollLock } from "@/lib/hooks/useScrollLock";
 import { useSmoothScroll } from "@/lib/hooks/useSmoothScroll";
 import { ComponentDetail, SearchIndexItem } from "@/lib/registry";
+import { STATIC_PAGES } from "./constants";
+import { PaletteItemRow } from "./PaletteItemRow";
 
 interface CommandPaletteProps {
   isOpen: boolean;
@@ -20,21 +15,6 @@ interface CommandPaletteProps {
   components: (SearchIndexItem | ComponentDetail)[];
   onSelectComponent?: (slug: string) => void;
 }
-
-const STATIC_PAGES = [
-  { name: "Home", path: "/", icon: FileText },
-  { name: "Collection Grid", path: "/collection", icon: LayoutGrid },
-  { name: "Documentation Specs", path: "/docs", icon: BookOpen },
-];
-
-const TYPEWRITER_PHRASES = [
-  "Type to filter components...",
-  "Type 'Dual Wave'...",
-  "Type 'Raymarching'...",
-  "Type '3D Shatter'...",
-  "Type 'Kinetic Typo'...",
-  "Type 'Bronze Patina'...",
-];
 
 export function CommandPalette({
   isOpen,
@@ -53,6 +33,7 @@ export function CommandPalette({
   const mirrorRef = useRef<HTMLSpanElement>(null);
   const listRef = useSmoothScroll<HTMLDivElement>();
   const activeItemRef = useRef<HTMLButtonElement | null>(null);
+  const isKeyboardNavRef = useRef(false);
 
   useScrollLock(isOpen);
 
@@ -69,53 +50,6 @@ export function CommandPalette({
     }
   };
 
-  // Dynamic Typewriter Effect directly on input DOM element (0 React re-renders)
-  useEffect(() => {
-    if (!isOpen) return;
-
-    let phraseIdx = 0;
-    let charIdx = 0;
-    let isDeleting = false;
-    let timeoutId: NodeJS.Timeout;
-
-    const tick = () => {
-      const currentPhrase = TYPEWRITER_PHRASES[phraseIdx];
-
-      if (!isDeleting) {
-        charIdx++;
-        if (inputRef.current) {
-          inputRef.current.placeholder = currentPhrase.slice(0, charIdx);
-        }
-
-        if (charIdx === currentPhrase.length) {
-          isDeleting = true;
-          timeoutId = setTimeout(tick, 1800);
-          return;
-        }
-        timeoutId = setTimeout(tick, 55);
-      } else {
-        charIdx--;
-        if (inputRef.current) {
-          inputRef.current.placeholder = currentPhrase.slice(0, charIdx);
-        }
-
-        if (charIdx === 0) {
-          isDeleting = false;
-          phraseIdx = (phraseIdx + 1) % TYPEWRITER_PHRASES.length;
-          timeoutId = setTimeout(tick, 280);
-          return;
-        }
-        timeoutId = setTimeout(tick, 25);
-      }
-    };
-
-    if (inputRef.current) {
-      inputRef.current.placeholder = TYPEWRITER_PHRASES[0];
-    }
-    timeoutId = setTimeout(tick, 800);
-    return () => clearTimeout(timeoutId);
-  }, [isOpen]);
-
   // Auto-focus input when opened
   useEffect(() => {
     if (isOpen) {
@@ -123,6 +57,7 @@ export function CommandPalette({
       setCursorPos(0);
       setCaretOffset(0);
       setSelectedIndex(0);
+      isKeyboardNavRef.current = false;
       const timer = setTimeout(() => {
         inputRef.current?.focus();
         setIsFocused(true);
@@ -133,7 +68,7 @@ export function CommandPalette({
 
   const cleanQuery = deferredQuery.toLowerCase().trim();
 
-  // Filtered pages with relevance scoring
+  // Filtered pages with keyword & relevance scoring
   const filteredPages = useMemo(() => {
     if (!cleanQuery) return STATIC_PAGES;
     const scored: Array<{ item: (typeof STATIC_PAGES)[0]; score: number }> = [];
@@ -145,6 +80,8 @@ export function CommandPalette({
       else if (nameLower.startsWith(cleanQuery)) score = 600;
       else if (nameLower.includes(` ${cleanQuery}`)) score = 400;
       else if (nameLower.includes(cleanQuery)) score = 250;
+      else if (p.keywords?.some((k) => k === cleanQuery)) score = 200;
+      else if (p.keywords?.some((k) => k.includes(cleanQuery))) score = 100;
 
       if (score > 0) scored.push({ item: p, score });
     }
@@ -153,19 +90,22 @@ export function CommandPalette({
     return scored.map((s) => s.item);
   }, [cleanQuery]);
 
-  // Filtered components with relevance scoring
+  // Filtered components with keyword & relevance scoring
   const filteredComponents = useMemo(() => {
     if (!cleanQuery) return components;
     const scored: Array<{ item: SearchIndexItem | ComponentDetail; score: number }> = [];
 
     for (const c of components) {
       const labelLower = c.label.toLowerCase();
-      const descLower = c.desc ? c.desc.toLowerCase() : "";
-      const exactTag = c.tags?.some((t) => t.toLowerCase() === cleanQuery);
-      const tagIncludes = c.tags?.some((t) => t.toLowerCase().includes(cleanQuery));
+      const slugLower = c.slug.toLowerCase();
+      const descLower = ("description" in c && typeof (c as any).description === "string" ? (c as any).description : "").toLowerCase();
+      const tags = (c.tags ?? []).map((t) => String(t).toLowerCase());
+
+      const exactTag = tags.includes(cleanQuery);
+      const tagIncludes = tags.some((t) => t.includes(cleanQuery));
 
       let score = 0;
-      if (labelLower === cleanQuery) {
+      if (labelLower === cleanQuery || slugLower === cleanQuery) {
         score = 1000;
       } else if (labelLower.startsWith(cleanQuery)) {
         score = 600;
@@ -219,113 +159,134 @@ export function CommandPalette({
       if (e.key === "Escape") {
         e.preventDefault();
         onClose();
-      } else if (e.key === "ArrowDown") {
+        return;
+      }
+
+      if (allItems.length === 0) return;
+
+      if (e.key === "ArrowDown") {
         e.preventDefault();
-        setSelectedIndex((prev) =>
-          allItems.length === 0 ? 0 : (prev + 1) % allItems.length
-        );
+        isKeyboardNavRef.current = true;
+        setSelectedIndex((prev) => (prev + 1) % allItems.length);
       } else if (e.key === "ArrowUp") {
         e.preventDefault();
-        setSelectedIndex((prev) =>
-          allItems.length === 0 ? 0 : (prev - 1 + allItems.length) % allItems.length
-        );
+        isKeyboardNavRef.current = true;
+        setSelectedIndex((prev) => (prev - 1 + allItems.length) % allItems.length);
       } else if (e.key === "Enter") {
         e.preventDefault();
         const selected = allItems[selectedIndex];
-        if (selected) {
-          if (selected.type === "page") {
-            handleSelect(selected.item.path);
-          } else {
-            handleSelect(`/showcase/${selected.item.slug}`);
-          }
+        if (!selected) return;
+
+        if (selected.type === "page") {
+          handleSelect(selected.item.path);
+        } else {
+          handleSelect(`/showcase/${selected.item.slug}`);
         }
       }
     };
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isOpen, selectedIndex, allItems, onClose, handleSelect]);
+  }, [isOpen, allItems, selectedIndex, handleSelect, onClose]);
+
+  const canSelectOnHover = useCallback((e: React.MouseEvent) => {
+    if (isKeyboardNavRef.current) {
+      if (Math.abs(e.movementX) > 1 || Math.abs(e.movementY) > 1) {
+        isKeyboardNavRef.current = false;
+        return true;
+      }
+      return false;
+    }
+    return true;
+  }, []);
+
+  if (!isOpen) return null;
 
   let flatIndex = 0;
 
   return (
     <div
       className={`modal-overlay ${isOpen ? "open" : ""}`}
-      onClick={(e) => {
-        if (e.target === e.currentTarget) onClose();
-      }}
-      aria-modal="true"
-      aria-hidden={!isOpen}
-      role="dialog"
+      onClick={onClose}
+      data-lenis-prevent
+      onWheel={(e) => e.stopPropagation()}
+      onTouchMove={(e) => e.stopPropagation()}
     >
       <div
         className="search-modal"
+        onClick={(e) => e.stopPropagation()}
+        data-lenis-prevent
         onWheel={(e) => e.stopPropagation()}
         onTouchMove={(e) => e.stopPropagation()}
       >
-        {/* Header */}
+        {/* Search Input Bar with true iOS-style glassmorphism */}
         <div className="search-header">
-          <div
-            className="abyss-celestial-logo"
-            aria-hidden="true"
-            style={{ cursor: "default" }}
-          >
-            <svg
-              width="24"
-              height="24"
-              viewBox="0 0 100 100"
-              fill="currentColor"
+          <div className="search-capsule">
+            <div
+              className="abyss-celestial-logo"
+              role="button"
+              aria-label="Abyss Home"
+              onClick={() => handleSelect("/")}
+              style={{ cursor: "pointer", display: "inline-flex", flexShrink: 0 }}
             >
-              <path
-                d="m50 7.5234 2.2461 29.645 5.9648-15.68-5.2891 24.566 0.089844 1.0898 37.09-22.633-27.855 22.355 20.266-5.3906-24.645 10.09 42.133 11.113-39.566-5.5469 21.109 12.812-25.188-11.445 15.898 34.777-19.363-30.055 3.1523 22.242-7.2656-24.844-21.031 32.656 14.41-31.531-16.945 14.586 17.043-19.578-42.254 5.9141 36.457-9.6016-24.191-3.6328 29.801 0.89844-32.168-25.82 28.945 17.656-11.887-17.145 19.934 22.055 0.097656 0.066406z"
-                fillRule="evenodd"
-              />
-            </svg>
-          </div>
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 100 100"
+                fill="currentColor"
+              >
+                <path
+                  d="m50 7.5234 2.2461 29.645 5.9648-15.68-5.2891 24.566 0.089844 1.0898 37.09-22.633-27.855 22.355 20.266-5.3906-24.645 10.09 42.133 11.113-39.566-5.5469 21.109 12.812-25.188-11.445 15.898 34.777-19.363-30.055 3.1523 22.242-7.2656-24.844-21.031 32.656 14.41-31.531-16.945 14.586 17.043-19.578-42.254 5.9141 36.457-9.6016-24.191-3.6328 29.801 0.89844-32.168-25.82 28.945 17.656-11.887-17.145 19.934 22.055 0.097656 0.066406z"
+                  fillRule="evenodd"
+                />
+              </svg>
+            </div>
 
-          <div className="search-input-wrap">
-            <span ref={mirrorRef} className="search-input-mirror" aria-hidden="true">
-              {query.slice(0, cursorPos)}
-            </span>
-            {isFocused && (
-              <span
-                className="smooth-caret"
-                style={{ transform: `translateX(${caretOffset}px)` }}
-                aria-hidden="true"
+            <div className="search-input-wrap">
+              <span ref={mirrorRef} className="search-input-mirror" aria-hidden="true">
+                {query.slice(0, cursorPos)}
+              </span>
+              {isFocused && (
+                <span
+                  className="smooth-caret"
+                  style={{ transform: `translateX(${caretOffset}px)` }}
+                  aria-hidden="true"
+                />
+              )}
+              <input
+                ref={inputRef}
+                type="text"
+                className="search-input"
+                placeholder="Search components or pages..."
+                value={query}
+                onChange={(e) => {
+                  setQuery(e.target.value);
+                  setCursorPos(e.target.selectionStart ?? e.target.value.length);
+                  setSelectedIndex(0);
+                }}
+                onSelect={updateCursorPosition}
+                onKeyUp={updateCursorPosition}
+                onFocus={() => {
+                  setIsFocused(true);
+                  updateCursorPosition();
+                }}
+                onBlur={() => setIsFocused(false)}
+                autoComplete="off"
+                spellCheck={false}
               />
-            )}
-            <input
-              ref={inputRef}
-              type="text"
-              className="search-input"
-              placeholder={TYPEWRITER_PHRASES[0]}
-              value={query}
-              onChange={(e) => {
-                setQuery(e.target.value);
-                setCursorPos(e.target.selectionStart ?? e.target.value.length);
-                setSelectedIndex(0);
-              }}
-              onSelect={updateCursorPosition}
-              onKeyUp={updateCursorPosition}
-              onFocus={() => {
-                setIsFocused(true);
-                updateCursorPosition();
-              }}
-              onBlur={() => setIsFocused(false)}
-              autoComplete="off"
-              spellCheck={false}
-            />
-          </div>
+            </div>
 
-          <kbd className="kbd-esc" onClick={onClose}>
-            ESC
-          </kbd>
+            <kbd className="kbd-esc" onClick={onClose}>
+              ESC
+            </kbd>
+          </div>
         </div>
 
         {/* Results List */}
         <div
           ref={listRef}
           className="results-list"
+          data-lenis-prevent
           onWheel={(e) => e.stopPropagation()}
           onTouchMove={(e) => e.stopPropagation()}
         >
@@ -335,23 +296,30 @@ export function CommandPalette({
               {filteredPages.map((page) => {
                 const currentIndex = flatIndex++;
                 const isSelected = selectedIndex === currentIndex;
-                const IconComponent = page.icon;
 
                 return (
-                  <button
+                  <PaletteItemRow
                     key={page.path}
-                    ref={isSelected ? activeItemRef : null}
-                    type="button"
-                    className={`result-item ${isSelected ? "selected" : ""}`}
-                    onClick={() => handleSelect(page.path)}
-                    onMouseEnter={() => setSelectedIndex(currentIndex)}
-                  >
-                    <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                      <IconComponent size={14} style={{ color: "var(--text-muted)", flexShrink: 0 }} />
-                      <span className="item-name">{page.name}</span>
-                    </div>
-                    <ArrowUpRight size={14} style={{ color: "var(--text-muted)", flexShrink: 0 }} />
-                  </button>
+                    activeRef={isSelected ? activeItemRef : null}
+                    isSelected={isSelected}
+                    label={page.name}
+                    icon={page.icon}
+                    iconType={page.iconType}
+                    isPage={true}
+                    onSelect={() => handleSelect(page.path)}
+                    onMouseMove={(e) => {
+                      if (canSelectOnHover(e)) {
+                        isKeyboardNavRef.current = false;
+                        setSelectedIndex(currentIndex);
+                      }
+                    }}
+                    onMouseEnter={(e) => {
+                      if (canSelectOnHover(e)) {
+                        isKeyboardNavRef.current = false;
+                        setSelectedIndex(currentIndex);
+                      }
+                    }}
+                  />
                 );
               })}
             </div>
@@ -365,56 +333,49 @@ export function CommandPalette({
                 const isSelected = selectedIndex === currentIndex;
 
                 return (
-                  <button
+                  <PaletteItemRow
                     key={comp.slug}
-                    ref={isSelected ? activeItemRef : null}
-                    type="button"
-                    className={`result-item ${isSelected ? "selected" : ""}`}
-                    onClick={() => handleSelect(`/showcase/${comp.slug}`)}
-                    onMouseEnter={() => setSelectedIndex(currentIndex)}
-                  >
-                    <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                      <svg
-                        width="14"
-                        height="14"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        style={{ color: "var(--text-muted)", flexShrink: 0 }}
-                      >
-                        <path d="M5.5 8.5 9 12l-3.5 3.5L2 12l3.5-3.5Z" />
-                        <path d="m12 2 3.5 3.5L12 9 8.5 5.5 12 2Z" />
-                        <path d="M18.5 8.5 22 12l-3.5 3.5L15 12l3.5-3.5Z" />
-                        <path d="m12 15 3.5 3.5L12 22l-3.5-3.5L12 15Z" />
-                      </svg>
-                      <span className="item-name">{comp.label}</span>
-                    </div>
-                    <ArrowRight size={14} style={{ color: "var(--text-muted)", flexShrink: 0 }} />
-                  </button>
+                    activeRef={isSelected ? activeItemRef : null}
+                    isSelected={isSelected}
+                    label={comp.label}
+                    icon={Cuboid}
+                    iconType="cuboid"
+                    isPage={false}
+                    onSelect={() => handleSelect(`/showcase/${comp.slug}`)}
+                    onMouseMove={(e) => {
+                      if (canSelectOnHover(e)) {
+                        isKeyboardNavRef.current = false;
+                        setSelectedIndex(currentIndex);
+                      }
+                    }}
+                    onMouseEnter={(e) => {
+                      if (canSelectOnHover(e)) {
+                        isKeyboardNavRef.current = false;
+                        setSelectedIndex(currentIndex);
+                      }
+                    }}
+                  />
                 );
               })}
             </div>
           )}
 
           {allItems.length === 0 && (
-            <div
-              className="no-results-box"
-              style={{
-                padding: "32px 14px",
-                textAlign: "center",
-                color: "var(--text-muted)",
-                fontSize: "14px",
-              }}
-            >
-              No matches found for &quot;{query}&quot;.
+            <div className="search-empty-state">
+              <div className="empty-state-icon">
+                <Compass size={20} strokeWidth={1.6} />
+              </div>
+              <p className="empty-state-title">
+                No matching results for <span className="empty-state-query">&ldquo;{query}&rdquo;</span>
+              </p>
+              <span className="empty-state-hint">
+                Try searching for a component name, keyword, or page
+              </span>
             </div>
           )}
         </div>
 
-        {/* Footer */}
+        {/* Seamless Footer */}
         <div className="search-footer">
           <span
             style={{
@@ -426,7 +387,7 @@ export function CommandPalette({
             }}
           >
             Go to page
-            <CornerDownLeft size={12} style={{ color: "var(--text-muted)" }} />
+            <CornerDownLeft size={13} style={{ color: "var(--text-muted)" }} />
           </span>
         </div>
       </div>
