@@ -98,7 +98,7 @@ export function CommandPalette({
     for (const c of components) {
       const labelLower = c.label.toLowerCase();
       const slugLower = c.slug.toLowerCase();
-      const descLower = ("description" in c && typeof (c as any).description === "string" ? (c as any).description : "").toLowerCase();
+      const descLower = (c.desc ?? "").toLowerCase();
       const tags = (c.tags ?? []).map((t) => String(t).toLowerCase());
 
       const exactTag = tags.includes(cleanQuery);
