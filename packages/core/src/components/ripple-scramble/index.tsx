@@ -13,6 +13,7 @@ import {
   ALPHA_STR_TABLE,
 } from "./constants";
 import { getVariantSpecs, getWaveDistance } from "./helpers";
+import { usePerformance } from "../../engine/PerformanceProvider";
 
 export const ApparatusRippleScramble: React.FC<ApparatusRippleScrambleProps> = ({
   variant = "classic",
@@ -29,6 +30,10 @@ export const ApparatusRippleScramble: React.FC<ApparatusRippleScrambleProps> = (
   const wavesRef = useRef<WaveInstance[]>([]);
   const animFrameRef = useRef<number | null>(null);
 
+  const perf = usePerformance();
+  const perfRef = useRef(perf);
+  perfRef.current = perf;
+
   // Variant cross-fade transition refs
   const prevVariantRef = useRef<ApparatusRippleVariant>(variant);
   const transitionStartRef = useRef<number>(0);
@@ -44,7 +49,7 @@ export const ApparatusRippleScramble: React.FC<ApparatusRippleScrambleProps> = (
     if (!container || !canvas) return;
 
     const rect = container.getBoundingClientRect();
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const dpr = perfRef.current.dpr;
     const width = rect.width;
     const height = rect.height;
 
@@ -116,7 +121,7 @@ export const ApparatusRippleScramble: React.FC<ApparatusRippleScrambleProps> = (
       const ctx = canvas.getContext("2d", { alpha: false });
       if (!ctx) return;
 
-      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const dpr = perfRef.current.dpr;
       const width = canvas.width / dpr;
       const height = canvas.height / dpr;
 
@@ -160,8 +165,9 @@ export const ApparatusRippleScramble: React.FC<ApparatusRippleScrambleProps> = (
           w.radius = ((now - w.startTime) / 1000) * waveSpeed;
         });
         wavesRef.current = wavesRef.current.filter((w) => w.radius < maxRadius);
-        if (wavesRef.current.length > 8) {
-          wavesRef.current = wavesRef.current.slice(-8);
+        const maxWaves = perfRef.current.tier === "low" ? 3 : perfRef.current.tier === "medium" ? 5 : 8;
+        if (wavesRef.current.length > maxWaves) {
+          wavesRef.current = wavesRef.current.slice(-maxWaves);
         }
       }
 
@@ -259,7 +265,7 @@ export const ApparatusRippleScramble: React.FC<ApparatusRippleScrambleProps> = (
   const tick = useCallback(
     (now: number) => {
       // Trigger variant-specific ambient idle animation when user is idle > 3.5s
-      const isIdle = now - lastInteractionRef.current > 3500;
+      const isIdle = !perfRef.current.reducedMotion && (now - lastInteractionRef.current > 3500);
       const activeWaveCount = wavesRef.current.length;
 
       if (isIdle && activeWaveCount < 2) {
@@ -271,8 +277,8 @@ export const ApparatusRippleScramble: React.FC<ApparatusRippleScrambleProps> = (
           lastAmbientPulseRef.current = now;
           const canvas = canvasRef.current;
           if (canvas) {
-            const width = canvas.width / (window.devicePixelRatio || 1);
-            const height = canvas.height / (window.devicePixelRatio || 1);
+            const width = canvas.width / perfRef.current.dpr;
+            const height = canvas.height / perfRef.current.dpr;
 
             let idleCx = width / 2;
             let idleCy = height / 2;
@@ -362,6 +368,11 @@ export const ApparatusRippleScramble: React.FC<ApparatusRippleScrambleProps> = (
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, [layoutTextOnCanvas, renderCanvas]);
+
+  useEffect(() => {
+    layoutTextOnCanvas();
+    renderCanvas(performance.now());
+  }, [perf.dpr, layoutTextOnCanvas, renderCanvas]);
 
   // Click handler to launch fluid wave
   const handleClick = (e: React.MouseEvent<HTMLCanvasElement>) => {

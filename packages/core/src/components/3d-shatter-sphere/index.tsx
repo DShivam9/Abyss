@@ -2,6 +2,7 @@ import { useRef, useEffect, useState, useCallback } from "react";
 import * as THREE from "three";
 import { Apparatus3DShatterSphereProps, MeshData } from "./types";
 import { GALLERY_IMAGES } from "./constants";
+import { usePerformance } from "../../engine/PerformanceProvider";
 
 export default function Apparatus3DShatterSphere({
   sphereRadius = 420,
@@ -19,6 +20,17 @@ export default function Apparatus3DShatterSphere({
 }: Apparatus3DShatterSphereProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
+
+  const perf = usePerformance();
+  const perfRef = useRef(perf);
+  perfRef.current = perf;
+
+  useEffect(() => {
+    if (rendererRef.current) {
+      rendererRef.current.setPixelRatio(perf.dpr);
+    }
+  }, [perf.dpr]);
 
   // Dynamic Prop Refs for 60FPS Slider Performance
   const sphereRadiusRef = useRef<number>(sphereRadius);
@@ -187,14 +199,17 @@ export default function Apparatus3DShatterSphere({
     camera.position.set(0, 0, 1900);
 
     // 2. WebGL Renderer
+    const isLow = perfRef.current.tier === "low";
     const renderer = new THREE.WebGLRenderer({
       canvas,
-      antialias: true,
+      antialias: !isLow,
       alpha: true,
       powerPreference: "high-performance",
+      precision: isLow ? "mediump" : "highp",
     });
     renderer.setSize(width, height);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setPixelRatio(perfRef.current.dpr);
+    rendererRef.current = renderer;
 
     // 3. 3D Structure Root Group
     const structureGroup = new THREE.Group();
@@ -279,7 +294,8 @@ export default function Apparatus3DShatterSphere({
 
     // Helper: Deform plane geometry vertices to curve along 3D sphere radius arc
     const createSphericalCurvedPlaneGeo = (width: number, height: number, radius: number) => {
-      const geo = new THREE.PlaneGeometry(width, height, 16, 16);
+      const segs = perfRef.current.tier === "low" ? 6 : 16;
+      const geo = new THREE.PlaneGeometry(width, height, segs, segs);
       const posAttr = geo.attributes.position;
 
       for (let i = 0; i < posAttr.count; i++) {
@@ -312,7 +328,8 @@ export default function Apparatus3DShatterSphere({
       meshesData = [];
 
       const mode = shapeModeRef.current;
-      const count = itemCountRef.current;
+      const maxCount = perfRef.current.tier === "low" ? 24 : perfRef.current.tier === "medium" ? 36 : itemCountRef.current;
+      const count = Math.min(itemCountRef.current, maxCount);
 
       const faces = [
         { normal: new THREE.Vector3(0, 0, 1), rotY: 0, rotX: 0 }, // Front (+Z)
@@ -495,11 +512,12 @@ export default function Apparatus3DShatterSphere({
       posRef.current.y = Math.max(-boundY, Math.min(boundY, posRef.current.y));
 
       // Cinematic Multi-Harmonic Bio-Levitation (Alien species breathing/floating)
-      const bioFloatX = Math.sin(time * 0.00072) * 18 + Math.cos(time * 0.00038) * 12;
-      const bioFloatY = Math.sin(time * 0.00095) * 36 + Math.cos(time * 0.00052) * 20;
-      const bioFloatZ = Math.sin(time * 0.00082) * 28 + Math.cos(time * 0.00044) * 14;
-      const bioRoll = Math.sin(time * 0.00065) * 0.04;
-      const bioPitch = Math.cos(time * 0.00058) * 0.035;
+      const isMotionReduced = perfRef.current.reducedMotion;
+      const bioFloatX = isMotionReduced ? 0 : Math.sin(time * 0.00072) * 18 + Math.cos(time * 0.00038) * 12;
+      const bioFloatY = isMotionReduced ? 0 : Math.sin(time * 0.00095) * 36 + Math.cos(time * 0.00052) * 20;
+      const bioFloatZ = isMotionReduced ? 0 : Math.sin(time * 0.00082) * 28 + Math.cos(time * 0.00044) * 14;
+      const bioRoll = isMotionReduced ? 0 : Math.sin(time * 0.00065) * 0.04;
+      const bioPitch = isMotionReduced ? 0 : Math.cos(time * 0.00058) * 0.035;
 
       // Track previous position to compute motion velocity
       const prevX = structureGroup.position.x;
@@ -519,12 +537,12 @@ export default function Apparatus3DShatterSphere({
       const rotSpeedMag = Math.hypot(rotVelRef.current.x, rotVelRef.current.y);
 
       // Dynamic High-Velocity Jelly Stretch (Allows up to +28% stretch on hard fast drags)
-      const stretchAmount = Math.min(0.28, speedMag * 0.00016);
+      const stretchAmount = isMotionReduced ? 0 : Math.min(0.28, speedMag * 0.00016);
       const squashAmount = stretchAmount * 0.46;
       const moveAngle = Math.atan2(moveVy, moveVx);
 
       // Rotational Centrifugal Bulge
-      const spinStretch = Math.min(0.18, rotSpeedMag * 14.0);
+      const spinStretch = isMotionReduced ? 0 : Math.min(0.18, rotSpeedMag * 14.0);
       const spinBulgeX = spinStretch * (Math.abs(rotVelRef.current.y) / (rotSpeedMag || 1));
       const spinBulgeY = spinStretch * (Math.abs(rotVelRef.current.x) / (rotSpeedMag || 1));
 
@@ -538,23 +556,26 @@ export default function Apparatus3DShatterSphere({
       structureGroup.scale.z += (targetScaleZ - structureGroup.scale.z) * (1 - Math.exp(-8.5 * dt));
 
       // Fluid Momentum Lean + Spin Torsion Wobble
-      const targetTiltZ = -moveVx * 0.00009;
-      const targetTiltX = moveVy * 0.00009;
+      const targetTiltZ = isMotionReduced ? 0 : -moveVx * 0.00009;
+      const targetTiltX = isMotionReduced ? 0 : moveVy * 0.00009;
       momentumTiltRef.current.z += (targetTiltZ - momentumTiltRef.current.z) * (1 - Math.exp(-8.0 * dt));
       momentumTiltRef.current.x += (targetTiltX - momentumTiltRef.current.x) * (1 - Math.exp(-8.0 * dt));
 
       // 3D Rotation with Right-Drag Inertial Momentum + Ambient Spin
-      const speed = autoRotateSpeedRef.current;
+      const speed = isMotionReduced ? 0 : autoRotateSpeedRef.current;
+      const dtRatio = dt * 60;
       if (!isRotatingRef.current) {
-        rotVelRef.current.x *= 0.94;
-        rotVelRef.current.y *= 0.94;
+        const decay = Math.pow(0.94, dtRatio);
+        rotVelRef.current.x *= decay;
+        rotVelRef.current.y *= decay;
         rotAngleRef.current.y += speed * 0.45 * dt + rotVelRef.current.y;
         rotAngleRef.current.x += rotVelRef.current.x;
       } else {
         rotAngleRef.current.y += rotVelRef.current.y;
         rotAngleRef.current.x += rotVelRef.current.x;
-        rotVelRef.current.x *= 0.8;
-        rotVelRef.current.y *= 0.8;
+        const dragDecay = Math.pow(0.8, dtRatio);
+        rotVelRef.current.x *= dragDecay;
+        rotVelRef.current.y *= dragDecay;
       }
 
       // Smooth application of full 360-degree rotation + dynamic centrifugal torsion + bio-drift
@@ -696,6 +717,7 @@ export default function Apparatus3DShatterSphere({
       cancelAnimationFrame(animId);
       window.removeEventListener("resize", handleResize);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
+      rendererRef.current = null;
       renderer.dispose();
       defaultPlaneGeo.dispose();
       textGeo.dispose();

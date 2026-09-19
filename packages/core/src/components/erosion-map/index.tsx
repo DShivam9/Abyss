@@ -5,6 +5,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { ApparatusErosionMapProps } from "./types";
 import { DEFAULT_IMAGES } from "./constants";
 import { ValueNoise2D } from "./helpers";
+import { usePerformance } from "../../engine/PerformanceProvider";
 
 if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);
@@ -29,6 +30,10 @@ export const ApparatusErosionMap: React.FC<ApparatusErosionMapProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const visibleCanvasRef = useRef<HTMLCanvasElement>(null);
 
+  const perf = usePerformance();
+  const perfRef = useRef(perf);
+  perfRef.current = perf;
+
   // Custom sandbox controls state derived from props
   const grainScale = noiseScale !== undefined ? noiseScale : 0.005; 
   const octaves = propOctaves;
@@ -50,6 +55,10 @@ export const ApparatusErosionMap: React.FC<ApparatusErosionMapProps> = ({
   const animFrameIdRef = useRef<number | null>(null);
   const isAnimatingRef = useRef(false);
   const wakeUpRef = useRef<() => void>(() => {});
+
+  useEffect(() => {
+    wakeUpRef.current();
+  }, [perf.dpr]);
 
   // Deduplicated image list
   const displayImages = React.useMemo(() => {
@@ -294,7 +303,9 @@ export const ApparatusErosionMap: React.FC<ApparatusErosionMapProps> = ({
         velocityRef.current = 0;
         isAnimatingRef.current = false;
       } else {
-        const step = diff * Math.min(0.35, 0.095 * (erosionDamper || 1.0));
+        const isMotionReduced = perfRef.current.reducedMotion;
+        const baseFactor = isMotionReduced ? 0.95 : Math.min(0.35, 0.095 * (erosionDamper || 1.0));
+        const step = diff * (1 - Math.pow(1 - baseFactor, delta * 60));
         lerpedProgressRef.current += step;
         vel = step / (delta || 0.016);
         velocityRef.current = vel;
@@ -302,7 +313,7 @@ export const ApparatusErosionMap: React.FC<ApparatusErosionMapProps> = ({
       const progress = lerpedProgressRef.current;
 
       // Scale screen sizes
-      const dpr = window.devicePixelRatio || 1;
+      const dpr = perfRef.current.dpr;
       const rect = visibleCanvas.getBoundingClientRect();
       const width = rect.width;
       const height = rect.height;

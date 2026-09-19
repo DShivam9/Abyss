@@ -6,6 +6,7 @@ import gsap from "gsap";
 import { CascadeGalleryProps } from "./types";
 import { DEFAULT_IMAGES, PHOTO_CAPTIONS } from "./constants";
 import { GLASS_VERTEX_SHADER, GLASS_FRAGMENT_SHADER } from "./shaders";
+import { usePerformance } from "../../engine/PerformanceProvider";
 
 export type { CascadeGalleryProps };
 
@@ -37,6 +38,17 @@ export default function CascadeGallery({
   const dateRef = useRef<HTMLDivElement>(null);
   const phraseLeftRef = useRef<HTMLDivElement>(null);
   const phraseRightRef = useRef<HTMLDivElement>(null);
+  const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
+
+  const perf = usePerformance();
+  const perfRef = useRef(perf);
+  perfRef.current = perf;
+
+  useEffect(() => {
+    if (rendererRef.current) {
+      rendererRef.current.setPixelRatio(perf.dpr);
+    }
+  }, [perf.dpr]);
 
   const stripH1Ref = useRef<HTMLDivElement>(null);
   const stripH2Ref = useRef<HTMLDivElement>(null);
@@ -72,14 +84,17 @@ export default function CascadeGallery({
     let animationFrameId: number;
 
     // --- 1. Three.js Scene Setup ---
+    const isLow = perfRef.current.tier === "low";
     const renderer = new THREE.WebGLRenderer({
       canvas,
-      antialias: true,
+      antialias: !isLow,
       alpha: true,
       powerPreference: "high-performance",
+      precision: isLow ? "mediump" : "highp",
     });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setPixelRatio(perfRef.current.dpr);
     renderer.setSize(window.innerWidth, window.innerHeight);
+    rendererRef.current = renderer;
 
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(17, window.innerWidth / window.innerHeight, 0.1, 200);
@@ -97,7 +112,7 @@ export default function CascadeGallery({
     const dirX = 1.62;
     const dirY = 0.90;
     const dirZ = -0.05;
-    const totalCards = 120;
+    const totalCards = isLow ? 48 : perfRef.current.tier === "medium" ? 80 : 120;
     const cards: CardObject[] = [];
 
     function createCard(tex: THREE.Texture): { group: THREE.Group; mesh: THREE.Mesh; mat: THREE.ShaderMaterial } {
@@ -366,7 +381,7 @@ export default function CascadeGallery({
       const dt = Math.min((now - lastTime) / 1000, 0.1);
       lastTime = now;
 
-      if (!isHeroActive) {
+      if (!isHeroActive && !perfRef.current.reducedMotion) {
         const driftMultiplier = selectedHoverIndex !== null ? 0.15 : 1.0;
         targetProgress += ambientDriftSpeedRef.current * driftMultiplier * dt * 60;
       }
@@ -377,7 +392,9 @@ export default function CascadeGallery({
       const velDamp = 1 - Math.pow(1 - 0.14, dt * 60);
       userScrollVelocity += (0 - userScrollVelocity) * velDamp;
 
-      const targetDominoBend = THREE.MathUtils.clamp(-userScrollVelocity * 0.025 * dominoLeanRef.current, -0.16, 0.16);
+      const targetDominoBend = perfRef.current.reducedMotion
+        ? 0
+        : THREE.MathUtils.clamp(-userScrollVelocity * 0.025 * dominoLeanRef.current, -0.16, 0.16);
 
       if (mouse.x > -900) {
         raycaster.setFromCamera(mouse, camera);
@@ -590,6 +607,7 @@ export default function CascadeGallery({
       cards.forEach((c) => {
         if (c.mat) c.mat.dispose();
       });
+      rendererRef.current = null;
       renderer.dispose();
     };
   }, [images]);

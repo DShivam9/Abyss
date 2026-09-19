@@ -7,6 +7,7 @@ import { ScrollShowcaseLayout } from "@/components/showcase/layouts/ScrollShowca
 import { GalleryShowcaseLayout } from "@/components/showcase/layouts/GalleryShowcaseLayout";
 import { TransitionShowcaseLayout } from "@/components/showcase/layouts/TransitionShowcaseLayout";
 import { ComponentErrorBoundary } from "@/components/showcase/ComponentErrorBoundary";
+import { PerformanceProvider } from "@abyss-ui/core";
 import "@/components/showcase/showcase.css";
 
 interface PreviewPageClientProps {
@@ -103,10 +104,12 @@ export default function PreviewPageClient({ slug }: PreviewPageClientProps) {
   const mainBgClass = slug === "mosaic-loader" ? "bg-white" : isLightBg ? "bg-[#f4f1ea]" : "bg-[#070708]";
 
   return (
-    <main className={`w-full min-h-screen ${mainBgClass} ${isScroll ? "" : "h-screen overflow-hidden"}`}>
-      <ComponentErrorBoundary fallbackSlug={slug}>
-        {renderLayout()}
-      </ComponentErrorBoundary>
-    </main>
+    <PerformanceProvider>
+      <main className={`w-full min-h-screen ${mainBgClass} ${isScroll ? "" : "h-screen overflow-hidden"}`}>
+        <ComponentErrorBoundary fallbackSlug={slug}>
+          {renderLayout()}
+        </ComponentErrorBoundary>
+      </main>
+    </PerformanceProvider>
   );
 }

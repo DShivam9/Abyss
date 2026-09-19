@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import { MosaicLoaderProps } from "./types";
 import { DEFAULT_IMAGES, DEFAULT_EDITORIAL_LINES, DEFAULT_EDITORIAL_IMAGES, POSITIONS } from "./constants";
 import "./mosaic-loader.css";
+import { usePerformance } from "../../engine/PerformanceProvider";
 
 export type { MosaicLoaderProps };
 
@@ -20,6 +21,10 @@ export default function MosaicLoader({
 }: MosaicLoaderProps) {
   const preloaderStageRef = useRef<HTMLDivElement>(null);
   const contentStageRef = useRef<HTMLDivElement>(null);
+
+  const perf = usePerformance();
+  const perfRef = useRef(perf);
+  perfRef.current = perf;
   const centerHudRef = useRef<HTMLDivElement>(null);
   const odometerWrapRef = useRef<HTMLDivElement>(null);
   const trackHundredsRef = useRef<HTMLDivElement>(null);
@@ -161,9 +166,14 @@ export default function MosaicLoader({
       }
     };
 
+    let lastTickTime = performance.now();
     const tick = (now: number) => {
-      mouseCurrentRef.current.x += (mouseTargetRef.current.x - mouseCurrentRef.current.x) * 0.08;
-      mouseCurrentRef.current.y += (mouseTargetRef.current.y - mouseCurrentRef.current.y) * 0.08;
+      const dt = Math.min((now - lastTickTime) / 1000, 0.1);
+      lastTickTime = now;
+      const mouseDamp = 1 - Math.pow(1 - 0.08, dt * 60);
+
+      mouseCurrentRef.current.x += (mouseTargetRef.current.x - mouseCurrentRef.current.x) * mouseDamp;
+      mouseCurrentRef.current.y += (mouseTargetRef.current.y - mouseCurrentRef.current.y) * mouseDamp;
 
       if (now < startTime) {
         animIdRef.current = requestAnimationFrame(tick);
@@ -173,6 +183,9 @@ export default function MosaicLoader({
       const elapsed = now - startTime;
 
       if (isSequenceActiveRef.current) {
+        const isMotionReduced = perfRef.current.reducedMotion;
+        const isLowTier = perfRef.current.tier === "low";
+
         slotStates.forEach((slot, i) => {
           const el = cardRefs.current[i];
           if (elapsed >= slot.spawnDelay && !slot.isSpawned && el) {
@@ -182,15 +195,16 @@ export default function MosaicLoader({
           }
 
           if (slot.isSpawned && !isImplodingTriggeredRef.current && el) {
-            const px = mouseCurrentRef.current.x * 14 * slot.depthFactor;
-            const py = mouseCurrentRef.current.y * 14 * slot.depthFactor;
-            el.style.transform = `translate3d(calc(-50% + ${px.toFixed(1)}px), calc(-50% + ${py.toFixed(1)}px), 0) rotate(${slot.pos.rot}deg)`;
+            const px = isMotionReduced ? 0 : mouseCurrentRef.current.x * 14 * slot.depthFactor;
+            const py = isMotionReduced ? 0 : mouseCurrentRef.current.y * 14 * slot.depthFactor;
+            const rot = isMotionReduced ? 0 : slot.pos.rot;
+            el.style.transform = `translate3d(calc(-50% + ${px.toFixed(1)}px), calc(-50% + ${py.toFixed(1)}px), 0) rotate(${rot}deg)`;
           }
         });
 
         if (!isImplodingTriggeredRef.current && hud) {
-          const hudPx = mouseCurrentRef.current.x * 7;
-          const hudPy = mouseCurrentRef.current.y * 7;
+          const hudPx = isMotionReduced ? 0 : mouseCurrentRef.current.x * 7;
+          const hudPy = isMotionReduced ? 0 : mouseCurrentRef.current.y * 7;
           hud.style.transform = `translate3d(calc(-50% + ${hudPx.toFixed(1)}px), calc(-50% + ${hudPy.toFixed(1)}px), 0)`;
         }
 
@@ -203,6 +217,8 @@ export default function MosaicLoader({
         else if (intPct < 60) currentInterval = 110 + ((intPct - 40) / 20) * 75;
         else if (intPct < 80) currentInterval = 185 + ((intPct - 60) / 20) * 115;
         else currentInterval = 300 + ((intPct - 80) / 20) * 180;
+
+        if (isLowTier) currentInterval *= 1.8;
 
         if (intPct < 96) {
           slotStates.forEach((slot, i) => {

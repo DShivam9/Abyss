@@ -2,7 +2,8 @@ import React, { useRef, useEffect, useState } from "react";
 import * as THREE from "three";
 import { useVesselMouse } from "./useVesselMouse";
 import { useVesselScroll } from "./useVesselScroll";
-import { VesselComponentProps } from "./types";
+import { VesselComponentProps, PerformanceProfile } from "./types";
+import { usePerformance } from "./PerformanceProvider";
 
 export interface VesselCanvasProps extends VesselComponentProps {
   vertexShader: string;
@@ -11,7 +12,7 @@ export interface VesselCanvasProps extends VesselComponentProps {
   subdivisions?: { x: number; y: number };
   customGeometry?: THREE.BufferGeometry;
   onClickCanvas?: (uv: THREE.Vector2, clock: THREE.Clock) => void;
-  onAnimate?: (material: THREE.ShaderMaterial, clock: THREE.Clock, delta: number) => void;
+  onAnimate?: (material: THREE.ShaderMaterial, clock: THREE.Clock, delta: number, perf?: PerformanceProfile) => void;
   ariaLabel?: string;
 }
 
@@ -31,21 +32,12 @@ export const VesselCanvas: React.FC<VesselCanvasProps> = ({
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
+  const materialRef = useRef<THREE.ShaderMaterial | null>(null);
   const [imgDimensions, setImgDimensions] = useState({ width: 500, height: 500 });
-  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
-
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
-      setPrefersReducedMotion(mediaQuery.matches);
-
-      const listener = (e: MediaQueryListEvent) => {
-        setPrefersReducedMotion(e.matches);
-      };
-      mediaQuery.addEventListener("change", listener);
-      return () => mediaQuery.removeEventListener("change", listener);
-    }
-  }, []);
+  const perf = usePerformance();
+  const perfRef = useRef(perf);
+  perfRef.current = perf;
 
   const { stateRef: mouseStateRef, updateMouse } = useVesselMouse(containerRef);
   const { updateScroll } = useVesselScroll(containerRef);
@@ -172,7 +164,8 @@ export const VesselCanvas: React.FC<VesselCanvasProps> = ({
       alpha: true,
     });
     renderer.setSize(width, height);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setPixelRatio(perfRef.current.dpr);
+    rendererRef.current = renderer;
 
     const textureLoader = new THREE.TextureLoader();
 
@@ -184,6 +177,9 @@ export const VesselCanvas: React.FC<VesselCanvasProps> = ({
       planeGeometry = planeGeometry.toNonIndexed();
     }
 
+    const qualityValue =
+      perfRef.current.tier === "high" ? 1.0 : perfRef.current.tier === "medium" ? 0.5 : 0.0;
+
     // Explicitly merge user-provided uniforms with standard engine uniforms
     const materialUniforms: Record<string, THREE.IUniform> = {
       tMap: { value: null },
@@ -193,6 +189,7 @@ export const VesselCanvas: React.FC<VesselCanvasProps> = ({
       uHover: { value: 0.0 },
       uResolution: { value: new THREE.Vector2(width, height) },
       uAspect: { value: width / height },
+      uQuality: { value: qualityValue },
     };
 
     // Add extra uniforms passed from component
@@ -206,6 +203,7 @@ export const VesselCanvas: React.FC<VesselCanvasProps> = ({
       fragmentShader,
       transparent: true,
     });
+    materialRef.current = material;
 
     const mesh = new THREE.Mesh(planeGeometry, material);
     scene.add(mesh);
@@ -299,7 +297,7 @@ export const VesselCanvas: React.FC<VesselCanvasProps> = ({
       updateScroll();
 
       // Smoothly update hover value with asymmetric silk exponential easing (building up and melting back slowly)
-      const activeTargetHover = prefersReducedMotion ? 0.0 : targetHover.current;
+      const activeTargetHover = perfRef.current.reducedMotion ? 0.0 : targetHover.current;
       const rate = activeTargetHover === 1.0 ? 4.5 : 3.2;
       const easeFactor = 1.0 - Math.exp(-rate * Math.min(delta, 0.1));
       currentHover.current += (activeTargetHover - currentHover.current) * easeFactor;
@@ -319,7 +317,7 @@ export const VesselCanvas: React.FC<VesselCanvasProps> = ({
 
       // Allow component-specific updates in animation ticker
       if (onAnimate) {
-        onAnimate(material, clock.current, delta);
+        onAnimate(material, clock.current, delta, perfRef.current);
       }
 
       renderer.render(scene, camera);
@@ -333,12 +331,25 @@ export const VesselCanvas: React.FC<VesselCanvasProps> = ({
       observer.disconnect();
 
       // Proper resource cleanup (Issue 6)
+      rendererRef.current = null;
+      materialRef.current = null;
       planeGeometry.dispose();
       material.dispose();
       renderer.dispose();
       if (loadedTexture) loadedTexture.dispose();
     };
   }, [vertexShader, fragmentShader, subdivisions.x, subdivisions.y, customGeometry, imageSrc]);
+
+  // Dynamically update pixel ratio and quality uniform if FPS monitor adjusts tier at runtime
+  useEffect(() => {
+    if (rendererRef.current) {
+      rendererRef.current.setPixelRatio(perf.dpr);
+    }
+    if (materialRef.current && materialRef.current.uniforms.uQuality) {
+      const q = perf.tier === "high" ? 1.0 : perf.tier === "medium" ? 0.5 : 0.0;
+      materialRef.current.uniforms.uQuality.value = q;
+    }
+  }, [perf.dpr, perf.tier]);
 
   return (
     <div

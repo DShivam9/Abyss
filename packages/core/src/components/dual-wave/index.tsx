@@ -9,6 +9,7 @@ import {
   BAKED_COLUMN_LAG,
   BAKED_VELOCITY_SQUEEZE,
 } from "./constants";
+import { usePerformance } from "../../engine/PerformanceProvider";
 
 export const ApparatusDualWave: React.FC<ApparatusDualWaveProps> = ({
   items,
@@ -26,6 +27,10 @@ export const ApparatusDualWave: React.FC<ApparatusDualWaveProps> = ({
   isFullscreen = false,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
+
+  const perf = usePerformance();
+  const perfRef = useRef(perf);
+  perfRef.current = perf;
   
   // Size bounds
   const [dimensions, setDimensions] = useState({ width: 800, height: 600 });
@@ -279,8 +284,9 @@ export const ApparatusDualWave: React.FC<ApparatusDualWaveProps> = ({
       }
 
       // Smooth LERP mouse movement (subtle magnetic floating offset)
-      smoothMouseRef.current.x += (mousePosRef.current.x - smoothMouseRef.current.x) * 0.05;
-      smoothMouseRef.current.y += (mousePosRef.current.y - smoothMouseRef.current.y) * 0.05;
+      const mouseDamp = 1 - Math.pow(1 - 0.05, dt * 60);
+      smoothMouseRef.current.x += (mousePosRef.current.x - smoothMouseRef.current.x) * mouseDamp;
+      smoothMouseRef.current.y += (mousePosRef.current.y - smoothMouseRef.current.y) * mouseDamp;
 
       const mouseXPx = smoothMouseRef.current.x * 10;
       const mouseYPx = smoothMouseRef.current.y * 10;
@@ -393,8 +399,10 @@ export const ApparatusDualWave: React.FC<ApparatusDualWaveProps> = ({
           baseAngle = Math.sin(theta) * maxRotationRef.current * (isLeft ? -0.3 : 0.3);
         }
 
+      const isMotionReduced = perfRef.current.reducedMotion;
+      const isLowTier = perfRef.current.tier === "low";
       const nowMs = performance.now();
-      const ambientDrift = Math.sin(nowMs * 0.0018) * 1.8;
+      const ambientDrift = isMotionReduced ? 0 : Math.sin(nowMs * 0.0018) * 1.8;
       const mouseContainerX = (smoothMouseRef.current.x * W / 2) + W / 2;
       const mouseContainerY = (smoothMouseRef.current.y * H / 2) + H / 2;
 
@@ -410,8 +418,10 @@ export const ApparatusDualWave: React.FC<ApparatusDualWaveProps> = ({
       const blurAmount = Math.max(0, blurFactor * maxBlurRef.current * 1.5);
 
       // Kinetic velocity shear: subtle text slant along scroll vector during rapid movement
-      const velShear = (scrollVelocityRef.current / 2000) * (isLeft ? -1 : 1);
+      const velShear = isMotionReduced ? 0 : (scrollVelocityRef.current / 2000) * (isLeft ? -1 : 1);
       const cappedSkew = Math.max(-5, Math.min(5, velShear * 6));
+      const finalPitchX = isMotionReduced ? 0 : pitchX;
+      const finalBaseAngle = isMotionReduced ? 0 : baseAngle;
 
       // Calculate cursor proximity for restrained embossed depth lift
       const itemX = isLeft ? (W / 2 - baseHorizontalOffset) : (W / 2 + baseHorizontalOffset);
@@ -419,19 +429,19 @@ export const ApparatusDualWave: React.FC<ApparatusDualWaveProps> = ({
       const dx = mouseContainerX - itemX;
       const dy = mouseContainerY - itemY;
       const distToMouse = Math.sqrt(dx * dx + dy * dy);
-      const hoverProximity = Math.exp(-(distToMouse * distToMouse) / (2 * 120 * 120));
+      const hoverProximity = isMotionReduced ? 0 : Math.exp(-(distToMouse * distToMouse) / (2 * 120 * 120));
       const hoverZ = hoverProximity * 16;
       const effectiveZ = zPos + hoverZ;
 
       // Stable authored cylindrical barrel position with ambient breathing and subtle forward lift
       const renderedY = y + ambientDrift;
       el.style.transform = isLeft
-        ? `translate3d(calc(-100% - ${baseHorizontalOffset.toFixed(1)}px), ${renderedY.toFixed(1)}px, ${effectiveZ.toFixed(1)}px) rotateX(${pitchX.toFixed(2)}deg) rotate(${baseAngle.toFixed(1)}deg) skewY(${cappedSkew.toFixed(2)}deg)`
-        : `translate3d(${baseHorizontalOffset.toFixed(1)}px, ${renderedY.toFixed(1)}px, ${effectiveZ.toFixed(1)}px) rotateX(${pitchX.toFixed(2)}deg) rotate(${baseAngle.toFixed(1)}deg) skewY(${cappedSkew.toFixed(2)}deg)`;
+        ? `translate3d(calc(-100% - ${baseHorizontalOffset.toFixed(1)}px), ${renderedY.toFixed(1)}px, ${effectiveZ.toFixed(1)}px) rotateX(${finalPitchX.toFixed(2)}deg) rotate(${finalBaseAngle.toFixed(1)}deg) skewY(${cappedSkew.toFixed(2)}deg)`
+        : `translate3d(${baseHorizontalOffset.toFixed(1)}px, ${renderedY.toFixed(1)}px, ${effectiveZ.toFixed(1)}px) rotateX(${finalPitchX.toFixed(2)}deg) rotate(${finalBaseAngle.toFixed(1)}deg) skewY(${cappedSkew.toFixed(2)}deg)`;
 
       el.style.opacity = Math.min(1.0, opacity + hoverProximity * 0.25).toFixed(3);
-      // GPU Shader Pass Bypass: Skip blur filter when negligible to eliminate GPU overhead
-      el.style.filter = blurAmount > 0.15 ? `blur(${blurAmount.toFixed(1)}px)` : "none";
+      // GPU Shader Pass Bypass: Skip blur filter on low tier or when negligible to eliminate GPU overhead
+      el.style.filter = !isLowTier && blurAmount > 0.15 ? `blur(${blurAmount.toFixed(1)}px)` : "none";
 
       const textSpan = el.firstElementChild as HTMLElement;
       if (textSpan) {

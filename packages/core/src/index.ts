@@ -8,6 +8,7 @@ export * from "./engine/types";
 export * from "./engine/useVesselMouse";
 export * from "./engine/useVesselScroll";
 export * from "./engine/VesselCanvas";
+export * from "./engine/PerformanceProvider";
 export * from "./engine/motion";
 
 export * from "./components/acg-fleece";

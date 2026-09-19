@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { ThemeToggleRedesignProps } from "./types";
 import { DEFAULT_THEME_TOGGLE_CONFIG } from "./constants";
+import { usePerformance } from "../../engine/PerformanceProvider";
 
 export function ThemeToggleRedesign({
   variant = DEFAULT_THEME_TOGGLE_CONFIG.variant,
@@ -11,6 +12,10 @@ export function ThemeToggleRedesign({
   const [theme, setTheme] = useState<"dark" | "light">("dark");
   const themeRef = useRef<"dark" | "light">("dark");
   themeRef.current = theme;
+
+  const perf = usePerformance();
+  const perfRef = useRef(perf);
+  perfRef.current = perf;
 
   const containerRef = useRef<HTMLDivElement>(null);
   const waveLayerRef = useRef<HTMLDivElement>(null);
@@ -31,6 +36,21 @@ export function ThemeToggleRedesign({
       // Audio autoplay blocked or file missing
     }
   }, [enableAudio]);
+
+  useEffect(() => {
+    if (canvasRef.current && containerRef.current) {
+      const canvas = canvasRef.current;
+      const ctx = canvas.getContext("2d");
+      if (ctx) {
+        const w = containerRef.current.clientWidth || 600;
+        const h = containerRef.current.clientHeight || 480;
+        const dpr = perf.dpr;
+        canvas.width = w * dpr;
+        canvas.height = h * dpr;
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      }
+    }
+  }, [perf.dpr]);
 
   // 1400ms Circular Expanding Screen Wave (Dial Variant) strictly clipped inside container
   const handleDialClick = useCallback(() => {
@@ -58,7 +78,7 @@ export function ThemeToggleRedesign({
         { clipPath: `circle(0px at ${ox}px ${oy}px)` },
         { clipPath: `circle(${maxR}px at ${ox}px ${oy}px)` }
       ], {
-        duration: DEFAULT_THEME_TOGGLE_CONFIG.waveDuration,
+        duration: perfRef.current.reducedMotion ? 0 : DEFAULT_THEME_TOGGLE_CONFIG.waveDuration,
         easing: "cubic-bezier(0.16, 1, 0.3, 1)",
         fill: "forwards"
       });
@@ -90,13 +110,13 @@ export function ThemeToggleRedesign({
     let animId: number;
     let w = container.clientWidth || 600;
     let h = container.clientHeight || 480;
-    let dpr = Math.min(window.devicePixelRatio || 1, 2);
+    let dpr = perfRef.current.dpr;
 
     const resize = () => {
       if (!canvas || !container) return;
       w = container.clientWidth || 600;
       h = container.clientHeight || 480;
-      dpr = Math.min(window.devicePixelRatio || 1, 2);
+      dpr = perfRef.current.dpr;
       canvas.width = w * dpr;
       canvas.height = h * dpr;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -187,7 +207,16 @@ export function ThemeToggleRedesign({
     window.addEventListener("pointermove", onPointerMove);
     window.addEventListener("pointerup", onPointerUp);
 
+    let lastLoopTime = performance.now();
     const loop = () => {
+      const now = performance.now();
+      const dt = Math.min((now - lastLoopTime) / 1000, 0.1);
+      lastLoopTime = now;
+      const dtRatio = dt * 60;
+      const isMotionReduced = perfRef.current.reducedMotion;
+      const verletDamp = Math.pow(isMotionReduced ? 0.82 : 0.95, dtRatio);
+      const gravityStep = 0.45 * dtRatio;
+
       const curAnchorX = Math.max(40, w - 60);
       pts[0].x = curAnchorX;
       pts[0].y = 0;
@@ -201,15 +230,16 @@ export function ThemeToggleRedesign({
           p.oldY = ty;
           return;
         }
-        const vx = (p.x - p.oldX) * 0.95;
-        const vy = (p.y - p.oldY) * 0.95;
+        const vx = (p.x - p.oldX) * verletDamp;
+        const vy = (p.y - p.oldY) * verletDamp;
         p.oldX = p.x;
         p.oldY = p.y;
         p.x += vx;
-        p.y += vy + 0.45;
+        p.y += vy + gravityStep;
       });
 
-      for (let iter = 0; iter < 12; iter++) {
+      const maxIter = perfRef.current.tier === "low" ? 4 : perfRef.current.tier === "medium" ? 8 : 12;
+      for (let iter = 0; iter < maxIter; iter++) {
         for (let i = 0; i < pts.length - 1; i++) {
           const p1 = pts[i];
           const p2 = pts[i + 1];
@@ -228,7 +258,7 @@ export function ThemeToggleRedesign({
         }
       }
 
-      if (spark > 0) spark *= 0.88;
+      if (spark > 0) spark *= Math.pow(0.88, dtRatio);
 
       ctx.clearRect(0, 0, w, h);
       const isL = themeRef.current === "light";
@@ -243,22 +273,27 @@ export function ThemeToggleRedesign({
       ctx.lineWidth = 1.2;
       ctx.stroke();
 
+      const isLowTier = perfRef.current.tier === "low";
       // 2. 3D Metallic Beads
       for (let i = 1; i < pts.length - 1; i++) {
         const p = pts[i];
-        const bg = ctx.createRadialGradient(p.x - 0.7, p.y - 0.7, 0.4, p.x, p.y, 2.4);
-        if (isL) {
-          bg.addColorStop(0, "#ffffff");
-          bg.addColorStop(0.5, "#d4d4d8");
-          bg.addColorStop(1, "#8e8e98");
-        } else {
-          bg.addColorStop(0, "#a1a1aa");
-          bg.addColorStop(0.5, "#484852");
-          bg.addColorStop(1, "#18181c");
-        }
         ctx.beginPath();
         ctx.arc(p.x, p.y, 2.4, 0, Math.PI * 2);
-        ctx.fillStyle = bg;
+        if (isLowTier) {
+          ctx.fillStyle = isL ? "#d4d4d8" : "#484852";
+        } else {
+          const bg = ctx.createRadialGradient(p.x - 0.7, p.y - 0.7, 0.4, p.x, p.y, 2.4);
+          if (isL) {
+            bg.addColorStop(0, "#ffffff");
+            bg.addColorStop(0.5, "#d4d4d8");
+            bg.addColorStop(1, "#8e8e98");
+          } else {
+            bg.addColorStop(0, "#a1a1aa");
+            bg.addColorStop(0.5, "#484852");
+            bg.addColorStop(1, "#18181c");
+          }
+          ctx.fillStyle = bg;
+        }
         ctx.fill();
 
         ctx.beginPath();

@@ -28,6 +28,22 @@ export interface CommitEntry {
 
 export const CHANGELOG_DATA: CommitEntry[] = [
   {
+    id: "commit-34",
+    date: "2026-09-20",
+    displayDate: "Sep 20, 2026 • 01:25 IST",
+    tags: ["MAJOR", "ADDITION"],
+    commitHash: "7f54ad6",
+    title: "Adaptive Performance & Hardware Scaling",
+    summary: "Introduced dynamic GPU tier detection, refresh-rate normalization, and automatic canvas fidelity scaling across all showcases.",
+    affectedSlugs: ["gimbal-stream", "cyclorama-matrix", "cinema-aisle", "dual-wave"],
+    items: [
+      "Dynamic GPU hardware profiling with automatic DPR and fidelity scaling",
+      "Continuous frame rate monitoring with seamless tier recovery and downgrade",
+      "Delta-time normalization ensuring identical animation speeds across high-refresh displays",
+      "Native reduced-motion support across all interactive components and canvas engines",
+    ],
+  },
+  {
     id: "commit-33",
     date: "2026-09-20",
     displayDate: "Sep 20, 2026 • 00:35 IST",

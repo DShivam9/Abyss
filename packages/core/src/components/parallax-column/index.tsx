@@ -220,19 +220,25 @@ export const ApparatusParallaxColumn: React.FC<ApparatusParallaxColumnProps> = (
   // Unified Frame-Rate Independent Engine (60Hz, 120Hz, 144Hz, 240Hz ProMotion Sync)
   useEffect(() => {
     let animationFrameId: number;
+    let lastLoopTime = performance.now();
 
     const loop = () => {
+      const now = performance.now();
+      const dt = Math.min((now - lastLoopTime) / 1000, 0.1);
+      lastLoopTime = now;
+      const dtRatio = dt * 60;
 
       // 1. Auto drift when user is not actively scrolling
       if (!isScrollingRef.current) {
-        accumulatedProgress.current += configRef.current.autoScrollSpeed * 0.00003;
+        accumulatedProgress.current += configRef.current.autoScrollSpeed * 0.00003 * dtRatio;
       }
 
       // 2. Silky exponential ease dampening with natural inertia
       const diff = accumulatedProgress.current - smoothProgressRef.current;
-      const inertiaFactor = 0.042;
-      smoothProgressRef.current += diff * inertiaFactor;
-      smoothVelocityRef.current += (diff - smoothVelocityRef.current) * 0.06;
+      const inertiaDamp = 1 - Math.pow(1 - 0.042, dtRatio);
+      smoothProgressRef.current += diff * inertiaDamp;
+      const velDamp = 1 - Math.pow(1 - 0.06, dtRatio);
+      smoothVelocityRef.current += (diff - smoothVelocityRef.current) * velDamp;
 
       const N = displayLeft.length;
       const M = displayRight.length;

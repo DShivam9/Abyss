@@ -1,5 +1,6 @@
 import { useRef, useEffect, useCallback } from "react";
 import { ApparatusGravityCursorProps, PhysicsBody } from "./types";
+import { usePerformance } from "../../engine/PerformanceProvider";
 import {
   SHAPE_SVGS,
   VIBRANT_PALETTE,
@@ -23,6 +24,10 @@ export default function ApparatusGravityCursor({
 }: ApparatusGravityCursorProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const boundsRef = useRef<DOMRect | null>(null);
+
+  const perf = usePerformance();
+  const perfRef = useRef(perf);
+  perfRef.current = perf;
 
   // Active physics mode
   const currentMode = zeroGravity ? "zero-gravity" : gravityMode;
@@ -77,11 +82,14 @@ export default function ApparatusGravityCursor({
   const spawnBody = useCallback(
     (x: number, y: number) => {
       const now = performance.now();
-      if (now - lastSpawnTimeRef.current < BAKED_SPAWN_INTERVAL) return;
+      const isMotionReduced = perfRef.current.reducedMotion;
+      const spawnInterval = perfRef.current.tier === "low" ? 110 : perfRef.current.tier === "medium" ? 80 : BAKED_SPAWN_INTERVAL;
+      if (now - lastSpawnTimeRef.current < spawnInterval) return;
       lastSpawnTimeRef.current = now;
 
-      const slotIdx = nextSlotRef.current;
-      nextSlotRef.current = (nextSlotRef.current + 1) % poolSize;
+      const effectivePoolCap = perfRef.current.tier === "low" ? 15 : perfRef.current.tier === "medium" ? 30 : poolSize;
+      const slotIdx = nextSlotRef.current % effectivePoolCap;
+      nextSlotRef.current = (nextSlotRef.current + 1) % effectivePoolCap;
 
       const body = poolRef.current[slotIdx];
       const src = getNextImage();
@@ -94,11 +102,11 @@ export default function ApparatusGravityCursor({
       if (currentMode === "zero-gravity") {
         vx = (Math.random() - 0.5) * 2.8;
         vy = -(Math.random() * 2.0 + 1.2);
-        vSpin = (Math.random() - 0.5) * 1.5;
+        vSpin = isMotionReduced ? 0 : (Math.random() - 0.5) * 1.5;
       } else {
         vx = (Math.random() - 0.5) * 8.5;
         vy = -(Math.random() * 4.5 + 3.5);
-        vSpin = (Math.random() - 0.5) * 1.5;
+        vSpin = isMotionReduced ? 0 : (Math.random() - 0.5) * 1.5;
       }
 
       body.active = true;
@@ -108,7 +116,7 @@ export default function ApparatusGravityCursor({
       body.y = y - imageSize / 2;
       body.vx = vx;
       body.vy = vy;
-      body.rotation = (Math.random() - 0.5) * 12;
+      body.rotation = isMotionReduced ? 0 : (Math.random() - 0.5) * 12;
       body.vSpin = vSpin;
       body.bounces = 0;
       body.opacity = 0;

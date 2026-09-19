@@ -2,6 +2,7 @@ import React, { useMemo, useRef, useEffect, useState } from "react";
 import gsap from "gsap";
 import { TracklistGalleryProps, ExtendedTrackItem } from "./types";
 import { DEFAULT_TRACKS } from "./constants";
+import { usePerformance } from "../../engine/PerformanceProvider";
 
 let globalAudioInstance: HTMLAudioElement | null = null;
 let sharedAudioCtx: AudioContext | null = null;
@@ -59,15 +60,17 @@ export const TracklistGallery: React.FC<TracklistGalleryProps> = ({
   const tracklistRef = useRef<HTMLDivElement>(null);
   const hasInteractedRef = useRef(false);
 
+  const perf = usePerformance();
+  const perfRef = useRef(perf);
+  perfRef.current = perf;
+
   const baseTracks = useMemo(() => {
     return tracks.length > 0 ? (tracks as ExtendedTrackItem[]) : DEFAULT_TRACKS;
   }, [tracks]);
 
-  // 7x set buffer guarantees zero empty gaps on any screen size / resolution
+  // 5x set buffer guarantees zero empty gaps on any screen size / resolution while minimizing DOM overhead
   const activeTracks = useMemo(() => {
     return [
-      ...baseTracks,
-      ...baseTracks,
       ...baseTracks,
       ...baseTracks,
       ...baseTracks,
@@ -76,7 +79,7 @@ export const TracklistGallery: React.FC<TracklistGalleryProps> = ({
     ];
   }, [baseTracks]);
 
-  const initialCenterIndex = baseTracks.length * 3;
+  const initialCenterIndex = baseTracks.length * 2;
   const [activeCenterIndex, setActiveCenterIndex] = useState<number>(initialCenterIndex);
   const [settledCenterIndex, setSettledCenterIndex] = useState<number>(initialCenterIndex);
   const [audioProgress, setAudioProgress] = useState<number>(0);
@@ -100,7 +103,7 @@ export const TracklistGallery: React.FC<TracklistGalleryProps> = ({
     if (!containerRef.current) return;
     gsap.to(containerRef.current, {
       backgroundColor: currentTrack.accentBg || "#1E3810",
-      duration: 0.8,
+      duration: perfRef.current.reducedMotion ? 0 : 0.8,
       ease: "power2.out",
     });
   }, [activeTrackRealIndex, currentTrack]);
@@ -396,9 +399,15 @@ export const TracklistGallery: React.FC<TracklistGalleryProps> = ({
     container.addEventListener("touchmove", handleTouchMove, { passive: true });
     container.addEventListener("touchend", handleTouchEnd, { passive: true });
 
+    let lastLoopTime = performance.now();
     const updateLoop = () => {
+      const now = performance.now();
+      const dt = Math.min((now - lastLoopTime) / 1000, 0.1);
+      lastLoopTime = now;
+
       if (targetYRef.current !== null && singleSetHeight > 0) {
-        yPos += (targetYRef.current - yPos) * 0.08;
+        const damp = 1 - Math.pow(1 - (perfRef.current.reducedMotion ? 0.35 : 0.08), dt * 60);
+        yPos += (targetYRef.current - yPos) * damp;
 
         // Continuous seamless boundary shift without 1-frame position tears
         if (yPos > centerLineY - 2 * singleSetHeight) {

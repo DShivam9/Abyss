@@ -2,6 +2,7 @@ import { useRef, useEffect } from "react";
 import * as THREE from "three";
 import { CinemaAisleProps } from "./types";
 import { DEFAULT_VIDEOS, BASE_PROPORTIONS, CORRIDOR_CONFIG } from "./constants";
+import { usePerformance } from "../../engine/PerformanceProvider";
 
 export default function CinemaAisle({
   videos = DEFAULT_VIDEOS,
@@ -16,6 +17,17 @@ export default function CinemaAisle({
 }: CinemaAisleProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const headerRef = useRef<HTMLHeadingElement>(null);
+  const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
+
+  const perf = usePerformance();
+  const perfRef = useRef(perf);
+  perfRef.current = perf;
+
+  useEffect(() => {
+    if (rendererRef.current) {
+      rendererRef.current.setPixelRatio(perf.dpr);
+    }
+  }, [perf.dpr]);
 
   const flareRef = useRef(curveFlare);
   flareRef.current = curveFlare;
@@ -47,9 +59,15 @@ export default function CinemaAisle({
     camera.position.set(0, 0, 4);
     camera.lookAt(0, 0, -12);
 
-    const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
+    const isLow = perfRef.current.tier === "low";
+    const renderer = new THREE.WebGLRenderer({
+      antialias: !isLow,
+      powerPreference: "high-performance",
+      precision: isLow ? "mediump" : "highp",
+    });
     renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setPixelRatio(perfRef.current.dpr);
+    rendererRef.current = renderer;
     container.appendChild(renderer.domElement);
 
     // --- 16 VIDEO TEXTURE STREAM ENGINE ---
@@ -562,18 +580,21 @@ export default function CinemaAisle({
 
       const surgeEase = easeInOutCubic(surgeProgress);
 
+      const dtSec = Math.min(0.1, timeSinceLast / 1000);
+      const dtRatio = dtSec * 60;
+
       // Ambient Auto-Drift after intro completes
-      if (!introActive && !isDown) {
+      if (!introActive && !isDown && !perfRef.current.reducedMotion) {
         const driftMultiplier = hoveredIndex !== -1 ? 0.30 : 1.0;
-        targetScroll += 0.0035 * speedRef.current * driftMultiplier * driftRef.current;
+        targetScroll += 0.0035 * speedRef.current * driftMultiplier * driftRef.current * dtRatio;
       }
 
       targetScroll += wheelVelocity;
-      wheelVelocity *= 0.84;
+      wheelVelocity *= Math.pow(0.84, dtRatio);
 
-      currentScroll += (targetScroll - currentScroll) * 0.07;
-      currentMouseX += (targetMouseX - currentMouseX) * 0.055;
-      currentMouseY += (targetMouseY - currentMouseY) * 0.055;
+      currentScroll += (targetScroll - currentScroll) * (1 - Math.pow(1 - 0.07, dtRatio));
+      currentMouseX += (targetMouseX - currentMouseX) * (1 - Math.pow(1 - 0.055, dtRatio));
+      currentMouseY += (targetMouseY - currentMouseY) * (1 - Math.pow(1 - 0.055, dtRatio));
 
       const introDashOffset = introActive ? (surgeEase - 1.0) * 58.0 : 0.0;
       floorGlassMaterial.uniforms.uScroll.value = currentScroll + introDashOffset;
@@ -765,6 +786,7 @@ export default function CinemaAisle({
         }
       });
 
+      rendererRef.current = null;
       renderer.dispose();
       if (renderer.domElement && container.contains(renderer.domElement)) {
         container.removeChild(renderer.domElement);

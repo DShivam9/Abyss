@@ -6,6 +6,7 @@ import { GimbalStreamProps } from "./types";
 import { IMAGE_LIST, CARD_TITLES, TIER_CONFIGS, TIER_IMAGE_INDICES, GIMBAL_LAYOUT } from "./constants";
 import { CHAMBER_VERTEX_SHADER, CHAMBER_FRAGMENT_SHADER, injectCurvatureShader, injectMercuryShader } from "./shaders";
 import { createCleanAbyssLogoShape, createLiquidMercuryStudioEnvironment } from "./geometries";
+import { usePerformance } from "../../engine/PerformanceProvider";
 
 export type { GimbalStreamProps };
 
@@ -20,8 +21,13 @@ export default function GimbalStream({
   className = "",
   style
 }: GimbalStreamProps) {
+  const perf = usePerformance();
+  const perfRef = useRef(perf);
+  perfRef.current = perf;
+
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
   const textContainerRef = useRef<HTMLDivElement>(null);
   const [isLoaded, setIsLoaded] = useState(false);
   const leftTextRef = useRef<HTMLDivElement>(null);
@@ -36,6 +42,12 @@ export default function GimbalStream({
   const glowIntensityRef = useRef(glowIntensity);
   const waveBrightnessRef = useRef(waveBrightness);
   const waveSpeedRef = useRef(waveSpeed);
+
+  useEffect(() => {
+    if (rendererRef.current) {
+      rendererRef.current.setPixelRatio(perf.dpr);
+    }
+  }, [perf.dpr]);
 
   useEffect(() => {
     autoRotateSpeedRef.current = autoRotateSpeed;
@@ -68,15 +80,16 @@ export default function GimbalStream({
 
     const renderer = new THREE.WebGLRenderer({
       canvas,
-      antialias: true,
+      antialias: perfRef.current.tier !== "low",
       powerPreference: "high-performance",
-      precision: "highp"
+      precision: perfRef.current.tier === "low" ? "mediump" : "highp"
     });
     renderer.setSize(width, height);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setPixelRatio(perfRef.current.dpr);
     renderer.outputColorSpace = THREE.LinearSRGBColorSpace;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 1.25;
+    rendererRef.current = renderer;
 
     // --- Studio Lighting & Environment ---
     const camKey = new THREE.DirectionalLight(0xffffff, 2.5);
@@ -98,6 +111,7 @@ export default function GimbalStream({
     scene.environment = studioEnvMap;
 
     // --- 3D Logo Starburst Centerpiece ---
+    const isLow = perfRef.current.tier === "low";
     const logoShape = createCleanAbyssLogoShape();
     const logoGeo = new THREE.ExtrudeGeometry(logoShape, {
       steps: 1,
@@ -105,8 +119,8 @@ export default function GimbalStream({
       bevelEnabled: true,
       bevelThickness: 0.22,
       bevelSize: 0.12,
-      bevelSegments: 14,
-      curveSegments: 24
+      bevelSegments: isLow ? 4 : 14,
+      curveSegments: isLow ? 8 : 24
     });
     logoGeo.center();
     logoGeo.computeVertexNormals();
@@ -315,9 +329,9 @@ export default function GimbalStream({
       lastNow = now;
       const t = now * 0.001;
 
-      // Ambient forward drift: disengages during user scroll
+      // Ambient forward drift: disengages during user scroll and reduced motion
       const isUserActive = (now - lastUserScrollTime) < 1200;
-      const targetAutoDrift = (!isUserActive && hasFullyUnlocked) ? 1.0 : 0.0;
+      const targetAutoDrift = (!isUserActive && hasFullyUnlocked && !perfRef.current.reducedMotion) ? 1.0 : 0.0;
       autoDriftWeight = THREE.MathUtils.lerp(autoDriftWeight, targetAutoDrift, 1.0 - Math.exp(-2.5 * delta));
       if (autoDriftWeight > 0.001) {
         targetScrollY += 14.0 * delta * autoDriftWeight;
@@ -526,6 +540,7 @@ export default function GimbalStream({
       container.removeEventListener("mouseleave", onPointerLeave);
       container.removeEventListener("touchstart", onTouchStart);
       container.removeEventListener("touchmove", onTouchMove);
+      rendererRef.current = null;
       renderer.dispose();
     };
   }, []);

@@ -11,6 +11,7 @@ import { GalleryShowcaseLayout } from "@/components/showcase/layouts/GalleryShow
 import { TransitionShowcaseLayout } from "@/components/showcase/layouts/TransitionShowcaseLayout";
 import { ComponentErrorBoundary } from "@/components/showcase/ComponentErrorBoundary";
 import { GrainOverlay } from "@/components/layout/GrainOverlay";
+import { PerformanceProvider } from "@abyss-ui/core";
 import "@/components/showcase/showcase.css";
 
 export default function ShowcasePageClient({ slug }: { slug: string }) {
@@ -100,7 +101,7 @@ export default function ShowcasePageClient({ slug }: { slug: string }) {
   };
 
   return (
-    <>
+    <PerformanceProvider>
       <GrainOverlay />
       <ShowcaseChrome
         component={meta}
@@ -120,6 +121,6 @@ export default function ShowcasePageClient({ slug }: { slug: string }) {
           onClose={() => setControlsOpen(false)}
         />
       </ShowcaseChrome>
-    </>
+    </PerformanceProvider>
   );
 }

@@ -3,6 +3,7 @@
 import { useRef, useEffect } from "react";
 import * as THREE from "three";
 import { CycloramaMatrixProps, CardObject, MediaPoolItem } from "./types";
+import { usePerformance } from "../../engine/PerformanceProvider";
 import {
   CELL_SIZE,
   CARD_SIZE,
@@ -41,6 +42,17 @@ export default function CycloramaMatrix({
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fogVeilRef = useRef<HTMLDivElement>(null);
+  const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
+
+  const perf = usePerformance();
+  const perfRef = useRef(perf);
+  perfRef.current = perf;
+
+  useEffect(() => {
+    if (rendererRef.current) {
+      rendererRef.current.setPixelRatio(perf.dpr);
+    }
+  }, [perf.dpr]);
 
   const radiusXRef = useRef(radiusX);
   const radiusYRef = useRef(radiusY);
@@ -80,14 +92,17 @@ export default function CycloramaMatrix({
     const width = container.clientWidth || window.innerWidth;
     const height = container.clientHeight || window.innerHeight;
 
+    const isLow = perfRef.current.tier === "low";
     const renderer = new THREE.WebGLRenderer({
       canvas,
-      antialias: true,
-      powerPreference: "high-performance"
+      antialias: !isLow,
+      powerPreference: "high-performance",
+      precision: isLow ? "mediump" : "highp"
     });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setPixelRatio(perfRef.current.dpr);
     renderer.setSize(width, height);
     renderer.setClearColor(0x030305, 1);
+    rendererRef.current = renderer;
 
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(54, width / height, 0.1, 100);
@@ -99,7 +114,7 @@ export default function CycloramaMatrix({
     const mediaPool: MediaPoolItem[] = mediaProp.map((item) => {
       const cardW = item.aspect >= 1.0 ? CARD_SIZE : CARD_SIZE * item.aspect;
       const cardH = item.aspect >= 1.0 ? CARD_SIZE / item.aspect : CARD_SIZE;
-      const geom = new THREE.PlaneGeometry(cardW, cardH, 12, 12);
+      const geom = new THREE.PlaneGeometry(cardW, cardH, isLow ? 4 : 12, isLow ? 4 : 12);
       const path = `/images/components/cyclorama-matrix/${item.file}`;
 
       let texture: THREE.Texture;
@@ -182,7 +197,7 @@ export default function CycloramaMatrix({
       return tex;
     });
 
-    const bgGeom = new THREE.PlaneGeometry(FRAME_SIZE, FRAME_SIZE, 12, 12);
+    const bgGeom = new THREE.PlaneGeometry(FRAME_SIZE, FRAME_SIZE, isLow ? 4 : 12, isLow ? 4 : 12);
     const bgGroup = new THREE.Group(),
       cardGroup = new THREE.Group(),
       labelGroup = new THREE.Group();
@@ -491,7 +506,7 @@ export default function CycloramaMatrix({
       const curW = cachedW;
       const curH = cachedH;
 
-      if (hasMouse && !isDragging) {
+      if (hasMouse && !isDragging && !perfRef.current.reducedMotion) {
         const nx = (mouseX / curW - 0.5) * 2.0;
         const ny = (mouseY / curH - 0.5) * 2.0;
         hoverCardX = -nx * 0.08;
@@ -629,6 +644,7 @@ export default function CycloramaMatrix({
         c.labelMat.dispose();
       });
 
+      rendererRef.current = null;
       renderer.dispose();
     };
   }, [mediaProp, metadataProp]);
