@@ -328,8 +328,7 @@ export default function Apparatus3DShatterSphere({
       meshesData = [];
 
       const mode = shapeModeRef.current;
-      const maxCount = perfRef.current.tier === "low" ? 24 : perfRef.current.tier === "medium" ? 36 : itemCountRef.current;
-      const count = Math.min(itemCountRef.current, maxCount);
+      const count = itemCountRef.current;
 
       const faces = [
         { normal: new THREE.Vector3(0, 0, 1), rotY: 0, rotX: 0 }, // Front (+Z)

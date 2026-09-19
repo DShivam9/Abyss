@@ -112,7 +112,7 @@ export default function CascadeGallery({
     const dirX = 1.62;
     const dirY = 0.90;
     const dirZ = -0.05;
-    const totalCards = isLow ? 48 : perfRef.current.tier === "medium" ? 80 : 120;
+    const totalCards = 120;
     const cards: CardObject[] = [];
 
     function createCard(tex: THREE.Texture): { group: THREE.Group; mesh: THREE.Mesh; mat: THREE.ShaderMaterial } {
