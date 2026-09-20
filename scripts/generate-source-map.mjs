@@ -1,7 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { codeToHtml } from "shiki";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -12,6 +11,37 @@ const OUTPUT_DIR = path.join(ROOT_DIR, "apps/web/src/lib/registry/sources");
 
 if (!fs.existsSync(OUTPUT_DIR)) {
   fs.mkdirSync(OUTPUT_DIR, { recursive: true });
+}
+
+let codeToHtml = null;
+try {
+  const shikiModule = await import("shiki");
+  codeToHtml = shikiModule.codeToHtml;
+} catch (err) {
+  console.warn(`[generate-source-map] Note: shiki module not found (${err.message}). Using fallback code wrapper.`);
+}
+
+function escapeHtml(str) {
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+async function highlightCode(code, lang) {
+  if (codeToHtml) {
+    try {
+      return await codeToHtml(code, {
+        lang,
+        theme: "vesper",
+      });
+    } catch {
+      // Shiki parse fallback
+    }
+  }
+  return `<pre class="shiki vesper" style="background-color:#101010;color:#ffffff;padding:1rem;overflow-x:auto;"><code>${escapeHtml(code)}</code></pre>`;
 }
 
 const entries = fs.readdirSync(COMPONENTS_DIR, { withFileTypes: true });
@@ -31,11 +61,8 @@ for (const entry of entries) {
 
   const rawSource = fs.readFileSync(indexPath, "utf8");
 
-  // Pre-render syntax-highlighted HTML using Shiki
-  const highlightedHtml = await codeToHtml(rawSource, {
-    lang: "tsx",
-    theme: "vesper",
-  });
+  // Pre-render syntax-highlighted HTML
+  const highlightedHtml = await highlightCode(rawSource, "tsx");
 
   // Check for any .glsl files in component directory
   const filesInDir = fs.readdirSync(compDir);
@@ -48,10 +75,7 @@ for (const entry of entries) {
       return `// --- ${f} ---\n${content}`;
     }).join("\n\n");
 
-    const highlightedGlsl = await codeToHtml(glslParts, {
-      lang: "glsl",
-      theme: "vesper",
-    });
+    const highlightedGlsl = await highlightCode(glslParts, "glsl");
 
     glslExport = `\nexport const glslSource = ${JSON.stringify(glslParts)};\nexport const glslHtml = ${JSON.stringify(highlightedGlsl)};\n`;
   }

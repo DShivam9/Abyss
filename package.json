@@ -11,7 +11,7 @@
     "dev": "node scripts/generate-source-map.mjs && npm run dev -w apps/web",
     "build": "node scripts/generate-source-map.mjs && npm run build --workspaces"
   },
-  "devDependencies": {
+  "dependencies": {
     "shiki": "^4.4.3"
   }
 }

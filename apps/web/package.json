@@ -26,6 +26,7 @@
     "next": "^15.0.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "shiki": "^4.4.3",
     "three": "^0.168.0"
   },
   "devDependencies": {
