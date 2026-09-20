@@ -1,10 +1,10 @@
 import { useRef, useEffect, useState, useCallback } from "react";
 import * as THREE from "three";
-import { Apparatus3DShatterSphereProps, MeshData } from "./types";
+import { ShatterSphereProps, Apparatus3DShatterSphereProps, MeshData } from "./types";
 import { GALLERY_IMAGES } from "./constants";
 import { usePerformance } from "../../engine/PerformanceProvider";
 
-export default function Apparatus3DShatterSphere({
+export function ShatterSphere({
   sphereRadius = 420,
   shatterForce = 1.8,
   cardScale = 1.05,
@@ -17,7 +17,7 @@ export default function Apparatus3DShatterSphere({
   className = "",
   style = {},
   onLifecycleChange,
-}: Apparatus3DShatterSphereProps) {
+}: ShatterSphereProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
@@ -737,3 +737,8 @@ export default function Apparatus3DShatterSphere({
     </div>
   );
 }
+
+export const ThreeDShatterSphere = ShatterSphere;
+export const Apparatus3DShatterSphere = ShatterSphere;
+export type { ShatterSphereProps, Apparatus3DShatterSphereProps };
+export default ShatterSphere;

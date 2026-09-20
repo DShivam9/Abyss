@@ -2,6 +2,50 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { ThemeToggleRedesignProps } from "./types";
 import { DEFAULT_THEME_TOGGLE_CONFIG } from "./constants";
 import { usePerformance } from "../../engine/PerformanceProvider";
+import { SOUND_ENGAGE, SOUND_RELEASE } from "./sounds";
+
+let sharedAudioCtx: AudioContext | null = null;
+let engageBuffer: AudioBuffer | null = null;
+let releaseBuffer: AudioBuffer | null = null;
+let isDecoding = false;
+
+const base64ToArrayBuffer = (base64: string): ArrayBuffer => {
+  const binaryString = atob(base64.replace(/^data:audio\/\w+;base64,/, ""));
+  const len = binaryString.length;
+  const bytes = new Uint8Array(len);
+  for (let i = 0; i < len; i++) {
+    bytes[i] = binaryString.charCodeAt(i);
+  }
+  return bytes.buffer;
+};
+
+const initAudio = async () => {
+  if (typeof window === "undefined") return null;
+  const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+  if (!AudioCtx) return null;
+  if (!sharedAudioCtx) {
+    sharedAudioCtx = new AudioCtx();
+  }
+  if (sharedAudioCtx.state === "suspended") {
+    sharedAudioCtx.resume().catch(() => {});
+  }
+  if (!engageBuffer && !isDecoding) {
+    isDecoding = true;
+    try {
+      const [eBuf, rBuf] = await Promise.all([
+        sharedAudioCtx.decodeAudioData(base64ToArrayBuffer(SOUND_ENGAGE)),
+        sharedAudioCtx.decodeAudioData(base64ToArrayBuffer(SOUND_RELEASE))
+      ]);
+      engageBuffer = eBuf;
+      releaseBuffer = rBuf;
+    } catch {
+      // Decode fallback
+    } finally {
+      isDecoding = false;
+    }
+  }
+  return sharedAudioCtx;
+};
 
 export function ThemeToggleRedesign({
   variant = DEFAULT_THEME_TOGGLE_CONFIG.variant,
@@ -24,16 +68,62 @@ export function ThemeToggleRedesign({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const activeAnimRef = useRef<Animation | null>(null);
 
-  // Audio files with graceful fallback
+  // Pre-warm audio buffers on mount or when audio is enabled
+  useEffect(() => {
+    if (enableAudio) {
+      initAudio().catch(() => {});
+    }
+  }, [enableAudio]);
+
+  // High-performance acoustic haptic playback
   const playSfx = useCallback((type: "engage" | "release") => {
     if (!enableAudio) return;
     try {
-      const src = type === "engage" ? "/htmltesting/theme_switch/lamp_engage.wav" : "/htmltesting/theme_switch/lamp_release.wav";
-      const audio = new Audio(src);
+      const AudioCtx = typeof window !== "undefined" ? (window.AudioContext || (window as any).webkitAudioContext) : null;
+      if (AudioCtx) {
+        if (!sharedAudioCtx) {
+          sharedAudioCtx = new AudioCtx();
+        }
+        const ctx = sharedAudioCtx;
+        if (ctx.state === "suspended") {
+          ctx.resume().catch(() => {});
+        }
+        const targetBuffer = type === "engage" ? engageBuffer : releaseBuffer;
+        if (targetBuffer) {
+          const source = ctx.createBufferSource();
+          source.buffer = targetBuffer;
+          const gain = ctx.createGain();
+          gain.gain.value = type === "engage" ? 0.65 : 0.85;
+          source.connect(gain);
+          gain.connect(ctx.destination);
+          source.start(0);
+          return;
+        } else {
+          initAudio().then(() => {
+            const buf = type === "engage" ? engageBuffer : releaseBuffer;
+            if (buf && ctx) {
+              const src = ctx.createBufferSource();
+              src.buffer = buf;
+              const g = ctx.createGain();
+              g.gain.value = type === "engage" ? 0.65 : 0.85;
+              src.connect(g);
+              g.connect(ctx.destination);
+              src.start(0);
+            }
+          }).catch(() => {});
+        }
+      }
+
+      // Fallback: static public route audio element
+      const audio = new Audio(
+        type === "engage"
+          ? "/components/theme-toggle-redesign/lamp_engage.wav"
+          : "/components/theme-toggle-redesign/lamp_release.wav"
+      );
       audio.volume = type === "engage" ? 0.65 : 0.85;
       audio.play().catch(() => {});
     } catch {
-      // Audio autoplay blocked or file missing
+      // Audio autoplay blocked
     }
   }, [enableAudio]);
 
@@ -526,4 +616,5 @@ export function ThemeToggleRedesign({
   );
 }
 
+export const ApparatusThemeToggleRedesign = ThemeToggleRedesign;
 export default ThemeToggleRedesign;

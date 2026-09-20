@@ -10,14 +10,14 @@ export interface BleedSection {
 
 export type BleedBlurVariant = "pure" | "refractive" | "liquid" | "crt" | "thermal";
 
-export interface ApparatusParallaxBleedProps extends VesselComponentProps {
+export interface ParallaxBleedProps extends VesselComponentProps {
   /**
    * Array of bleed sections.
    */
   sections?: BleedSection[];
   /**
-   * Parallax movement intensity (0% - 100%).
-   * @default 45
+   * Parallax movement intensity (0% - 150%).
+   * @default 100
    */
   parallaxIntensity?: number;
   /**
@@ -46,3 +46,5 @@ export interface ApparatusParallaxBleedProps extends VesselComponentProps {
    */
   scrollProgress?: number;
 }
+
+export type ApparatusParallaxBleedProps = ParallaxBleedProps;

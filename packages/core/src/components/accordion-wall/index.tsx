@@ -1,15 +1,15 @@
 import React, { useMemo, useRef, useState, useEffect, useCallback } from "react";
 import gsap from "gsap";
-import { ApparatusAccordionWallProps, AccordionWallItem } from "./types";
+import { PillarGalleryProps, AccordionWallItem } from "./types";
 import { DEFAULT_ACCORDION_ITEMS } from "./constants";
 
-export const ApparatusAccordionWall: React.FC<ApparatusAccordionWallProps> = ({
+export const PillarGallery: React.FC<PillarGalleryProps> = ({
   items,
   images,
   titles,
-  watermarkText = "Hover to Unveil • Click to Expand",
+  watermarkText = "Hover to Preview • Click to Select",
   panelCount = 8,
-  speed = 1.35,
+  speed: _speed = 1.35,
   onExpand,
   className = "",
   style,
@@ -18,20 +18,15 @@ export const ApparatusAccordionWall: React.FC<ApparatusAccordionWallProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const ambientEchoRef = useRef<HTMLDivElement>(null);
   const centerCueRef = useRef<HTMLDivElement>(null);
-  const expandedMonolithRef = useRef<HTMLDivElement>(null);
-  const expandedHeaderBarRef = useRef<HTMLDivElement>(null);
-  const expandedTitleRef = useRef<HTMLDivElement>(null);
-  const expandedImgRef = useRef<HTMLImageElement>(null);
-  const expandedInnerRef = useRef<HTMLDivElement>(null);
-  const closeBtnRef = useRef<HTMLButtonElement>(null);
 
   const pillarWrapsRef = useRef<(HTMLDivElement | null)[]>([]);
   const imgWrapsRef = useRef<(HTMLDivElement | null)[]>([]);
   const imgsRef = useRef<(HTMLImageElement | null)[]>([]);
   const titlesRef = useRef<(HTMLHeadingElement | null)[]>([]);
 
-  const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
-  const activeOriginRectRef = useRef<DOMRect | null>(null);
+  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+  const selectedIndexRef = useRef<number | null>(null);
+  selectedIndexRef.current = selectedIndex;
 
   // Normalize curated items list
   const activeItems: AccordionWallItem[] = useMemo(() => {
@@ -63,337 +58,233 @@ export const ApparatusAccordionWall: React.FC<ApparatusAccordionWallProps> = ({
     [onLifecycleChange]
   );
 
-  // 120 FPS GPU-Composited Page-Load Entrance
+  // Entrance
   useEffect(() => {
     triggerLifecycle("discovery");
     const validWraps = imgWrapsRef.current.filter(Boolean);
-    const validTitles = titlesRef.current.filter(Boolean);
 
     const tl = gsap.timeline({
-      delay: 0.2,
+      delay: 0.15,
       onComplete: () => triggerLifecycle("idle"),
     });
 
     tl.to(validWraps, {
       clipPath: "inset(0% 0 0 0)",
-      duration: 1.35,
-      stagger: 0.1,
+      duration: 1.2,
+      stagger: 0.08,
       ease: "expo.out",
-    }, 0)
-    .to(validTitles, {
-      opacity: 1,
-      y: 0,
-      duration: 0.95,
-      stagger: 0.1,
-      ease: "power3.out",
-    }, 0.35);
+    }, 0);
 
     return () => {
       tl.kill();
     };
   }, [triggerLifecycle]);
 
-  // Collapse Monolith back into starting slot
-  const collapseExpanded = useCallback(() => {
-    if (expandedIndex === null) return;
-    const originIdx = expandedIndex;
-    setExpandedIndex(null);
-    onExpand?.(null);
-    triggerLifecycle("recovery");
+  // Apply state transitions (towering selected vs gentle hover vs baseline)
+  const applyVisualState = useCallback((targetIdx: number | null, _isHoverOnly = false) => {
+    const selected = selectedIndexRef.current;
 
-    const wrap = imgWrapsRef.current[originIdx];
-    const pillar = pillarWrapsRef.current[originIdx];
-    const rect = activeOriginRectRef.current || wrap?.getBoundingClientRect();
+    // If nothing selected and no hover: return everything to baseline
+    if (targetIdx === null && selected === null) {
+      if (ambientEchoRef.current) {
+        gsap.to(ambientEchoRef.current, { opacity: 0, duration: 0.8, ease: "power2.out", overwrite: "auto" });
+      }
+      if (centerCueRef.current) {
+        gsap.to(centerCueRef.current, { opacity: 1, duration: 0.5, ease: "power2.out", overwrite: "auto" });
+      }
 
-    if (!rect || !expandedMonolithRef.current) return;
+      pillarWrapsRef.current.forEach((p, i) => {
+        if (!p) return;
+        p.classList.remove("is-active", "is-hovered");
+        const pWrap = imgWrapsRef.current[i];
+        const pImg = imgsRef.current[i];
+        const pTitle = titlesRef.current[i];
 
-    if (closeBtnRef.current) {
-      closeBtnRef.current.style.pointerEvents = "none";
+        gsap.to(p, { flexGrow: 1, opacity: 1, duration: 0.6, ease: "cubic-bezier(0.25, 1, 0.5, 1)", overwrite: "auto" });
+        if (pWrap) {
+          gsap.to(pWrap, { height: "220px", boxShadow: "0 10px 30px rgba(0,0,0,0.5)", duration: 0.6, ease: "cubic-bezier(0.25, 1, 0.5, 1)", overwrite: "auto" });
+        }
+        if (pImg) {
+          gsap.to(pImg, { scale: 1.04, duration: 0.6, ease: "cubic-bezier(0.25, 1, 0.5, 1)", overwrite: "auto" });
+        }
+        if (pTitle) {
+          gsap.to(pTitle, { opacity: 0, y: 4, duration: 0.35, ease: "power2.out", overwrite: "auto" });
+        }
+      });
+      return;
     }
 
-    const tl = gsap.timeline({
-      defaults: { ease: "cubic-bezier(0.16, 1, 0.3, 1)" },
-      onComplete: () => {
-        if (expandedMonolithRef.current) {
-          gsap.set(expandedMonolithRef.current, { visibility: "hidden", opacity: 0, pointerEvents: "none" });
-        }
-        if (pillar && wrap) {
-          gsap.set([pillar, wrap], { opacity: 1 });
-        }
-        activeOriginRectRef.current = null;
-        triggerLifecycle("idle");
-      },
-    });
+    // Determine the hero index: if someone clicked, it's `selected`; else if hovering, it's `targetIdx`
+    const heroIdx = selected !== null ? selected : targetIdx;
+    const isHeroPermanent = selected !== null;
 
-    tl.to(expandedHeaderBarRef.current, { opacity: 0, y: 10, duration: 0.35 }, 0)
-      .to(expandedMonolithRef.current, {
-        left: rect.left,
-        top: rect.top,
-        width: rect.width,
-        height: rect.height,
-        duration: 0.95,
-      }, 0)
-      .to(centerCueRef.current, { opacity: 1, duration: 0.6 }, 0.3);
+    if (heroIdx !== null && activeItems[heroIdx]) {
+      const heroItem = activeItems[heroIdx];
 
-    // Regroup siblings in perfect sync
-    pillarWrapsRef.current.forEach((p, i) => {
-      if (p && i !== originIdx) {
-        const dist = Math.abs(i - originIdx);
-        gsap.to(p, {
-          x: 0,
-          opacity: 1,
-          duration: 0.9,
-          delay: 0.08 + dist * 0.025,
-          ease: "cubic-bezier(0.16, 1, 0.3, 1)",
+      // Ambient echo
+      if (ambientEchoRef.current && heroItem.moodColor) {
+        gsap.to(ambientEchoRef.current, {
+          backgroundColor: heroItem.moodColor,
+          opacity: isHeroPermanent ? 0.92 : 0.45,
+          duration: 0.8,
+          ease: "power2.out",
           overwrite: "auto",
         });
       }
-    });
 
-    if (ambientEchoRef.current) {
-      gsap.to(ambientEchoRef.current, {
-        opacity: 0,
-        duration: 1.0,
-        ease: "power2.out",
-        overwrite: "auto",
+      if (centerCueRef.current) {
+        gsap.to(centerCueRef.current, { opacity: isHeroPermanent ? 0 : 0.4, duration: 0.4, ease: "power2.out", overwrite: "auto" });
+      }
+
+      pillarWrapsRef.current.forEach((p, i) => {
+        if (!p) return;
+        const pWrap = imgWrapsRef.current[i];
+        const pImg = imgsRef.current[i];
+        const pTitle = titlesRef.current[i];
+
+        if (i === heroIdx) {
+          p.classList.add("is-active");
+          p.classList.remove("is-hovered");
+
+          if (isHeroPermanent) {
+            // Full towering click state
+            gsap.to(p, { flexGrow: 2.6, opacity: 1, duration: 0.85, ease: "cubic-bezier(0.25, 1, 0.5, 1)", overwrite: "auto" });
+            if (pWrap) {
+              gsap.to(pWrap, {
+                height: "82vh",
+                boxShadow: "0 -28px 70px -10px rgba(0, 0, 0, 0.95)",
+                duration: 0.85,
+                ease: "cubic-bezier(0.25, 1, 0.5, 1)",
+                overwrite: "auto",
+              });
+            }
+            if (pImg) {
+              gsap.to(pImg, { scale: 1.0, duration: 0.85, ease: "cubic-bezier(0.25, 1, 0.5, 1)", overwrite: "auto" });
+            }
+            if (pTitle) {
+              gsap.to(pTitle, { opacity: 1, y: 0, duration: 0.5, delay: 0.1, ease: "power2.out", overwrite: "auto" });
+            }
+          } else {
+            // Subtle hover preview: rise up and scale up
+            gsap.to(p, { flexGrow: 1.15, opacity: 1, duration: 0.45, ease: "power2.out", overwrite: "auto" });
+            if (pWrap) {
+              gsap.to(pWrap, {
+                height: "280px",
+                boxShadow: "0 -12px 40px -6px rgba(0, 0, 0, 0.85)",
+                duration: 0.45,
+                ease: "power2.out",
+                overwrite: "auto",
+              });
+            }
+            if (pImg) {
+              gsap.to(pImg, { scale: 1.08, duration: 0.45, ease: "power2.out", overwrite: "auto" });
+            }
+            if (pTitle) {
+              gsap.to(pTitle, { opacity: 0.85, y: 0, duration: 0.35, ease: "power2.out", overwrite: "auto" });
+            }
+          }
+        } else {
+          // Sibling pillars
+          p.classList.remove("is-active", "is-hovered");
+          const siblingFlex = isHeroPermanent ? 0.76 : 0.98;
+          const siblingOpacity = isHeroPermanent ? 0.45 : 0.9;
+          const siblingHeight = "220px";
+
+          gsap.to(p, { flexGrow: siblingFlex, opacity: siblingOpacity, duration: 0.65, ease: "power2.out", overwrite: "auto" });
+          if (pWrap) {
+            gsap.to(pWrap, {
+              height: siblingHeight,
+              boxShadow: "0 10px 30px rgba(0,0,0,0.5)",
+              duration: 0.65,
+              ease: "power2.out",
+              overwrite: "auto",
+            });
+          }
+          if (pImg) {
+            gsap.to(pImg, { scale: 1.04, duration: 0.65, ease: "power2.out", overwrite: "auto" });
+          }
+          if (pTitle) {
+            gsap.to(pTitle, { opacity: 0, y: 4, duration: 0.3, ease: "power2.out", overwrite: "auto" });
+          }
+        }
       });
     }
-  }, [expandedIndex, onExpand, triggerLifecycle]);
+  }, [activeItems]);
 
-  // Precision FLIP Expand Monolith
-  const expandPillar = useCallback(
-    (idx: number) => {
-      if (expandedIndex !== null) return;
-      setExpandedIndex(idx);
+  const handlePillarMouseEnter = (idx: number) => {
+    if (selectedIndexRef.current !== null) {
+      if (selectedIndexRef.current === idx) return;
+      const p = pillarWrapsRef.current[idx];
+      const pWrap = imgWrapsRef.current[idx];
+      const pTitle = titlesRef.current[idx];
+      if (p) gsap.to(p, { opacity: 0.75, duration: 0.3, overwrite: "auto" });
+      if (pWrap) gsap.to(pWrap, { height: "245px", duration: 0.35, ease: "power2.out", overwrite: "auto" });
+      if (pTitle) gsap.to(pTitle, { opacity: 0.5, y: 0, duration: 0.25, overwrite: "auto" });
+      return;
+    }
+    applyVisualState(idx, true);
+  };
+
+  const handlePillarMouseLeave = (idx: number) => {
+    if (selectedIndexRef.current !== null) {
+      if (selectedIndexRef.current === idx) return;
+      const p = pillarWrapsRef.current[idx];
+      const pWrap = imgWrapsRef.current[idx];
+      const pTitle = titlesRef.current[idx];
+      if (p) gsap.to(p, { opacity: 0.45, duration: 0.3, overwrite: "auto" });
+      if (pWrap) gsap.to(pWrap, { height: "220px", duration: 0.35, ease: "power2.out", overwrite: "auto" });
+      if (pTitle) gsap.to(pTitle, { opacity: 0, y: 4, duration: 0.25, overwrite: "auto" });
+      return;
+    }
+    applyVisualState(null, false);
+  };
+
+  const handlePillarClick = (idx: number, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (selectedIndexRef.current === idx) {
+      setSelectedIndex(null);
+      selectedIndexRef.current = null;
+      onExpand?.(null);
+      triggerLifecycle("idle");
+      applyVisualState(null, false);
+    } else {
+      setSelectedIndex(idx);
+      selectedIndexRef.current = idx;
       onExpand?.(idx);
       triggerLifecycle("peak");
-
-      // Instantly kill in-flight tweens for zero lag
-      gsap.killTweensOf(pillarWrapsRef.current.filter(Boolean));
-      gsap.killTweensOf(imgWrapsRef.current.filter(Boolean));
-      gsap.killTweensOf(imgsRef.current.filter(Boolean));
-
-      const pillar = pillarWrapsRef.current[idx];
-      const wrap = imgWrapsRef.current[idx];
-      const img = imgsRef.current[idx];
-      const item = activeItems[idx];
-      if (!pillar || !wrap || !img || !item) return;
-
-      const rect = wrap.getBoundingClientRect();
-      activeOriginRectRef.current = rect;
-
-      if (expandedTitleRef.current) expandedTitleRef.current.textContent = item.title;
-      if (expandedImgRef.current) expandedImgRef.current.src = img.src;
-
-      const targetWidth = window.innerWidth - 48;
-      const targetHeight = window.innerHeight * 0.91;
-      const targetLeft = 24;
-      const targetTop = window.innerHeight - targetHeight;
-
-      if (expandedMonolithRef.current) {
-        gsap.set(expandedMonolithRef.current, {
-          visibility: "visible",
-          opacity: 1,
-          pointerEvents: "auto",
-          left: rect.left,
-          top: rect.top,
-          width: rect.width,
-          height: rect.height,
-          transform: "none",
-        });
-      }
-
-      // Atomically hide origin pillar & wrap
-      gsap.set([pillar, wrap], { opacity: 0 });
-
-      // Physics-Coupled Displacement: Direction-aware wave
-      pillarWrapsRef.current.forEach((p, i) => {
-        if (p && i !== idx) {
-          const dist = Math.abs(i - idx);
-          const pushDistance = i < idx ? -(window.innerWidth * 1.15) : window.innerWidth * 1.15;
-          gsap.to(p, {
-            x: pushDistance,
-            opacity: 0,
-            duration: 1.25,
-            delay: 0.08 + dist * 0.065,
-            ease: "cubic-bezier(0.22, 1, 0.36, 1)",
-            overwrite: "auto",
-          });
-        }
-      });
-
-      // Monolith Unfurl with unified header fade
-      const tl = gsap.timeline({ defaults: { ease: "cubic-bezier(0.22, 1, 0.36, 1)" } });
-
-      tl.to(centerCueRef.current, { opacity: 0, duration: 0.5 }, 0)
-        .to(expandedMonolithRef.current, {
-          left: targetLeft,
-          top: targetTop,
-          width: targetWidth,
-          height: targetHeight,
-          duration: speed,
-        }, 0)
-        .fromTo(expandedHeaderBarRef.current, {
-          opacity: 0,
-          y: 14,
-        }, {
-          opacity: 1,
-          y: 0,
-          duration: 0.75,
-        }, 0.35);
-
-      if (closeBtnRef.current) {
-        closeBtnRef.current.style.pointerEvents = "auto";
-      }
-
-      if (ambientEchoRef.current && item.moodColor) {
-        gsap.to(ambientEchoRef.current, {
-          backgroundColor: item.moodColor,
-          opacity: 0.95,
-          duration: 1.2,
-          ease: "power2.out",
-          overwrite: "auto",
-        });
-      }
-    },
-    [expandedIndex, onExpand, activeItems, speed, triggerLifecycle]
-  );
-
-  // Silky continuous hover
-  const handlePillarMouseEnter = (idx: number) => {
-    if (expandedIndex !== null) return;
-    const item = activeItems[idx];
-
-    if (ambientEchoRef.current && item?.moodColor) {
-      gsap.to(ambientEchoRef.current, {
-        backgroundColor: item.moodColor,
-        opacity: 0.88,
-        duration: 1.2,
-        ease: "power2.out",
-        overwrite: "auto",
-      });
+      applyVisualState(idx, false);
     }
-
-    pillarWrapsRef.current.forEach((p, i) => {
-      if (!p) return;
-      const isTarget = i === idx;
-      const pWrap = imgWrapsRef.current[i];
-      const pImg = imgsRef.current[i];
-
-      if (isTarget) {
-        p.classList.add("is-active");
-        if (pWrap) {
-          gsap.to(pWrap, {
-            height: "82vh",
-            boxShadow: "0 -28px 70px -10px rgba(0, 0, 0, 0.95)",
-            duration: 0.85,
-            ease: "cubic-bezier(0.25, 1, 0.5, 1)",
-            overwrite: "auto",
-          });
-        }
-        if (pImg) {
-          gsap.to(pImg, {
-            scale: 1.0,
-            duration: 0.85,
-            ease: "cubic-bezier(0.25, 1, 0.5, 1)",
-            overwrite: "auto",
-          });
-        }
-        gsap.to(p, {
-          flexGrow: 2.6,
-          opacity: 1,
-          duration: 0.75,
-          ease: "power2.out",
-          overwrite: "auto",
-        });
-      } else {
-        p.classList.remove("is-active");
-        if (pWrap) {
-          gsap.to(pWrap, {
-            height: "220px",
-            boxShadow: "0 10px 30px rgba(0,0,0,0.5)",
-            duration: 0.75,
-            ease: "power2.out",
-            overwrite: "auto",
-          });
-        }
-        if (pImg) {
-          gsap.to(pImg, {
-            scale: 1.04,
-            duration: 0.75,
-            ease: "power2.out",
-            overwrite: "auto",
-          });
-        }
-        gsap.to(p, {
-          flexGrow: 0.78,
-          opacity: 0.55,
-          duration: 0.75,
-          ease: "power2.out",
-          overwrite: "auto",
-        });
-      }
-    });
   };
 
-  const handlePillarMouseLeave = () => {
-    if (expandedIndex !== null) return;
-    if (ambientEchoRef.current) {
-      gsap.to(ambientEchoRef.current, {
-        opacity: 0,
-        duration: 1.0,
-        ease: "power2.out",
-        overwrite: "auto",
-      });
+  const handleContainerClick = () => {
+    if (selectedIndexRef.current !== null) {
+      setSelectedIndex(null);
+      selectedIndexRef.current = null;
+      onExpand?.(null);
+      triggerLifecycle("idle");
+      applyVisualState(null, false);
     }
-
-    pillarWrapsRef.current.forEach((p, i) => {
-      if (!p) return;
-      p.classList.remove("is-active");
-      const pWrap = imgWrapsRef.current[i];
-      const pImg = imgsRef.current[i];
-
-      gsap.to(p, {
-        flexGrow: 1,
-        opacity: 1,
-        duration: 0.7,
-        ease: "cubic-bezier(0.25, 1, 0.5, 1)",
-        overwrite: "auto",
-      });
-
-      if (pWrap) {
-        gsap.to(pWrap, {
-          height: "220px",
-          boxShadow: "0 10px 30px rgba(0,0,0,0.5)",
-          duration: 0.7,
-          ease: "cubic-bezier(0.25, 1, 0.5, 1)",
-          overwrite: "auto",
-        });
-      }
-
-      if (pImg) {
-        gsap.to(pImg, {
-          transform: "translateY(0%) scale(1.04)",
-          duration: 0.7,
-          ease: "cubic-bezier(0.25, 1, 0.5, 1)",
-          overwrite: "auto",
-        });
-      }
-    });
   };
 
-  // Keyboard dismiss
+  // Keyboard dismiss on ESC
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") collapseExpanded();
+      if (e.key === "Escape" && selectedIndexRef.current !== null) {
+        setSelectedIndex(null);
+        selectedIndexRef.current = null;
+        onExpand?.(null);
+        triggerLifecycle("idle");
+        applyVisualState(null, false);
+      }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [collapseExpanded]);
+  }, [onExpand, triggerLifecycle, applyVisualState]);
 
   return (
     <div
       ref={containerRef}
+      onClick={handleContainerClick}
       className={`relative w-full h-screen overflow-hidden select-none flex items-end justify-center px-6 bg-[#0c0c0e] font-sans ${className}`}
       style={style}
     >
@@ -413,60 +304,8 @@ export const ApparatusAccordionWall: React.FC<ApparatusAccordionWallProps> = ({
         {watermarkText}
       </div>
 
-      {/* Dedicated FLIP Monolith Layer */}
-      <div
-        ref={expandedMonolithRef}
-        className="fixed bottom-0 left-6 w-[calc(100vw-48px)] h-[91vh] z-[100] pointer-events-none opacity-0 invisible overflow-visible will-change-[transform,width,height,left,top,opacity] [transform:translate3d(0,0,0)]"
-      >
-        {/* Minimal Integrated Top Bar (No Numbers, Optical Center Title + Right Close) */}
-        <div
-          ref={expandedHeaderBarRef}
-          className="absolute bottom-[calc(100%+14px)] left-0 w-full flex items-center justify-between pointer-events-none z-[102] px-1"
-        >
-          {/* Left Balance Spacer */}
-          <div className="w-24 h-6 pointer-events-none" />
-
-          {/* Center Title */}
-          <div
-            ref={expandedTitleRef}
-            className="font-serif italic font-normal text-white text-[1.75rem] leading-none tracking-wide text-center pointer-events-none"
-            style={{ fontFamily: "'Instrument Serif', 'Italiana', Georgia, serif" }}
-          >
-            Title
-          </div>
-
-          {/* Right Minimal Close Pill */}
-          <button
-            ref={closeBtnRef}
-            onClick={collapseExpanded}
-            aria-label="Close Fullscreen"
-            className="pointer-events-auto flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/[0.06] border border-white/15 text-white/75 hover:text-white hover:bg-white/[0.14] hover:border-white/30 transition-all duration-300 font-mono text-[11px] uppercase tracking-wider cursor-pointer"
-          >
-            <span>Close</span>
-            <svg className="w-3 h-3 stroke-current stroke-[1.75]" viewBox="0 0 16 16" fill="none">
-              <line x1="3" y1="3" x2="13" y2="13" />
-              <line x1="13" y1="3" x2="3" y2="13" />
-            </svg>
-          </button>
-        </div>
-
-        {/* Monolith Body */}
-        <div
-          ref={expandedInnerRef}
-          onClick={collapseExpanded}
-          className="w-full h-full rounded-t-3xl overflow-hidden relative bg-[#121214] shadow-[0_0_40px_rgba(0,0,0,0.6)] cursor-pointer"
-        >
-          <img
-            ref={expandedImgRef}
-            src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
-            alt="Expanded Artwork"
-            className="w-full h-full object-cover object-center block"
-          />
-        </div>
-      </div>
-
       {/* 8-Pillar Matrix Container */}
-      <div className="flex gap-4 w-full max-w-[1640px] h-full items-end justify-center mx-auto z-[3] relative">
+      <div className="flex gap-4 w-full max-w-[1640px] h-full items-end justify-center mx-auto z-[3] relative pointer-events-auto">
         {activeItems.map((item, idx) => (
           <div
             key={item.id || idx}
@@ -481,7 +320,7 @@ export const ApparatusAccordionWall: React.FC<ApparatusAccordionWallProps> = ({
                 ref={(el) => {
                   titlesRef.current[idx] = el;
                 }}
-                className="font-serif italic font-normal text-[1.35rem] tracking-wide text-white/65 whitespace-nowrap pointer-events-none opacity-0 translate-y-4 transition-colors duration-400"
+                className="font-serif italic font-normal text-[1.35rem] tracking-wide text-white/75 whitespace-nowrap pointer-events-none opacity-0 translate-y-4 transition-colors duration-400"
                 style={{ fontFamily: "'Instrument Serif', 'Italiana', Georgia, serif" }}
               >
                 {item.title}
@@ -492,9 +331,9 @@ export const ApparatusAccordionWall: React.FC<ApparatusAccordionWallProps> = ({
               ref={(el) => {
                 imgWrapsRef.current[idx] = el;
               }}
-              onClick={() => expandPillar(idx)}
+              onClick={(e) => handlePillarClick(idx, e)}
               onMouseEnter={() => handlePillarMouseEnter(idx)}
-              onMouseLeave={handlePillarMouseLeave}
+              onMouseLeave={() => handlePillarMouseLeave(idx)}
               className="w-full h-[220px] rounded-t-2xl overflow-hidden relative pointer-events-auto cursor-pointer bg-[#16161a] shadow-[0_10px_30px_rgba(0,0,0,0.5)] [clip-path:inset(100%_0_0_0)] will-change-[height,box-shadow,clip-path] [transform:translate3d(0,0,0)]"
             >
               <img
@@ -514,5 +353,6 @@ export const ApparatusAccordionWall: React.FC<ApparatusAccordionWallProps> = ({
   );
 };
 
-export const PillarGallery = ApparatusAccordionWall;
-export default ApparatusAccordionWall;
+export const ApparatusAccordionWall = PillarGallery;
+export const AccordionWall = PillarGallery;
+export default PillarGallery;

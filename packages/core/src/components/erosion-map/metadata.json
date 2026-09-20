@@ -1,7 +1,7 @@
 {
   "name": "Erosion Map",
   "slug": "erosion-map",
-  "pitch": "Images erode organically based on a Perlin noise field driven by scroll progress, revealing layers below with textured weathering patterns and active edge glowing.",
+  "pitch": "Full-screen photography that dissolves organically on scroll, transitioning between image layers with procedural noise and an illuminated edge contour.",
   "family": "aesthetic",
   "energy": "calm",
   "triggers": ["scroll"],

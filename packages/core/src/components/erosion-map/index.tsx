@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { ApparatusErosionMapProps } from "./types";
+import { ErosionMapProps } from "./types";
 import { DEFAULT_IMAGES } from "./constants";
 import { ValueNoise2D } from "./helpers";
 import { usePerformance } from "../../engine/PerformanceProvider";
@@ -11,7 +11,7 @@ if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);
 }
 
-export const ApparatusErosionMap: React.FC<ApparatusErosionMapProps> = ({
+export const ErosionMap: React.FC<ErosionMapProps> = ({
   images: propImages,
   imageSrc,
   noiseScale,
@@ -443,10 +443,6 @@ export const ApparatusErosionMap: React.FC<ApparatusErosionMapProps> = ({
         bufferCtx.textAlign = "center";
         bufferCtx.textBaseline = "middle";
         bufferCtx.fillText("EROSION", width / 2, height / 2);
-
-        bufferCtx.fillStyle = `rgba(255, 255, 255, ${0.35 * (1.0 - localProg)})`;
-        bufferCtx.font = "bold 11px 'Geist Mono', 'Fira Code', monospace";
-        bufferCtx.fillText("THRESHOLD WEATHERING SYSTEM", width / 2, height / 2 + 105);
         bufferCtx.restore();
         bufferCtx.restore();
 
@@ -593,4 +589,4 @@ export const ApparatusErosionMap: React.FC<ApparatusErosionMapProps> = ({
   );
 };
 
-export default ApparatusErosionMap;
+export default ErosionMap;

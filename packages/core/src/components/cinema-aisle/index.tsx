@@ -840,3 +840,6 @@ export default function CinemaAisle({
     </div>
   );
 }
+
+export { CinemaAisle };
+export const ApparatusCinemaAisle = CinemaAisle;

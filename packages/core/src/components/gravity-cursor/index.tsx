@@ -1,5 +1,5 @@
 import { useRef, useEffect, useCallback } from "react";
-import { ApparatusGravityCursorProps, PhysicsBody } from "./types";
+import { GravityCursorProps, ApparatusGravityCursorProps, PhysicsBody } from "./types";
 import { usePerformance } from "../../engine/PerformanceProvider";
 import {
   SHAPE_SVGS,
@@ -9,7 +9,7 @@ import {
   BAKED_MAX_ITEMS,
 } from "./constants";
 
-export default function ApparatusGravityCursor({
+export function GravityCursor({
   gravity = 0.55,
   bounceDamping = 0.62,
   imageSize = 140,
@@ -21,7 +21,7 @@ export default function ApparatusGravityCursor({
   className = "",
   style = {},
   onLifecycleChange,
-}: ApparatusGravityCursorProps) {
+}: GravityCursorProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const boundsRef = useRef<DOMRect | null>(null);
 
@@ -512,3 +512,7 @@ export default function ApparatusGravityCursor({
     </div>
   );
 }
+
+export const ApparatusGravityCursor = GravityCursor;
+export type { GravityCursorProps, ApparatusGravityCursorProps };
+export default GravityCursor;

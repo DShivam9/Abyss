@@ -1,4 +1,4 @@
-import { ApparatusRippleVariant } from "./types";
+import { RippleScrambleVariant } from "./types";
 import {
   ALPHA_CHARS,
   MATRIX_CHARS,
@@ -10,7 +10,7 @@ import {
 /**
  * Pure helper function for distinct variant-specific design specifications.
  */
-export function getVariantSpecs(variant: ApparatusRippleVariant, staticOpacity: number) {
+export function getVariantSpecs(variant: RippleScrambleVariant, staticOpacity: number) {
   const opIdx = Math.min(100, Math.max(0, Math.floor(staticOpacity * 100)));
   const alphaStr = ALPHA_STR_TABLE[opIdx];
 
@@ -75,7 +75,7 @@ export function getVariantSpecs(variant: ApparatusRippleVariant, staticOpacity: 
 /**
  * Pure helper function for distinct wave propagation geometries.
  */
-export function getWaveDistance(dx: number, dy: number, variant: ApparatusRippleVariant): number {
+export function getWaveDistance(dx: number, dy: number, variant: RippleScrambleVariant): number {
   switch (variant) {
     case "editorial": {
       const edDx = Math.abs(dx);

@@ -1,13 +1,13 @@
-# Apparatus Erosion Map
+# Erosion Map
 
-Images erode organically based on a Perlin noise field driven by scroll progress, revealing layers below with textured weathering patterns and active edge glowing.
+Full-screen photography that dissolves organically on scroll, transitioning between image layers with procedural noise and an illuminated edge contour.
 
 ## Usage
 
 ```tsx
-import { ApparatusErosionMap } from "@vessel/core";
+import { ErosionMap } from "@abyss-ui/core";
 
-<ApparatusErosionMap
+<ErosionMap
   imageSrc="/showcase/1.jpg"
   images={[
     "/showcase/1.jpg",

@@ -429,3 +429,6 @@ export default function MosaicLoader({
     </div>
   );
 }
+
+export { MosaicLoader };
+export const ApparatusMosaicLoader = MosaicLoader;

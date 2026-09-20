@@ -114,7 +114,8 @@ export default function CycloramaMatrix({
     const mediaPool: MediaPoolItem[] = mediaProp.map((item) => {
       const cardW = item.aspect >= 1.0 ? CARD_SIZE : CARD_SIZE * item.aspect;
       const cardH = item.aspect >= 1.0 ? CARD_SIZE / item.aspect : CARD_SIZE;
-      const geom = new THREE.PlaneGeometry(cardW, cardH, isLow ? 4 : 12, isLow ? 4 : 12);
+      // ponytail: 32x32 subdivisions ensure smooth vertex curvature without cardboard creasing
+      const geom = new THREE.PlaneGeometry(cardW, cardH, isLow ? 16 : 32, isLow ? 16 : 32);
       const path = `/images/components/cyclorama-matrix/${item.file}`;
 
       let texture: THREE.Texture;
@@ -155,38 +156,41 @@ export default function CycloramaMatrix({
 
     const maxAniso = renderer.capabilities.getMaxAnisotropy();
     const labelTextures = metadataProp.map((meta) => {
+      // ponytail: 1024x1024 canvas texture with 2x metrics eliminates pixelated blur
       const c = document.createElement("canvas");
-      c.width = c.height = 512;
+      c.width = c.height = 1024;
       const ctx = c.getContext("2d");
       if (!ctx) return new THREE.CanvasTexture(c);
 
-      ctx.clearRect(0, 0, 512, 512);
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = "high";
+      ctx.clearRect(0, 0, 1024, 1024);
       ctx.textAlign = "left";
       ctx.textBaseline = "middle";
 
-      const titleY = 38;
-      ctx.font = '600 19px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+      const titleY = 76;
+      ctx.font = '600 38px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
       ctx.fillStyle = "rgba(255, 255, 255, 0.95)";
-      ctx.fillText(meta.title, 34, titleY);
+      ctx.fillText(meta.title, 68, titleY);
 
       const pillText = meta.pill;
-      ctx.font = '700 13px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-      const pW = ctx.measureText(pillText).width + 16;
-      const pH = 22;
-      const pX = 512 - 34 - pW;
-      const pY = 474 - pH / 2;
+      ctx.font = '700 26px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+      const pW = ctx.measureText(pillText).width + 32;
+      const pH = 44;
+      const pX = 1024 - 68 - pW;
+      const pY = 948 - pH / 2;
 
       ctx.beginPath();
-      ctx.roundRect(pX, pY, pW, pH, 11);
+      ctx.roundRect(pX, pY, pW, pH, 22);
       ctx.fillStyle = "rgba(0, 0, 0, 0.55)";
       ctx.fill();
-      ctx.lineWidth = 1.0;
+      ctx.lineWidth = 2.0;
       ctx.strokeStyle = "rgba(255, 255, 255, 0.22)";
       ctx.stroke();
 
       ctx.fillStyle = "rgba(255, 255, 255, 0.95)";
       ctx.textAlign = "center";
-      ctx.fillText(pillText, pX + pW / 2, 474);
+      ctx.fillText(pillText, pX + pW / 2, 948);
 
       const tex = new THREE.CanvasTexture(c);
       tex.generateMipmaps = true;
@@ -197,7 +201,7 @@ export default function CycloramaMatrix({
       return tex;
     });
 
-    const bgGeom = new THREE.PlaneGeometry(FRAME_SIZE, FRAME_SIZE, isLow ? 4 : 12, isLow ? 4 : 12);
+    const bgGeom = new THREE.PlaneGeometry(FRAME_SIZE, FRAME_SIZE, isLow ? 16 : 32, isLow ? 16 : 32);
     const bgGroup = new THREE.Group(),
       cardGroup = new THREE.Group(),
       labelGroup = new THREE.Group();

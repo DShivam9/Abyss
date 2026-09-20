@@ -16,6 +16,5 @@ export const DEFAULT_ITEMS: DualWaveItem[] = TITLES.map((name, idx) => ({
 // Baked defaults for refined wave path optics
 export const BAKED_HORIZON_CURVATURE = 0.60;
 export const BAKED_CORNER_ALIGNMENT = 1.0;
-export const BAKED_DUAL_SINE_WAVENUM = 0.45;
 export const BAKED_COLUMN_LAG = 0.40;
 export const BAKED_VELOCITY_SQUEEZE = 0.85;

@@ -1,5 +1,7 @@
 import React, { useRef, useEffect, useCallback } from "react";
 import {
+  RippleScrambleProps,
+  RippleScrambleVariant,
   ApparatusRippleScrambleProps,
   ApparatusRippleVariant,
   WaveInstance,
@@ -15,7 +17,7 @@ import {
 import { getVariantSpecs, getWaveDistance } from "./helpers";
 import { usePerformance } from "../../engine/PerformanceProvider";
 
-export const ApparatusRippleScramble: React.FC<ApparatusRippleScrambleProps> = ({
+export const RippleScramble: React.FC<RippleScrambleProps> = ({
   variant = "classic",
   waveSpeed = 950,
   scrambleDuration = 340,
@@ -35,7 +37,7 @@ export const ApparatusRippleScramble: React.FC<ApparatusRippleScrambleProps> = (
   perfRef.current = perf;
 
   // Variant cross-fade transition refs
-  const prevVariantRef = useRef<ApparatusRippleVariant>(variant);
+  const prevVariantRef = useRef<RippleScrambleVariant>(variant);
   const transitionStartRef = useRef<number>(0);
 
   // Idle state tracking refs
@@ -476,4 +478,11 @@ export const ApparatusRippleScramble: React.FC<ApparatusRippleScrambleProps> = (
   );
 };
 
-export default ApparatusRippleScramble;
+export const ApparatusRippleScramble = RippleScramble;
+export type {
+  RippleScrambleProps,
+  RippleScrambleVariant,
+  ApparatusRippleScrambleProps,
+  ApparatusRippleVariant,
+};
+export default RippleScramble;

@@ -3,8 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
+    "generate:sources": "node ../../scripts/generate-source-map.mjs",
+    "dev": "node ../../scripts/generate-source-map.mjs && next dev",
+    "build": "node ../../scripts/generate-source-map.mjs && next build",
     "start": "next start",
     "lint": "eslint",
     "analyze": "cross-env ANALYZE=true next build"

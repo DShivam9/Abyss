@@ -106,6 +106,10 @@ export function ShowcaseChrome({
         component={component}
         isOpen={infoOpen}
         onClose={() => setInfoOpen(false)}
+        onOpenCode={() => {
+          setInfoOpen(false);
+          setCodeOpen(true);
+        }}
       />
 
       {/* Right Slide-out Code Ledger */}

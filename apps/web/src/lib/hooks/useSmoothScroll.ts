@@ -2,6 +2,7 @@
 
 import { useRef, useEffect } from "react";
 
+// ponytail: native el.scrollTo({ top: 0, behavior: "smooth" }) covers programmatic scrolling without monkey-patching DOM
 export function useSmoothScroll<T extends HTMLElement>() {
   const ref = useRef<T>(null);
 
@@ -32,6 +33,13 @@ export function useSmoothScroll<T extends HTMLElement>() {
       }
     };
 
+    const handleScroll = () => {
+      if (rafId === null) {
+        currentScroll = el.scrollTop;
+        targetScroll = el.scrollTop;
+      }
+    };
+
     const handleWheel = (e: WheelEvent) => {
       e.stopPropagation();
       e.preventDefault();
@@ -49,9 +57,11 @@ export function useSmoothScroll<T extends HTMLElement>() {
       }
     };
 
+    el.addEventListener("scroll", handleScroll, { passive: true });
     el.addEventListener("wheel", handleWheel, { passive: false });
 
     return () => {
+      el.removeEventListener("scroll", handleScroll);
       el.removeEventListener("wheel", handleWheel);
       if (rafId !== null) cancelAnimationFrame(rafId);
     };
@@ -59,3 +69,4 @@ export function useSmoothScroll<T extends HTMLElement>() {
 
   return ref;
 }
+

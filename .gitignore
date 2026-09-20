@@ -28,3 +28,7 @@ apps/web/public/*.html
 
 # Ignored converted video webp files
 apps/web/public/images/components/cyclorama-matrix/video-*.webp
+
+# Auto-generated source maps for code panel
+apps/web/src/lib/registry/sources/*.ts
+!apps/web/src/lib/registry/sources/.gitkeep

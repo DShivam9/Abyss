@@ -97,7 +97,13 @@ export const cardFrag = `
     col += texture2D(uTexture, vUv + vec2( 0.0,  blur)) * 0.16;
     col += texture2D(uTexture, vUv - vec2( 0.0,  blur)) * 0.16;
 
-    gl_FragColor = vec4(col.rgb * totalFade, col.a * totalFade);
+    // ponytail: screen-space fwidth edge feathering eliminates raw geometric staircase aliasing
+    vec2 edge = abs(vUv - 0.5) * 2.0;
+    float maxEdge = max(edge.x, edge.y);
+    float fw = max(fwidth(maxEdge), 0.0015);
+    float imageAlpha = smoothstep(1.0, 1.0 - fw * 1.6, maxEdge);
+
+    gl_FragColor = vec4(col.rgb * totalFade, col.a * totalFade * imageAlpha);
   }
 `;
 
@@ -124,10 +130,14 @@ export const bgFrag = `
     vec2 edge = abs(vUv - 0.5) * 2.0;
     float maxEdge = max(edge.x, edge.y);
 
-    // Anti-aliased 1.2px sub-pixel vector hairline
-    float dist = 1.0 - maxEdge;
-    float fw = max(fwidth(dist), 0.0008);
-    float border = smoothstep(fw * 1.3, fw * 0.1, dist);
+    // Sub-pixel vector hairline with slight inset to prevent polygon edge clipping
+    float hairlineTarget = 0.982;
+    float dist = abs(maxEdge - hairlineTarget);
+    float fw = max(fwidth(maxEdge), 0.0012);
+    float border = 1.0 - smoothstep(0.0, fw * 1.4, dist);
+
+    // Feather outer quad silhouette to eliminate jagged polygon aliasing
+    float quadAlpha = smoothstep(1.0, 0.992, maxEdge);
 
     // Crisp stark white hairline
     vec3 borderCol = vec3(0.96, 0.98, 1.0);
@@ -175,13 +185,13 @@ export const bgFrag = `
     }
 
     // Sophisticated dimmed architectural hairline
-    float borderAlpha = border * mix(0.28, 0.85, fade);
+    float borderAlpha = border * mix(0.35, 0.85, fade);
     finalCol = mix(finalCol, borderCol, borderAlpha);
 
-    // Soft perimeter optical falloff
-    finalCol *= totalFade;
+    // Soft perimeter optical falloff with smooth edge feathering
+    finalCol *= totalFade * quadAlpha;
 
-    gl_FragColor = vec4(finalCol, 0.96 * totalFade);
+    gl_FragColor = vec4(finalCol, 0.96 * totalFade * quadAlpha);
   }
 `;
 

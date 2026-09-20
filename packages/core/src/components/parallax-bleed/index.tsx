@@ -1,15 +1,15 @@
 import { useRef, useEffect, useMemo } from "react";
 import gsap from "gsap";
-import { ApparatusParallaxBleedProps } from "./types";
+import { ParallaxBleedProps } from "./types";
 import {
   DEFAULT_BLEED_SECTIONS,
   BAKED_SCROLL_SPEED,
   BAKED_INERTIAL_DAMPING,
 } from "./constants";
 
-export default function ApparatusParallaxBleed({
+export default function ParallaxBleed({
   sections = DEFAULT_BLEED_SECTIONS,
-  parallaxIntensity = 45, // 0% - 100% intensity
+  parallaxIntensity = 100, // 0% - 150% intensity
   blurDepth = 280,
   blurVariant = "pure",
   indicatorStyle = "dots",
@@ -18,7 +18,7 @@ export default function ApparatusParallaxBleed({
   style = {},
   onLifecycleChange,
   scrollProgress: externalProgress = 0,
-}: ApparatusParallaxBleedProps) {
+}: ParallaxBleedProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const sectionRefs = useRef<(HTMLDivElement | null)[]>([]);
   const imageRefs = useRef<(HTMLImageElement | null)[]>([]);
@@ -433,4 +433,6 @@ export default function ApparatusParallaxBleed({
     </div>
   );
 }
+
+export { ParallaxBleed, ParallaxBleed as ApparatusParallaxBleed };
 

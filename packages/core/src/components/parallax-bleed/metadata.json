@@ -10,9 +10,9 @@
       "name": "parallaxIntensity",
       "label": "Parallax Intensity",
       "type": "slider",
-      "defaultValue": 45,
+      "defaultValue": 100,
       "min": 0,
-      "max": 100,
+      "max": 150,
       "step": 5,
       "unit": "%"
     },

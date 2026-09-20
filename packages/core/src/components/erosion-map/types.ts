@@ -1,6 +1,6 @@
 import { VesselComponentProps } from "../../engine/types";
 
-export interface ApparatusErosionMapProps extends VesselComponentProps {
+export interface ErosionMapProps extends VesselComponentProps {
   /**
    * List of images for the erosion layers.
    * If not provided, fallback to default collection.

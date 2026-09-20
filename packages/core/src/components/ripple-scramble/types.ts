@@ -1,13 +1,16 @@
 import { VesselComponentProps } from "../../engine/types";
 
-export type ApparatusRippleVariant =
+export type RippleScrambleVariant =
   | "classic"
   | "editorial"
   | "matrix"
   | "nebula";
 
-export interface ApparatusRippleScrambleProps extends VesselComponentProps {
-  variant?: ApparatusRippleVariant;
+/** @deprecated Use `RippleScrambleVariant` */
+export type ApparatusRippleVariant = RippleScrambleVariant;
+
+export interface RippleScrambleProps extends VesselComponentProps {
+  variant?: RippleScrambleVariant;
   /**
    * Radial expansion speed in px/s.
    * @default 950
@@ -34,6 +37,9 @@ export interface ApparatusRippleScrambleProps extends VesselComponentProps {
    */
   staticOpacity?: number;
 }
+
+/** @deprecated Use `RippleScrambleProps` */
+export type ApparatusRippleScrambleProps = RippleScrambleProps;
 
 export interface WaveInstance {
   cx: number;

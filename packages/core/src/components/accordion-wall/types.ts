@@ -7,7 +7,7 @@ export interface AccordionWallItem {
   moodColor?: string;
 }
 
-export interface ApparatusAccordionWallProps extends VesselComponentProps {
+export interface PillarGalleryProps extends VesselComponentProps {
   /**
    * List of accordion items to display.
    */
@@ -57,4 +57,5 @@ export interface ApparatusAccordionWallProps extends VesselComponentProps {
   style?: React.CSSProperties;
 }
 
-export type PillarGalleryProps = ApparatusAccordionWallProps;
+export type ApparatusAccordionWallProps = PillarGalleryProps;
+export type AccordionWallProps = PillarGalleryProps;

@@ -28,6 +28,22 @@ export interface CommitEntry {
 
 export const CHANGELOG_DATA: CommitEntry[] = [
   {
+    id: "commit-35",
+    date: "2026-09-20",
+    displayDate: "Sep 20, 2026 • 20:25 IST",
+    tags: ["MAJOR", "ADDITION", "FIX"],
+    commitHash: "17ff1e3",
+    title: "Showcase Documentation & Component Polish",
+    summary: "Synchronized interactive source maps, refined Cascade Gallery controls, and expanded component documentation.",
+    affectedSlugs: ["cascade-gallery", "tracklist-gallery", "cinema-aisle", "mosaic-loader", "theme-toggle-redesign"],
+    items: [
+      "Synchronized interactive source code explorer across all library component showcases",
+      "Polished Cascade Gallery clock typography with discrete number updates and custom layout",
+      "Standardized component controls, engineering guides, and documentation across the library",
+      "Added tech stack badge indicators and audio engine support",
+    ],
+  },
+  {
     id: "commit-34",
     date: "2026-09-20",
     displayDate: "Sep 20, 2026 • 01:25 IST",

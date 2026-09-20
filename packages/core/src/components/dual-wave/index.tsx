@@ -1,17 +1,16 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ApparatusDualWaveProps } from "./types";
+import { DualWaveProps } from "./types";
 import {
   DEFAULT_ITEMS,
   BAKED_HORIZON_CURVATURE,
   BAKED_CORNER_ALIGNMENT,
-  BAKED_DUAL_SINE_WAVENUM,
   BAKED_COLUMN_LAG,
   BAKED_VELOCITY_SQUEEZE,
 } from "./constants";
 import { usePerformance } from "../../engine/PerformanceProvider";
 
-export const ApparatusDualWave: React.FC<ApparatusDualWaveProps> = ({
+export const DualWave: React.FC<DualWaveProps> = ({
   items,
   imageSrc,
   fontFamily: propFontFamily,
@@ -46,10 +45,21 @@ export const ApparatusDualWave: React.FC<ApparatusDualWaveProps> = ({
   const resolvedFontFamily = propFontFamily || "'Hatton', 'Larken', serif";
   const resolvedFontStyle = "normal";
   
-  const displayItems = useMemo(
-    () => (items && items.length > 0 ? items : [...DEFAULT_ITEMS, ...DEFAULT_ITEMS]),
-    [items]
-  );
+  const displayItems = useMemo(() => {
+    const base = items && items.length > 0 ? items : DEFAULT_ITEMS;
+    // Repeat enough times so totalSpan spans > 2600px even at min spacing (35px)
+    const repeatCount = Math.max(4, Math.ceil(2600 / (base.length * 35)));
+    const list: typeof base = [];
+    for (let r = 0; r < repeatCount; r++) {
+      for (let i = 0; i < base.length; i++) {
+        list.push({
+          ...base[i],
+          id: `${base[i].id}-${r}`,
+        });
+      }
+    }
+    return list;
+  }, [items]);
   const leftColumnItems = useMemo(() => displayItems.filter((_, idx) => idx % 2 === 0), [displayItems]);
   const rightColumnItems = useMemo(() => displayItems.filter((_, idx) => idx % 2 !== 0), [displayItems]);
 
@@ -291,21 +301,32 @@ export const ApparatusDualWave: React.FC<ApparatusDualWaveProps> = ({
       const mouseXPx = smoothMouseRef.current.x * 10;
       const mouseYPx = smoothMouseRef.current.y * 10;
 
-      // Cinematic entrance choreography: 1600ms deliberate sweep with blank canvas start
+      // Kinetic reel spin entrance: ~2800ms high-speed spin with smooth power deceleration
       const entranceElapsed = now - entranceStartTimeRef.current;
-      const entranceDuration = 1600;
+      const entranceDuration = 2800;
       const entranceProg = Math.min(1.0, entranceElapsed / entranceDuration);
-      // Precision cubic deceleration curve
-      const entranceEase = 1 - Math.pow(1 - entranceProg, 3.2);
-      const rollIn = 1.0 - entranceEase;
+      
+      // Quartic power curve: high initial momentum with continuous smooth deceleration
+      const spinEase = 1 - Math.pow(1 - entranceProg, 3.4);
+      const rollIn = 1.0 - spinEase;
 
-      // Vertical shutter curtain reveal on center card as counter-reels cross the equator
-      const shutterInsetY = (rollIn * 50).toFixed(1);
-      const cardOpacity = Math.min(1.0, entranceProg * 1.6).toFixed(3);
+      // Right column subtle counter-lag (80ms)
+      const rightElapsed = Math.max(0, entranceElapsed - 80);
+      const rightProg = Math.min(1.0, rightElapsed / entranceDuration);
+      const rightRollIn = 1.0 - (1 - Math.pow(1 - rightProg, 3.4));
+
+      // Instantaneous spin velocity for physical shear and center card squeeze
+      const instantSpinSpeed = rollIn > 0.001 ? (2400 * 3.4 * Math.pow(rollIn, 2.4 / 3.4)) / 2.8 : 0;
+
+      // Smooth curtain reveal and subtle scale on center card
+      const shutterInsetY = (rollIn * 40).toFixed(1);
+      const cardOpacity = Math.min(1.0, entranceProg * 2.2).toFixed(3);
+      const entranceScale = 0.93 + 0.07 * spinEase;
+      const entranceFade = Math.min(1.0, entranceProg * 2.8);
 
       // Apply physical velocity squeeze and mouse parallax on center image frame
-      const velMag = Math.min(1.0, Math.abs(scrollVelocityRef.current) / 2500);
-      const velScale = 1.0 - velMag * 0.035 * BAKED_VELOCITY_SQUEEZE;
+      const velMag = Math.min(1.0, (Math.abs(scrollVelocityRef.current) + instantSpinSpeed * 0.45) / 2500);
+      const velScale = (1.0 - velMag * 0.035 * BAKED_VELOCITY_SQUEEZE) * entranceScale;
       if (centerImageFrameRef.current) {
         centerImageFrameRef.current.style.opacity = cardOpacity;
         centerImageFrameRef.current.style.clipPath = entranceProg < 1.0 ? `inset(${shutterInsetY}% 0% ${shutterInsetY}% 0%)` : "none";
@@ -340,12 +361,14 @@ export const ApparatusDualWave: React.FC<ApparatusDualWaveProps> = ({
           ? (k * spacingRef.current - smoothOffsetRef.current)
           : (k * spacingRef.current + smoothOffsetRightRef.current);
 
-        const restingWrapped = (((baseOffset + totalSpan / 2) % totalSpan + totalSpan) % totalSpan) - totalSpan / 2;
+        // Spin travel: Left column spins downward, right column spins upward
+        const spinDistance = 2400;
+        const activeRollIn = isLeft ? rollIn : rightRollIn;
+        const entranceTravel = isLeft ? (activeRollIn * spinDistance) : (-activeRollIn * spinDistance);
 
-        // Linear un-wrapped entrance sweep: screen starts 100% blank and reels sweep through
-        const sweepDistance = Math.max(H * 1.15, 800);
-        const entranceTravel = isLeft ? (-rollIn * sweepDistance) : (rollIn * sweepDistance);
-        const wrappedOffset = restingWrapped + entranceTravel;
+        // Modulo wrapping with spin included so names continuously rotate across viewport
+        const offsetWithSpin = baseOffset + entranceTravel;
+        const wrappedOffset = (((offsetWithSpin + totalSpan / 2) % totalSpan + totalSpan) % totalSpan) - totalSpan / 2;
 
         let y = H / 2 - itemHeight / 2 + wrappedOffset;
 
@@ -379,14 +402,8 @@ export const ApparatusDualWave: React.FC<ApparatusDualWaveProps> = ({
           const rightSlope = (1.0 + normY) * BAKED_HORIZON_CURVATURE * 0.5;
           baseHorizontalOffset = pinchX + (isLeft ? leftSlope : rightSlope) * computedWaveRange * 0.9;
           baseAngle = (isLeft ? -1 : 1) * normY * maxRotationRef.current * 0.8;
-        } else if (wavePatternRef.current === "dualSine") {
-          // 2. Sine Wave: Valentin Descombes Codrops Dual Wave Sine Path Formula
-          const sineWaveVal = Math.sin(normY * BAKED_DUAL_SINE_WAVENUM * Math.PI * 2.0);
-          const waveOffset = sineWaveVal * waveRangeRef.current;
-          baseHorizontalOffset = pinchX + (isLeft ? -waveOffset : waveOffset);
-          baseAngle = Math.cos(normY * BAKED_DUAL_SINE_WAVENUM * Math.PI * 2.0) * maxRotationRef.current * (isLeft ? -1 : 1);
         } else {
-          // 3. Cylindrical 3D Barrel Drum (Default): Expanded radius streams text continuously off-screen
+          // 2. Cylindrical 3D Barrel Drum (Default): Expanded radius streams text continuously off-screen
           const cylinderRadius = Math.max(480, H * 0.72);
           const theta = wrappedOffset / cylinderRadius;
           
@@ -400,7 +417,6 @@ export const ApparatusDualWave: React.FC<ApparatusDualWaveProps> = ({
         }
 
       const isMotionReduced = perfRef.current.reducedMotion;
-      const isLowTier = perfRef.current.tier === "low";
       const nowMs = performance.now();
       const ambientDrift = isMotionReduced ? 0 : Math.sin(nowMs * 0.0018) * 1.8;
       const mouseContainerX = (smoothMouseRef.current.x * W / 2) + W / 2;
@@ -413,12 +429,13 @@ export const ApparatusDualWave: React.FC<ApparatusDualWaveProps> = ({
       const edgeFade = normalizedDist > 0.95 ? Math.max(0, (1.0 - normalizedDist) / 0.05) : 1.0;
       const opacity = Math.min(1.0, (0.35 + centerFocus * 0.65) * edgeFade);
       
-      // Progressive blur only at extreme edges (normalizedDist > 0.38)
-      const blurFactor = Math.pow(Math.max(0, (normalizedDist - 0.38) / 0.62), 2.0);
-      const blurAmount = Math.max(0, blurFactor * maxBlurRef.current * 1.5);
+      // Smooth progressive depth-of-field blur as items travel away from center
+      const blurFactor = Math.min(1.0, Math.pow(normalizedDist, 1.35));
+      const blurAmount = blurFactor * maxBlurRef.current;
 
-      // Kinetic velocity shear: subtle text slant along scroll vector during rapid movement
-      const velShear = isMotionReduced ? 0 : (scrollVelocityRef.current / 2000) * (isLeft ? -1 : 1);
+      // Kinetic velocity shear: subtle text slant along scroll and reel spin vector
+      const effectiveVelocity = scrollVelocityRef.current + (isLeft ? instantSpinSpeed * 0.4 : -instantSpinSpeed * 0.4);
+      const velShear = isMotionReduced ? 0 : (effectiveVelocity / 2000) * (isLeft ? -1 : 1);
       const cappedSkew = Math.max(-5, Math.min(5, velShear * 6));
       const finalPitchX = isMotionReduced ? 0 : pitchX;
       const finalBaseAngle = isMotionReduced ? 0 : baseAngle;
@@ -439,9 +456,9 @@ export const ApparatusDualWave: React.FC<ApparatusDualWaveProps> = ({
         ? `translate3d(calc(-100% - ${baseHorizontalOffset.toFixed(1)}px), ${renderedY.toFixed(1)}px, ${effectiveZ.toFixed(1)}px) rotateX(${finalPitchX.toFixed(2)}deg) rotate(${finalBaseAngle.toFixed(1)}deg) skewY(${cappedSkew.toFixed(2)}deg)`
         : `translate3d(${baseHorizontalOffset.toFixed(1)}px, ${renderedY.toFixed(1)}px, ${effectiveZ.toFixed(1)}px) rotateX(${finalPitchX.toFixed(2)}deg) rotate(${finalBaseAngle.toFixed(1)}deg) skewY(${cappedSkew.toFixed(2)}deg)`;
 
-      el.style.opacity = Math.min(1.0, opacity + hoverProximity * 0.25).toFixed(3);
-      // GPU Shader Pass Bypass: Skip blur filter on low tier or when negligible to eliminate GPU overhead
-      el.style.filter = !isLowTier && blurAmount > 0.15 ? `blur(${blurAmount.toFixed(1)}px)` : "none";
+      el.style.opacity = Math.min(1.0, (opacity + hoverProximity * 0.25) * entranceFade).toFixed(3);
+      // Optical blur responsive to maxBlur slider across all tiers
+      el.style.filter = blurAmount > 0.2 ? `blur(${blurAmount.toFixed(1)}px)` : "none";
 
       const textSpan = el.firstElementChild as HTMLElement;
       if (textSpan) {
@@ -451,9 +468,10 @@ export const ApparatusDualWave: React.FC<ApparatusDualWaveProps> = ({
       }
     }
 
-      // Update active image smoothly on center crossing without double-buffer collision
+      // Update active image smoothly on center crossing without thrashing during high-speed spin
       if (closestIdx >= 0 && closestIdx < displayItems.length) {
-        if (closestIdx !== activeImageIdxRef.current && (minCenterDist < 55 || Math.abs(scrollVelocityRef.current) > 80)) {
+        const canUpdate = entranceProg > 0.65 || minCenterDist < 35;
+        if (canUpdate && closestIdx !== activeImageIdxRef.current && (minCenterDist < 55 || Math.abs(scrollVelocityRef.current) > 80)) {
           activeImageIdxRef.current = closestIdx;
           setActiveImageIdx(closestIdx);
         }
@@ -815,4 +833,4 @@ export const ApparatusDualWave: React.FC<ApparatusDualWaveProps> = ({
   );
 };
 
-export default ApparatusDualWave;
+export default DualWave;

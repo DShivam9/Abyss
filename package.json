@@ -7,7 +7,11 @@
     "packages/*"
   ],
   "scripts": {
-    "dev": "npm run dev -w apps/web",
-    "build": "npm run build --workspaces"
+    "generate:sources": "node scripts/generate-source-map.mjs",
+    "dev": "node scripts/generate-source-map.mjs && npm run dev -w apps/web",
+    "build": "node scripts/generate-source-map.mjs && npm run build --workspaces"
+  },
+  "devDependencies": {
+    "shiki": "^4.4.3"
   }
 }

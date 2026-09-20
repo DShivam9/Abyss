@@ -23,7 +23,7 @@ interface CardObject {
   introOffset?: number;
 }
 
-export default function CascadeGallery({
+export function CascadeGallery({
   images = DEFAULT_IMAGES,
   ambientDriftSpeed = 0.016,
   scrollSensitivity = 0.0065,
@@ -35,7 +35,8 @@ export default function CascadeGallery({
 }: CascadeGalleryProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const dateRef = useRef<HTMLDivElement>(null);
+  const monthRef = useRef<HTMLSpanElement>(null);
+  const dayYearRef = useRef<HTMLSpanElement>(null);
   const phraseLeftRef = useRef<HTMLDivElement>(null);
   const phraseRightRef = useRef<HTMLDivElement>(null);
   const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
@@ -50,12 +51,9 @@ export default function CascadeGallery({
     }
   }, [perf.dpr]);
 
-  const stripH1Ref = useRef<HTMLDivElement>(null);
-  const stripH2Ref = useRef<HTMLDivElement>(null);
-  const stripM1Ref = useRef<HTMLDivElement>(null);
-  const stripM2Ref = useRef<HTMLDivElement>(null);
-  const stripS1Ref = useRef<HTMLDivElement>(null);
-  const stripS2Ref = useRef<HTMLDivElement>(null);
+  const hoursRef = useRef<HTMLSpanElement>(null);
+  const minsRef = useRef<HTMLSpanElement>(null);
+  const secsRef = useRef<HTMLSpanElement>(null);
 
   const ambientDriftSpeedRef = useRef(ambientDriftSpeed);
   const scrollSensitivityRef = useRef(scrollSensitivity);
@@ -76,7 +74,6 @@ export default function CascadeGallery({
     const container = containerRef.current;
     const phraseLeftEl = phraseLeftRef.current;
     const phraseRightEl = phraseRightRef.current;
-    const dateEl = dateRef.current;
 
     if (!canvas || !container) return;
 
@@ -353,19 +350,18 @@ export default function CascadeGallery({
     // --- 5. Clock Updater ---
     const updateRealTime = () => {
       const now = new Date();
-      const options: Intl.DateTimeFormatOptions = { month: 'short', day: '2-digit', year: 'numeric' };
-      if (dateEl) dateEl.textContent = now.toLocaleDateString('en-US', options).toUpperCase();
+      const monthStr = now.toLocaleDateString('en-US', { month: 'long' });
+      const dayYearStr = `${String(now.getDate()).padStart(2, '0')}, ${now.getFullYear()}`;
+      if (monthRef.current) monthRef.current.textContent = monthStr;
+      if (dayYearRef.current) dayYearRef.current.textContent = dayYearStr;
       
       const hours = String(now.getHours()).padStart(2, '0');
       const mins = String(now.getMinutes()).padStart(2, '0');
       const secs = String(now.getSeconds()).padStart(2, '0');
 
-      if (stripH1Ref.current) stripH1Ref.current.style.transform = `translateY(-${Number(hours[0]) * 1.15}em)`;
-      if (stripH2Ref.current) stripH2Ref.current.style.transform = `translateY(-${Number(hours[1]) * 1.15}em)`;
-      if (stripM1Ref.current) stripM1Ref.current.style.transform = `translateY(-${Number(mins[0]) * 1.15}em)`;
-      if (stripM2Ref.current) stripM2Ref.current.style.transform = `translateY(-${Number(mins[1]) * 1.15}em)`;
-      if (stripS1Ref.current) stripS1Ref.current.style.transform = `translateY(-${Number(secs[0]) * 1.15}em)`;
-      if (stripS2Ref.current) stripS2Ref.current.style.transform = `translateY(-${Number(secs[1]) * 1.15}em)`;
+      if (hoursRef.current) hoursRef.current.textContent = hours;
+      if (minsRef.current) minsRef.current.textContent = mins;
+      if (secsRef.current) secsRef.current.textContent = secs;
     };
     updateRealTime();
     const clockInterval = setInterval(updateRealTime, 1000);
@@ -629,56 +625,40 @@ export default function CascadeGallery({
         ...style
       }}
     >
-      {/* Minimalist Precision Mechanical Clock & Date HUD */}
-      <div className="cascade-hud fixed top-8 left-[94px] z-20 pointer-events-none select-none flex flex-col font-sans">
-        <div ref={dateRef} className="text-[11px] font-bold tracking-[0.10em] text-neutral-900/45 uppercase tabular-nums mb-[2px]">
-          AUG 26, 2026
+      {/* Component-scoped Priestacy Font */}
+      <style>{`
+        @font-face {
+          font-family: 'Priestacy';
+          src: url('/fonts/priestacy/Priestacy.otf') format('opentype');
+          font-weight: normal;
+          font-style: normal;
+          font-display: swap;
+        }
+      `}</style>
+
+      {/* Minimalist Precision Clock & Date HUD */}
+      <div className="cascade-hud fixed bottom-8 right-8 z-20 pointer-events-none select-none flex flex-col items-end text-right">
+        <div className="flex items-baseline gap-2.5 mb-4">
+          <span
+            ref={monthRef}
+            style={{ fontFamily: "'Priestacy', 'Saint Regus', Georgia, serif" }}
+            className="text-[32px] leading-none text-[#111113] tracking-normal font-normal"
+          >
+            September
+          </span>
+          <span
+            ref={dayYearRef}
+            className="text-[17px] font-mono font-medium tracking-[0.06em] text-[#111113]/70 tabular-nums leading-none"
+          >
+            20, 2026
+          </span>
         </div>
-        <div className="flex items-center text-[14px] font-semibold tracking-[0.04em] text-[#111113] h-[1.15em] leading-[1.15em] overflow-hidden font-mono">
-          <div className="h-[1.15em] leading-[1.15em] overflow-hidden inline-block">
-            <div ref={stripH1Ref} className="flex flex-col transform transition-transform duration-[380ms] ease-[cubic-bezier(0.16,1,0.3,1)] will-change-transform">
-              <span className="block h-[1.15em] leading-[1.15em] text-center w-[0.65em]">0</span>
-              <span className="block h-[1.15em] leading-[1.15em] text-center w-[0.65em]">1</span>
-              <span className="block h-[1.15em] leading-[1.15em] text-center w-[0.65em]">2</span>
-            </div>
-          </div>
-          <div className="h-[1.15em] leading-[1.15em] overflow-hidden inline-block">
-            <div ref={stripH2Ref} className="flex flex-col transform transition-transform duration-[380ms] ease-[cubic-bezier(0.16,1,0.3,1)] will-change-transform">
-              {Array.from({ length: 10 }, (_, i) => (
-                <span key={i} className="block h-[1.15em] leading-[1.15em] text-center w-[0.65em]">{i}</span>
-              ))}
-            </div>
-          </div>
-          <span className="inline-block h-[1.15em] leading-[1.15em] mx-[1.5px] opacity-45 font-medium">:</span>
-          <div className="h-[1.15em] leading-[1.15em] overflow-hidden inline-block">
-            <div ref={stripM1Ref} className="flex flex-col transform transition-transform duration-[380ms] ease-[cubic-bezier(0.16,1,0.3,1)] will-change-transform">
-              {Array.from({ length: 6 }, (_, i) => (
-                <span key={i} className="block h-[1.15em] leading-[1.15em] text-center w-[0.65em]">{i}</span>
-              ))}
-            </div>
-          </div>
-          <div className="h-[1.15em] leading-[1.15em] overflow-hidden inline-block">
-            <div ref={stripM2Ref} className="flex flex-col transform transition-transform duration-[380ms] ease-[cubic-bezier(0.16,1,0.3,1)] will-change-transform">
-              {Array.from({ length: 10 }, (_, i) => (
-                <span key={i} className="block h-[1.15em] leading-[1.15em] text-center w-[0.65em]">{i}</span>
-              ))}
-            </div>
-          </div>
-          <span className="inline-block h-[1.15em] leading-[1.15em] mx-[1.5px] opacity-45 font-medium">:</span>
-          <div className="h-[1.15em] leading-[1.15em] overflow-hidden inline-block">
-            <div ref={stripS1Ref} className="flex flex-col transform transition-transform duration-[380ms] ease-[cubic-bezier(0.16,1,0.3,1)] will-change-transform">
-              {Array.from({ length: 6 }, (_, i) => (
-                <span key={i} className="block h-[1.15em] leading-[1.15em] text-center w-[0.65em]">{i}</span>
-              ))}
-            </div>
-          </div>
-          <div className="h-[1.15em] leading-[1.15em] overflow-hidden inline-block">
-            <div ref={stripS2Ref} className="flex flex-col transform transition-transform duration-[380ms] ease-[cubic-bezier(0.16,1,0.3,1)] will-change-transform">
-              {Array.from({ length: 10 }, (_, i) => (
-                <span key={i} className="block h-[1.15em] leading-[1.15em] text-center w-[0.65em]">{i}</span>
-              ))}
-            </div>
-          </div>
+        <div className="flex items-center text-[64px] font-semibold tracking-[0.03em] text-[#111113] leading-none font-mono tabular-nums">
+          <span ref={hoursRef}>20</span>
+          <span className="mx-2 opacity-40 font-normal">:</span>
+          <span ref={minsRef}>01</span>
+          <span className="mx-2 opacity-40 font-normal">:</span>
+          <span ref={secsRef}>29</span>
         </div>
       </div>
 
@@ -702,3 +682,5 @@ export default function CascadeGallery({
     </div>
   );
 }
+
+export default CascadeGallery;

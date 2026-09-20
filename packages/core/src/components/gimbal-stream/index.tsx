@@ -10,7 +10,7 @@ import { usePerformance } from "../../engine/PerformanceProvider";
 
 export type { GimbalStreamProps };
 
-export default function GimbalStream({
+export function GimbalStream({
   gridVariant = "plus",
   autoRotateSpeed = 0.10,
   scrollSpeed = 0.0045,
@@ -604,3 +604,5 @@ export default function GimbalStream({
     </div>
   );
 }
+
+export default GimbalStream;

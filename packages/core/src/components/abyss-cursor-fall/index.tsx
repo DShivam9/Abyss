@@ -2,7 +2,7 @@ import React, { useRef, useMemo } from "react";
 import * as THREE from "three";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
-import { Apparatus3dCursorTrailProps, SpawnedCard } from "./types";
+import { AbyssCursorFallProps, Apparatus3dCursorTrailProps, SpawnedCard } from "./types";
 import {
   DEFAULT_IMAGES,
   STARK_SVG_PALETTE,
@@ -12,7 +12,7 @@ import {
   DEPTH_LAYERS,
 } from "./constants";
 
-export const Apparatus3dCursorTrail: React.FC<Apparatus3dCursorTrailProps> = ({
+export const AbyssCursorFall: React.FC<AbyssCursorFallProps> = ({
   images = [],
   spawnDistance = 50,
   spawnInterval = 110,
@@ -458,4 +458,7 @@ export const Apparatus3dCursorTrail: React.FC<Apparatus3dCursorTrailProps> = ({
   );
 };
 
-export default Apparatus3dCursorTrail;
+export const Apparatus3dCursorTrail = AbyssCursorFall;
+export const ApparatusAbyssCursorFall = AbyssCursorFall;
+export type { AbyssCursorFallProps, Apparatus3dCursorTrailProps };
+export default AbyssCursorFall;

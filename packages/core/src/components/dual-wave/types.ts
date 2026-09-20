@@ -6,7 +6,7 @@ export interface DualWaveItem {
   imageSrc: string;
 }
 
-export interface ApparatusDualWaveProps extends VesselComponentProps {
+export interface DualWaveProps extends VesselComponentProps {
   /**
    * List of items with names and images.
    */
@@ -58,5 +58,7 @@ export interface ApparatusDualWaveProps extends VesselComponentProps {
    * Wave path pattern algorithm.
    * @default "barrel"
    */
-  wavePattern?: "barrel" | "horizon" | "dualSine";
+  wavePattern?: "barrel" | "horizon";
 }
+
+export type ApparatusDualWaveProps = DualWaveProps;
