@@ -50,7 +50,14 @@ float fbm(vec2 p) {
 }
 
 void main() {
-  vec2 uv = vUv;
+  vec2 rawUv = vUv;
+  
+  // --- 0. 3D Parallax Occlusion Shift ---
+  // Sample initial height to calculate viewpoint parallax offset
+  float initialHeight = dot(texture2D(tMap, rawUv).rgb, vec3(0.299, 0.587, 0.114));
+  vec2 parallaxVector = (uMouse - 0.5) * (initialHeight - 0.45) * 0.025 * uHoverActive;
+  vec2 uv = clamp(rawUv - parallaxVector, 0.001, 0.999);
+
   vec2 correctedUv = vec2(uv.x * uAspect, uv.y);
   vec2 correctedMouse = vec2(uMouse.x * uAspect, uMouse.y);
 
@@ -58,58 +65,64 @@ void main() {
   vec4 imgColor = texture2D(tMap, uv);
   float baseLum = dot(imgColor.rgb, vec3(0.299, 0.587, 0.114));
 
-  // --- 1. 3D Bas-Relief Normal Mapping ---
-  float d = 1.4 / uResolution.x;
-  float lumLeft = dot(texture2D(tMap, clamp(uv + vec2(-d, 0.0), 0.001, 0.999)).rgb, vec3(0.299, 0.587, 0.114));
-  float lumRight = dot(texture2D(tMap, clamp(uv + vec2(d, 0.0), 0.001, 0.999)).rgb, vec3(0.299, 0.587, 0.114));
-  float lumUp = dot(texture2D(tMap, clamp(uv + vec2(0.0, d), 0.001, 0.999)).rgb, vec3(0.299, 0.587, 0.114));
-  float lumDown = dot(texture2D(tMap, clamp(uv + vec2(0.0, -d), 0.001, 0.999)).rgb, vec3(0.299, 0.587, 0.114));
+  // --- 1. Multi-Scale Razor-Sharp Normal Mapping ---
+  vec2 texel = 1.0 / uResolution;
+  // Fine micro-chisel sample
+  float hL = dot(texture2D(tMap, clamp(uv - vec2(texel.x * 1.1, 0.0), 0.001, 0.999)).rgb, vec3(0.299, 0.587, 0.114));
+  float hR = dot(texture2D(tMap, clamp(uv + vec2(texel.x * 1.1, 0.0), 0.001, 0.999)).rgb, vec3(0.299, 0.587, 0.114));
+  float hD = dot(texture2D(tMap, clamp(uv - vec2(0.0, texel.y * 1.1), 0.001, 0.999)).rgb, vec3(0.299, 0.587, 0.114));
+  float hU = dot(texture2D(tMap, clamp(uv + vec2(0.0, texel.y * 1.1), 0.001, 0.999)).rgb, vec3(0.299, 0.587, 0.114));
   
-  vec3 N = normalize(vec3((lumLeft - lumRight) * 4.2, (lumDown - lumUp) * 4.2, 1.0));
+  // Broader architectural relief sample
+  float hL2 = dot(texture2D(tMap, clamp(uv - vec2(texel.x * 2.8, 0.0), 0.001, 0.999)).rgb, vec3(0.299, 0.587, 0.114));
+  float hR2 = dot(texture2D(tMap, clamp(uv + vec2(texel.x * 2.8, 0.0), 0.001, 0.999)).rgb, vec3(0.299, 0.587, 0.114));
+  float hD2 = dot(texture2D(tMap, clamp(uv - vec2(0.0, texel.y * 2.8), 0.001, 0.999)).rgb, vec3(0.299, 0.587, 0.114));
+  float hU2 = dot(texture2D(tMap, clamp(uv + vec2(0.0, texel.y * 2.8), 0.001, 0.999)).rgb, vec3(0.299, 0.587, 0.114));
+
+  float dX = ((hL - hR) * 0.72 + (hL2 - hR2) * 0.28) * 6.2;
+  float dY = ((hD - hU) * 0.72 + (hD2 - hU2) * 0.28) * 6.2;
+  vec3 N = normalize(vec3(dX, dY, 1.0));
 
   // --- 2. Screen-Space Ambient Occlusion (Carved Recesses) ---
-  // Deep grooves trap light: compare local luminance to neighborhood average
-  float localAvg = (lumLeft + lumRight + lumUp + lumDown) * 0.25;
-  float ao = smoothstep(-0.08, 0.06, baseLum - localAvg);
-  float aoFactor = 0.3 + ao * 0.7;
+  float localAvg = (hL + hR + hU + hD) * 0.25;
+  float ao = smoothstep(-0.06, 0.04, baseLum - localAvg);
+  float aoFactor = 0.28 + ao * 0.72;
 
   // --- 3. Dynamic Torchlight & Flame Jitter ---
   float flickerTime = uTime * 8.5;
   vec2 flameJitter = vec2(
-    sin(flickerTime) * 0.008 * cos(flickerTime * 0.45),
-    cos(flickerTime) * 0.008 * sin(flickerTime * 0.55)
+    sin(flickerTime) * 0.007 * cos(flickerTime * 0.45),
+    cos(flickerTime) * 0.007 * sin(flickerTime * 0.55)
   ) * uHoverActive;
 
   vec2 activeLightPos = correctedMouse + flameJitter;
   vec2 lightVec = activeLightPos - correctedUv;
   float lightDist = length(lightVec) + 0.0001;
-  vec3 L = normalize(vec3(lightVec, 0.45));
+  vec3 L = normalize(vec3(lightVec, 0.42));
 
-  // Diffuse + Specular
+  // Diffuse + Crisp Specular Glint
   float diffuse = max(dot(N, L), 0.0);
   vec3 V = vec3(0.0, 0.0, 1.0);
   vec3 H = normalize(L + V);
-  float stoneSpec = pow(max(dot(N, H), 0.0), 18.0) * 0.22;
+  float stoneSpec = pow(max(dot(N, H), 0.0), 30.0) * 0.32;
 
-  // --- 4. 8-Step Ray-Marched Heightmap Shadows (Soft Accumulation) ---
-  float stepSize = mix(0.006, 0.016, clamp(lightDist * 1.1, 0.0, 1.0));
-  
+  // --- 4. 14-Step Precision Ray-Marched Contact Shadows ---
+  float stepSize = mix(0.002, 0.0065, clamp(lightDist * 0.8, 0.0, 1.0));
   float shadow = 1.0;
   vec2 rayDir = normalize(lightVec);
-  float currentHeight = baseLum * 0.45;
+  float currentHeight = baseLum * 0.48;
   
-  for (int i = 1; i <= 8; ++i) {
+  for (int i = 1; i <= 14; ++i) {
     vec2 sampleUv = uv + rayDir * float(i) * stepSize;
-    float sampleHeight = dot(texture2D(tMap, clamp(sampleUv, 0.001, 0.999)).rgb, vec3(0.299, 0.587, 0.114)) * 0.45;
+    float sampleHeight = dot(texture2D(tMap, clamp(sampleUv, 0.001, 0.999)).rgb, vec3(0.299, 0.587, 0.114)) * 0.48;
     
-    float rayHeight = currentHeight + float(i) * 0.042;
-    // Distance-weighted occlusion: far steps contribute less
-    float occlusionWeight = 1.0 - float(i) * 0.08;
+    float rayHeight = currentHeight + float(i) * 0.026;
     if (sampleHeight > rayHeight) {
-      shadow -= 0.16 * occlusionWeight;
+      float penetration = (sampleHeight - rayHeight) * 4.0;
+      shadow -= clamp(penetration, 0.0, 0.15) * (1.0 - float(i) * 0.055);
     }
   }
-  shadow = clamp(shadow, 0.18, 1.0);
+  shadow = clamp(shadow, 0.12, 1.0);
 
   // --- 5. Multi-Tone Stone Substrate with Mineral Veins ---
   float stoneGrain = fbm(correctedUv * 240.0) * 0.08;

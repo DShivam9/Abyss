@@ -54,6 +54,9 @@ export const ApparatusIalfa: React.FC<ApparatusIalfaProps> = (props) => {
   return (
     <VesselCanvas
       {...props}
+      fit="cover"
+      className={`!w-full !h-full !max-w-none !max-h-none !aspect-auto absolute inset-0 ${props.className || ""}`}
+      style={{ width: "100%", height: "100%", aspectRatio: "auto", ...props.style }}
       vertexShader={vert}
       fragmentShader={frag}
       uniforms={{
@@ -64,7 +67,7 @@ export const ApparatusIalfa: React.FC<ApparatusIalfaProps> = (props) => {
       onAnimate={handleAnimate}
       onClickCanvas={handleClickCanvas}
       subdivisions={{ x: 32, y: 32 }}
-      ariaLabel="Interactive cathedral incense smoke. Hovering stirs up convective air currents that cause white smoke trails to rise and refract the medieval icon painting behind it."
+      ariaLabel="Interactive medieval knight stone bas-relief carving with raking torchlight and raymarched contact shadows."
     />
   );
 };

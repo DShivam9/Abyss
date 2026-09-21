@@ -14,6 +14,7 @@ export interface VesselCanvasProps extends VesselComponentProps {
   onClickCanvas?: (uv: THREE.Vector2, clock: THREE.Clock) => void;
   onAnimate?: (material: THREE.ShaderMaterial, clock: THREE.Clock, delta: number, perf?: PerformanceProfile) => void;
   ariaLabel?: string;
+  fit?: "contain" | "cover";
 }
 
 export const VesselCanvas: React.FC<VesselCanvasProps> = ({
@@ -29,12 +30,14 @@ export const VesselCanvas: React.FC<VesselCanvasProps> = ({
   onClickCanvas,
   onAnimate,
   ariaLabel,
+  fit = "contain",
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
   const materialRef = useRef<THREE.ShaderMaterial | null>(null);
   const [imgDimensions, setImgDimensions] = useState({ width: 500, height: 500 });
+  const imgDimensionsRef = useRef({ width: 500, height: 500 });
   const perf = usePerformance();
   const perfRef = useRef(perf);
   perfRef.current = perf;
@@ -218,9 +221,12 @@ export const VesselCanvas: React.FC<VesselCanvasProps> = ({
         const imgW = texture.image.width;
         const imgH = texture.image.height;
         setImgDimensions({ width: imgW, height: imgH });
+        imgDimensionsRef.current = { width: imgW, height: imgH };
 
         // Update DOM aspect ratio directly and sync Three.js renderer size
-        container.style.aspectRatio = `${imgW} / ${imgH}`;
+        if (fit !== "cover") {
+          container.style.aspectRatio = `${imgW} / ${imgH}`;
+        }
         const newW = container.clientWidth;
         const newH = container.clientHeight;
 
@@ -247,9 +253,16 @@ export const VesselCanvas: React.FC<VesselCanvasProps> = ({
       let finalW = w;
       let finalH = w * imgAspect;
 
-      if (finalH > h) {
-        finalH = h;
-        finalW = h / imgAspect;
+      if (fit === "cover") {
+        if (finalH < h) {
+          finalH = h;
+          finalW = h / imgAspect;
+        }
+      } else {
+        if (finalH > h) {
+          finalH = h;
+          finalW = h / imgAspect;
+        }
       }
       mesh.scale.set(finalW, finalH, 1.0);
     };
@@ -268,7 +281,7 @@ export const VesselCanvas: React.FC<VesselCanvasProps> = ({
       material.uniforms.uResolution.value.set(newW, newH);
       material.uniforms.uAspect.value = newW / newH;
 
-      adjustMeshScale(newW, newH, imgDimensions.width, imgDimensions.height);
+      adjustMeshScale(newW, newH, imgDimensionsRef.current.width, imgDimensionsRef.current.height);
     };
     window.addEventListener("resize", handleResize);
 
@@ -357,10 +370,10 @@ export const VesselCanvas: React.FC<VesselCanvasProps> = ({
       role="img"
       aria-label={ariaLabel || "Interactive Abyss visual canvas"}
       style={{
-        aspectRatio: `${imgDimensions.width} / ${imgDimensions.height}`,
+        ...(fit !== "cover" ? { aspectRatio: `${imgDimensions.width} / ${imgDimensions.height}` } : {}),
         ...style,
       }}
-      className={`max-h-[68vh] max-w-[440px] w-full relative overflow-visible select-none pointer-events-auto group cursor-pointer ${className}`}
+      className={`${fit === "cover" ? "w-full h-full max-w-none max-h-none" : "max-h-[68vh] max-w-[440px] w-full"} relative overflow-visible select-none pointer-events-auto group cursor-pointer ${className}`}
     >
       <canvas ref={canvasRef} className="absolute inset-0 block w-full h-full" />
     </div>
