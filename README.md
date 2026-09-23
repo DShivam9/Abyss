@@ -12,7 +12,7 @@
 
 Abyss is an open-source collection of interactive, animated React components built for creative web projects. It focuses on visual effects that are difficult to build from scratch: GPU shaders, scroll-driven animations, 3D viewports, cursor interactions, and image galleries with depth.
 
-The library currently contains **33 components**. Each component is self-contained, individually importable, and ships with a live preview, adjustable controls, and viewable source code on the website.
+The library currently contains **27 components**. Each component is self-contained, individually importable, and ships with a live preview, adjustable controls, and viewable source code on the website.
 
 Abyss is structured as a monorepo. The `apps/web` workspace is the website you see at [abssy.vercel.app](https://abssy.vercel.app/). The `packages/core` workspace holds every component.
 
@@ -20,17 +20,19 @@ Abyss is structured as a monorepo. The `apps/web` workspace is the website you s
 
 ## What's Inside
 
-A few highlights:
+A few highlights from the collection:
 
 | Component | What It Does |
 |---|---|
+| `bas-relief-shadow` | High-fidelity digital bas-relief stone carving with multi-scale normal mapping, raymarched contact shadows, and cursor-driven incident specular lighting |
 | `gimbal-stream` | Infinite-scroll 3D gallery inside a ray-marched obsidian chamber with five gimbal-mounted card rings and liquid mercury centerpiece |
 | `cascade-gallery` | Editorial 3D diagonal conveyor gallery with thermal emulsion reveal, lateral tab pull, and a live mechanical chronometer |
 | `theme-toggle-redesign` | Two reimagined light/dark toggles: a 3D plunge dial with expanding screen wave, and a lamp pull cord with Verlet bead physics |
 | `hover-media-stream` | Typography stream with aperture-unroll video reveals and frame-synced ambient backlighting on hover |
 | `erosion-map` | Scroll-driven Perlin noise erosion that weathers images away layer by layer with glowing active edges |
+| `accordion-wall` | Architectural accordion wall with dynamic physical unfolding, responsive typography, and tactile panel states |
 
-Browse all 33 at [abssy.vercel.app/collection](https://abssy.vercel.app/collection).
+Browse the full collection at [abssy.vercel.app/collection](https://abssy.vercel.app/collection).
 
 ---
 
