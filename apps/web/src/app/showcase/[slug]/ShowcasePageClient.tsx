@@ -48,7 +48,7 @@ export default function ShowcasePageClient({ slug }: { slug: string }) {
       : `/images/${meta.filename}`
     : "";
 
-  const { isSelfContainedScroll, isText, isScroll, isGallery, isTransition } = getLayoutType(meta, slug);
+  const { isSelfContainedScroll, isFullBleed, isText, isScroll, isGallery, isTransition } = getLayoutType(meta, slug);
 
   const renderComponent = () => {
     return <Component imageSrc={defaultImageSrc} {...controlValues} onControlChange={handleControlChange} />;
@@ -94,7 +94,7 @@ export default function ShowcasePageClient({ slug }: { slug: string }) {
       );
     }
     return (
-      <ShaderShowcaseLayout>
+      <ShaderShowcaseLayout fullBleed={isFullBleed}>
         {renderComponent()}
       </ShaderShowcaseLayout>
     );

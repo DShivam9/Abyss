@@ -1,0 +1,16 @@
+{
+  "name": "Optic Grid",
+  "slug": "optic-grid",
+  "pitch": "A 30-tile photographic matrix governed by in-flight optical filters, dynamic glass scale gauges, and seamless GSAP Flip layout morphing.",
+  "family": "gallery",
+  "energy": "tactile",
+  "triggers": ["click", "hover"],
+  "tech": ["react", "gsap", "flip"],
+  "lifecycle": {
+    "idle": "High-density editorial contact grid resting in pristine contrast",
+    "discovery": "Selecting a layout or scale triggers synchronized parabolic FLIP motion",
+    "buildUp": "In-flight optical filters bloom, invert, or shift chromatic values mid-transit",
+    "peak": "Images land gracefully into new asymmetric spans with cushioned liquid easing",
+    "recovery": "Optical filters dissolve back to neutral baseline as final positions lock"
+  }
+}

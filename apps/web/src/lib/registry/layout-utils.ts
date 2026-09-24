@@ -9,13 +9,18 @@ export const SELF_CONTAINED_SCROLL = new Set([
   "cyclorama-matrix",
 ]);
 
+export const FULL_BLEED_SHADERS = new Set([
+  "bas-relief-shadow",
+]);
+
 export function getLayoutType(meta: ComponentDetail, slug: string) {
   const isSelfContainedScroll = SELF_CONTAINED_SCROLL.has(slug);
+  const isFullBleed = FULL_BLEED_SHADERS.has(slug);
   const previewType = meta.previewType || (meta.category === "scroll" ? "scroll" : meta.category === "text" ? "text" : "shader");
   const isText = meta.category === "text" || previewType === "text";
   const isScroll = !isText && !isSelfContainedScroll && (previewType === "scroll" || meta.category === "scroll");
   const isGallery = !isText && !isScroll && (isSelfContainedScroll || meta.category === "gallery" || meta.category === "svg" || previewType === "gallery" || (meta.category !== "scroll" && (meta.subtype === "gallery" || meta.subtype === "ring")));
   const isTransition = !isText && !isSelfContainedScroll && (meta.category === "transition" || previewType === "transition");
 
-  return { isSelfContainedScroll, isText, isScroll, isGallery, isTransition };
+  return { isSelfContainedScroll, isFullBleed, isText, isScroll, isGallery, isTransition };
 }

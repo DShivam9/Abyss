@@ -44,7 +44,7 @@ export const VIBE_SECTIONS: VibeSection[] = [
     id: "beyond-the-grid",
     title: "Beyond the Grid",
     headlineClass: "headline-s3", // indigo
-    count: 6,
+    count: 7,
     slugs: [
       "cascade-gallery",
       "gimbal-stream",
@@ -52,6 +52,7 @@ export const VIBE_SECTIONS: VibeSection[] = [
       "tracklist-gallery",
       "cinema-aisle",
       "cyclorama-matrix",
+      "optic-grid",
     ],
   },
   {
@@ -76,21 +77,17 @@ export const VIBE_SECTIONS: VibeSection[] = [
     id: "brought-to-light",
     title: "Brought to Light",
     headlineClass: "headline-s1", // white
-    count: 13,
+    count: 9,
     slugs: [
       "bas-relief-shadow",
       "bronze-transmutation",
       "japparii",
       "chromepunk-beast",
       "merlin-knights",
-      "acg-fleece",
       "molten-mercury",
-      "core-shell-b",
       "kinetic-portal",
       "gilding-transmutation",
       "steel-intaglio",
-      "depth-silhouette",
-      "procedural-atlas",
     ],
   },
 ];

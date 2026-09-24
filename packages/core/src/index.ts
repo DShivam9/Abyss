@@ -11,11 +11,9 @@ export * from "./engine/VesselCanvas";
 export * from "./engine/PerformanceProvider";
 export * from "./engine/motion";
 
-export * from "./components/acg-fleece";
 export * from "./components/molten-mercury";
 export * from "./components/gilding-transmutation";
 export * from "./components/chromepunk-beast";
-export * from "./components/core-shell-b";
 export * from "./components/japparii";
 export * from "./components/kinetic-portal";
 export * from "./components/merlin-knights";
@@ -39,6 +37,7 @@ export * from "./components/theme-toggle-redesign";
 export * from "./components/mosaic-loader";
 export * from "./components/cinema-aisle";
 export * from "./components/cyclorama-matrix";
+export * from "./components/optic-grid";
 
 
 

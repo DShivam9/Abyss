@@ -128,9 +128,14 @@ export function ControlsDrawer({
 
       {/* Scrubber and Switch Controls Body */}
       <div ref={bodyRef} className="controls-body">
-        {controls.map((ctrl, idx) => {
-          const val = values[ctrl.key] ?? ctrl.default;
-          const uniqueKey = `${ctrl.key}-${ctrl.label}-${idx}`;
+        {controls.length === 0 ? (
+          <div style={{ padding: "24px 16px", textAlign: "center", color: "rgba(240, 238, 233, 0.45)", fontSize: "11px", letterSpacing: "0.06em", lineHeight: "1.6", textTransform: "uppercase" }}>
+            Tactile HUD controls integrated directly on canvas
+          </div>
+        ) : (
+          controls.map((ctrl, idx) => {
+            const val = values[ctrl.key] ?? ctrl.default;
+            const uniqueKey = `${ctrl.key}-${ctrl.label}-${idx}`;
 
             // Slider / Number controls rendered as Inset Scrubber Rows
             if (ctrl.type === "slider") {
@@ -213,19 +218,20 @@ export function ControlsDrawer({
             }
 
             return null;
-          })}
+          })
+        )}
 
-          {/* Reset Defaults Button */}
-          {onReset && (
-            <button
-              type="button"
-              className="controls-action-btn"
-              onClick={onReset}
-            >
-              Reset defaults
-            </button>
-          )}
-        </div>
+        {/* Reset Defaults Button */}
+        {controls.length > 0 && onReset && (
+          <button
+            type="button"
+            className="controls-action-btn"
+            onClick={onReset}
+          >
+            Reset defaults
+          </button>
+        )}
+      </div>
     </div>
   );
 }

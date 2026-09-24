@@ -3,15 +3,12 @@ import { ComponentDetail } from "./types";
 import { meta as _3dShatterSphere } from "@abyss-ui/core/components/3d-shatter-sphere/meta";
 import { meta as abyssCursorFall } from "@abyss-ui/core/components/abyss-cursor-fall/meta";
 import { meta as accordionWall } from "@abyss-ui/core/components/accordion-wall/meta";
-import { meta as acgFleece } from "@abyss-ui/core/components/acg-fleece/meta";
 import { meta as basReliefShadow } from "@abyss-ui/core/components/bas-relief-shadow/meta";
 import { meta as bronzeTransmutation } from "@abyss-ui/core/components/bronze-transmutation/meta";
 import { meta as cascadeGallery } from "@abyss-ui/core/components/cascade-gallery/meta";
 import { meta as chromepunkBeast } from "@abyss-ui/core/components/chromepunk-beast/meta";
 import { meta as cinemaAisle } from "@abyss-ui/core/components/cinema-aisle/meta";
-import { meta as coreShellB } from "@abyss-ui/core/components/core-shell-b/meta";
 import { meta as cycloramaMatrix } from "@abyss-ui/core/components/cyclorama-matrix/meta";
-import { meta as depthSilhouette } from "@abyss-ui/core/components/depth-silhouette/meta";
 import { meta as dualWave } from "@abyss-ui/core/components/dual-wave/meta";
 import { meta as erosionMap } from "@abyss-ui/core/components/erosion-map/meta";
 import { meta as gildingTransmutation } from "@abyss-ui/core/components/gilding-transmutation/meta";
@@ -23,9 +20,9 @@ import { meta as kineticPortal } from "@abyss-ui/core/components/kinetic-portal/
 import { meta as merlinKnights } from "@abyss-ui/core/components/merlin-knights/meta";
 import { meta as moltenMercury } from "@abyss-ui/core/components/molten-mercury/meta";
 import { meta as mosaicLoader } from "@abyss-ui/core/components/mosaic-loader/meta";
+import { meta as opticGrid } from "@abyss-ui/core/components/optic-grid/meta";
 import { meta as parallaxBleed } from "@abyss-ui/core/components/parallax-bleed/meta";
 import { meta as parallaxColumn } from "@abyss-ui/core/components/parallax-column/meta";
-import { meta as proceduralAtlas } from "@abyss-ui/core/components/procedural-atlas/meta";
 import { meta as rippleScramble } from "@abyss-ui/core/components/ripple-scramble/meta";
 import { meta as steelIntaglio } from "@abyss-ui/core/components/steel-intaglio/meta";
 import { meta as themeToggleRedesign } from "@abyss-ui/core/components/theme-toggle-redesign/meta";
@@ -35,15 +32,12 @@ export const COMPONENT_DETAILS: Record<string, ComponentDetail> = {
   [_3dShatterSphere.slug]: _3dShatterSphere,
   [abyssCursorFall.slug]: abyssCursorFall,
   [accordionWall.slug]: accordionWall,
-  [acgFleece.slug]: acgFleece,
   [basReliefShadow.slug]: basReliefShadow,
   [bronzeTransmutation.slug]: bronzeTransmutation,
   [cascadeGallery.slug]: cascadeGallery,
   [chromepunkBeast.slug]: chromepunkBeast,
   [cinemaAisle.slug]: cinemaAisle,
-  [coreShellB.slug]: coreShellB,
   [cycloramaMatrix.slug]: cycloramaMatrix,
-  [depthSilhouette.slug]: depthSilhouette,
   [dualWave.slug]: dualWave,
   [erosionMap.slug]: erosionMap,
   [gildingTransmutation.slug]: gildingTransmutation,
@@ -55,9 +49,9 @@ export const COMPONENT_DETAILS: Record<string, ComponentDetail> = {
   [merlinKnights.slug]: merlinKnights,
   [moltenMercury.slug]: moltenMercury,
   [mosaicLoader.slug]: mosaicLoader,
+  [opticGrid.slug]: opticGrid,
   [parallaxBleed.slug]: parallaxBleed,
   [parallaxColumn.slug]: parallaxColumn,
-  [proceduralAtlas.slug]: proceduralAtlas,
   [rippleScramble.slug]: rippleScramble,
   [steelIntaglio.slug]: steelIntaglio,
   [themeToggleRedesign.slug]: themeToggleRedesign,

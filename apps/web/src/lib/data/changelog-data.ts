@@ -28,6 +28,21 @@ export interface CommitEntry {
 
 export const CHANGELOG_DATA: CommitEntry[] = [
   {
+    id: "commit-36",
+    date: "2026-09-24",
+    displayDate: "Sep 24, 2026 • 20:30 IST",
+    tags: ["ADDITION"],
+    title: "Added Optic Grid Component",
+    summary: "Added Optic Grid, an image grid with smooth layout switching and zoom controls.",
+    affectedSlugs: ["optic-grid"],
+    items: [
+      "Switch between five distinct grid arrangements smoothly",
+      "Adjust grid density with interactive zoom controls",
+      "Choose from built-in visual image filters",
+      "Interactive showcase preview and documentation",
+    ],
+  },
+  {
     id: "commit-35",
     date: "2026-09-20",
     displayDate: "Sep 20, 2026 • 20:25 IST",

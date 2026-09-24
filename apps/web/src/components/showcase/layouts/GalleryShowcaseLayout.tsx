@@ -8,7 +8,10 @@ interface GalleryShowcaseLayoutProps {
 
 export function GalleryShowcaseLayout({ children }: GalleryShowcaseLayoutProps) {
   return (
-    <div className="h-screen w-screen overflow-hidden bg-[#070708] cursor-grab active:cursor-grabbing">
+    <div
+      className="h-screen w-screen overflow-y-auto overflow-x-hidden bg-[#070708]"
+      data-lenis-prevent
+    >
       {children}
     </div>
   );
