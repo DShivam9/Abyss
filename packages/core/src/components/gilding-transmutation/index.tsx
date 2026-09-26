@@ -1,11 +1,11 @@
 import React, { useRef } from "react";
 import * as THREE from "three";
-import { VesselCanvas } from "../../engine/VesselCanvas";
-import { ApparatusFafProps } from "./types";
+import { AbyssCanvas } from "../../engine/AbyssCanvas";
+import { GildingTransmutationProps } from "./types";
 import vert from "./shader.vert.glsl";
 import frag from "./shader.frag.glsl";
 
-export const ApparatusFaf: React.FC<ApparatusFafProps> = (props) => {
+export const GildingTransmutation: React.FC<GildingTransmutationProps> = (props) => {
   const hoverActiveRef = useRef(0.0);
   const clickWaveRef = useRef(0.0);
 
@@ -33,7 +33,7 @@ export const ApparatusFaf: React.FC<ApparatusFafProps> = (props) => {
   };
 
   return (
-    <VesselCanvas
+    <AbyssCanvas
       {...props}
       vertexShader={vert}
       fragmentShader={frag}
@@ -49,4 +49,4 @@ export const ApparatusFaf: React.FC<ApparatusFafProps> = (props) => {
   );
 };
 
-export default ApparatusFaf;
+export default GildingTransmutation;

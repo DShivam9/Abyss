@@ -21,6 +21,7 @@ import { meta as merlinKnights } from "@abyss-ui/core/components/merlin-knights/
 import { meta as moltenMercury } from "@abyss-ui/core/components/molten-mercury/meta";
 import { meta as mosaicLoader } from "@abyss-ui/core/components/mosaic-loader/meta";
 import { meta as opticGrid } from "@abyss-ui/core/components/optic-grid/meta";
+import { meta as polyptychFormation } from "@abyss-ui/core/components/polyptych-formation/meta";
 import { meta as parallaxBleed } from "@abyss-ui/core/components/parallax-bleed/meta";
 import { meta as parallaxColumn } from "@abyss-ui/core/components/parallax-column/meta";
 import { meta as rippleScramble } from "@abyss-ui/core/components/ripple-scramble/meta";
@@ -50,6 +51,7 @@ export const COMPONENT_DETAILS: Record<string, ComponentDetail> = {
   [moltenMercury.slug]: moltenMercury,
   [mosaicLoader.slug]: mosaicLoader,
   [opticGrid.slug]: opticGrid,
+  [polyptychFormation.slug]: polyptychFormation,
   [parallaxBleed.slug]: parallaxBleed,
   [parallaxColumn.slug]: parallaxColumn,
   [rippleScramble.slug]: rippleScramble,

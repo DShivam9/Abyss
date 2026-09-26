@@ -5,11 +5,13 @@
  */
 
 export * from "./engine/types";
-export * from "./engine/useVesselMouse";
-export * from "./engine/useVesselScroll";
-export * from "./engine/VesselCanvas";
+export * from "./engine/useAbyssMouse";
+export * from "./engine/useAbyssScroll";
+export * from "./engine/AbyssCanvas";
 export * from "./engine/PerformanceProvider";
 export * from "./engine/motion";
+export * from "./engine/utils";
+export * from "./hooks";
 
 export * from "./components/molten-mercury";
 export * from "./components/gilding-transmutation";
@@ -38,6 +40,7 @@ export * from "./components/mosaic-loader";
 export * from "./components/cinema-aisle";
 export * from "./components/cyclorama-matrix";
 export * from "./components/optic-grid";
+export * from "./components/polyptych-formation";
 
 
 

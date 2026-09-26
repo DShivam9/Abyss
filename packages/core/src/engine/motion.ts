@@ -1,6 +1,6 @@
 /**
  * Abyss Core Motion & Easing Engine
- * Component-level motion constants — used inside Vessel components.
+ * Component-level motion constants.
  * Standardized spring physics, bezier easing curves, and frame-rate independent damping formulas.
  */
 

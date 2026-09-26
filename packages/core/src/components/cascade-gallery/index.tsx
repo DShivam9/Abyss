@@ -5,23 +5,17 @@ import * as THREE from "three";
 import gsap from "gsap";
 import { CascadeGalleryProps } from "./types";
 import { DEFAULT_IMAGES, PHOTO_CAPTIONS } from "./constants";
-import { GLASS_VERTEX_SHADER, GLASS_FRAGMENT_SHADER } from "./shaders";
 import { usePerformance } from "../../engine/PerformanceProvider";
+import { useLatestRef } from "../../hooks";
+import {
+  CardObject,
+  CASCADE_CONSTANTS,
+  loadCardsAndTextures,
+  disposeCascadeScene,
+} from "./scene";
+import styles from "./styles.module.css";
 
 export type { CascadeGalleryProps };
-
-interface CardObject {
-  group: THREE.Group;
-  mesh: THREE.Mesh;
-  mat: THREE.ShaderMaterial;
-  index: number;
-  localPitch: number;
-  hoverLift: number;
-  introPitch: number;
-  introFade: number;
-  introThermal: number;
-  introOffset?: number;
-}
 
 export function CascadeGallery({
   images = DEFAULT_IMAGES,
@@ -41,33 +35,24 @@ export function CascadeGallery({
   const phraseRightRef = useRef<HTMLDivElement>(null);
   const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
 
+  const hoursRef = useRef<HTMLSpanElement>(null);
+  const minsRef = useRef<HTMLSpanElement>(null);
+  const secsRef = useRef<HTMLSpanElement>(null);
+
   const perf = usePerformance();
-  const perfRef = useRef(perf);
-  perfRef.current = perf;
+  const perfRef = useLatestRef(perf);
+
+  const ambientDriftSpeedRef = useLatestRef(ambientDriftSpeed);
+  const scrollSensitivityRef = useLatestRef(scrollSensitivity);
+  const stepDistRef = useLatestRef(stepDist);
+  const hoverLiftMultiplierRef = useLatestRef(hoverLiftMultiplier);
+  const dominoLeanRef = useLatestRef(dominoLean);
 
   useEffect(() => {
     if (rendererRef.current) {
       rendererRef.current.setPixelRatio(perf.dpr);
     }
   }, [perf.dpr]);
-
-  const hoursRef = useRef<HTMLSpanElement>(null);
-  const minsRef = useRef<HTMLSpanElement>(null);
-  const secsRef = useRef<HTMLSpanElement>(null);
-
-  const ambientDriftSpeedRef = useRef(ambientDriftSpeed);
-  const scrollSensitivityRef = useRef(scrollSensitivity);
-  const stepDistRef = useRef(stepDist);
-  const hoverLiftMultiplierRef = useRef(hoverLiftMultiplier);
-  const dominoLeanRef = useRef(dominoLean);
-
-  useEffect(() => {
-    ambientDriftSpeedRef.current = ambientDriftSpeed;
-    scrollSensitivityRef.current = scrollSensitivity;
-    stepDistRef.current = stepDist;
-    hoverLiftMultiplierRef.current = hoverLiftMultiplier;
-    dominoLeanRef.current = dominoLean;
-  }, [ambientDriftSpeed, scrollSensitivity, stepDist, hoverLiftMultiplier, dominoLean]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -97,54 +82,21 @@ export function CascadeGallery({
     const camera = new THREE.PerspectiveCamera(17, window.innerWidth / window.innerHeight, 0.1, 200);
     camera.position.set(0, 0, 42);
 
-    const cardWidth = 3.0;
-    const cardHeight = 1.6875;
+    const { cardWidth, cardHeight, dirX, dirY, dirZ, totalCards } = CASCADE_CONSTANTS;
     const cardGeo = new THREE.PlaneGeometry(cardWidth, cardHeight);
     cardGeo.translate(0, cardHeight / 2, 0);
 
     const proxyGeo = new THREE.PlaneGeometry(cardWidth * 1.05, cardHeight * 1.15);
     proxyGeo.translate(0, cardHeight / 2, 0);
     const hitProxies: THREE.Mesh[] = [];
-
-    const dirX = 1.62;
-    const dirY = 0.90;
-    const dirZ = -0.05;
-    const totalCards = 120;
     const cards: CardObject[] = [];
 
-    function createCard(tex: THREE.Texture): { group: THREE.Group; mesh: THREE.Mesh; mat: THREE.ShaderMaterial } {
-      const mat = new THREE.ShaderMaterial({
-        vertexShader: GLASS_VERTEX_SHADER,
-        fragmentShader: GLASS_FRAGMENT_SHADER,
-        uniforms: {
-          uTexture: { value: tex },
-          uBlur: { value: 2.8 },
-          uAspect: { value: cardWidth / cardHeight },
-          uDepthAlpha: { value: 1.0 },
-          uIntroFade: { value: 0.0 },
-          uThermalNeg: { value: 0.0 },
-        },
-        transparent: true,
-        side: THREE.DoubleSide,
-        depthTest: true,
-        depthWrite: true,
-      });
-
-      const mesh = new THREE.Mesh(cardGeo, mat);
-      const group = new THREE.Group();
-      group.rotation.set(0.14, -0.84, -0.15);
-      group.add(mesh);
-      scene.add(group);
-      return { group, mesh, mat };
-    }
-
     const introBloom = { fade: 0.0, blur: 6.0 };
-
     const raycaster = new THREE.Raycaster();
     const mouse = new THREE.Vector2(-1000, -1000);
     let selectedHoverIndex: number | null = null;
 
-    // --- 3. Hero State & Choreography ---
+    // --- 2. Hero State & Choreography ---
     let activeHeroIndex: number | null = null;
     let isHeroActive = false;
     let isHeroClosing = false;
@@ -285,7 +237,7 @@ export function CascadeGallery({
       });
     }
 
-    // --- 4. Event Listeners ---
+    // --- 3. Event Listeners ---
     const handlePointerMove = (e: PointerEvent) => {
       mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
       mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
@@ -321,7 +273,7 @@ export function CascadeGallery({
         userScrollVelocity += 35;
       } else if (e.key === "ArrowLeft" && !isHeroActive && !isHeroClosing) {
         targetProgress -= 1.8;
-        userScrollVelocity -= 35;
+        userScrollVelocity += 35;
       } else if (e.key === " " && !isHeroActive && !isHeroClosing) {
         e.preventDefault();
         targetProgress += 2.5;
@@ -347,7 +299,7 @@ export function CascadeGallery({
     window.addEventListener("keydown", handleKeyDown);
     window.addEventListener("wheel", handleWheel, { passive: false });
 
-    // --- 5. Clock Updater ---
+    // --- 4. Clock Updater ---
     const updateRealTime = () => {
       const now = new Date();
       const monthStr = now.toLocaleDateString('en-US', { month: 'long' });
@@ -366,7 +318,7 @@ export function CascadeGallery({
     updateRealTime();
     const clockInterval = setInterval(updateRealTime, 1000);
 
-    // --- 6. Render Loop ---
+    // --- 5. Render Loop ---
     let lastTime = performance.now();
 
     const animate = () => {
@@ -505,77 +457,21 @@ export function CascadeGallery({
       renderer.render(scene, camera);
     };
 
-    // --- 7. Texture Preloader & Initialization ---
-    const textureLoader = new THREE.TextureLoader();
-    const loadPromises = images.map((src) => {
-      return new Promise<THREE.Texture>((resolve) => {
-        textureLoader.load(src, (tex) => {
-          tex.generateMipmaps = true;
-          tex.minFilter = THREE.LinearMipmapLinearFilter;
-          resolve(tex);
-        });
-      });
-    });
-
-    Promise.all(loadPromises).then((loadedTextures) => {
-      if (isDisposed) return;
-      if (canvas) canvas.style.opacity = '1';
-
-      for (let i = 0; i < totalCards; i++) {
-        const tex = loadedTextures[i % loadedTextures.length];
-        const cardObj = createCard(tex);
-        
-        const proxyMat = new THREE.MeshBasicMaterial({ visible: false });
-        const proxyMesh = new THREE.Mesh(proxyGeo, proxyMat);
-        proxyMesh.userData = { cardIndex: i };
-        cardObj.group.add(proxyMesh);
-        hitProxies.push(proxyMesh);
-
-        cards.push({
-          ...cardObj,
-          index: i,
-          localPitch: 0,
-          hoverLift: 0,
-          introPitch: 0.15,
-          introFade: 0.0,
-          introThermal: 1.0,
-          introOffset: 0,
-        } as unknown as CardObject);
+    // --- 6. Texture Loading ---
+    const cancelLoader = loadCardsAndTextures(
+      images,
+      cardGeo,
+      proxyGeo,
+      scene,
+      camera,
+      hitProxies,
+      cards,
+      introBloom,
+      () => {
+        if (canvas) canvas.style.opacity = '1';
+        animate();
       }
-
-      cards.forEach((card, idx) => {
-        const cardOrder = (idx % 24);
-        const delay = 0.06 + cardOrder * 0.045;
-
-        gsap.to(card, {
-          introThermal: 0.0,
-          introPitch: 0.0,
-          introFade: 1.0,
-          duration: 1.85,
-          delay: delay,
-          ease: "power2.inOut",
-        });
-      });
-
-      gsap.to(introBloom, {
-        fade: 1.0,
-        blur: 0.0,
-        duration: 2.4,
-        ease: "power3.out"
-      });
-
-      gsap.fromTo(camera.position,
-        { z: 47, y: -0.8 },
-        { z: 42, y: 0.0, duration: 2.4, ease: "power3.out" }
-      );
-
-      gsap.fromTo(".cascade-hud", 
-        { opacity: 0, y: -12 }, 
-        { opacity: 1, y: 0, duration: 1.4, delay: 0.6, ease: "power2.out" }
-      );
-
-      animate();
-    });
+    );
 
     const handleResize = () => {
       camera.aspect = window.innerWidth / window.innerHeight;
@@ -585,9 +481,10 @@ export function CascadeGallery({
 
     window.addEventListener("resize", handleResize);
 
-    // --- Cleanup on unmount ---
+    // --- 7. Teardown ---
     return () => {
       isDisposed = true;
+      cancelLoader();
       cancelAnimationFrame(animationFrameId);
       clearInterval(clockInterval);
 
@@ -598,87 +495,48 @@ export function CascadeGallery({
       window.removeEventListener("wheel", handleWheel);
       window.removeEventListener("resize", handleResize);
 
-      cardGeo.dispose();
-      proxyGeo.dispose();
-      cards.forEach((c) => {
-        if (c.mat) c.mat.dispose();
-      });
+      disposeCascadeScene(cardGeo, proxyGeo, cards, renderer);
       rendererRef.current = null;
-      renderer.dispose();
+      container.style.cursor = "default";
     };
   }, [images]);
 
   return (
     <div
       ref={containerRef}
-      className={`relative w-screen h-screen overflow-hidden select-none bg-[#f4f1ea] ${className}`}
-      style={{
-        background: `
-          linear-gradient(rgba(0, 0, 0, 0.025) 1px, transparent 1px),
-          linear-gradient(90deg, rgba(0, 0, 0, 0.025) 1px, transparent 1px),
-          radial-gradient(circle at 86% 86%, rgba(0, 0, 0, 0.045) 0%, rgba(0, 0, 0, 0.015) 45%, transparent 74%),
-          radial-gradient(circle at 14% 14%, rgba(255, 255, 255, 0.65) 0%, transparent 60%),
-          #f4f1ea
-        `,
-        backgroundSize: '32px 32px, 32px 32px, 100% 100%, 100% 100%, 100% 100%',
-        cursor: 'default',
-        ...style
-      }}
+      className={`${styles.container} ${className}`}
+      style={style}
     >
-      {/* Component-scoped Priestacy Font */}
-      <style>{`
-        @font-face {
-          font-family: 'Priestacy';
-          src: url('/fonts/priestacy/Priestacy.otf') format('opentype');
-          font-weight: normal;
-          font-style: normal;
-          font-display: swap;
-        }
-      `}</style>
-
       {/* Minimalist Precision Clock & Date HUD */}
-      <div className="cascade-hud fixed bottom-8 right-8 z-20 pointer-events-none select-none flex flex-col items-end text-right">
-        <div className="flex items-baseline gap-2.5 mb-4">
-          <span
-            ref={monthRef}
-            style={{ fontFamily: "'Priestacy', 'Saint Regus', Georgia, serif" }}
-            className="text-[32px] leading-none text-[#111113] tracking-normal font-normal"
-          >
+      <div className={`cascade-hud ${styles.hud}`}>
+        <div className={styles.dateRow}>
+          <span ref={monthRef} className={styles.month}>
             September
           </span>
-          <span
-            ref={dayYearRef}
-            className="text-[17px] font-mono font-medium tracking-[0.06em] text-[#111113]/70 tabular-nums leading-none"
-          >
+          <span ref={dayYearRef} className={styles.dayYear}>
             20, 2026
           </span>
         </div>
-        <div className="flex items-center text-[64px] font-semibold tracking-[0.03em] text-[#111113] leading-none font-mono tabular-nums">
+        <div className={styles.timeRow}>
           <span ref={hoursRef}>20</span>
-          <span className="mx-2 opacity-40 font-normal">:</span>
+          <span className={styles.timeColon}>:</span>
           <span ref={minsRef}>01</span>
-          <span className="mx-2 opacity-40 font-normal">:</span>
+          <span className={styles.timeColon}>:</span>
           <span ref={secsRef}>29</span>
         </div>
       </div>
 
-      {/* Flanking Split-Text Backdrop Typography (Intimate Framing) */}
-      <div className="fixed top-1/2 left-0 w-screen h-0 pointer-events-none z-[2]">
-        <div
-          ref={phraseLeftRef}
-          className="absolute top-0 right-[71.8vw] -translate-y-1/2 font-serif italic text-[clamp(24px,3.2vw,48px)] text-[#111113]/90 w-[24vw] leading-[1.18] tracking-[-0.015em] text-right opacity-0 select-none will-change-transform"
-        >
+      {/* Flanking Split-Text Backdrop Typography */}
+      <div className={styles.flankingBackdrop}>
+        <div ref={phraseLeftRef} className={styles.phraseLeft}>
           In the silent strike,
         </div>
-        <div
-          ref={phraseRightRef}
-          className="absolute top-0 left-[71.8vw] -translate-y-1/2 font-serif italic text-[clamp(24px,3.2vw,48px)] text-[#111113]/90 w-[24vw] leading-[1.18] tracking-[-0.015em] text-left opacity-0 select-none will-change-transform"
-        >
+        <div ref={phraseRightRef} className={styles.phraseRight}>
           the spirit stays unyielding.
         </div>
       </div>
 
-      <canvas ref={canvasRef} className="absolute inset-0 w-full h-full block outline-none z-[3] opacity-0 transition-opacity duration-500" />
+      <canvas ref={canvasRef} className={styles.canvas} />
     </div>
   );
 }

@@ -1,11 +1,11 @@
 import React, { useRef } from "react";
 import * as THREE from "three";
-import { VesselCanvas } from "../../engine/VesselCanvas";
-import { ApparatusFjvfbaProps } from "./types";
+import { AbyssCanvas } from "../../engine/AbyssCanvas";
+import { BronzeTransmutationProps } from "./types";
 import vert from "./shader.vert.glsl";
 import frag from "./shader.frag.glsl";
 
-export const ApparatusFjvfba: React.FC<ApparatusFjvfbaProps> = (props) => {
+export const BronzeTransmutation: React.FC<BronzeTransmutationProps> = (props) => {
   const hoverActiveRef = useRef(0.0);
   const clickWaveRef = useRef(0.0);
   const lastMouseRef = useRef(new THREE.Vector2(0.5, 0.5));
@@ -54,7 +54,7 @@ export const ApparatusFjvfba: React.FC<ApparatusFjvfbaProps> = (props) => {
   };
 
   return (
-    <VesselCanvas
+    <AbyssCanvas
       {...props}
       vertexShader={vert}
       fragmentShader={frag}
@@ -71,4 +71,4 @@ export const ApparatusFjvfba: React.FC<ApparatusFjvfbaProps> = (props) => {
   );
 };
 
-export default ApparatusFjvfba;
+export default BronzeTransmutation;

@@ -1,11 +1,11 @@
 import React, { useRef } from "react";
 import * as THREE from "three";
-import { VesselCanvas } from "../../engine/VesselCanvas";
-import { VesselComponentProps } from "../../engine/types";
+import { AbyssCanvas } from "../../engine/AbyssCanvas";
+import { AbyssComponentProps } from "../../engine/types";
 import vert from "./shader.vert.glsl";
 import frag from "./shader.frag.glsl";
 
-export const ChromeFlow: React.FC<VesselComponentProps> = (props) => {
+export const ChromeFlow: React.FC<AbyssComponentProps> = (props) => {
   const hoverStart = useRef<number | null>(null);
 
   const handleAnimate = (material: THREE.ShaderMaterial) => {
@@ -21,7 +21,7 @@ export const ChromeFlow: React.FC<VesselComponentProps> = (props) => {
   };
 
   return (
-    <VesselCanvas
+    <AbyssCanvas
       {...props}
       vertexShader={vert}
       fragmentShader={frag}

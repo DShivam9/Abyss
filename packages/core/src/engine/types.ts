@@ -1,6 +1,6 @@
 import React from "react";
 
-export type VesselFamily =
+export type ComponentFamily =
   | "medieval"
   | "dark-styled"
   | "premium"
@@ -10,14 +10,14 @@ export type VesselFamily =
   | "analog-tech"
   | "naturalist";
 
-export type VesselEnergy =
+export type ComponentEnergy =
   | "silent"
   | "calm"
   | "responsive"
   | "dynamic"
   | "cinematic";
 
-export type VesselTrigger =
+export type ComponentTrigger =
   | "hover"
   | "click"
   | "drag"
@@ -27,13 +27,13 @@ export type VesselTrigger =
   | "proximity"
   | "velocity";
 
-export interface VesselComponentMeta {
+export interface ComponentMeta {
   name: string;
   slug: string;
   pitch: string;
-  family: VesselFamily;
-  energy: VesselEnergy;
-  triggers: VesselTrigger[];
+  family: ComponentFamily;
+  energy: ComponentEnergy;
+  triggers: ComponentTrigger[];
   tech: string[];
   lifecycle: {
     idle: string;
@@ -44,7 +44,7 @@ export interface VesselComponentMeta {
   };
 }
 
-export interface VesselComponentProps {
+export interface AbyssComponentProps {
   imageSrc?: string;
   className?: string;
   style?: React.CSSProperties;

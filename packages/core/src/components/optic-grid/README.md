@@ -5,9 +5,9 @@ Dynamic multi-mode media gallery with fluid GSAP Flip transitions, optical filte
 ## Usage
 
 ```tsx
-import { ApparatusOpticGrid } from "@abyss-ui/core";
+import { OpticGrid } from "@abyss-ui/core";
 
-<ApparatusOpticGrid
+<OpticGrid
   defaultMode="contact"
   defaultFx="none"
   defaultScale="75"

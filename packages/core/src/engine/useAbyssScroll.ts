@@ -1,13 +1,14 @@
 import { useEffect, useRef } from "react";
+import * as THREE from "three";
 
-export interface VesselScrollState {
+export interface AbyssScrollState {
   scrollY: number;
   velocity: number;
   progress: number; // Viewport progress 0 to 1
 }
 
-export function useVesselScroll(containerRef: React.RefObject<HTMLElement | null>) {
-  const stateRef = useRef<VesselScrollState>({
+export function useAbyssScroll(containerRef: React.RefObject<HTMLElement | null>) {
+  const stateRef = useRef<AbyssScrollState>({
     scrollY: 0,
     velocity: 0,
     progress: 0,
@@ -61,5 +62,3 @@ export function useVesselScroll(containerRef: React.RefObject<HTMLElement | null
     updateScroll,
   };
 }
-
-import * as THREE from "three";

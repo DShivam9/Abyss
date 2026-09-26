@@ -4,7 +4,7 @@
   "description": "4 full-bleed image sections stacked sequentially with deep internal parallax bounds, virtual camera momentum, and weighted layer micro-latency.",
   "category": "scroll",
   "tags": ["GSAP", "Parallax", "Full Bleed", "Cinematic", "Physics"],
-  "author": "vessel",
+  "author": "abyss",
   "controls": [
     {
       "name": "parallaxIntensity",

@@ -1,0 +1,322 @@
+.wrapper {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  background-color: #060608;
+  color: #ffffff;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  user-select: none;
+  font-family: 'Syne', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.backdrop {
+  position: fixed;
+  top: -30px;
+  left: -30px;
+  right: -30px;
+  bottom: -30px;
+  pointer-events: none;
+  z-index: 1;
+  overflow: hidden;
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+}
+
+.ambientMedia {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  filter: blur(var(--hms-blur, 80px)) brightness(var(--hms-brightness, 0.24)) saturate(1.4);
+  transform: translate3d(0, 0, 0) scale(1.1);
+  will-change: opacity, transform;
+  backface-visibility: hidden;
+}
+
+.menu {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100vw;
+  height: 100vh;
+  z-index: 10;
+  gap: 1.4rem;
+  padding: 4rem 0;
+  transform: translate3d(0, 0, 0);
+}
+
+.menuRow {
+  position: relative;
+  width: 100vw;
+  height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  user-select: none;
+  font-size: var(--hms-font-size, clamp(2.25rem, 4.2vw, 3.75rem));
+  line-height: 1;
+  transform: translate3d(0, 0, 0) scale(1);
+  filter: blur(0px);
+  will-change: opacity, filter, transform;
+  backface-visibility: hidden;
+  transition: 
+    opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
+    filter 0.7s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+:global(.has-active) .menuRow {
+  opacity: 0.12;
+  filter: blur(3px);
+  transform: translate3d(0, 0, 0) scale(0.985);
+}
+
+:global(.has-active) .menuRow:global(.active) {
+  opacity: 1;
+  filter: blur(0px);
+  transform: translate3d(0, 0, 0) scale(1);
+}
+
+.titleContainer {
+  position: relative;
+  height: 1.18em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 4;
+  padding: 0 1.5rem;
+}
+
+.titleText {
+  font-family: 'Syne', sans-serif;
+  font-size: 1em;
+  font-weight: 600;
+  line-height: 1.18;
+  letter-spacing: -0.025em;
+  white-space: nowrap;
+  pointer-events: none;
+  color: rgba(255, 255, 255, 0.35);
+  will-change: transform, letter-spacing;
+  backface-visibility: hidden;
+  display: inline-flex;
+  align-items: center;
+}
+
+.titleChar {
+  display: inline-block;
+  color: rgba(255, 255, 255, 0.35);
+  transition: color 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: color;
+}
+
+:global(.active) .titleChar {
+  animation: charColorWave 1.6s ease-in-out infinite;
+  animation-delay: calc(var(--char-i, 0) * 0.04s);
+}
+
+@keyframes charColorWave {
+  0% { color: var(--c1, #ffffff); }
+  25% { color: var(--c2, #ffffff); }
+  50% { color: var(--c3, #ffffff); }
+  75% { color: var(--c4, #ffffff); }
+  100% { color: var(--c1, #ffffff); }
+}
+
+.titleIndexBadge {
+  position: absolute;
+  top: 50%;
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-size: 0.26em;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  color: rgba(255, 255, 255, 0.6);
+  opacity: 0;
+  pointer-events: none;
+  white-space: nowrap;
+  will-change: opacity, transform;
+  backface-visibility: hidden;
+}
+
+.badgeRight {
+  left: calc(100% + 0.75rem);
+  transform: translate3d(0, -50%, 0);
+}
+
+.badgeLeft {
+  right: calc(100% + 0.75rem);
+  transform: translate3d(0, -50%, 0);
+}
+
+.connectedBaseline {
+  position: absolute;
+  top: calc(50% + 0.37em);
+  left: 0;
+  width: 100vw;
+  height: 1px;
+  pointer-events: none;
+  display: flex;
+  overflow: visible;
+  font-size: inherit;
+  z-index: 1;
+  transform: translate3d(0, 0, 0);
+}
+
+.lineHalf {
+  flex: 1;
+  height: 100%;
+  will-change: transform, opacity;
+  backface-visibility: hidden;
+  transform: scaleX(0);
+  opacity: 0;
+}
+
+.lineHalfLeft {
+  transform-origin: left center;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.35) 25%, rgba(255, 255, 255, 0.95) 100%);
+}
+
+.lineHalfRight {
+  transform-origin: right center;
+  background: linear-gradient(270deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.35) 25%, rgba(255, 255, 255, 0.95) 100%);
+}
+
+.moireStrand {
+  position: absolute;
+  top: -1px;
+  left: 0;
+  width: 100vw;
+  height: 1px;
+  display: flex;
+  pointer-events: none;
+  z-index: 2;
+  transform: translate3d(0, 0, 0);
+}
+
+.moireHalf {
+  flex: 1;
+  height: 100%;
+  will-change: transform, opacity;
+  backface-visibility: hidden;
+  transform: scaleX(0);
+  opacity: 0;
+}
+
+.moireHalfLeft {
+  transform-origin: left center;
+  background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.2) 30%, rgba(255, 255, 255, 0.6) 85%, transparent 100%);
+}
+
+.moireHalfRight {
+  transform-origin: right center;
+  background: linear-gradient(270deg, transparent 0%, rgba(255, 255, 255, 0.2) 30%, rgba(255, 255, 255, 0.6) 85%, transparent 100%);
+}
+
+.flankWeave {
+  position: absolute;
+  width: 48px;
+  height: 16px;
+  top: -7px;
+  pointer-events: none;
+  z-index: 3;
+  overflow: visible;
+  opacity: 0;
+  will-change: transform, opacity;
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+}
+
+.flankWeaveLeft {
+  left: clamp(1.5rem, 4vw, 4rem);
+}
+
+.flankWeaveRight {
+  right: clamp(1.5rem, 4vw, 4rem);
+}
+
+.weaveLine {
+  position: absolute;
+  background: rgba(255, 255, 255, 0.7);
+  transform-origin: center center;
+  backface-visibility: hidden;
+}
+
+.weaveLineH {
+  top: 7px;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  opacity: 0.8;
+}
+
+.weaveLineV1 {
+  top: 0;
+  left: 12px;
+  width: 1px;
+  height: 15px;
+  opacity: 0.5;
+}
+
+.weaveLineV2 {
+  top: 2px;
+  right: 12px;
+  width: 1px;
+  height: 11px;
+  opacity: 0.7;
+}
+
+.weaveLineDiag {
+  top: 1px;
+  left: 20px;
+  width: 1px;
+  height: 13px;
+  opacity: 0.35;
+  transform: rotate(35deg);
+}
+
+.rowImageStage {
+  position: absolute;
+  bottom: calc(50% - 0.37em + 8px);
+  width: 356px;
+  height: 200px;
+  pointer-events: none;
+  z-index: 5;
+  overflow: hidden;
+  clip-path: inset(100% 0 0 0);
+  background: #000000;
+  will-change: clip-path, transform;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+}
+
+.flankLeft {
+  left: clamp(2rem, 6vw, 6rem);
+}
+
+.flankRight {
+  right: clamp(2rem, 6vw, 6rem);
+}
+
+.stageMedia {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: translate3d(0, 0, 0) scale(1.12);
+  will-change: transform;
+  backface-visibility: hidden;
+  filter: contrast(1.08) brightness(0.98);
+}

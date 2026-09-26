@@ -1,0 +1,38 @@
+.container {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background-color: #000000;
+  user-select: none;
+  z-index: 0;
+}
+
+.brandHeader {
+  position: fixed;
+  top: 36px;
+  left: 50%;
+  transform: translate(-50%, -8px);
+  font-family: 'Allura', cursive;
+  font-size: 40px;
+  color: rgba(255, 255, 255, 0.94);
+  letter-spacing: 0.18em;
+  filter: blur(14px);
+  z-index: 100;
+  pointer-events: none;
+  user-select: none;
+  opacity: 0;
+  transition: 
+    opacity 2.4s cubic-bezier(0.16, 1, 0.3, 1),
+    filter 2.4s cubic-bezier(0.16, 1, 0.3, 1),
+    letter-spacing 2.6s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 2.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.brandHeaderVisible {
+  opacity: 0.94;
+  filter: blur(0px);
+  letter-spacing: 0.04em;
+  transform: translate(-50%, 0);
+}

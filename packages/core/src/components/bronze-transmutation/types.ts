@@ -1,3 +1,4 @@
-import { VesselComponentProps } from "../../engine/types";
+import { AbyssComponentProps } from "../../engine/types";
 
-export interface ApparatusFjvfbaProps extends VesselComponentProps {}
+export interface BronzeTransmutationProps extends AbyssComponentProps {}
+

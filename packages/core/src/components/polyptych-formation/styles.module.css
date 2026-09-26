@@ -1,0 +1,268 @@
+@font-face {
+  font-family: 'PPEditorialNew';
+  src: url('/fonts/editorial-new/PPEditorialNew-Regular.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+.root {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  background-color: #060608;
+  color: #ffffff;
+  font-family: 'PPEditorialNew', Georgia, serif;
+  -webkit-font-smoothing: antialiased;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  user-select: none;
+}
+
+.root::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollContent {
+  position: relative;
+  width: 100%;
+}
+
+/* Architectural Reticle Lines (z-index: 1, behind media) */
+.reticleGrid {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.reticleLine {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: transparent;
+  pointer-events: none;
+}
+
+.segmentTop {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 50%;
+  background: rgba(255, 255, 255, 0.16);
+  transform-origin: top center;
+  transform: scaleY(0);
+  will-change: transform;
+}
+
+.segmentBot {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 50%;
+  background: rgba(255, 255, 255, 0.16);
+  transform-origin: bottom center;
+  transform: scaleY(0);
+  will-change: transform;
+}
+
+.reticleLine:nth-child(1) { left: clamp(20px, 3.5vw, 48px); }
+.reticleLine:nth-child(2) { left: calc(25vw - 7px); }
+.reticleLine:nth-child(3) { left: 50vw; }
+.reticleLine:nth-child(4) { left: calc(75vw + 7px); }
+.reticleLine:nth-child(5) { right: clamp(20px, 3.5vw, 48px); left: auto; }
+
+/* SECTION 1: Intro Dialogue Stage */
+.stageIntro {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 24px;
+  z-index: 4;
+}
+
+.dialogueWrap {
+  position: relative;
+  z-index: 4;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-transform: uppercase;
+  user-select: none;
+  line-height: 1.15;
+  letter-spacing: 0.02em;
+  font-weight: 400;
+  color: #dedcd6;
+  font-size: clamp(30px, 3.2vw, 48px);
+  width: auto;
+  max-width: 1200px;
+  will-change: transform, opacity;
+}
+
+/* Stepped Placard Line Container */
+.dialogueLine {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  padding: 8px 24px;
+  overflow: hidden;
+  line-height: 1.12;
+}
+
+.dialogueLine:first-child { padding-top: 11px; }
+.dialogueLine:last-child { padding-bottom: 8px; }
+
+.stripBg {
+  position: absolute;
+  inset: 0;
+  background: #eae8e2;
+  transform-origin: left center;
+  transform: scaleX(0);
+  z-index: 1;
+  will-change: transform;
+}
+
+.lineText {
+  position: relative;
+  z-index: 2;
+  color: #dedcd6;
+  white-space: normal;
+  will-change: opacity, color;
+}
+
+.asterisk {
+  display: inline-block;
+  font-size: 0.78em;
+  vertical-align: 0.12em;
+  padding: 0 5px;
+  line-height: 1;
+}
+
+/* SECTION 2: Pinned Matrix Stage */
+.stageMosaic {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 3;
+  background: #060608;
+}
+
+/* Flex-Driven White Desert Stack */
+.scrubWrapLayout {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  align-items: center;
+  justify-content: center;
+  width: 100vw;
+  will-change: transform;
+}
+
+.scrubRow {
+  display: flex;
+  gap: 14px;
+  justify-content: center;
+  align-items: stretch;
+  width: 100vw;
+}
+
+.rowTop, .rowBot {
+  height: 42vh;
+}
+
+.rowTop .scrubItem, .rowBot .scrubItem {
+  width: 54vw;
+  height: 100%;
+  flex-shrink: 0;
+}
+
+.section2Outro {
+  position: absolute;
+  bottom: clamp(75px, 11vh, 96px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 5;
+  opacity: 0;
+  pointer-events: none;
+  font-size: clamp(20px, 2.0vw, 30px);
+}
+
+.outroSpan {
+  position: relative;
+  display: inline-block;
+  padding: 2px 14px;
+  background: #060608;
+  color: #dedcd6;
+  white-space: normal;
+}
+
+.outroSpan:last-child {
+  padding-bottom: 0;
+  margin-bottom: -7px;
+}
+
+.rowMid {
+  height: 100vh;
+  gap: 14px;
+  will-change: height;
+}
+
+/* Raw Photographic Tiles */
+.scrubItem {
+  position: relative;
+  overflow: hidden;
+  border-radius: 5px;
+  isolation: isolate;
+  background: transparent;
+  flex-shrink: 0;
+}
+
+.parallaxImg {
+  position: absolute;
+  top: -20%;
+  left: -20%;
+  width: 140%;
+  height: 140%;
+  max-width: none;
+  max-height: none;
+  object-fit: cover;
+  object-position: center center;
+  display: block;
+  opacity: 1;
+  filter: none;
+  will-change: transform;
+}
+
+/* Middle Row Dynamic Members */
+.itemMidLeft, .itemMidRight {
+  width: 0vw;
+  height: 100%;
+  overflow: hidden;
+  will-change: width;
+  flex-shrink: 0;
+}
+
+.itemHero {
+  width: 100vw;
+  height: 100%;
+  z-index: 2;
+  will-change: width;
+  flex-shrink: 0;
+  border-radius: 0;
+}

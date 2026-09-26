@@ -7,7 +7,7 @@ import {
   BAKED_INERTIAL_DAMPING,
 } from "./constants";
 
-export default function ParallaxBleed({
+export function ParallaxBleed({
   sections = DEFAULT_BLEED_SECTIONS,
   parallaxIntensity = 100, // 0% - 150% intensity
   blurDepth = 280,
@@ -51,7 +51,7 @@ export default function ParallaxBleed({
 
   // Inject High-Contrast Editorial Google Fonts (Syne 800)
   useEffect(() => {
-    const fontId = "vessel-editorial-title-font";
+    const fontId = "editorial-title-font";
     if (!document.getElementById(fontId)) {
       const link = document.createElement("link");
       link.id = fontId;
@@ -434,5 +434,5 @@ export default function ParallaxBleed({
   );
 }
 
-export { ParallaxBleed, ParallaxBleed as ApparatusParallaxBleed };
+export default ParallaxBleed;
 

@@ -1,6 +1,6 @@
-import { VesselComponentProps } from "../../engine/types";
+import { AbyssComponentProps } from "../../engine/types";
 
-export interface GravityCursorProps extends VesselComponentProps {
+export interface GravityCursorProps extends AbyssComponentProps {
   /**
    * Gravitational acceleration magnitude (px/frame^2).
    * @default 0.55
@@ -42,9 +42,6 @@ export interface GravityCursorProps extends VesselComponentProps {
    */
   repelForce?: number;
 }
-
-/** @deprecated Use `GravityCursorProps` */
-export type ApparatusGravityCursorProps = GravityCursorProps;
 
 export interface PhysicsBody {
   active: boolean;

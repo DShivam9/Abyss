@@ -1,6 +1,6 @@
-import { VesselComponentProps } from "../../engine/types";
+import { AbyssComponentProps } from "../../engine/types";
 
-export interface CinemaAisleProps extends VesselComponentProps {
+export interface CinemaAisleProps extends AbyssComponentProps {
   /**
    * Array of video source URLs to stream in the aisle corridor.
    * Defaults to 16 curated high-definition MP4 streams.

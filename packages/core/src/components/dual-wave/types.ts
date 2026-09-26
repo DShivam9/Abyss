@@ -1,4 +1,4 @@
-import { VesselComponentProps } from "../../engine/types";
+import { AbyssComponentProps } from "../../engine/types";
 
 export interface DualWaveItem {
   id: string;
@@ -6,7 +6,7 @@ export interface DualWaveItem {
   imageSrc: string;
 }
 
-export interface DualWaveProps extends VesselComponentProps {
+export interface DualWaveProps extends AbyssComponentProps {
   /**
    * List of items with names and images.
    */
@@ -60,5 +60,3 @@ export interface DualWaveProps extends VesselComponentProps {
    */
   wavePattern?: "barrel" | "horizon";
 }
-
-export type ApparatusDualWaveProps = DualWaveProps;

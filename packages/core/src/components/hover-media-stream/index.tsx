@@ -3,6 +3,8 @@ import gsap from "gsap";
 import { HoverMediaStreamProps } from "./types";
 import { DEFAULT_ITEMS } from "./constants";
 import { playTactileHoverSound } from "./audio";
+import { useLatestRef } from "../../hooks";
+import styles from "./styles.module.css";
 
 export const HoverMediaStream: React.FC<HoverMediaStreamProps> = ({
   items = DEFAULT_ITEMS,
@@ -16,11 +18,8 @@ export const HoverMediaStream: React.FC<HoverMediaStreamProps> = ({
   onLifecycleChange,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const lineDurationRef = useRef(lineDuration);
-  lineDurationRef.current = lineDuration;
-
-  const enableAudioRef = useRef(enableAudio);
-  enableAudioRef.current = enableAudio;
+  const lineDurationRef = useLatestRef(lineDuration);
+  const enableAudioRef = useLatestRef(enableAudio);
 
   const streamItems = useMemo(() => {
     return items && items.length > 0 ? items : DEFAULT_ITEMS;
@@ -30,8 +29,8 @@ export const HoverMediaStream: React.FC<HoverMediaStreamProps> = ({
     const container = containerRef.current;
     if (!container) return;
 
-    const rowElements = container.querySelectorAll<HTMLElement>(".menu-row");
-    const ambientBackdrops = container.querySelectorAll<HTMLElement>(".ambient-media");
+    const rowElements = container.querySelectorAll<HTMLElement>(`.${styles.menuRow}`);
+    const ambientBackdrops = container.querySelectorAll<HTMLElement>(`.${styles.ambientMedia}`);
 
     let currentlyHoveredRow: HTMLElement | null = null;
     let exitTimeout: ReturnType<typeof setTimeout> | null = null;
@@ -40,15 +39,15 @@ export const HoverMediaStream: React.FC<HoverMediaStreamProps> = ({
     const cachedRows = Array.from(rowElements).map((row, index) => ({
       row,
       index,
-      titleText: row.querySelector<HTMLElement>(".title-text"),
-      indexBadge: row.querySelector<HTMLElement>(".title-index-badge"),
-      lineLeft: row.querySelector<HTMLElement>(".line-half-left"),
-      lineRight: row.querySelector<HTMLElement>(".line-half-right"),
-      moireLeft: row.querySelector<HTMLElement>(".moire-half-left"),
-      moireRight: row.querySelector<HTMLElement>(".moire-half-right"),
-      weaves: row.querySelectorAll<HTMLElement>(".flank-weave"),
-      stage: row.querySelector<HTMLElement>(".row-image-stage"),
-      media: row.querySelector<HTMLVideoElement | HTMLImageElement>(".stage-media"),
+      titleText: row.querySelector<HTMLElement>(`.${styles.titleText}`),
+      indexBadge: row.querySelector<HTMLElement>(`.${styles.titleIndexBadge}`),
+      lineLeft: row.querySelector<HTMLElement>(`.${styles.lineHalfLeft}`),
+      lineRight: row.querySelector<HTMLElement>(`.${styles.lineHalfRight}`),
+      moireLeft: row.querySelector<HTMLElement>(`.${styles.moireHalfLeft}`),
+      moireRight: row.querySelector<HTMLElement>(`.${styles.moireHalfRight}`),
+      weaves: row.querySelectorAll<HTMLElement>(`.${styles.flankWeave}`),
+      stage: row.querySelector<HTMLElement>(`.${styles.rowImageStage}`),
+      media: row.querySelector<HTMLVideoElement | HTMLImageElement>(`.${styles.stageMedia}`),
       bgMedia: ambientBackdrops[index] as (HTMLVideoElement | HTMLImageElement | undefined),
     }));
 
@@ -375,341 +374,11 @@ export const HoverMediaStream: React.FC<HoverMediaStreamProps> = ({
   return (
     <div
       ref={containerRef}
-      className={`relative w-full h-screen bg-[#060608] text-white overflow-hidden flex justify-center items-center select-none ${className}`}
+      className={`${styles.wrapper} ${className}`}
       style={dynamicCSSVars}
     >
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Syne:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
-
-        .hms-wrapper {
-          font-family: 'Syne', sans-serif;
-          -webkit-font-smoothing: antialiased;
-          -moz-osx-font-smoothing: grayscale;
-        }
-
-        .hms-backdrop {
-          position: fixed;
-          top: -30px;
-          left: -30px;
-          right: -30px;
-          bottom: -30px;
-          pointer-events: none;
-          z-index: 1;
-          overflow: hidden;
-          transform: translate3d(0, 0, 0);
-          backface-visibility: hidden;
-        }
-
-        .hms-ambient {
-          position: absolute;
-          top: 0;
-          left: 0;
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-          opacity: 0;
-          filter: blur(var(--hms-blur, 80px)) brightness(var(--hms-brightness, 0.24)) saturate(1.4);
-          transform: translate3d(0, 0, 0) scale(1.1);
-          will-change: opacity, transform;
-          backface-visibility: hidden;
-        }
-
-        .hms-menu {
-          position: relative;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          width: 100vw;
-          height: 100vh;
-          z-index: 10;
-          gap: 1.4rem;
-          padding: 4rem 0;
-          transform: translate3d(0, 0, 0);
-        }
-
-        .hms-menu .menu-row {
-          position: relative;
-          width: 100vw;
-          height: 72px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          cursor: pointer;
-          user-select: none;
-          font-size: var(--hms-font-size, clamp(2.25rem, 4.2vw, 3.75rem));
-          line-height: 1;
-          transform: translate3d(0, 0, 0) scale(1);
-          filter: blur(0px);
-          will-change: opacity, filter, transform;
-          backface-visibility: hidden;
-          transition: 
-            opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
-            filter 0.7s cubic-bezier(0.16, 1, 0.3, 1),
-            transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        .hms-menu.has-active .menu-row {
-          opacity: 0.12;
-          filter: blur(3px);
-          transform: translate3d(0, 0, 0) scale(0.985);
-        }
-
-        .hms-menu.has-active .menu-row.active {
-          opacity: 1;
-          filter: blur(0px);
-          transform: translate3d(0, 0, 0) scale(1);
-        }
-
-        .title-container {
-          position: relative;
-          height: 1.18em;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          z-index: 4;
-          padding: 0 1.5rem;
-        }
-
-        .title-text {
-          font-family: 'Syne', sans-serif;
-          font-size: 1em;
-          font-weight: 600;
-          line-height: 1.18;
-          letter-spacing: -0.025em;
-          white-space: nowrap;
-          pointer-events: none;
-          color: rgba(255, 255, 255, 0.35);
-          will-change: transform, letter-spacing;
-          backface-visibility: hidden;
-          display: inline-flex;
-          align-items: center;
-        }
-
-        .title-char {
-          display: inline-block;
-          color: rgba(255, 255, 255, 0.35);
-          transition: color 0.35s cubic-bezier(0.16, 1, 0.3, 1);
-          will-change: color;
-        }
-
-        .menu-row.active .title-char {
-          animation: charColorWave 1.6s ease-in-out infinite;
-          animation-delay: calc(var(--char-i, 0) * 0.04s);
-        }
-
-        @keyframes charColorWave {
-          0% {
-            color: var(--c1, #ffffff);
-          }
-          25% {
-            color: var(--c2, #ffffff);
-          }
-          50% {
-            color: var(--c3, #ffffff);
-          }
-          75% {
-            color: var(--c4, #ffffff);
-          }
-          100% {
-            color: var(--c1, #ffffff);
-          }
-        }
-
-        /* Absolute Out-of-Flow Flank Badge (Zero Layout Shift) */
-        .title-index-badge {
-          position: absolute;
-          top: 50%;
-          font-family: 'JetBrains Mono', monospace;
-          font-size: 0.26em;
-          font-weight: 500;
-          letter-spacing: 0.08em;
-          color: rgba(255, 255, 255, 0.6);
-          opacity: 0;
-          pointer-events: none;
-          white-space: nowrap;
-          will-change: opacity, transform;
-          backface-visibility: hidden;
-        }
-
-        .badge-right {
-          left: calc(100% + 0.75rem);
-          transform: translate3d(0, -50%, 0);
-        }
-
-        .badge-left {
-          right: calc(100% + 0.75rem);
-          transform: translate3d(0, -50%, 0);
-        }
-
-        /* 100vw Primary Baseline */
-        .connected-baseline {
-          position: absolute;
-          top: calc(50% + 0.37em);
-          left: 0;
-          width: 100vw;
-          height: 1px;
-          pointer-events: none;
-          display: flex;
-          overflow: visible;
-          font-size: inherit;
-          z-index: 1;
-          transform: translate3d(0, 0, 0);
-        }
-
-        .line-half {
-          flex: 1;
-          height: 100%;
-          will-change: transform, opacity;
-          backface-visibility: hidden;
-          transform: scaleX(0);
-          opacity: 0;
-        }
-
-        .line-half-left {
-          transform-origin: left center;
-          background: linear-gradient(90deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.35) 25%, rgba(255, 255, 255, 0.95) 100%);
-        }
-
-        .line-half-right {
-          transform-origin: right center;
-          background: linear-gradient(270deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.35) 25%, rgba(255, 255, 255, 0.95) 100%);
-        }
-
-        /* Secondary Moiré Interference Strand (Top Row Boundary) */
-        .moire-strand {
-          position: absolute;
-          top: -1px;
-          left: 0;
-          width: 100vw;
-          height: 1px;
-          display: flex;
-          pointer-events: none;
-          z-index: 2;
-          transform: translate3d(0, 0, 0);
-        }
-
-        .moire-half {
-          flex: 1;
-          height: 100%;
-          will-change: transform, opacity;
-          backface-visibility: hidden;
-          transform: scaleX(0);
-          opacity: 0;
-        }
-
-        .moire-half-left {
-          transform-origin: left center;
-          background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.2) 30%, rgba(255, 255, 255, 0.6) 85%, transparent 100%);
-        }
-
-        .moire-half-right {
-          transform-origin: right center;
-          background: linear-gradient(270deg, transparent 0%, rgba(255, 255, 255, 0.2) 30%, rgba(255, 255, 255, 0.6) 85%, transparent 100%);
-        }
-
-        .flank-weave {
-          position: absolute;
-          width: 48px;
-          height: 16px;
-          top: -7px;
-          pointer-events: none;
-          z-index: 3;
-          overflow: visible;
-          opacity: 0;
-          will-change: transform, opacity;
-          transform: translate3d(0, 0, 0);
-          backface-visibility: hidden;
-        }
-
-        .flank-weave-left {
-          left: clamp(1.5rem, 4vw, 4rem);
-        }
-
-        .flank-weave-right {
-          right: clamp(1.5rem, 4vw, 4rem);
-        }
-
-        .weave-line {
-          position: absolute;
-          background: rgba(255, 255, 255, 0.7);
-          transform-origin: center center;
-          backface-visibility: hidden;
-        }
-
-        .weave-line-h {
-          top: 7px;
-          left: 0;
-          width: 100%;
-          height: 1px;
-          opacity: 0.8;
-        }
-
-        .weave-line-v1 {
-          top: 0;
-          left: 12px;
-          width: 1px;
-          height: 15px;
-          opacity: 0.5;
-        }
-
-        .weave-line-v2 {
-          top: 2px;
-          right: 12px;
-          width: 1px;
-          height: 11px;
-          opacity: 0.7;
-        }
-
-        .weave-line-diag {
-          top: 1px;
-          left: 20px;
-          width: 1px;
-          height: 13px;
-          opacity: 0.35;
-          transform: rotate(35deg);
-        }
-
-        .row-image-stage {
-          position: absolute;
-          bottom: calc(50% - 0.37em + 8px);
-          width: 356px;
-          height: 200px;
-          pointer-events: none;
-          z-index: 5;
-          overflow: hidden;
-          clip-path: inset(100% 0 0 0);
-          background: #000;
-          will-change: clip-path, transform;
-          border: 1px solid rgba(255, 255, 255, 0.1);
-          transform: translate3d(0, 0, 0);
-          backface-visibility: hidden;
-        }
-
-        .row-image-stage.flank-left {
-          left: clamp(2rem, 6vw, 6rem);
-        }
-
-        .row-image-stage.flank-right {
-          right: clamp(2rem, 6vw, 6rem);
-        }
-
-        .stage-media {
-          position: absolute;
-          top: 0;
-          left: 0;
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-          transform: translate3d(0, 0, 0) scale(1.12);
-          will-change: transform;
-          backface-visibility: hidden;
-          filter: contrast(1.08) brightness(0.98);
-        }
-      `}</style>
-
       {/* Full-Screen Ambient Video Backdrop */}
-      <div className="hms-backdrop">
+      <div className={styles.backdrop}>
         {streamItems.map((item, idx) => (
           <div key={`ambient-${item.id}-${idx}`}>
             {item.mediaType === "video" ? (
@@ -719,13 +388,13 @@ export const HoverMediaStream: React.FC<HoverMediaStreamProps> = ({
                 muted
                 playsInline
                 preload="auto"
-                className="ambient-media hms-ambient"
+                className={styles.ambientMedia}
               />
             ) : (
               <img
                 src={item.src}
                 alt={item.title}
-                className="ambient-media hms-ambient"
+                className={styles.ambientMedia}
               />
             )}
           </div>
@@ -733,7 +402,7 @@ export const HoverMediaStream: React.FC<HoverMediaStreamProps> = ({
       </div>
 
       {/* Menu Rows */}
-      <nav className="hms-menu">
+      <nav className={styles.menu}>
         {streamItems.map((item, idx) => {
           const isEven = idx % 2 === 0;
           const indexFormatted = String(idx + 1).padStart(2, "0");
@@ -741,7 +410,7 @@ export const HoverMediaStream: React.FC<HoverMediaStreamProps> = ({
           return (
             <div
               key={item.id}
-              className="menu-row"
+              className={styles.menuRow}
               data-index={idx}
               style={{
                 "--c1": item.palette?.[0] || "#ffffff",
@@ -751,7 +420,7 @@ export const HoverMediaStream: React.FC<HoverMediaStreamProps> = ({
               } as React.CSSProperties}
             >
               {/* Media Stage */}
-              <div className={`row-image-stage ${isEven ? "flank-left" : "flank-right"}`}>
+              <div className={`${styles.rowImageStage} ${isEven ? styles.flankLeft : styles.flankRight}`}>
                 {item.mediaType === "video" ? (
                   <video
                     src={item.src}
@@ -759,57 +428,57 @@ export const HoverMediaStream: React.FC<HoverMediaStreamProps> = ({
                     muted
                     playsInline
                     preload="auto"
-                    className="stage-media"
+                    className={styles.stageMedia}
                   />
                 ) : (
                   <img
                     src={item.src}
                     alt={item.title}
-                    className="stage-media"
+                    className={styles.stageMedia}
                   />
                 )}
               </div>
 
-              {/* Spatial Continuity Typography Title with Out-of-Flow Alternating Monospace Index */}
-              <div className="title-container">
-                <span className="title-text">
+              {/* Spatial Continuity Typography Title */}
+              <div className={styles.titleContainer}>
+                <span className={styles.titleText}>
                   {item.title.split("").map((char, cIdx) => (
                     <span
                       key={cIdx}
-                      className="title-char"
+                      className={styles.titleChar}
                       style={{ "--char-i": cIdx } as React.CSSProperties}
                     >
                       {char === " " ? "\u00A0" : char}
                     </span>
                   ))}
                 </span>
-                <span className={`title-index-badge ${isEven ? "badge-right" : "badge-left"}`}>
+                <span className={`${styles.titleIndexBadge} ${isEven ? styles.badgeRight : styles.badgeLeft}`}>
                   [{indexFormatted}]
                 </span>
               </div>
 
               {/* 100vw Primary Baseline & Kinetic Flank Weaves */}
-              <div className="connected-baseline">
-                <div className="line-half line-half-left" />
-                <div className="line-half line-half-right" />
-                <div className="flank-weave flank-weave-left">
-                  <div className="weave-line weave-line-h" />
-                  <div className="weave-line weave-line-v1" />
-                  <div className="weave-line weave-line-v2" />
-                  <div className="weave-line weave-line-diag" />
+              <div className={styles.connectedBaseline}>
+                <div className={`${styles.lineHalf} ${styles.lineHalfLeft}`} />
+                <div className={`${styles.lineHalf} ${styles.lineHalfRight}`} />
+                <div className={`${styles.flankWeave} ${styles.flankWeaveLeft}`}>
+                  <div className={`${styles.weaveLine} ${styles.weaveLineH}`} />
+                  <div className={`${styles.weaveLine} ${styles.weaveLineV1}`} />
+                  <div className={`${styles.weaveLine} ${styles.weaveLineV2}`} />
+                  <div className={`${styles.weaveLine} ${styles.weaveLineDiag}`} />
                 </div>
-                <div className="flank-weave flank-weave-right">
-                  <div className="weave-line weave-line-h" />
-                  <div className="weave-line weave-line-v1" />
-                  <div className="weave-line weave-line-v2" />
-                  <div className="weave-line weave-line-diag" />
+                <div className={`${styles.flankWeave} ${styles.flankWeaveRight}`}>
+                  <div className={`${styles.weaveLine} ${styles.weaveLineH}`} />
+                  <div className={`${styles.weaveLine} ${styles.weaveLineV1}`} />
+                  <div className={`${styles.weaveLine} ${styles.weaveLineV2}`} />
+                  <div className={`${styles.weaveLine} ${styles.weaveLineDiag}`} />
                 </div>
               </div>
 
               {/* Moiré Secondary Interference Strand (Top Row Boundary) */}
-              <div className="moire-strand">
-                <div className="moire-half moire-half-left" />
-                <div className="moire-half moire-half-right" />
+              <div className={styles.moireStrand}>
+                <div className={`${styles.moireHalf} ${styles.moireHalfLeft}`} />
+                <div className={`${styles.moireHalf} ${styles.moireHalfRight}`} />
               </div>
             </div>
           );
@@ -819,5 +488,4 @@ export const HoverMediaStream: React.FC<HoverMediaStreamProps> = ({
   );
 };
 
-export const ApparatusHoverMediaStream = HoverMediaStream;
 export default HoverMediaStream;

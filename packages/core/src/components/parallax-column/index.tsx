@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import Lenis from "lenis";
-import { ApparatusParallaxColumnProps } from "./types";
+import { ParallaxColumnProps } from "./types";
 import {
   DEFAULT_LEFT_IMAGES,
   DEFAULT_RIGHT_IMAGES,
@@ -16,7 +16,7 @@ import {
   BAKED_CONVEX_TILT,
 } from "./constants";
 
-export const ApparatusParallaxColumn: React.FC<ApparatusParallaxColumnProps> = ({
+export const ParallaxColumn: React.FC<ParallaxColumnProps> = ({
   leftImages,
   rightImages,
   imageSrc,
@@ -527,4 +527,4 @@ export const ApparatusParallaxColumn: React.FC<ApparatusParallaxColumnProps> = (
   );
 };
 
-export default ApparatusParallaxColumn;
+export default ParallaxColumn;

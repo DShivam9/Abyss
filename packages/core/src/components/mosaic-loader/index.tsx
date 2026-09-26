@@ -431,4 +431,3 @@ export default function MosaicLoader({
 }
 
 export { MosaicLoader };
-export const ApparatusMosaicLoader = MosaicLoader;

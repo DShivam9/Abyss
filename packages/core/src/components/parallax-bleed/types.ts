@@ -1,4 +1,4 @@
-import { VesselComponentProps } from "../../engine/types";
+import { AbyssComponentProps } from "../../engine/types";
 
 export interface BleedSection {
   id: string;
@@ -10,7 +10,7 @@ export interface BleedSection {
 
 export type BleedBlurVariant = "pure" | "refractive" | "liquid" | "crt" | "thermal";
 
-export interface ParallaxBleedProps extends VesselComponentProps {
+export interface ParallaxBleedProps extends AbyssComponentProps {
   /**
    * Array of bleed sections.
    */
@@ -46,5 +46,3 @@ export interface ParallaxBleedProps extends VesselComponentProps {
    */
   scrollProgress?: number;
 }
-
-export type ApparatusParallaxBleedProps = ParallaxBleedProps;

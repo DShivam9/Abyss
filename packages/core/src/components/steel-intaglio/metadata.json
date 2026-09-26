@@ -12,7 +12,7 @@
   "tech": [
     "three.js",
     "glsl",
-    "vessel-canvas"
+    "abyss-canvas"
   ],
   "lifecycle": {
     "idle": "Brushed steel plate reflecting ambient studio light with anisotropic specular glints across the intact print",

@@ -1,0 +1,152 @@
+.container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 500px;
+  overflow: hidden;
+  background-color: #020305;
+  user-select: none;
+  cursor: default;
+}
+
+.canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  transition: opacity 0.7s ease-out;
+}
+
+.textContainer {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  transition: opacity 0.3s ease-out;
+}
+
+.leftText {
+  pointer-events: none;
+  position: absolute;
+  top: 50%;
+  right: calc(50% + 115px);
+  transform: translateY(-50%);
+  z-index: 10;
+  user-select: none;
+  will-change: transform;
+  text-align: right;
+  transform-origin: right center;
+}
+
+@media (min-width: 640px) {
+  .leftText {
+    right: calc(50% + 130px);
+  }
+}
+
+@media (min-width: 768px) {
+  .leftText {
+    right: calc(50% + 148px);
+  }
+}
+
+@media (min-width: 1024px) {
+  .leftText {
+    right: calc(50% + 165px);
+  }
+}
+
+.rightText {
+  pointer-events: none;
+  position: absolute;
+  top: 50%;
+  left: calc(50% + 115px);
+  transform: translateY(-50%);
+  z-index: 10;
+  user-select: none;
+  will-change: transform;
+  text-align: left;
+  transform-origin: left center;
+}
+
+@media (min-width: 640px) {
+  .rightText {
+    left: calc(50% + 130px);
+  }
+}
+
+@media (min-width: 768px) {
+  .rightText {
+    left: calc(50% + 148px);
+  }
+}
+
+@media (min-width: 1024px) {
+  .rightText {
+    left: calc(50% + 165px);
+  }
+}
+
+.textSpan {
+  font-family: 'Syne', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-weight: 800;
+  display: block;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #f8fafc;
+  white-space: nowrap;
+  filter: drop-shadow(0 8px 32px rgba(0, 0, 0, 0.9));
+  font-size: 1.5rem;
+}
+
+@media (min-width: 640px) {
+  .textSpan {
+    font-size: 2.25rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .textSpan {
+    font-size: 3rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .textSpan {
+    font-size: 3.75rem;
+  }
+}
+
+@media (min-width: 1280px) {
+  .textSpan {
+    font-size: 4.25rem;
+  }
+}
+
+.pill {
+  pointer-events: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 50;
+  padding: 4px 14px;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.55);
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  transition: opacity 150ms ease-out;
+  will-change: transform;
+}
+
+.pillText {
+  color: #ffffff;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.9));
+  font-family: sans-serif;
+}

@@ -1,6 +1,6 @@
-import { VesselComponentProps } from "../../engine/types";
+import { AbyssComponentProps } from "../../engine/types";
 
-export interface MerlinKnightsProps extends VesselComponentProps {
+export interface MerlinKnightsProps extends AbyssComponentProps {
   /**
    * Wind speed multiplier for flag/fabric displacement.
    * @default 0.8

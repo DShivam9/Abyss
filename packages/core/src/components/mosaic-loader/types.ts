@@ -1,5 +1,5 @@
 import React from "react";
-import { VesselComponentProps } from "../../engine/types";
+import { AbyssComponentProps } from "../../engine/types";
 
 export interface MosaicSlotPosition {
   xPct: number;
@@ -12,7 +12,7 @@ export interface MosaicSlotPosition {
   initialIdx: number;
 }
 
-export interface MosaicLoaderProps extends VesselComponentProps {
+export interface MosaicLoaderProps extends AbyssComponentProps {
   images?: string[];
   title?: string;
   lines?: string[];

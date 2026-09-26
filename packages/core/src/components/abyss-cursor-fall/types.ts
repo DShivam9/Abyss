@@ -1,7 +1,7 @@
 import * as THREE from "three";
-import { VesselComponentProps } from "../../engine/types";
+import { AbyssComponentProps } from "../../engine/types";
 
-export interface AbyssCursorFallProps extends VesselComponentProps {
+export interface AbyssCursorFallProps extends AbyssComponentProps {
   /**
    * Array of image URLs (WebP photos & SVGs) to texture onto 3D cards.
    */
@@ -47,11 +47,6 @@ export interface AbyssCursorFallProps extends VesselComponentProps {
    */
   spawnFilter?: "images-only" | "shapes-only";
 }
-
-/** @deprecated Use `AbyssCursorFallProps` */
-export type Apparatus3dCursorTrailProps = AbyssCursorFallProps;
-/** @deprecated Use `AbyssCursorFallProps` */
-export type ApparatusAbyssCursorFallProps = AbyssCursorFallProps;
 
 export interface SpawnedCard {
   mesh: THREE.Mesh<THREE.PlaneGeometry, THREE.MeshBasicMaterial>;

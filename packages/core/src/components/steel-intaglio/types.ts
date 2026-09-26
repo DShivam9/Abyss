@@ -1,8 +1,4 @@
-import { VesselComponentProps } from "../../engine/types";
+import { AbyssComponentProps } from "../../engine/types";
 
-export interface ApparatusSteelIntaglioProps extends VesselComponentProps {}
+export interface SteelIntaglioProps extends AbyssComponentProps {}
 
-/**
- * Backward compatibility alias.
- */
-export type ApparatusLlProps = ApparatusSteelIntaglioProps;

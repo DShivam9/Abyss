@@ -1,0 +1,11 @@
+{
+  "name": "Polyptych Formation",
+  "slug": "polyptych-formation",
+  "category": "Galleries",
+  "tier": "Core",
+  "version": "1.0.0",
+  "status": "stable",
+  "releaseDate": "2026-09-25",
+  "description": "Architectural hydraulic compression scroll sequence collapsing a multi-panel photographic formation into symmetric alignment.",
+  "tags": ["scroll", "gallery", "hydraulic", "editorial", "parallax", "pinned", "gsap"]
+}

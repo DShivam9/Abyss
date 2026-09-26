@@ -1,4 +1,4 @@
-import { VesselComponentProps } from "../../engine/types";
+import { AbyssComponentProps } from "../../engine/types";
 
 export interface TrackItem {
   id: string;
@@ -17,7 +17,7 @@ export interface ExtendedTrackItem extends TrackItem {
   audioStartTime?: number;
 }
 
-export interface TracklistGalleryProps extends VesselComponentProps {
+export interface TracklistGalleryProps extends AbyssComponentProps {
   /**
    * List of audio tracks to showcase in gallery.
    */

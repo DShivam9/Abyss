@@ -2,7 +2,7 @@ import React, { useRef, useMemo } from "react";
 import * as THREE from "three";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
-import { AbyssCursorFallProps, Apparatus3dCursorTrailProps, SpawnedCard } from "./types";
+import { AbyssCursorFallProps, SpawnedCard } from "./types";
 import {
   DEFAULT_IMAGES,
   STARK_SVG_PALETTE,
@@ -457,8 +457,5 @@ export const AbyssCursorFall: React.FC<AbyssCursorFallProps> = ({
     </div>
   );
 };
-
-export const Apparatus3dCursorTrail = AbyssCursorFall;
-export const ApparatusAbyssCursorFall = AbyssCursorFall;
-export type { AbyssCursorFallProps, Apparatus3dCursorTrailProps };
+export type { AbyssCursorFallProps };
 export default AbyssCursorFall;

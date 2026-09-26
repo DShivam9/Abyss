@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import * as THREE from "three";
 
-export interface VesselMouseState {
+export interface AbyssMouseState {
   position: THREE.Vector2;
   velocity: THREE.Vector2;
   isHovering: boolean;
@@ -9,8 +9,8 @@ export interface VesselMouseState {
   entryPoint: THREE.Vector2;
 }
 
-export function useVesselMouse(containerRef: React.RefObject<HTMLElement | null>) {
-  const stateRef = useRef<VesselMouseState>({
+export function useAbyssMouse(containerRef: React.RefObject<HTMLElement | null>) {
+  const stateRef = useRef<AbyssMouseState>({
     position: new THREE.Vector2(0.5, 0.5),
     velocity: new THREE.Vector2(0, 0),
     isHovering: false,
@@ -60,29 +60,22 @@ export function useVesselMouse(containerRef: React.RefObject<HTMLElement | null>
     };
   }, [containerRef]);
 
-  const updateMouse = (_deltaTime: number) => {
-    // Exponential spring lerp for smooth cursor momentum
-    const easeFactor = 1.0 - Math.exp(-12.0 * Math.min(_deltaTime || 0.016, 0.1));
-    currentMouse.current.x += (targetMouse.current.x - currentMouse.current.x) * easeFactor;
-    currentMouse.current.y += (targetMouse.current.y - currentMouse.current.y) * easeFactor;
-
-    // Compute raw velocity from target mouse (as specified in Issue 11 fix)
-    const rawVx = targetMouse.current.x - lastTarget.current.x;
-    const rawVy = targetMouse.current.y - lastTarget.current.y;
-    stateRef.current.velocity.set(rawVx, rawVy);
-
-    lastTarget.current.copy(targetMouse.current);
+  const updateMouse = (smoothFactor: number = 0.08) => {
+    currentMouse.current.lerp(targetMouse.current, smoothFactor);
     stateRef.current.position.copy(currentMouse.current);
+
+    const delta = new THREE.Vector2().subVectors(targetMouse.current, lastTarget.current);
+    stateRef.current.velocity.lerp(delta, 0.2);
+    lastTarget.current.copy(targetMouse.current);
 
     if (stateRef.current.isHovering && entryTime.current !== null) {
       stateRef.current.hoverDuration = (performance.now() - entryTime.current) / 1000;
-    } else {
-      stateRef.current.hoverDuration = 0;
     }
   };
 
   return {
     stateRef,
     updateMouse,
+    targetMouse,
   };
 }

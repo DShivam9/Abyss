@@ -23,12 +23,12 @@ export const INSTALL_COMMANDS = {
   bun: "bun add @abyss-ui/core three @react-three/fiber @react-three/drei gsap @gsap/react",
 };
 
-export const QUICK_EXAMPLE_CODE = `import { VesselCanvas, ParallaxColumn } from "@abyss-ui/core";
+export const QUICK_EXAMPLE_CODE = `import { AbyssCanvas, ParallaxColumn } from "@abyss-ui/core";
 
 export default function GalleryPage() {
   return (
     <main className="w-full min-h-screen bg-[#0A0A0A]">
-      <VesselCanvas>
+      <AbyssCanvas>
         <ParallaxColumn
           images={[
             "/images/scroll/cosmos_1859262512.webp",
@@ -37,7 +37,7 @@ export default function GalleryPage() {
           parallaxIntensity={70}
           speedFactor={1.0}
         />
-      </VesselCanvas>
+      </AbyssCanvas>
     </main>
   );
 }`;

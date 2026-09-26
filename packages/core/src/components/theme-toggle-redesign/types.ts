@@ -1,7 +1,7 @@
 import React from "react";
-import { VesselComponentProps } from "../../engine/types";
+import { AbyssComponentProps } from "../../engine/types";
 
-export interface ThemeToggleRedesignProps extends VesselComponentProps {
+export interface ThemeToggleRedesignProps extends AbyssComponentProps {
   /**
    * Visual toggle variant: machined 3D plunge dial or physical hanging lamp cord.
    * @default "dial"

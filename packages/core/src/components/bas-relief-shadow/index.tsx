@@ -1,11 +1,11 @@
 import React, { useRef } from "react";
 import * as THREE from "three";
-import { VesselCanvas } from "../../engine/VesselCanvas";
-import { ApparatusIalfaProps } from "./types";
+import { AbyssCanvas } from "../../engine/AbyssCanvas";
+import { BasReliefShadowProps } from "./types";
 import vert from "./shader.vert.glsl";
 import frag from "./shader.frag.glsl";
 
-export const ApparatusIalfa: React.FC<ApparatusIalfaProps> = (props) => {
+export const BasReliefShadow: React.FC<BasReliefShadowProps> = (props) => {
   const hoverActiveRef = useRef(0.0);
   const clickWaveRef = useRef(0.0);
   const lastMouseRef = useRef(new THREE.Vector2(0.5, 0.5));
@@ -52,7 +52,7 @@ export const ApparatusIalfa: React.FC<ApparatusIalfaProps> = (props) => {
   };
 
   return (
-    <VesselCanvas
+    <AbyssCanvas
       {...props}
       fit="cover"
       className={`!w-full !h-full !max-w-none !max-h-none !aspect-auto absolute inset-0 ${props.className || ""}`}
@@ -72,4 +72,4 @@ export const ApparatusIalfa: React.FC<ApparatusIalfaProps> = (props) => {
   );
 };
 
-export default ApparatusIalfa;
+export default BasReliefShadow;

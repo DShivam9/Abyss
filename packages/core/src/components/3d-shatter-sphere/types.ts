@@ -1,7 +1,7 @@
 import * as THREE from "three";
-import { VesselComponentProps } from "../../engine/types";
+import { AbyssComponentProps } from "../../engine/types";
 
-export interface ShatterSphereProps extends VesselComponentProps {
+export interface ShatterSphereProps extends AbyssComponentProps {
   /**
    * 3D Sphere/Cuboid radius (200 - 650).
    * @default 420
@@ -51,8 +51,6 @@ export interface ShatterSphereProps extends VesselComponentProps {
 
 /** @deprecated Use `ShatterSphereProps` */
 export type ThreeDShatterSphereProps = ShatterSphereProps;
-/** @deprecated Use `ShatterSphereProps` */
-export type Apparatus3DShatterSphereProps = ShatterSphereProps;
 
 export interface MeshData {
   mesh: THREE.Mesh;

@@ -1,4 +1,4 @@
-import { VesselComponentProps } from "../../engine/types";
+import { AbyssComponentProps } from "../../engine/types";
 
 export type OpticGridMode = "contact" | "cadence" | "editorial" | "panorama" | "drift" | "keystone";
 
@@ -13,7 +13,7 @@ export interface OpticImageItem {
   aspectRatio: string;
 }
 
-export interface OpticGridProps extends VesselComponentProps {
+export interface OpticGridProps extends AbyssComponentProps {
   /**
    * Initial active layout mode.
    * @default "contact"

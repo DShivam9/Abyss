@@ -353,6 +353,5 @@ export const PillarGallery: React.FC<PillarGalleryProps> = ({
   );
 };
 
-export const ApparatusAccordionWall = PillarGallery;
 export const AccordionWall = PillarGallery;
-export default PillarGallery;
+export default AccordionWall;

@@ -1,9 +1,9 @@
 import dynamic from "next/dynamic";
 import React from "react";
-import { VesselComponentProps } from "@abyss-ui/core";
+import { AbyssComponentProps } from "@abyss-ui/core";
 
 // Dynamic imports mapping slug to component inside packages/core
-export const COMPONENT_IMPORTS: Record<string, React.ComponentType<VesselComponentProps>> = {
+export const COMPONENT_IMPORTS: Record<string, React.ComponentType<AbyssComponentProps>> = {
   "japparii": dynamic(() => import("../../../../../packages/core/src/components/japparii"), { ssr: false }),
   "chromepunk-beast": dynamic(() => import("../../../../../packages/core/src/components/chromepunk-beast"), { ssr: false }),
   "merlin-knights": dynamic(() => import("../../../../../packages/core/src/components/merlin-knights"), { ssr: false }),
@@ -31,6 +31,7 @@ export const COMPONENT_IMPORTS: Record<string, React.ComponentType<VesselCompone
   "cinema-aisle": dynamic(() => import("../../../../../packages/core/src/components/cinema-aisle"), { ssr: false }),
   "cyclorama-matrix": dynamic(() => import("../../../../../packages/core/src/components/cyclorama-matrix"), { ssr: false }),
   "optic-grid": dynamic(() => import("../../../../../packages/core/src/components/optic-grid"), { ssr: false }),
+  "polyptych-formation": dynamic(() => import("../../../../../packages/core/src/components/polyptych-formation"), { ssr: false }),
 };
 
 

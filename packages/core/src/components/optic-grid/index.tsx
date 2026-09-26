@@ -24,7 +24,7 @@ if (typeof window !== "undefined") {
   gsap.registerPlugin(Flip, CustomEase);
 }
 
-export const ApparatusOpticGrid: React.FC<OpticGridProps> = ({
+export const OpticGrid: React.FC<OpticGridProps> = ({
   defaultMode = "contact",
   defaultFx = "none",
   defaultScale = "75",
@@ -443,4 +443,4 @@ export const ApparatusOpticGrid: React.FC<OpticGridProps> = ({
   );
 };
 
-export default ApparatusOpticGrid;
+export default OpticGrid;

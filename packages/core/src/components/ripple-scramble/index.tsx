@@ -2,8 +2,6 @@ import React, { useRef, useEffect, useCallback } from "react";
 import {
   RippleScrambleProps,
   RippleScrambleVariant,
-  ApparatusRippleScrambleProps,
-  ApparatusRippleVariant,
   WaveInstance,
   CharNode,
 } from "./types";
@@ -478,11 +476,8 @@ export const RippleScramble: React.FC<RippleScrambleProps> = ({
   );
 };
 
-export const ApparatusRippleScramble = RippleScramble;
 export type {
   RippleScrambleProps,
   RippleScrambleVariant,
-  ApparatusRippleScrambleProps,
-  ApparatusRippleVariant,
 };
 export default RippleScramble;

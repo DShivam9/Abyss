@@ -1,4 +1,4 @@
-# Apparatus Parallax Column
+# Parallax Column
 
 A split-screen vertical scroll component where the left and right columns scroll in opposite directions. As images traverse the viewport center band, they expand from a cropped scale state into a full unclipped state.
 

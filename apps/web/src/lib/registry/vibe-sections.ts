@@ -11,12 +11,13 @@ export const VIBE_SECTIONS: VibeSection[] = [
     id: "scroll-into-view",
     title: "Scroll Into View",
     headlineClass: "headline-s2", // blue
-    count: 4,
+    count: 5,
     slugs: [
       "parallax-column",
       "erosion-map",
       "dual-wave",
       "parallax-bleed",
+      "polyptych-formation",
     ],
   },
   {

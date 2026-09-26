@@ -1,6 +1,6 @@
-import { VesselComponentProps } from "../../engine/types";
+import { AbyssComponentProps } from "../../engine/types";
 
-export interface ApparatusParallaxColumnProps extends VesselComponentProps {
+export interface ParallaxColumnProps extends AbyssComponentProps {
   /**
    * List of images for Left Column.
    */

@@ -1,4 +1,4 @@
-import { VesselComponentProps } from "../../engine/types";
+import { AbyssComponentProps } from "../../engine/types";
 
 export interface AccordionWallItem {
   id?: string;
@@ -7,7 +7,7 @@ export interface AccordionWallItem {
   moodColor?: string;
 }
 
-export interface PillarGalleryProps extends VesselComponentProps {
+export interface PillarGalleryProps extends AbyssComponentProps {
   /**
    * List of accordion items to display.
    */
@@ -57,5 +57,4 @@ export interface PillarGalleryProps extends VesselComponentProps {
   style?: React.CSSProperties;
 }
 
-export type ApparatusAccordionWallProps = PillarGalleryProps;
 export type AccordionWallProps = PillarGalleryProps;

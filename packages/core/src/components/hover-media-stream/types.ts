@@ -1,4 +1,4 @@
-import { VesselComponentProps } from "../../engine/types";
+import { AbyssComponentProps } from "../../engine/types";
 
 export interface StreamMediaItem {
   id: string;
@@ -10,7 +10,7 @@ export interface StreamMediaItem {
   coloredSegments?: { text: string; color: string }[];
 }
 
-export interface HoverMediaStreamProps extends VesselComponentProps {
+export interface HoverMediaStreamProps extends AbyssComponentProps {
   items?: StreamMediaItem[];
   backdropBlur?: number;
   ambientBrightness?: number;

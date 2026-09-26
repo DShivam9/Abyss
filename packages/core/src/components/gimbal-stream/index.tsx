@@ -3,10 +3,12 @@
 import { useRef, useEffect, useState } from "react";
 import * as THREE from "three";
 import { GimbalStreamProps } from "./types";
-import { IMAGE_LIST, CARD_TITLES, TIER_CONFIGS, TIER_IMAGE_INDICES, GIMBAL_LAYOUT } from "./constants";
-import { CHAMBER_VERTEX_SHADER, CHAMBER_FRAGMENT_SHADER, injectCurvatureShader, injectMercuryShader } from "./shaders";
-import { createCleanAbyssLogoShape, createLiquidMercuryStudioEnvironment } from "./geometries";
+import { CARD_TITLES, TIER_CONFIGS, GIMBAL_LAYOUT } from "./constants";
 import { usePerformance } from "../../engine/PerformanceProvider";
+import { useLatestRef } from "../../hooks";
+import { expDamp } from "../../engine/utils";
+import { setupGimbalScene, disposeGimbalScene } from "./scene";
+import styles from "./styles.module.css";
 
 export type { GimbalStreamProps };
 
@@ -14,16 +16,15 @@ export function GimbalStream({
   gridVariant = "plus",
   autoRotateSpeed = 0.10,
   scrollSpeed = 0.0045,
-  cardBendMultiplier = 6.5,
-  glowIntensity = 3.2,
+  cardBendMultiplier: _cardBendMultiplier = 6.5,
+  glowIntensity: _glowIntensity = 3.2,
   waveBrightness = 1.0,
   waveSpeed = 1.0,
   className = "",
   style
 }: GimbalStreamProps) {
   const perf = usePerformance();
-  const perfRef = useRef(perf);
-  perfRef.current = perf;
+  const perfRef = useLatestRef(perf);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -36,27 +37,16 @@ export function GimbalStream({
   const pillTextRef = useRef<HTMLSpanElement>(null);
 
   const targetWeightsRef = useRef(new THREE.Vector3(1.0, 0.0, 0.0));
-  const autoRotateSpeedRef = useRef(autoRotateSpeed);
-  const scrollSpeedRef = useRef(scrollSpeed);
-  const cardBendMultiplierRef = useRef(cardBendMultiplier);
-  const glowIntensityRef = useRef(glowIntensity);
-  const waveBrightnessRef = useRef(waveBrightness);
-  const waveSpeedRef = useRef(waveSpeed);
+  const autoRotateSpeedRef = useLatestRef(autoRotateSpeed);
+  const scrollSpeedRef = useLatestRef(scrollSpeed);
+  const waveBrightnessRef = useLatestRef(waveBrightness);
+  const waveSpeedRef = useLatestRef(waveSpeed);
 
   useEffect(() => {
     if (rendererRef.current) {
       rendererRef.current.setPixelRatio(perf.dpr);
     }
   }, [perf.dpr]);
-
-  useEffect(() => {
-    autoRotateSpeedRef.current = autoRotateSpeed;
-    scrollSpeedRef.current = scrollSpeed;
-    cardBendMultiplierRef.current = cardBendMultiplier;
-    glowIntensityRef.current = glowIntensity;
-    waveBrightnessRef.current = waveBrightness;
-    waveSpeedRef.current = waveSpeed;
-  }, [autoRotateSpeed, scrollSpeed, cardBendMultiplier, glowIntensity, waveBrightness, waveSpeed]);
 
   useEffect(() => {
     if (gridVariant === "plus") targetWeightsRef.current.set(1.0, 0.0, 0.0);
@@ -70,176 +60,38 @@ export function GimbalStream({
     if (!canvas || !container) return;
 
     let isDisposed = false;
-    const scene = new THREE.Scene();
     const width = container.clientWidth || window.innerWidth;
     const height = container.clientHeight || window.innerHeight;
 
-    const camera = new THREE.PerspectiveCamera(65, width / height, 0.1, 6000);
-    camera.position.set(0, 0, 0);
-    scene.add(camera);
-
-    const renderer = new THREE.WebGLRenderer({
-      canvas,
-      antialias: perfRef.current.tier !== "low",
-      powerPreference: "high-performance",
-      precision: perfRef.current.tier === "low" ? "mediump" : "highp"
-    });
-    renderer.setSize(width, height);
-    renderer.setPixelRatio(perfRef.current.dpr);
-    renderer.outputColorSpace = THREE.LinearSRGBColorSpace;
-    renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.25;
-    rendererRef.current = renderer;
-
-    // --- Studio Lighting & Environment ---
-    const camKey = new THREE.DirectionalLight(0xffffff, 2.5);
-    camKey.position.set(0, 4, 7);
-    camera.add(camKey);
-
-    const camRim = new THREE.DirectionalLight(0xffffff, 1.8);
-    camRim.position.set(0, -4, 5);
-    camera.add(camRim);
-
-    const backGlow = new THREE.PointLight(0x7ec8f8, 1.8, 700);
-    backGlow.position.set(0, 0, -260);
-    scene.add(backGlow);
-
-    const ambLight = new THREE.AmbientLight(0xffffff, 0.9);
-    scene.add(ambLight);
-
-    const studioEnvMap = createLiquidMercuryStudioEnvironment(renderer);
-    scene.environment = studioEnvMap;
-
-    // --- 3D Logo Starburst Centerpiece ---
-    const isLow = perfRef.current.tier === "low";
-    const logoShape = createCleanAbyssLogoShape();
-    const logoGeo = new THREE.ExtrudeGeometry(logoShape, {
-      steps: 1,
-      depth: 0.24,
-      bevelEnabled: true,
-      bevelThickness: 0.22,
-      bevelSize: 0.12,
-      bevelSegments: isLow ? 4 : 14,
-      curveSegments: isLow ? 8 : 24
-    });
-    logoGeo.center();
-    logoGeo.computeVertexNormals();
-
-    const logoMount = new THREE.Group();
-    logoMount.position.set(0, 0, -180);
-    logoMount.scale.set(8, 8, 8);
-    scene.add(logoMount);
-
-    const logoSpinner = new THREE.Group();
-    logoMount.add(logoSpinner);
-
-    const customUniforms = { uTime: { value: 0.0 } };
-    const liquidMercuryMat = new THREE.MeshStandardMaterial({
-      color: 0xf5f8fc,
-      metalness: 0.88,
-      roughness: 0.12,
-      envMap: studioEnvMap,
-      envMapIntensity: 2.5
-    });
-    liquidMercuryMat.onBeforeCompile = (shader) => injectMercuryShader(shader, customUniforms);
-    logoSpinner.add(new THREE.Mesh(logoGeo, liquidMercuryMat));
-
-    // --- Cylindrical Raymarched Chamber ---
-    const cylinderGeo = new THREE.CylinderGeometry(
-      GIMBAL_LAYOUT.cylinderRadius,
-      GIMBAL_LAYOUT.cylinderRadius,
-      GIMBAL_LAYOUT.cylinderHeight,
-      96,
-      64,
-      true
-    );
-    const chamberMat = new THREE.ShaderMaterial({
-      side: THREE.BackSide,
-      fog: false,
-      uniforms: {
-        uTime: { value: 0 },
-        uScrollY: { value: 0 },
-        uScrollEnergy: { value: 0 },
-        uChamberAwake: { value: 0.20 },
-        uMorphWeights: { value: new THREE.Vector3(1.0, 0.0, 0.0) },
-        uWaveBrightness: { value: 1.0 },
-        uCellSize: { value: 68.0 },
-        uCylinderRadius: { value: 1050.0 },
-        uBgDark: { value: new THREE.Color(0x020305) },
-        uBgMid: { value: new THREE.Color(0x0c1e30) },
-        uCausticColor: { value: new THREE.Color(0x7ec8f8) },
-        uWireColor: { value: new THREE.Color(0x101522) },
-        uWireGlow: { value: new THREE.Color(0x9be5fb) }
-      },
-      vertexShader: CHAMBER_VERTEX_SHADER,
-      fragmentShader: CHAMBER_FRAGMENT_SHADER
-    });
-    const chamberMesh = new THREE.Mesh(cylinderGeo, chamberMat);
-    chamberMesh.position.set(0, 0, -420);
-    scene.add(chamberMesh);
-
-    // --- Eager In-Memory Preload & Tourbillon Gimbal Rings ---
-    const loadingManager = new THREE.LoadingManager();
-    loadingManager.onLoad = () => {
-      setIsLoaded(true);
-    };
-
-    // Fast fallback to ensure display within 300ms regardless of network stalls
+    // Fast fallback to ensure display within 350ms regardless of network stalls
     const readyTimer = setTimeout(() => {
       setIsLoaded(true);
     }, 350);
 
-    const textureLoader = new THREE.TextureLoader(loadingManager);
-    const cardBendUniform = { uCardBend: { value: 0.0 } };
-    const sharedMaterials = IMAGE_LIST.map((url) => {
-      const tex = textureLoader.load(url);
-      tex.colorSpace = THREE.SRGBColorSpace;
-      tex.generateMipmaps = true;
-      tex.minFilter = THREE.LinearMipmapLinearFilter;
-      tex.magFilter = THREE.LinearFilter;
+    const {
+      scene,
+      camera,
+      renderer,
+      backGlow,
+      logoMount,
+      logoSpinner,
+      chamberMat,
+      customUniforms,
+      voyageRoot,
+      tiers,
+      allCardMeshes,
+      sharedMaterials,
+    } = setupGimbalScene(
+      canvas,
+      width,
+      height,
+      perfRef.current.tier,
+      perfRef.current.dpr,
+      () => setIsLoaded(true)
+    );
+    rendererRef.current = renderer;
 
-      const mat = new THREE.MeshBasicMaterial({
-        map: tex,
-        side: THREE.DoubleSide,
-        transparent: false,
-        opacity: 1.0,
-        toneMapped: false
-      });
-      mat.onBeforeCompile = (shader) => injectCurvatureShader(shader, cardBendUniform);
-      return mat;
-    });
-
-    const voyageRoot = new THREE.Group();
-    voyageRoot.position.set(0, 0, -180);
-    scene.add(voyageRoot);
-
-    const cardGeo = new THREE.PlaneGeometry(GIMBAL_LAYOUT.cardWidth, GIMBAL_LAYOUT.cardHeight, 18, 18);
     const totalVoyageHeight = GIMBAL_LAYOUT.tierSpacingY * TIER_CONFIGS.length;
-    const allCardMeshes: THREE.Mesh[] = [];
-
-    const tiers = TIER_CONFIGS.map((cfg, tierIdx) => {
-      const gimbalAxis = new THREE.Group();
-      voyageRoot.add(gimbalAxis);
-      const ringRotator = new THREE.Group();
-      gimbalAxis.add(ringRotator);
-
-      const cardMeshes: THREE.Mesh[] = [];
-      const tierIndices = TIER_IMAGE_INDICES[tierIdx % TIER_IMAGE_INDICES.length];
-
-      for (let i = 0; i < GIMBAL_LAYOUT.uniformCards; i++) {
-        const imgIdx = tierIndices[i % tierIndices.length];
-        const mesh = new THREE.Mesh(cardGeo, sharedMaterials[imgIdx]);
-        mesh.userData = {
-          baseAngle: (i / GIMBAL_LAYOUT.uniformCards) * Math.PI * 2 + cfg.phaseOffset,
-          imageIdx: imgIdx,
-          hoverScale: 1.0
-        };
-        ringRotator.add(mesh);
-        cardMeshes.push(mesh);
-        allCardMeshes.push(mesh);
-      }
-      return { config: cfg, axis: gimbalAxis, cards: cardMeshes };
-    });
 
     // --- Virtual Scroll & Mouse Tracking ---
     let targetScrollY = 0;
@@ -313,11 +165,6 @@ export function GimbalStream({
     let lastNow = performance.now();
     const halfHeight = totalVoyageHeight * 0.5;
     let currentExplodeProg = 0.0;
-
-    function expDamp(current: number, target: number, rate: number, dt: number) {
-      return THREE.MathUtils.lerp(current, target, 1.0 - Math.exp(-rate * dt));
-    }
-
     const currentWeights = new THREE.Vector3(1.0, 0.0, 0.0);
     let animId: number;
 
@@ -391,7 +238,7 @@ export function GimbalStream({
       logoMount.rotation.set(autoPitch + currentMouseY * 0.05 + energyPitch, currentMouseX * 0.05, autoRoll + energyRoll);
       logoSpinner.rotation.y = -(t * 0.32) + Math.sin(t * 0.42) * 0.35 - currentScrollY * 0.007;
 
-      // Pristine Ring Radius: maintains pure original component structure
+      // Pristine Ring Radius
       const baseRadius = THREE.MathUtils.lerp(GIMBAL_LAYOUT.closedRadius, GIMBAL_LAYOUT.openRadius, currentExplodeProg);
       const corridorScroll = hasFullyUnlocked ? (currentScrollY - GIMBAL_LAYOUT.explodeThreshold) : 0.0;
 
@@ -402,19 +249,19 @@ export function GimbalStream({
         const wrappedY = (((rawY + halfHeight) % totalVoyageHeight) + totalVoyageHeight) % totalVoyageHeight - halfHeight;
         axis.position.y = wrappedY;
 
-        // Continuous tidal breathing: subtle alternating radial wave across rings (±5.5%)
+        // Continuous tidal breathing
         const tidalPhase = t * 0.45 + i * 0.85;
         const radialBreath = Math.sin(tidalPhase) * 0.055;
         const tierRadius = baseRadius * (1.0 + radialBreath);
 
-        // Gentle floating zero-G current wobble
+        // Floating zero-G current wobble
         const tidalTiltX = Math.sin(t * 0.55 + i * 1.1) * 0.035;
         const tidalTiltZ = Math.cos(t * 0.48 + i * 0.95) * 0.030;
         const tiltProgress = Math.max(0.0, (currentExplodeProg - 0.10) / 0.90);
         axis.rotation.x = config.tiltX * tiltProgress + currentMouseY * 0.02 + tidalTiltX;
         axis.rotation.z = config.tiltZ * tiltProgress + currentMouseX * 0.02 + tidalTiltZ;
 
-        // Subtle organic phase drift so constellation alignments remain fresh
+        // Subtle organic phase drift
         const driftFactor = 1.0 + Math.sin(i * 1.6 + t * 0.07) * 0.035;
         const orbitAngle = accumulatedAutoTime * config.direction * driftFactor + currentScrollY * config.speedMultiplier * scrollSpeedRef.current;
 
@@ -535,71 +382,61 @@ export function GimbalStream({
       cancelAnimationFrame(animId);
       window.removeEventListener("resize", onResize);
       clearTimeout(readyTimer);
-      window.removeEventListener("wheel", onWheel);
+      container.removeEventListener("wheel", onWheel);
       window.removeEventListener("mousemove", onPointerMove);
       container.removeEventListener("mouseleave", onPointerLeave);
       container.removeEventListener("touchstart", onTouchStart);
       container.removeEventListener("touchmove", onTouchMove);
+
+      disposeGimbalScene(scene, renderer, sharedMaterials);
       rendererRef.current = null;
-      renderer.dispose();
     };
   }, []);
 
   return (
     <div
       ref={containerRef}
-      className={`relative w-full h-full min-h-[500px] overflow-hidden bg-[#020305] select-none cursor-default ${className}`}
+      className={`${styles.container} ${className}`}
       style={style}
     >
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Syne:wght@800&display=swap');
-        .gimbal-stream-font {
-          font-family: 'Syne', -apple-system, BlinkMacSystemFont, sans-serif;
-          font-weight: 800;
-        }
-      `}</style>
       <canvas
         ref={canvasRef}
-        className="absolute inset-0 w-full h-full block transition-opacity duration-700 ease-out"
+        className={styles.canvas}
         style={{ opacity: isLoaded ? 1 : 0 }}
       />
 
-      {/* Flanking Typography Container (Hidden until WebGL paints first frame) */}
       <div
         ref={textContainerRef}
-        className="pointer-events-none absolute inset-0 transition-opacity duration-300 ease-out"
+        className={styles.textContainer}
         style={{ opacity: 0 }}
       >
-        {/* Left Flanking Typography: GIMBAL (Angled & curved into depth) */}
         <div
           ref={leftTextRef}
-          className="pointer-events-none absolute top-1/2 right-[calc(50%+115px)] sm:right-[calc(50%+130px)] md:right-[calc(50%+148px)] lg:right-[calc(50%+165px)] -translate-y-1/2 z-10 select-none will-change-transform text-right origin-right"
+          className={styles.leftText}
           style={{ transform: "perspective(1000px) rotateY(36deg) rotateX(6deg) rotateZ(-3deg) translate3d(0, -50%, 0)" }}
         >
-          <span className="gimbal-stream-font block uppercase text-2xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-[4.25rem] tracking-[0.04em] text-[#f8fafc] whitespace-nowrap drop-shadow-[0_8px_32px_rgba(0,0,0,0.9)]">
+          <span className={styles.textSpan}>
             GIMBAL
           </span>
         </div>
 
-        {/* Right Flanking Typography: STREAM (Angled & curved into depth) */}
         <div
           ref={rightTextRef}
-          className="pointer-events-none absolute top-1/2 left-[calc(50%+115px)] sm:left-[calc(50%+130px)] md:left-[calc(50%+148px)] lg:left-[calc(50%+165px)] -translate-y-1/2 z-10 select-none will-change-transform text-left origin-left"
+          className={styles.rightText}
           style={{ transform: "perspective(1000px) rotateY(-36deg) rotateX(6deg) rotateZ(3deg) translate3d(0, -50%, 0)" }}
         >
-          <span className="gimbal-stream-font block uppercase text-2xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-[4.25rem] tracking-[0.04em] text-[#f8fafc] whitespace-nowrap drop-shadow-[0_8px_32px_rgba(0,0,0,0.9)]">
+          <span className={styles.textSpan}>
             STREAM
           </span>
         </div>
       </div>
 
-      {/* Balanced Satin Glass Cursor Tooltip Box */}
       <div
         ref={pillRef}
-        className="pointer-events-none fixed top-0 left-0 z-50 px-3.5 py-1 rounded-[4px] bg-black/45 border border-white/25 backdrop-blur-[6px] shadow-[0_4px_20px_rgba(0,0,0,0.55)] text-white text-[11px] font-medium tracking-wider uppercase transition-opacity duration-150 will-change-transform"
+        className={styles.pill}
         style={{ opacity: 0, transform: "translate3d(-100px, -100px, 0)" }}
       >
-        <span ref={pillTextRef} className="text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)] font-sans">POSTAL IMPRINT</span>
+        <span ref={pillTextRef} className={styles.pillText}>POSTAL IMPRINT</span>
       </div>
     </div>
   );

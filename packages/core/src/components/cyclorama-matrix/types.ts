@@ -1,5 +1,5 @@
 import React from "react";
-import { VesselComponentProps } from "../../engine/types";
+import { AbyssComponentProps } from "../../engine/types";
 
 export interface MediaDef {
   file: string;
@@ -12,7 +12,7 @@ export interface AssetMetadata {
   pill: string;
 }
 
-export interface CycloramaMatrixProps extends VesselComponentProps {
+export interface CycloramaMatrixProps extends AbyssComponentProps {
   media?: MediaDef[];
   metadata?: AssetMetadata[];
   radiusX?: number;

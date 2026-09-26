@@ -1,5 +1,5 @@
 import { useRef, useEffect, useCallback } from "react";
-import { GravityCursorProps, ApparatusGravityCursorProps, PhysicsBody } from "./types";
+import { GravityCursorProps, PhysicsBody } from "./types";
 import { usePerformance } from "../../engine/PerformanceProvider";
 import {
   SHAPE_SVGS,
@@ -513,6 +513,5 @@ export function GravityCursor({
   );
 }
 
-export const ApparatusGravityCursor = GravityCursor;
-export type { GravityCursorProps, ApparatusGravityCursorProps };
+export type { GravityCursorProps };
 export default GravityCursor;

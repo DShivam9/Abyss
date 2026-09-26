@@ -5,7 +5,7 @@ An interactive Voronoi glass shatter effect. Clicking anywhere shatters the glas
 ## Usage
 
 ```tsx
-import { MerlinKnights } from "@vessel-ui/core";
+import { MerlinKnights } from "@abyss-ui/core";
 
 function App() {
   return (

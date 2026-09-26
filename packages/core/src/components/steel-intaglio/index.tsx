@@ -1,10 +1,10 @@
 import React, { useRef } from "react";
 import * as THREE from "three";
-import { VesselCanvas } from "../../engine/VesselCanvas";
-import { ApparatusSteelIntaglioProps } from "./types";
+import { AbyssCanvas } from "../../engine/AbyssCanvas";
+import { SteelIntaglioProps } from "./types";
 import { VERTEX_SHADER, FRAGMENT_SHADER } from "./shaders";
 
-export const ApparatusSteelIntaglio: React.FC<ApparatusSteelIntaglioProps> = (props) => {
+export const SteelIntaglio: React.FC<SteelIntaglioProps> = (props) => {
   const clickRef = useRef({ time: 99.0, x: 0.5, y: 0.5 });
   const tiltRef = useRef({ x: 0, y: 0, vx: 0, vy: 0 });
 
@@ -61,7 +61,7 @@ export const ApparatusSteelIntaglio: React.FC<ApparatusSteelIntaglioProps> = (pr
   };
 
   return (
-    <VesselCanvas
+    <AbyssCanvas
       {...props}
       vertexShader={VERTEX_SHADER}
       fragmentShader={FRAGMENT_SHADER}
@@ -77,6 +77,4 @@ export const ApparatusSteelIntaglio: React.FC<ApparatusSteelIntaglioProps> = (pr
     />
   );
 };
-
-export const ApparatusLl = ApparatusSteelIntaglio;
-export default ApparatusSteelIntaglio;
+export default SteelIntaglio;

@@ -28,6 +28,28 @@ export interface CommitEntry {
 
 export const CHANGELOG_DATA: CommitEntry[] = [
   {
+    id: "commit-37",
+    date: "2026-09-26",
+    displayDate: "Sep 26, 2026 • 21:30 IST",
+    tags: ["MAJOR", "FIX"],
+    title: "Component Polish & Motion Stability",
+    summary: "Refined motion smoothness, physics feedback, and visual presentation across library components.",
+    affectedSlugs: [
+      "tracklist-gallery",
+      "theme-toggle-redesign",
+      "hover-media-stream",
+      "cyclorama-matrix",
+      "erosion-map",
+      "dual-wave",
+    ],
+    items: [
+      "Added smooth exponential glide animations when changing active audio tracks",
+      "Refined lamp cord physics simulation and responsive card framing",
+      "Corrected font weight loading and typography rendering across displays",
+      "Improved animation loop stability and interaction responsiveness",
+    ],
+  },
+  {
     id: "commit-36",
     date: "2026-09-24",
     displayDate: "Sep 24, 2026 • 20:30 IST",

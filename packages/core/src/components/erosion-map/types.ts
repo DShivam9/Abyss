@@ -1,6 +1,6 @@
-import { VesselComponentProps } from "../../engine/types";
+import { AbyssComponentProps } from "../../engine/types";
 
-export interface ErosionMapProps extends VesselComponentProps {
+export interface ErosionMapProps extends AbyssComponentProps {
   /**
    * List of images for the erosion layers.
    * If not provided, fallback to default collection.

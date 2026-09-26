@@ -41,7 +41,7 @@ export function TransitionShowcaseLayout({
   return (
     <div className="relative w-full" style={{ height: runwayHeight }}>
       {/* Sticky Full-Viewport Container */}
-      <div className="sticky top-0 h-[100dvh] w-full overflow-hidden bg-[#070708]">
+      <div className="sticky top-0 h-[100dvh] w-full overflow-hidden bg-[#070708] flex items-center justify-center p-6 md:p-12">
         {childrenWithProps}
       </div>
     </div>

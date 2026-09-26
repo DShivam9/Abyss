@@ -3,51 +3,17 @@ import gsap from "gsap";
 import { TracklistGalleryProps, ExtendedTrackItem } from "./types";
 import { DEFAULT_TRACKS } from "./constants";
 import { usePerformance } from "../../engine/PerformanceProvider";
-
-let globalAudioInstance: HTMLAudioElement | null = null;
-let sharedAudioCtx: AudioContext | null = null;
-
-const playHapticTick = () => {
-  try {
-    if (typeof window === "undefined") return;
-    const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
-    if (!AudioCtx) return;
-    if (!sharedAudioCtx) {
-      sharedAudioCtx = new AudioCtx();
-    }
-    if (sharedAudioCtx.state === "suspended") {
-      sharedAudioCtx.resume().catch(() => {});
-    }
-    const ctx = sharedAudioCtx;
-    const now = ctx.currentTime;
-
-    // Realistic dry acoustic mechanical notch click (noise transient + bandpass)
-    const bufferSize = Math.floor(ctx.sampleRate * 0.008);
-    const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
-    const data = buffer.getChannelData(0);
-    for (let i = 0; i < bufferSize; i++) {
-      data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.18));
-    }
-
-    const noiseSource = ctx.createBufferSource();
-    noiseSource.buffer = buffer;
-
-    const filter = ctx.createBiquadFilter();
-    filter.type = "bandpass";
-    filter.frequency.setValueAtTime(3600, now);
-    filter.Q.setValueAtTime(4.0, now);
-
-    const gain = ctx.createGain();
-    gain.gain.setValueAtTime(0.22, now);
-    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.008);
-
-    noiseSource.connect(filter);
-    filter.connect(gain);
-    gain.connect(ctx.destination);
-
-    noiseSource.start(now);
-  } catch {}
-};
+import { useLatestRef } from "../../hooks/use-latest-ref";
+import {
+  BAKED_VOLUME,
+  playHapticTick,
+  getGlobalAudio,
+  playGlobalAudio,
+  destroyGlobalAudio,
+  unlockAndPlayAudio,
+  crossFadeTrackAudio,
+} from "./audio";
+import styles from "./styles.module.css";
 
 export const TracklistGallery: React.FC<TracklistGalleryProps> = ({
   tracks = [],
@@ -61,14 +27,15 @@ export const TracklistGallery: React.FC<TracklistGalleryProps> = ({
   const hasInteractedRef = useRef(false);
 
   const perf = usePerformance();
-  const perfRef = useRef(perf);
-  perfRef.current = perf;
+  const perfRef = useLatestRef(perf);
+  const titleSizeRef = useLatestRef(titleSize);
+  const onLifecycleChangeRef = useLatestRef(onLifecycleChange);
 
   const baseTracks = useMemo(() => {
     return tracks.length > 0 ? (tracks as ExtendedTrackItem[]) : DEFAULT_TRACKS;
   }, [tracks]);
 
-  // 5x set buffer guarantees zero empty gaps on any screen size / resolution while minimizing DOM overhead
+  // 5x set buffer guarantees zero empty gaps on any screen size while minimizing DOM overhead
   const activeTracks = useMemo(() => {
     return [
       ...baseTracks,
@@ -84,10 +51,9 @@ export const TracklistGallery: React.FC<TracklistGalleryProps> = ({
   const [settledCenterIndex, setSettledCenterIndex] = useState<number>(initialCenterIndex);
   const [audioProgress, setAudioProgress] = useState<number>(0);
 
-  const BAKED_VOLUME = 0.15;
   const targetYRef = useRef<number | null>(null);
 
-  // Debounce active track selection during continuous scroll (avoids rapid image flashing)
+  // Debounce active track selection during continuous scroll
   useEffect(() => {
     const timer = setTimeout(() => {
       setSettledCenterIndex(activeCenterIndex);
@@ -106,27 +72,19 @@ export const TracklistGallery: React.FC<TracklistGalleryProps> = ({
       duration: perfRef.current.reducedMotion ? 0 : 0.8,
       ease: "power2.out",
     });
-  }, [activeTrackRealIndex, currentTrack]);
+  }, [activeTrackRealIndex, currentTrack, perfRef]);
 
   // Audio Lifecycle, Tab Visibility, and Smooth Cross-fade Engine
   useEffect(() => {
     const track = baseTracks[activeTrackRealIndex];
     if (!track?.audioSrc) return;
 
-    if (!globalAudioInstance) {
-      globalAudioInstance = new Audio();
-    }
-
-    const audio = globalAudioInstance;
+    const audio = getGlobalAudio();
     const targetVol = BAKED_VOLUME;
-
-    // Check if the target track audio is ALREADY active (Prevents audio restart!)
     const isSameTrack = audio.src && (audio.src.endsWith(track.audioSrc) || audio.src.includes(encodeURIComponent(track.audioSrc)));
-
     let isCancelled = false;
 
     if (!audio.src) {
-      // Synchronous immediate assignment on first mount (enables instant autoplay on user gesture)
       audio.src = track.audioSrc || "";
       audio.currentTime = track.audioStartTime || 0;
       audio.volume = targetVol;
@@ -134,40 +92,7 @@ export const TracklistGallery: React.FC<TracklistGalleryProps> = ({
         audio.play().catch(() => {});
       }
     } else if (!isSameTrack) {
-      // Fade out old track (300ms)
-      const currentVol = audio.volume;
-      const fadeObj = { vol: currentVol };
-
-      gsap.to(fadeObj, {
-        vol: 0,
-        duration: 0.3,
-        ease: "power1.in",
-        onUpdate: () => {
-          if (audio) audio.volume = fadeObj.vol;
-        },
-        onComplete: () => {
-          if (isCancelled || !audio) return;
-          audio.pause();
-          audio.src = track.audioSrc || "";
-          audio.currentTime = track.audioStartTime || 0;
-          audio.volume = 0;
-
-          // 100ms silence gap before fade-in
-          setTimeout(() => {
-            if (isCancelled || !audio) return;
-            if (!document.hidden) {
-              audio.play().then(() => {
-                if (isCancelled || !audio) return;
-                gsap.to(audio, {
-                  volume: targetVol,
-                  duration: 0.4,
-                  ease: "power1.out",
-                });
-              }).catch(() => {});
-            }
-          }, 100);
-        },
-      });
+      crossFadeTrackAudio(audio, track, targetVol, () => isCancelled);
     } else {
       audio.volume = targetVol;
     }
@@ -179,7 +104,7 @@ export const TracklistGallery: React.FC<TracklistGalleryProps> = ({
     };
 
     audio.onended = () => {
-      let itemStep = titleSize + 40;
+      let itemStep = titleSizeRef.current + 40;
       const tracklist = tracklistRef.current;
       if (tracklist && tracklist.children.length >= 2) {
         const first = tracklist.children[0] as HTMLElement;
@@ -192,32 +117,8 @@ export const TracklistGallery: React.FC<TracklistGalleryProps> = ({
       }
     };
 
-    const unlockAndPlay = () => {
-      if (sharedAudioCtx && sharedAudioCtx.state === "suspended") {
-        sharedAudioCtx.resume().catch(() => {});
-      }
-      if (!audio || document.hidden) return;
-      if (audio.muted) {
-        audio.muted = false;
-        gsap.to(audio, {
-          volume: targetVol,
-          duration: 0.3,
-          ease: "power1.out",
-        });
-      }
-      if (audio.paused) {
-        audio.play().then(() => {
-          audio.muted = false;
-          gsap.to(audio, {
-            volume: targetVol,
-            duration: 0.3,
-            ease: "power1.out",
-          });
-        }).catch(() => {});
-      }
-    };
+    const handleUnlock = () => unlockAndPlayAudio(audio, targetVol);
 
-    // Direct immediate play attempt with muted fallback for browser autoplay policy
     audio.play().then(() => {
       audio.muted = false;
       audio.volume = targetVol;
@@ -226,25 +127,21 @@ export const TracklistGallery: React.FC<TracklistGalleryProps> = ({
       audio.play().catch(() => {});
     });
 
-    // Tab visibility handling: smooth fade to 0 before pause, smooth fade in on resume
     const handleVisibilityChange = () => {
-      if (!globalAudioInstance) return;
+      const activeAudio = getGlobalAudio();
       if (document.hidden) {
-        gsap.to(globalAudioInstance, {
+        gsap.to(activeAudio, {
           volume: 0,
           duration: 0.2,
           ease: "power1.in",
           onComplete: () => {
-            if (document.hidden && globalAudioInstance) {
-              globalAudioInstance.pause();
-            }
+            if (document.hidden) activeAudio.pause();
           },
         });
       } else {
-        globalAudioInstance.play().then(() => {
-          if (!globalAudioInstance) return;
-          globalAudioInstance.muted = false;
-          gsap.to(globalAudioInstance, {
+        activeAudio.play().then(() => {
+          activeAudio.muted = false;
+          gsap.to(activeAudio, {
             volume: targetVol,
             duration: 0.3,
             ease: "power1.out",
@@ -254,50 +151,35 @@ export const TracklistGallery: React.FC<TracklistGalleryProps> = ({
     };
 
     const unlockEvents = [
-      "pointerdown",
-      "mousedown",
-      "pointermove",
-      "mousemove",
-      "wheel",
-      "keydown",
-      "touchstart",
-      "scroll",
-      "click",
+      "pointerdown", "mousedown", "pointermove", "mousemove",
+      "wheel", "keydown", "touchstart", "scroll", "click",
     ];
 
     document.addEventListener("visibilitychange", handleVisibilityChange);
     unlockEvents.forEach((evt) => {
-      window.addEventListener(evt, unlockAndPlay, { passive: true, capture: true });
+      window.addEventListener(evt, handleUnlock, { passive: true, capture: true });
     });
 
     return () => {
       isCancelled = true;
       document.removeEventListener("visibilitychange", handleVisibilityChange);
       unlockEvents.forEach((evt) => {
-        window.removeEventListener(evt, unlockAndPlay, { capture: true } as any);
+        window.removeEventListener(evt, handleUnlock, { capture: true } as unknown as EventListenerOptions);
       });
     };
-  }, [activeTrackRealIndex, baseTracks, titleSize]);
+  }, [activeTrackRealIndex, baseTracks, titleSizeRef]);
 
-  // Component Unmount Cleanup: Stop, purge source, and destroy global audio instance
+  // Component Unmount Cleanup
   useEffect(() => {
     return () => {
-      if (globalAudioInstance) {
-        globalAudioInstance.pause();
-        globalAudioInstance.src = "";
-        globalAudioInstance.ontimeupdate = null;
-        globalAudioInstance.onended = null;
-        globalAudioInstance = null;
-      }
+      destroyGlobalAudio();
     };
   }, []);
 
-  // Direct Click-to-Jump Handler (Immediately settles on target track & unlocks audio)
+  // Direct Click-to-Jump Handler (Smoothly glides scroll queue to target track)
   const jumpToTrack = (index: number) => {
     playHapticTick();
-    if (globalAudioInstance && globalAudioInstance.paused) {
-      globalAudioInstance.play().catch(() => {});
-    }
+    playGlobalAudio();
     const tracklist = tracklistRef.current;
     const container = containerRef.current;
     let itemStep = titleSize + 40;
@@ -312,12 +194,10 @@ export const TracklistGallery: React.FC<TracklistGalleryProps> = ({
     const containerHeight = container?.clientHeight || window.innerHeight;
     const centerLineY = containerHeight / 2 - itemH / 2;
     targetYRef.current = centerLineY - index * itemStep;
-    setActiveCenterIndex(index);
-    setSettledCenterIndex(index);
-    if (onLifecycleChange) onLifecycleChange("peak");
+    if (onLifecycleChangeRef.current) onLifecycleChangeRef.current("peak");
   };
 
-  // Smooth Snap-to-Track Scroll & Exact Focal Alignment Loop
+  // Smooth Snap-to-Track Scroll Loop
   useEffect(() => {
     const container = containerRef.current;
     const tracklist = tracklistRef.current;
@@ -364,9 +244,7 @@ export const TracklistGallery: React.FC<TracklistGalleryProps> = ({
 
     const handleWheel = (e: WheelEvent) => {
       hasInteractedRef.current = true;
-      if (globalAudioInstance && globalAudioInstance.paused) {
-        globalAudioInstance.play().catch(() => {});
-      }
+      playGlobalAudio();
       const normalizedDelta = Math.sign(e.deltaY) * Math.min(80, Math.abs(e.deltaY));
       if (targetYRef.current !== null) {
         targetYRef.current -= normalizedDelta * 0.7;
@@ -377,12 +255,11 @@ export const TracklistGallery: React.FC<TracklistGalleryProps> = ({
     let touchStartY = 0;
     const handleTouchStart = (e: TouchEvent) => {
       hasInteractedRef.current = true;
-      if (globalAudioInstance && globalAudioInstance.paused) {
-        globalAudioInstance.play().catch(() => {});
-      }
+      playGlobalAudio();
       touchStartY = e.touches[0].clientY;
       if (snapTimeout) clearTimeout(snapTimeout);
     };
+
     const handleTouchMove = (e: TouchEvent) => {
       const deltaY = touchStartY - e.touches[0].clientY;
       touchStartY = e.touches[0].clientY;
@@ -390,6 +267,7 @@ export const TracklistGallery: React.FC<TracklistGalleryProps> = ({
         targetYRef.current -= deltaY * 1.1;
       }
     };
+
     const handleTouchEnd = () => {
       scheduleSnap();
     };
@@ -409,7 +287,6 @@ export const TracklistGallery: React.FC<TracklistGalleryProps> = ({
         const damp = 1 - Math.pow(1 - (perfRef.current.reducedMotion ? 0.35 : 0.08), dt * 60);
         yPos += (targetYRef.current - yPos) * damp;
 
-        // Continuous seamless boundary shift without 1-frame position tears
         if (yPos > centerLineY - 2 * singleSetHeight) {
           yPos -= singleSetHeight;
           targetYRef.current -= singleSetHeight;
@@ -420,14 +297,12 @@ export const TracklistGallery: React.FC<TracklistGalleryProps> = ({
 
         gsap.set(tracklist, { y: Math.round(yPos), force3D: false });
 
-        // Calculate exact title index intersecting screen center
         const centerIdx = Math.round((centerLineY - yPos) / itemStep);
-
         if (centerIdx !== lastCenterIdx) {
           lastCenterIdx = centerIdx;
           setActiveCenterIndex(centerIdx);
           playHapticTick();
-          if (onLifecycleChange) onLifecycleChange("peak");
+          if (onLifecycleChangeRef.current) onLifecycleChangeRef.current("peak");
         }
       }
 
@@ -448,14 +323,13 @@ export const TracklistGallery: React.FC<TracklistGalleryProps> = ({
 
   // Audio Progress Line Scrubbing
   const handleScrub = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!globalAudioInstance || !globalAudioInstance.duration) return;
-    if (globalAudioInstance.paused) {
-      globalAudioInstance.play().catch(() => {});
-    }
+    const audio = getGlobalAudio();
+    if (!audio || !audio.duration) return;
+    playGlobalAudio();
     const rect = e.currentTarget.getBoundingClientRect();
     const clickX = e.clientX - rect.left;
     const newProgress = Math.max(0, Math.min(1, clickX / rect.width));
-    globalAudioInstance.currentTime = newProgress * globalAudioInstance.duration;
+    audio.currentTime = newProgress * audio.duration;
     setAudioProgress(newProgress * 100);
   };
 
@@ -463,44 +337,29 @@ export const TracklistGallery: React.FC<TracklistGalleryProps> = ({
     <div
       ref={containerRef}
       onPointerDown={() => {
-        if (globalAudioInstance && globalAudioInstance.paused) {
-          globalAudioInstance.play().catch(() => {});
-        }
+        playGlobalAudio();
       }}
-      className={`relative w-full h-screen bg-[#1E3810] text-white overflow-hidden px-8 md:px-14 lg:px-16 transition-colors duration-700 ${className}`}
+      className={`${styles.container} ${className}`}
       style={style}
     >
-      <style>{`
-        @import url('https://api.fontshare.com/v2/css?f[]=ranade@400,500,600,700,900&display=swap');
-        
-        .razor-text-render {
-          -webkit-font-smoothing: antialiased;
-          -moz-osx-font-smoothing: grayscale;
-          text-rendering: geometricPrecision;
-          isolation: isolate;
-        }
-      `}</style>
-
-      {/* Left Column: Raw Large Rounded Artwork + Audio Progress Line */}
-      <div className="hidden lg:flex flex-col fixed left-16 md:left-24 lg:left-32 top-1/2 -translate-y-1/2 items-start pointer-events-auto z-30">
-        {/* Cover Image */}
-        <div className="w-[380px] h-[380px] xl:w-[440px] xl:h-[440px] 2xl:w-[480px] 2xl:h-[480px] rounded-3xl shadow-2xl relative overflow-hidden transition-all duration-500">
+      {/* Left Column: Rounded Artwork + Audio Progress Line */}
+      <div className={styles.artworkColumn}>
+        <div className={styles.artworkCover}>
           <img
             key={currentTrack.imageSrc}
             src={currentTrack.imageSrc}
             alt={currentTrack.title}
-            className="w-full h-full object-cover rounded-3xl transition-all duration-700 animate-in fade-in"
+            className={styles.artworkImage}
           />
         </div>
 
-        {/* Audio Progress Line (Start to End) */}
         <div
           onClick={handleScrub}
-          className="w-full h-[3px] bg-white/20 rounded-full cursor-pointer mt-4 relative overflow-hidden group"
+          className={styles.progressTrack}
           title="Click to seek audio"
         >
           <div
-            className="h-full bg-white rounded-full transition-all duration-100"
+            className={styles.progressBar}
             style={{ width: `${audioProgress}%` }}
           />
         </div>
@@ -509,7 +368,7 @@ export const TracklistGallery: React.FC<TracklistGalleryProps> = ({
       {/* Right Column: Track Titles Queue */}
       <div
         ref={tracklistRef}
-        className="absolute top-0 right-8 md:right-14 lg:right-16 w-full max-w-3xl flex flex-col gap-10 select-none cursor-grab active:cursor-grabbing razor-text-render pr-10 md:pr-14 items-end z-10"
+        className={`${styles.tracklist} ${styles.razorText}`}
       >
         {activeTracks.map((track, idx) => {
           const isActive = idx === activeCenterIndex;
@@ -523,18 +382,13 @@ export const TracklistGallery: React.FC<TracklistGalleryProps> = ({
                 hasInteractedRef.current = true;
                 jumpToTrack(idx);
               }}
-              className={`w-full razor-text-render transition-opacity duration-300 flex items-center justify-end cursor-pointer ${
-                isActive ? "opacity-100" : "opacity-35 hover:opacity-70"
-              }`}
+              className={`${styles.trackRow} ${isActive ? styles.trackRowActive : ""}`}
             >
               <h2
-                className={`tracking-tight leading-[1.15] py-1 text-right razor-text-render transition-colors duration-500 ${
-                  isActive ? "font-medium" : "font-normal"
-                }`}
+                className={styles.trackTitle}
                 style={{
-                  fontFamily: "'Ranade', -apple-system, BlinkMacSystemFont, sans-serif",
                   fontSize: `${titleSize}px`,
-                  letterSpacing: "-0.015em",
+                  fontWeight: isActive ? 500 : 400,
                   color: isActive ? itemTrack.titleColor : "#FFFFFF",
                 }}
               >
@@ -548,5 +402,4 @@ export const TracklistGallery: React.FC<TracklistGalleryProps> = ({
   );
 };
 
-export const ApparatusTracklistGallery = TracklistGallery;
 export default TracklistGallery;

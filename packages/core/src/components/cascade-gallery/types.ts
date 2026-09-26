@@ -1,6 +1,6 @@
-import { VesselComponentProps } from "../../engine/types";
+import { AbyssComponentProps } from "../../engine/types";
 
-export interface CascadeGalleryProps extends VesselComponentProps {
+export interface CascadeGalleryProps extends AbyssComponentProps {
   images?: string[];
   ambientDriftSpeed?: number;
   scrollSensitivity?: number;

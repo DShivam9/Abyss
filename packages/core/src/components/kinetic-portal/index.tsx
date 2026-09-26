@@ -1,12 +1,12 @@
 import React from "react";
-import { VesselCanvas } from "../../engine/VesselCanvas";
-import { VesselComponentProps } from "../../engine/types";
+import { AbyssCanvas } from "../../engine/AbyssCanvas";
+import { AbyssComponentProps } from "../../engine/types";
 import vert from "./shader.vert.glsl";
 import frag from "./shader.frag.glsl";
 
-export const KineticPortal: React.FC<VesselComponentProps> = (props) => {
+export const KineticPortal: React.FC<AbyssComponentProps> = (props) => {
   return (
-    <VesselCanvas
+    <AbyssCanvas
       {...props}
       vertexShader={vert}
       fragmentShader={frag}

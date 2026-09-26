@@ -55,6 +55,14 @@ export default function ShowcasePageClient({ slug }: { slug: string }) {
   };
 
   const renderLayout = () => {
+    if (slug === "polyptych-formation") {
+      return (
+        <div className="relative w-full h-full bg-[#060608]">
+          {renderComponent()}
+        </div>
+      );
+    }
+
     if (isSelfContainedScroll) {
       return (
         <div className="relative w-full min-h-screen h-screen bg-[#070708] overflow-hidden">

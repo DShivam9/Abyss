@@ -1,6 +1,6 @@
-import { VesselComponentProps } from "../../engine/types";
+import { AbyssComponentProps } from "../../engine/types";
 
-export interface GimbalStreamProps extends VesselComponentProps {
+export interface GimbalStreamProps extends AbyssComponentProps {
   gridVariant?: "plus" | "ghost" | "hex";
   autoRotateSpeed?: number;
   scrollSpeed?: number;

@@ -1,13 +1,13 @@
 import React, { useEffect } from "react";
-import { VesselComponentProps } from "../../engine/types";
+import { AbyssComponentProps } from "../../engine/types";
 
-export const StaticImage: React.FC<VesselComponentProps> = ({
+export const StaticImage: React.FC<AbyssComponentProps> = ({
   imageSrc,
   className = "",
   style,
   onLifecycleChange,
 }) => {
-  // Trigger standard vessel UI lifecycle state for static component
+  // Trigger standard UI lifecycle state for static component
   useEffect(() => {
     if (onLifecycleChange) {
       onLifecycleChange("idle");

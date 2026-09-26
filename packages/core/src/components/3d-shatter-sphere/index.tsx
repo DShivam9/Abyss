@@ -1,8 +1,15 @@
 import { useRef, useEffect, useState, useCallback } from "react";
 import * as THREE from "three";
-import { ShatterSphereProps, Apparatus3DShatterSphereProps, MeshData } from "./types";
+import { ShatterSphereProps, MeshData } from "./types";
 import { GALLERY_IMAGES } from "./constants";
 import { usePerformance } from "../../engine/PerformanceProvider";
+import { useLatestRef } from "../../hooks/use-latest-ref";
+import {
+  createCenterText,
+  loadCoverTextures,
+  buildStructureMeshes,
+} from "./scene";
+import styles from "./styles.module.css";
 
 export function ShatterSphere({
   sphereRadius = 420,
@@ -23,8 +30,7 @@ export function ShatterSphere({
   const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
 
   const perf = usePerformance();
-  const perfRef = useRef(perf);
-  perfRef.current = perf;
+  const perfRef = useLatestRef(perf);
 
   useEffect(() => {
     if (rendererRef.current) {
@@ -33,21 +39,12 @@ export function ShatterSphere({
   }, [perf.dpr]);
 
   // Dynamic Prop Refs for 60FPS Slider Performance
-  const sphereRadiusRef = useRef<number>(sphereRadius);
-  const shatterForceRef = useRef<number>(shatterForce);
-  const cardScaleRef = useRef<number>(cardScale);
-  const autoRotateSpeedRef = useRef<number>(autoRotateSpeed);
-  const itemCountRef = useRef<number>(itemCount);
-  const shapeModeRef = useRef<"sphere" | "cuboid" | "cuboid-grid">(shapeMode);
-
-  useEffect(() => {
-    sphereRadiusRef.current = sphereRadius;
-    shatterForceRef.current = shatterForce;
-    cardScaleRef.current = cardScale;
-    autoRotateSpeedRef.current = autoRotateSpeed;
-    itemCountRef.current = itemCount;
-    shapeModeRef.current = shapeMode;
-  }, [sphereRadius, shatterForce, cardScale, autoRotateSpeed, itemCount, shapeMode]);
+  const sphereRadiusRef = useLatestRef(sphereRadius);
+  const shatterForceRef = useLatestRef(shatterForce);
+  const cardScaleRef = useLatestRef(cardScale);
+  const autoRotateSpeedRef = useLatestRef(autoRotateSpeed);
+  const itemCountRef = useLatestRef(itemCount);
+  const shapeModeRef = useLatestRef(shapeMode);
 
   // 3D Shatter & Assembly State
   const mountTimeRef = useRef<number>(performance.now());
@@ -106,11 +103,9 @@ export function ShatterSphere({
       lastMouseRef.current = { x: e.clientX, y: e.clientY };
 
       if (e.button === 2) {
-        // Right Click: 3D Rotation
         isRotatingRef.current = true;
         rotVelRef.current = { x: 0, y: 0 };
       } else if (e.button === 0) {
-        // Left Click: 3D Spatial Translation
         isDraggingPosRef.current = true;
         posVelRef.current = { x: 0, y: 0 };
         pointerStartRef.current = { x: e.clientX, y: e.clientY, time: performance.now() };
@@ -122,7 +117,6 @@ export function ShatterSphere({
       const dy = e.clientY - lastMouseRef.current.y;
       lastMouseRef.current = { x: e.clientX, y: e.clientY };
 
-      // Update Normalized Device Coordinates for Magnetic Proximity Wave
       const rect = container.getBoundingClientRect();
       mouseNDCRef.current.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
       mouseNDCRef.current.y = -(((e.clientY - rect.top) / rect.height) * 2 - 1);
@@ -192,9 +186,8 @@ export function ShatterSphere({
     const width = container.clientWidth || window.innerWidth;
     const height = container.clientHeight || window.innerHeight;
 
-    // 1. Scene & Camera Setup (Spacious Arena Framing)
+    // 1. Scene & Camera Setup
     const scene = new THREE.Scene();
-
     const camera = new THREE.PerspectiveCamera(45, width / height, 1, 12000);
     camera.position.set(0, 0, 1900);
 
@@ -215,16 +208,10 @@ export function ShatterSphere({
     const structureGroup = new THREE.Group();
     scene.add(structureGroup);
 
-    // 4. 3D Core Center Typography Mesh
-    const textCanvas = document.createElement("canvas");
-    textCanvas.width = 1024;
-    textCanvas.height = 512;
-    const textCtx = textCanvas.getContext("2d");
+    // 4. Center Typography
+    const centerText = createCenterText(structureGroup, showCenterText);
 
-    const drawCenterText = () => {
-      if (!textCtx) return;
-      textCtx.clearRect(0, 0, textCanvas.width, textCanvas.height);
-
+    const refreshCenterText = () => {
       const mode = shapeModeRef.current;
       const title = isShatteredRef.current
         ? "SHATTERED"
@@ -236,85 +223,14 @@ export function ShatterSphere({
       const subtext = `LEFT DRAG TO MOVE · RIGHT DRAG TO ROTATE · CLICK TO ${
         isShatteredRef.current ? "REASSEMBLE" : "EXPLODE"
       }`;
-
-      textCtx.fillStyle = "rgba(240, 240, 245, 0.95)";
-      textCtx.font = "900 80px sans-serif";
-      textCtx.textAlign = "center";
-      textCtx.textBaseline = "middle";
-      textCtx.fillText(title, 512, 220);
-
-      textCtx.fillStyle = "rgba(160, 160, 175, 0.75)";
-      textCtx.font = "600 22px monospace";
-      textCtx.fillText(subtext, 512, 310);
+      centerText.updateCenterText(title, subtext);
     };
 
-    drawCenterText();
+    refreshCenterText();
+    updateTextRef.current = refreshCenterText;
 
-    const textTexture = new THREE.CanvasTexture(textCanvas);
-    textTexture.colorSpace = THREE.SRGBColorSpace;
-
-    updateTextRef.current = () => {
-      drawCenterText();
-      textTexture.needsUpdate = true;
-    };
-
-    const textGeo = new THREE.PlaneGeometry(540, 270);
-    const textMat = new THREE.MeshBasicMaterial({
-      map: textTexture,
-      transparent: true,
-      side: THREE.DoubleSide,
-      depthWrite: false,
-    });
-    const textMesh = new THREE.Mesh(textGeo, textMat);
-    textMesh.position.set(0, 0, 0);
-    textMesh.visible = showCenterText;
-    structureGroup.add(textMesh);
-
-    // 5. Load Texture Pool with Adaptive Cover (Prevents Distortion on Arbitrary Image Ratios)
-    const textureLoader = new THREE.TextureLoader();
-    const planeAspect = 120 / 155;
-    const textures = GALLERY_IMAGES.map((src) => {
-      const tex = textureLoader.load(src, (loadedTex) => {
-        const img = loadedTex.image as HTMLImageElement | undefined;
-        if (img?.width && img?.height) {
-          const imgAspect = img.width / img.height;
-          if (imgAspect > planeAspect) {
-            loadedTex.repeat.set(planeAspect / imgAspect, 1);
-            loadedTex.offset.set((1 - loadedTex.repeat.x) / 2, 0);
-          } else {
-            loadedTex.repeat.set(1, imgAspect / planeAspect);
-            loadedTex.offset.set(0, (1 - loadedTex.repeat.y) / 2);
-          }
-          loadedTex.needsUpdate = true;
-        }
-      });
-      tex.colorSpace = THREE.SRGBColorSpace;
-      return tex;
-    });
-
-    // Helper: Deform plane geometry vertices to curve along 3D sphere radius arc
-    const createSphericalCurvedPlaneGeo = (width: number, height: number, radius: number) => {
-      const segs = perfRef.current.tier === "low" ? 6 : 16;
-      const geo = new THREE.PlaneGeometry(width, height, segs, segs);
-      const posAttr = geo.attributes.position;
-
-      for (let i = 0; i < posAttr.count; i++) {
-        const x = posAttr.getX(i);
-        const y = posAttr.getY(i);
-        const distSq = x * x + y * y;
-        const maxRadiusSq = radius * radius;
-
-        if (distSq < maxRadiusSq) {
-          const zOffset = radius - Math.sqrt(maxRadiusSq - distSq);
-          posAttr.setZ(i, -zOffset * 0.95);
-        }
-      }
-
-      posAttr.needsUpdate = true;
-      geo.computeVertexNormals();
-      return geo;
-    };
-
+    // 5. Textures & Geometry Pool
+    const textures = loadCoverTextures(GALLERY_IMAGES);
     const defaultPlaneGeo = new THREE.PlaneGeometry(120, 155);
     let meshesData: MeshData[] = [];
     let activeShapeMode = shapeModeRef.current;
@@ -325,126 +241,15 @@ export function ShatterSphere({
         structureGroup.remove(d.mesh);
         d.mesh.geometry.dispose();
       });
-      meshesData = [];
-
-      const mode = shapeModeRef.current;
-      const count = itemCountRef.current;
-
-      const faces = [
-        { normal: new THREE.Vector3(0, 0, 1), rotY: 0, rotX: 0 }, // Front (+Z)
-        { normal: new THREE.Vector3(0, 0, -1), rotY: Math.PI, rotX: 0 }, // Back (-Z)
-        { normal: new THREE.Vector3(1, 0, 0), rotY: Math.PI / 2, rotX: 0 }, // Right (+X)
-        { normal: new THREE.Vector3(-1, 0, 0), rotY: -Math.PI / 2, rotX: 0 }, // Left (-X)
-        { normal: new THREE.Vector3(0, 1, 0), rotY: 0, rotX: -Math.PI / 2 }, // Top (+Y)
-        { normal: new THREE.Vector3(0, -1, 0), rotY: 0, rotX: Math.PI / 2 }, // Bottom (-Y)
-      ];
-
-      if (mode === "cuboid") {
-        // 3D SINGLE IMAGE MONOLITH CUBE: 6 Large Face Monoliths (1 per face)
-        const monolithGeo = new THREE.PlaneGeometry(330, 420);
-
-        faces.forEach((face, idx) => {
-          const unitPos = face.normal.clone().multiplyScalar(0.75);
-          const texture = textures[idx % textures.length];
-          const material = new THREE.MeshBasicMaterial({
-            map: texture,
-            side: THREE.DoubleSide,
-            transparent: true,
-            opacity: 1.0,
-          });
-
-          const mesh = new THREE.Mesh(monolithGeo, material);
-          mesh.rotation.set(face.rotX, face.rotY, 0);
-          const baseRot = mesh.rotation.clone();
-
-          structureGroup.add(mesh);
-
-          meshesData.push({
-            mesh,
-            unitPos,
-            baseRot,
-            material,
-          });
-        });
-      } else if (mode === "cuboid-grid") {
-        // 3D CUBOID GRID: 6 Faces x 4 Image Panels = 24 panels
-        let imgIdx = 0;
-        faces.forEach((face) => {
-          const offsets = [-0.38, 0.38];
-          offsets.forEach((ox) => {
-            offsets.forEach((oy) => {
-              const unitPos = new THREE.Vector3();
-              if (face.normal.z !== 0) {
-                unitPos.set(ox, oy, face.normal.z * 0.85);
-              } else if (face.normal.x !== 0) {
-                unitPos.set(face.normal.x * 0.85, oy, ox);
-              } else {
-                unitPos.set(ox, face.normal.y * 0.85, oy);
-              }
-
-              const texture = textures[imgIdx % textures.length];
-              imgIdx++;
-
-              const material = new THREE.MeshBasicMaterial({
-                map: texture,
-                side: THREE.DoubleSide,
-                transparent: true,
-                opacity: 1.0,
-              });
-
-              const mesh = new THREE.Mesh(defaultPlaneGeo.clone(), material);
-              mesh.rotation.set(face.rotX, face.rotY, 0);
-              const baseRot = mesh.rotation.clone();
-
-              structureGroup.add(mesh);
-
-              meshesData.push({
-                mesh,
-                unitPos,
-                baseRot,
-                material,
-              });
-            });
-          });
-        });
-      } else {
-        // 3D SPHERE MODE: Fibonacci Point Shell Distribution with Spherical Arc Curved Geometry
-        const goldenRatio = (1 + Math.sqrt(5)) / 2;
-        const curvedGeo = createSphericalCurvedPlaneGeo(120, 155, sphereRadiusRef.current);
-
-        for (let i = 0; i < count; i++) {
-          const theta = Math.acos(1 - (2 * (i + 0.5)) / count);
-          const phi = (2 * Math.PI * i) / goldenRatio;
-
-          const nx = Math.sin(theta) * Math.cos(phi);
-          const ny = Math.sin(theta) * Math.sin(phi);
-          const nz = Math.cos(theta);
-
-          const unitPos = new THREE.Vector3(nx, ny, nz).normalize();
-
-          const texture = textures[i % textures.length];
-          const material = new THREE.MeshBasicMaterial({
-            map: texture,
-            side: THREE.DoubleSide,
-            transparent: true,
-            opacity: 1.0,
-          });
-
-          const mesh = new THREE.Mesh(curvedGeo.clone(), material);
-          mesh.lookAt(unitPos.clone().multiplyScalar(2));
-          const baseRot = mesh.rotation.clone();
-
-          structureGroup.add(mesh);
-
-          meshesData.push({
-            mesh,
-            unitPos,
-            baseRot,
-            material,
-          });
-        }
-        curvedGeo.dispose();
-      }
+      meshesData = buildStructureMeshes({
+        mode: shapeModeRef.current,
+        count: itemCountRef.current,
+        radius: sphereRadiusRef.current,
+        textures,
+        structureGroup,
+        isLowTier: perfRef.current.tier === "low",
+        defaultPlaneGeo,
+      });
     };
 
     rebuildMeshes();
@@ -476,7 +281,6 @@ export function ShatterSphere({
       const rawDt = (time - lastTime) / 1000;
       lastTime = time;
 
-      // Handle tab-out / frame drop pause cleanly (prevents velocity spikes)
       if (rawDt > 0.08) {
         posVelRef.current.x = 0;
         posVelRef.current.y = 0;
@@ -485,7 +289,6 @@ export function ShatterSphere({
       }
       const dt = Math.min(rawDt, 0.033);
 
-      // Rebuild mesh geometry structure if shape mode or item count changes
       if (
         shapeModeRef.current !== activeShapeMode ||
         itemCountRef.current !== activeItemCount
@@ -496,7 +299,6 @@ export function ShatterSphere({
         if (updateTextRef.current) updateTextRef.current();
       }
 
-      // Inertial translation coasting when left-click released
       if (!isDraggingPosRef.current) {
         posRef.current.x += posVelRef.current.x;
         posRef.current.y += posVelRef.current.y;
@@ -504,13 +306,11 @@ export function ShatterSphere({
         posVelRef.current.y *= 0.92;
       }
 
-      // Spacious Soft World Viewport Bounds
       const boundX = 1600;
       const boundY = 1100;
       posRef.current.x = Math.max(-boundX, Math.min(boundX, posRef.current.x));
       posRef.current.y = Math.max(-boundY, Math.min(boundY, posRef.current.y));
 
-      // Cinematic Multi-Harmonic Bio-Levitation (Alien species breathing/floating)
       const isMotionReduced = perfRef.current.reducedMotion;
       const bioFloatX = isMotionReduced ? 0 : Math.sin(time * 0.00072) * 18 + Math.cos(time * 0.00038) * 12;
       const bioFloatY = isMotionReduced ? 0 : Math.sin(time * 0.00095) * 36 + Math.cos(time * 0.00052) * 20;
@@ -518,11 +318,9 @@ export function ShatterSphere({
       const bioRoll = isMotionReduced ? 0 : Math.sin(time * 0.00065) * 0.04;
       const bioPitch = isMotionReduced ? 0 : Math.cos(time * 0.00058) * 0.035;
 
-      // Track previous position to compute motion velocity
       const prevX = structureGroup.position.x;
       const prevY = structureGroup.position.y;
 
-      // Ultra-fluid 60fps translation follow with bio-levitation drift
       const targetX = posRef.current.x + bioFloatX;
       const targetY = posRef.current.y + bioFloatY;
       structureGroup.position.x += (targetX - structureGroup.position.x) * (1 - Math.exp(-10.0 * dt));
@@ -531,16 +329,12 @@ export function ShatterSphere({
       const moveVx = (structureGroup.position.x - prevX) / (dt || 0.016);
       const moveVy = (structureGroup.position.y - prevY) / (dt || 0.016);
       const speedMag = Math.hypot(moveVx, moveVy);
-
-      // Rotational angular velocity magnitude
       const rotSpeedMag = Math.hypot(rotVelRef.current.x, rotVelRef.current.y);
 
-      // Dynamic High-Velocity Jelly Stretch (Allows up to +28% stretch on hard fast drags)
       const stretchAmount = isMotionReduced ? 0 : Math.min(0.28, speedMag * 0.00016);
       const squashAmount = stretchAmount * 0.46;
       const moveAngle = Math.atan2(moveVy, moveVx);
 
-      // Rotational Centrifugal Bulge
       const spinStretch = isMotionReduced ? 0 : Math.min(0.18, rotSpeedMag * 14.0);
       const spinBulgeX = spinStretch * (Math.abs(rotVelRef.current.y) / (rotSpeedMag || 1));
       const spinBulgeY = spinStretch * (Math.abs(rotVelRef.current.x) / (rotSpeedMag || 1));
@@ -549,18 +343,15 @@ export function ShatterSphere({
       const targetScaleY = 1.0 + stretchAmount * Math.abs(Math.sin(moveAngle)) - squashAmount * Math.abs(Math.cos(moveAngle)) + spinBulgeY * 0.75;
       const targetScaleZ = 1.0 - (stretchAmount - squashAmount) * 0.5 - spinStretch * 0.6;
 
-      // Spring-loaded viscoelastic recovery
       structureGroup.scale.x += (targetScaleX - structureGroup.scale.x) * (1 - Math.exp(-8.5 * dt));
       structureGroup.scale.y += (targetScaleY - structureGroup.scale.y) * (1 - Math.exp(-8.5 * dt));
       structureGroup.scale.z += (targetScaleZ - structureGroup.scale.z) * (1 - Math.exp(-8.5 * dt));
 
-      // Fluid Momentum Lean + Spin Torsion Wobble
       const targetTiltZ = isMotionReduced ? 0 : -moveVx * 0.00009;
       const targetTiltX = isMotionReduced ? 0 : moveVy * 0.00009;
       momentumTiltRef.current.z += (targetTiltZ - momentumTiltRef.current.z) * (1 - Math.exp(-8.0 * dt));
       momentumTiltRef.current.x += (targetTiltX - momentumTiltRef.current.x) * (1 - Math.exp(-8.0 * dt));
 
-      // 3D Rotation with Right-Drag Inertial Momentum + Ambient Spin
       const speed = isMotionReduced ? 0 : autoRotateSpeedRef.current;
       const dtRatio = dt * 60;
       if (!isRotatingRef.current) {
@@ -577,17 +368,14 @@ export function ShatterSphere({
         rotVelRef.current.y *= dragDecay;
       }
 
-      // Smooth application of full 360-degree rotation + dynamic centrifugal torsion + bio-drift
       const spinTorsion = Math.sin(time * 0.015) * rotSpeedMag * 0.35;
       structureGroup.rotation.x = rotAngleRef.current.x + momentumTiltRef.current.x + bioPitch;
       structureGroup.rotation.y = rotAngleRef.current.y;
       structureGroup.rotation.z = momentumTiltRef.current.z + spinTorsion + bioRoll;
 
-      // Tactile Depth Plunge on left-click drag + bio depth breathing
       const targetPosZ = (isDraggingPosRef.current ? -100 : 0) + bioFloatZ;
       structureGroup.position.z += (targetPosZ - structureGroup.position.z) * (1 - Math.exp(-5.5 * dt));
 
-      // Smooth Shatter Explosion Lerp Progress with Elastic Overshoot
       const targetShatter = isShatteredRef.current ? 1 : 0;
       shatterProgressRef.current += (targetShatter - shatterProgressRef.current) * (1 - Math.exp(-6.5 * dt));
       const sP = shatterProgressRef.current;
@@ -596,11 +384,9 @@ export function ShatterSphere({
       const currentShatterForce = shatterForceRef.current;
       const currentCardScale = cardScaleRef.current;
 
-      // Dynamically scale 3D structure layout distance proportionally with cardScale & sphereRadius at 60FPS
       const layoutMultiplier = Math.max(1.0, 0.5 + currentCardScale * 0.5);
       const effectiveDistance = currentRadius * layoutMultiplier;
 
-      // Dynamic Camera Z Framing: Spacious arena distance
       const targetCameraZ = Math.max(
         1900,
         effectiveDistance * (1 + sP * currentShatterForce * 0.7) * 1.5
@@ -612,27 +398,23 @@ export function ShatterSphere({
       const tempWorldPos = new THREE.Vector3();
       const tempNDC = new THREE.Vector3();
 
-      // Assembly Build Animation Progress (3.5s Staggered Entrance)
       const elapsedSec = (time - mountTimeRef.current) / 1000;
 
       meshesData.forEach((data, i) => {
-        // Micro Stagger + Spring Elastic Overshoot
         const staggerRatio = i / totalItems;
         const tileSP = Math.max(0, Math.min(1, (sP - staggerRatio * 0.12) / 0.88));
         const elasticBounce = Math.sin(tileSP * Math.PI) * 0.05;
         const progress = tileSP + elasticBounce;
 
-        // Assembly Build Calculation (7.0s total window, 4.0s stagger spread)
         const staggerDelay = (i / totalItems) * 4.0;
         const tileElapsed = Math.max(0, elapsedSec - staggerDelay);
         const tileDuration = 3.0;
         const rawBuildProgress = Math.min(1, tileElapsed / tileDuration);
-        const buildProgress = 1 - Math.pow(1 - rawBuildProgress, 3); // cubic ease out
+        const buildProgress = 1 - Math.pow(1 - rawBuildProgress, 3);
         const buildDisplacement = (1 - buildProgress) * 2.2;
         let buildScale = currentCardScale * (0.3 + buildProgress * 0.7);
         const buildOpacity = Math.min(1, buildProgress * 1.5);
 
-        // Pre-Shatter Anticipation Tremor & Compression (750ms right before auto-shatter)
         let anticipationDisplace = 0;
         if (autoShatterDelay > 0 && !isShatteredRef.current) {
           const shatterTimeSec = autoShatterDelay / 1000;
@@ -644,12 +426,10 @@ export function ShatterSphere({
           }
         }
 
-        // Base layout push distance
         const pushMultiplier = activeShapeMode === "cuboid" ? 1.25 : activeShapeMode === "cuboid-grid" ? 1.1 : 0.85;
         const pushDist = (1 + buildDisplacement + anticipationDisplace) + progress * currentShatterForce * pushMultiplier;
         let dist = effectiveDistance * pushDist;
 
-        // 3D Magnetic Proximity Wave with Per-Tile Smoothstep & Viscous Momentum
         tempWorldPos.copy(data.unitPos).multiplyScalar(dist).applyMatrix4(structureGroup.matrixWorld);
         tempNDC.copy(tempWorldPos).project(camera);
 
@@ -658,16 +438,13 @@ export function ShatterSphere({
           const distScreen = Math.hypot(tempNDC.x - mouseNDC.x, tempNDC.y - mouseNDC.y);
           if (distScreen < 0.44) {
             const t = 1 - distScreen / 0.44;
-            // Cubic Hermite smoothstep for buttery bell-curve
             targetProx = t * t * (3 - 2 * t);
           }
         }
 
-        // 60FPS per-card smooth exponential momentum dampening
         data.currentProx = (data.currentProx ?? 0) + (targetProx - (data.currentProx ?? 0)) * (1 - Math.exp(-7.5 * dt));
         const proximity = data.currentProx;
 
-        // Soft, fluid physical displacement
         dist += proximity * 48;
         buildScale *= (1.0 + proximity * 0.12);
         const proxTiltX = (mouseNDC.y - tempNDC.y) * proximity * 0.22;
@@ -677,7 +454,6 @@ export function ShatterSphere({
         const finalOpacity = Math.min(1.0, buildOpacity + proximity * 0.18);
 
         if (activeShapeMode === "cuboid") {
-          // Monolith Cube: 6 Monolith Vault Wall Unfold & Sliding Displacement
           const hAngle = progress * 0.65 * (i % 2 === 0 ? 1 : -1);
           data.mesh.rotation.set(
             data.baseRot.x + proxTiltX + hAngle,
@@ -685,7 +461,6 @@ export function ShatterSphere({
             data.baseRot.z
           );
         } else if (activeShapeMode === "cuboid-grid") {
-          // Cuboid Grid: Deconstructed Matrix Blueprint Dispersal
           const zSpin = progress * Math.PI * (i % 2 === 0 ? 0.4 : -0.4);
           data.mesh.rotation.set(
             data.baseRot.x + proxTiltX,
@@ -693,7 +468,6 @@ export function ShatterSphere({
             data.baseRot.z + zSpin
           );
         } else {
-          // Default Sphere: Spherical Radial Burst
           data.mesh.rotation.set(
             data.baseRot.x + proxTiltX,
             data.baseRot.y + proxTiltY,
@@ -705,7 +479,6 @@ export function ShatterSphere({
         data.mesh.scale.set(buildScale, buildScale, buildScale);
       });
 
-      // Render WebGL Frame
       renderer.render(scene, camera);
       animId = requestAnimationFrame(animate);
     };
@@ -719,26 +492,29 @@ export function ShatterSphere({
       rendererRef.current = null;
       renderer.dispose();
       defaultPlaneGeo.dispose();
-      textGeo.dispose();
-      textMat.dispose();
-      textTexture.dispose();
+      centerText.textGeo.dispose();
+      centerText.textMat.dispose();
+      centerText.textTexture.dispose();
       textures.forEach((t) => t.dispose());
+      meshesData.forEach((d) => {
+        structureGroup.remove(d.mesh);
+        d.mesh.geometry.dispose();
+        d.material.dispose();
+      });
     };
   }, []);
 
   return (
     <div
       ref={containerRef}
-      className={`relative w-full h-screen bg-[#050507] overflow-hidden select-none cursor-grab active:cursor-grabbing ${className}`}
+      className={`${styles.wrapper} ${className}`}
       style={style}
     >
-      {/* High-Performance 3D WebGL Canvas */}
-      <canvas ref={canvasRef} className="absolute inset-0 w-full h-full block" />
+      <canvas ref={canvasRef} className={styles.canvas} />
     </div>
   );
 }
 
 export const ThreeDShatterSphere = ShatterSphere;
-export const Apparatus3DShatterSphere = ShatterSphere;
-export type { ShatterSphereProps, Apparatus3DShatterSphereProps };
+export type { ShatterSphereProps };
 export default ShatterSphere;
