@@ -21,7 +21,7 @@ export interface RippleScrambleProps extends AbyssComponentProps {
   scrambleDuration?: number;
   /**
    * Base typographic font size in px.
-   * @default 20
+   * @default 24
    */
   fontSize?: number;
   /**

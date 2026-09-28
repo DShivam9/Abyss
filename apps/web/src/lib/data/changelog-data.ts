@@ -28,6 +28,29 @@ export interface CommitEntry {
 
 export const CHANGELOG_DATA: CommitEntry[] = [
   {
+    id: "commit-38",
+    date: "2026-09-28",
+    displayDate: "Sep 28, 2026 • 18:30 IST",
+    tags: ["MAJOR", "FIX"],
+    title: "Component Polish & Motion Stability II",
+    summary: "Finalized kinetic feedback, physical shutter dynamics, and calibrated interaction precision across library components.",
+    affectedSlugs: [
+      "gravity-cursor",
+      "ripple-scramble",
+      "parallax-column",
+      "parallax-bleed",
+      "mosaic-loader",
+      "accordion-wall",
+      "abyss-cursor-fall",
+    ],
+    items: [
+      "Natural cursor tracking with rhythmic shutter waterfall cascade on Gravity Cursor",
+      "Calibrated typographic grid density and slider bounds on Ripple Scramble",
+      "Refined 3D column runway inertia and concave geometry on Parallax Column",
+      "Enhanced full-bleed progressive blur overlays and monolith accordion interactions",
+    ],
+  },
+  {
     id: "commit-37",
     date: "2026-09-26",
     displayDate: "Sep 26, 2026 • 21:30 IST",

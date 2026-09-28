@@ -12,8 +12,8 @@ export interface GravityCursorProps extends AbyssComponentProps {
    */
   bounceDamping?: number;
   /**
-   * Image box width in px (80 - 240).
-   * @default 140
+   * Image box width in px (120 - 520).
+   * @default 220
    */
   imageSize?: number;
   /**
@@ -25,40 +25,40 @@ export interface GravityCursorProps extends AbyssComponentProps {
    * Gravity physics variant.
    * @default "normal"
    */
-  gravityMode?: "normal" | "zero-gravity" | "magnetic-repulsor";
+  gravityMode?: "normal" | "zero-gravity";
   /**
    * Mouse interaction mode.
    * @default "hold-drag"
    */
   interactionMode?: "hold-drag" | "cursor-trail";
   /**
-   * Magnetic repeller field radius in px (150 - 600).
-   * @default 350
+   * Optional custom image URLs to drop instead of default shapes.
    */
-  repelRadius?: number;
-  /**
-   * Repulsion shockwave power multiplier (1.0 - 25.0).
-   * @default 1.0
-   */
-  repelForce?: number;
+  images?: string[];
 }
 
 export interface PhysicsBody {
   active: boolean;
   id: number;
   src: string;
-  color: string;
+  color?: string;
   x: number;
   y: number;
   vx: number;
   vy: number;
   rotation: number;
   vSpin: number;
-  bounces: number;
+  targetRotation: number;
+  bounces?: number;
   opacity: number;
   scale: number;
-  settled: boolean;
-  settledAge: number;
+  squash?: number;
+  zIndex: number;
+  settled?: boolean;
+  settledAge?: number;
   age: number;
-  maxAge: number;
+  maxAge?: number;
+  enterProgress: number;
+  dropDelay: number;
+  state: "sliding" | "resting" | "dropping";
 }

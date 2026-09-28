@@ -20,11 +20,10 @@ import { GravityCursor } from "@abyss-ui/core";
 
 | Prop | Type | Default | Description |
 |---|---|---|---|
-| `gravityMode` | `"normal" \| "zero-gravity" \| "magnetic-repulsor"` | `"normal"` | Physics mode governing movement and forces |
+| `gravityMode` | `"normal" \| "zero-gravity"` | `"normal"` | Physics mode governing movement and forces |
 | `interactionMode` | `"hold-drag" \| "cursor-trail"` | `"hold-drag"` | Continuous drag or velocity-based spawn triggering |
 | `imageSize` | `number` | `140` | Dimension of spawned visual bodies in pixels |
-| `gravity` | `number` | `0.55` | Downward gravitational acceleration per frame |
+| `gravity` | `number` | `0.28` | Downward gravitational acceleration per frame |
 | `bounceDamping` | `number` | `0.62` | Restitution elasticity coefficient upon floor impact |
-| `repelRadius` | `number` | `350` | Radial reach of magnetic repulsion forcefield in pixels |
-| `repelForce` | `number` | `9.2` | Repulsion impulse multiplier pushing nearby bodies |
 | `zeroGravity` | `boolean` | `false` | Quick toggle for weightless inertial drift |
+| `images` | `string[]` | `undefined` | Optional array of image URLs to render instead of vector shapes |

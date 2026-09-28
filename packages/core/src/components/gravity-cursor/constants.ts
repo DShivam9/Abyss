@@ -1,26 +1,18 @@
-// 20 Vector Shape SVGs
-export const SHAPE_SVGS: string[] = [
-  "/images/shapes/Shape%201.svg",
-  "/images/shapes/Shape%202.svg",
-  "/images/shapes/Shape%203.svg",
-  "/images/shapes/Shape%204.svg",
-  "/images/shapes/Shape%205.svg",
-  "/images/shapes/Shape%206.svg",
-  "/images/shapes/Shape%207.svg",
-  "/images/shapes/Shape%208.svg",
-  "/images/shapes/Shape%209.svg",
-  "/images/shapes/Shape%2010.svg",
-  "/images/shapes/Shape%2011.svg",
-  "/images/shapes/Shape%2012.svg",
-  "/images/shapes/Shape%2013.svg",
-  "/images/shapes/Shape%2014.svg",
-  "/images/shapes/Shape%2015.svg",
-  "/images/shapes/Shape%2016.svg",
-  "/images/shapes/Shape%2017.svg",
-  "/images/shapes/Shape%2018.svg",
-  "/images/shapes/Shape%2019.svg",
-  "/images/shapes/Shape%2020.svg",
+// 10 Chromatic Panther Specimen Cards
+export const GRAVITY_IMAGES: string[] = [
+  "/images/components/gravity-cursor/card-1.webp",
+  "/images/components/gravity-cursor/card-2.webp",
+  "/images/components/gravity-cursor/card-3.webp",
+  "/images/components/gravity-cursor/card-4.webp",
+  "/images/components/gravity-cursor/card-5.webp",
+  "/images/components/gravity-cursor/card-6.webp",
+  "/images/components/gravity-cursor/card-7.webp",
+  "/images/components/gravity-cursor/card-8.webp",
+  "/images/components/gravity-cursor/card-9.webp",
+  "/images/components/gravity-cursor/card-10.webp",
 ];
+
+export const SHAPE_SVGS = GRAVITY_IMAGES;
 
 // Bright & Hard High-Contrast Colors
 export const VIBRANT_PALETTE: string[] = [
@@ -37,6 +29,6 @@ export const VIBRANT_PALETTE: string[] = [
 ];
 
 // Baked constants for high-performance physics engine
-export const BAKED_SPAWN_INTERVAL = 55; // ms between stream spawns
-export const BAKED_FRICTION = 0.92; // space friction / slide damping
-export const BAKED_MAX_ITEMS = 45; // pre-allocated pool cap
+export const BAKED_SPAWN_INTERVAL = 40; // ms between stream spawns
+export const BAKED_FRICTION = 0.94; // space friction / slide damping
+export const BAKED_MAX_ITEMS = 7; // strict 7-item cap to prevent clutter
