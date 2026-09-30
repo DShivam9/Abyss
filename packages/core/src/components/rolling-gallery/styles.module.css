@@ -1,0 +1,203 @@
+.root {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 100vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background-color: #070709;
+  color: #ffffff;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  user-select: none;
+  -webkit-font-smoothing: antialiased;
+}
+
+.root::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+.canvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.streamContainer {
+  width: 100%;
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 18vh 48px 36vh 48px;
+  display: flex;
+  flex-direction: column;
+  gap: 24vh;
+  position: relative;
+  z-index: 1;
+}
+
+/* Spreads & Architectural Formations */
+.spreadSingle {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.hero {
+  max-width: 920px;
+  margin: 0 auto;
+}
+
+.wide {
+  max-width: 1140px;
+  margin: 0 auto;
+}
+
+.intimate {
+  max-width: 540px;
+  margin: 0 auto;
+}
+
+.alignRight {
+  justify-content: flex-end;
+  padding-right: 4%;
+}
+
+.alignLeft {
+  justify-content: flex-start;
+  padding-left: 4%;
+}
+
+.spreadDuo {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 72px;
+  align-items: start;
+}
+
+.asymmetricLeft {
+  grid-template-columns: 1.15fr 0.85fr;
+  gap: 80px;
+}
+
+.asymmetricRight {
+  grid-template-columns: 0.85fr 1.15fr;
+  gap: 80px;
+}
+
+.chasmDialogue {
+  grid-template-columns: 1fr 1fr;
+  gap: 110px;
+  align-items: center;
+  min-height: 90vh;
+}
+
+.cornerTouch {
+  width: 100%;
+  max-width: 820px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 12px;
+  position: relative;
+  min-height: 105vh;
+}
+
+.cornerTouch > div:first-child {
+  flex: 1;
+  display: flex;
+  justify-content: flex-end;
+  align-items: flex-start;
+  margin-top: 360px;
+}
+
+.cornerTouch > div:last-child {
+  flex: 1;
+  display: flex;
+  justify-content: flex-start;
+  align-items: flex-start;
+  margin-top: 0;
+}
+
+.spreadTriptych {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 0.9fr 1.35fr 0.9fr;
+  gap: 52px;
+  align-items: center;
+}
+
+.triptychStagger {
+  align-items: center;
+}
+
+.offsetDownSm {
+  margin-top: 80px;
+}
+
+.offsetDownMd {
+  margin-top: 160px;
+}
+
+.offsetDownLg {
+  margin-top: 260px;
+}
+
+.offsetUpSm {
+  margin-top: -60px;
+}
+
+.offsetUpMd {
+  margin-top: -120px;
+}
+
+/* Cards (Geometry source in DOM, hidden from direct paint, rendered via WebGL) */
+.card {
+  position: relative;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  visibility: hidden;
+}
+
+.media {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: 80vh;
+  object-fit: contain;
+}
+
+@media (max-width: 768px) {
+  .streamContainer {
+    padding: 12vh 20px 24vh 20px;
+    gap: 16vh;
+  }
+
+  .spreadDuo,
+  .asymmetricLeft,
+  .asymmetricRight,
+  .spreadTriptych,
+  .chasmDialogue {
+    grid-template-columns: 1fr;
+    gap: 48px;
+    min-height: auto;
+  }
+
+  .offsetDownSm,
+  .offsetDownMd,
+  .offsetDownLg,
+  .offsetUpSm,
+  .offsetUpMd {
+    margin-top: 0;
+  }
+}

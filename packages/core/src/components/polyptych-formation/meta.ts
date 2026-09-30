@@ -13,9 +13,9 @@ export const meta: ComponentDetail = {
   overview: "A dual-stage scroll composition beginning with an architectural reticle shutter convergence and stepped typographic placard reveal, transitioning into a pinned hydraulic compression that pulls outer photographic panels inward with opposing internal counter-parallax.",
   techStack: ["React", "GSAP", "ScrollTrigger"],
   useCases: [
-    "Editorial lookbooks and luxury brand hero showcase chapters.",
-    "Architectural portfolios highlighting multi-panel physical spatial relationships.",
-    "Cinematic landing section transitions with locked scroll choreography."
+    "Feature comparison & multi-angle product breakdowns: Pinning a central focus while flanking spec sheets and detail panels compress symmetrically into view.",
+    "Section transitions in long-form narratives: Locking scroll momentum to reveal surrounding architectural context before continuing down the page.",
+    "Process & case study showcases: Revealing supporting iterations on both flanks while keeping the primary finished work anchored."
   ],
   engineeringNotes: [
     "Dual-phase timeline integrating an outside-to-in vertical reticle shutter and ink-soak placard reveal.",

@@ -32,6 +32,7 @@ export const COMPONENT_IMPORTS: Record<string, React.ComponentType<AbyssComponen
   "cyclorama-matrix": dynamic(() => import("../../../../../packages/core/src/components/cyclorama-matrix"), { ssr: false }),
   "optic-grid": dynamic(() => import("../../../../../packages/core/src/components/optic-grid"), { ssr: false }),
   "polyptych-formation": dynamic(() => import("../../../../../packages/core/src/components/polyptych-formation"), { ssr: false }),
+  "rolling-gallery": dynamic(() => import("../../../../../packages/core/src/components/rolling-gallery"), { ssr: false }),
 };
 
 

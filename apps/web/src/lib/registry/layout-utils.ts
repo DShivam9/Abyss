@@ -7,6 +7,7 @@ export const SELF_CONTAINED_SCROLL = new Set([
   "mosaic-loader",
   "cinema-aisle",
   "cyclorama-matrix",
+  "rolling-gallery",
 ]);
 
 export const FULL_BLEED_SHADERS = new Set([

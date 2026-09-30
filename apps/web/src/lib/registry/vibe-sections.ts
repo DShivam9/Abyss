@@ -45,7 +45,7 @@ export const VIBE_SECTIONS: VibeSection[] = [
     id: "beyond-the-grid",
     title: "Beyond the Grid",
     headlineClass: "headline-s3", // indigo
-    count: 7,
+    count: 8,
     slugs: [
       "cascade-gallery",
       "gimbal-stream",
@@ -54,6 +54,7 @@ export const VIBE_SECTIONS: VibeSection[] = [
       "cinema-aisle",
       "cyclorama-matrix",
       "optic-grid",
+      "rolling-gallery",
     ],
   },
   {
