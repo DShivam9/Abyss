@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
 import { COMPONENT_DETAILS } from "@/lib/registry/component-details";
+import { getComponentBg } from "@/lib/registry/layout-utils";
 import PreviewPageClient from "./PreviewPageClient";
 
 interface PageProps {
@@ -24,9 +25,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function PreviewPage({ params }: PageProps) {
   const { slug } = await params;
-  const isLightBg = slug === "cascade-gallery";
+  const comp = COMPONENT_DETAILS[slug];
   return (
-    <Suspense fallback={<div className={`min-h-screen ${isLightBg ? "bg-[#f4f1ea]" : "bg-[#070708]"}`} />}>
+    <Suspense fallback={<div className="min-h-screen" style={{ backgroundColor: getComponentBg(slug, comp) }} />}>
       <PreviewPageClient slug={slug} />
     </Suspense>
   );

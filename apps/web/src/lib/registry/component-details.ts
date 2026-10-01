@@ -28,7 +28,7 @@ import { meta as rippleScramble } from "@abyss-ui/core/components/ripple-scrambl
 import { meta as steelIntaglio } from "@abyss-ui/core/components/steel-intaglio/meta";
 import { meta as themeToggleRedesign } from "@abyss-ui/core/components/theme-toggle-redesign/meta";
 import { meta as tracklistGallery } from "@abyss-ui/core/components/tracklist-gallery/meta";
-import { meta as rollingGallery } from "@abyss-ui/core/components/rolling-gallery/meta";
+import { meta as paperCurve } from "@abyss-ui/core/components/paper-curve/meta";
 
 export const COMPONENT_DETAILS: Record<string, ComponentDetail> = {
   [_3dShatterSphere.slug]: _3dShatterSphere,
@@ -59,5 +59,5 @@ export const COMPONENT_DETAILS: Record<string, ComponentDetail> = {
   [steelIntaglio.slug]: steelIntaglio,
   [themeToggleRedesign.slug]: themeToggleRedesign,
   [tracklistGallery.slug]: tracklistGallery,
-  [rollingGallery.slug]: rollingGallery,
+  [paperCurve.slug]: paperCurve,
 };

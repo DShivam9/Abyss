@@ -8,6 +8,7 @@ export const meta: ComponentDetail = {
   slug: "tracklist-gallery",
   category: "gallery",
   subtype: "audio-index",
+  bgColor: "#1e3810",
   tags: ["Gallery", "Tracklist", "Audio", "Scroll", "GSAP", "Typography"],
   previewType: "gallery",
   overview: "Editorial audio index mapping vertical scroll scrub directly to album artwork crossfades and track playback. Features synthesized Web Audio haptic notch clicks on track index transitions, responsive track scrubbing, and dynamic ambient background lighting that shifts with each album palette.",

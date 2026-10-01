@@ -28,15 +28,30 @@ export interface CommitEntry {
 
 export const CHANGELOG_DATA: CommitEntry[] = [
   {
+    id: "commit-40",
+    date: "2026-10-01",
+    displayDate: "Oct 1, 2026 • 15:30 IST",
+    tags: ["MAJOR", "FIX"],
+    title: "Polished Paper Curve Component",
+    summary: "Refined scroll fluidity, added smooth entry and exit fades, and balanced depth motion across media.",
+    affectedSlugs: ["paper-curve"],
+    items: [
+      "Smooth fade transitions as media enters and exits the viewport",
+      "Balanced multi-layer depth glide between adjacent photos and videos",
+      "Simplified interactive controls with intuitive, everyday naming",
+      "Adaptive animation fluidity across all monitor refresh rates",
+    ],
+  },
+  {
     id: "commit-39",
     date: "2026-09-30",
     displayDate: "Sep 30, 2026 • 20:30 IST",
     tags: ["ADDITION"],
-    title: "Added Rolling Gallery Component",
-    summary: "Added Rolling Gallery, a vertical media runway that curves in 3D as you scroll.",
-    affectedSlugs: ["rolling-gallery"],
+    title: "Added Paper Curve Component",
+    summary: "Added Paper Curve, a vertical media runway that curves and unbends like paper off a press as you scroll.",
+    affectedSlugs: ["paper-curve"],
     items: [
-      "Interactive 3D cylindrical scroll runway for mixed-media collections",
+      "Interactive 3D paper scroll runway for mixed-media collections",
       "Velocity-responsive curvature that flexes dynamically with scroll speed",
       "Support for mixed aspect ratios across images and looping video clips",
       "Live interactive controls for curve depth, flex, and edge flare",

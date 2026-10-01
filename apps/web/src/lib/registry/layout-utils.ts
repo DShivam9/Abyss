@@ -7,7 +7,7 @@ export const SELF_CONTAINED_SCROLL = new Set([
   "mosaic-loader",
   "cinema-aisle",
   "cyclorama-matrix",
-  "rolling-gallery",
+  "paper-curve",
 ]);
 
 export const FULL_BLEED_SHADERS = new Set([
@@ -24,4 +24,11 @@ export function getLayoutType(meta: ComponentDetail, slug: string) {
   const isTransition = !isText && !isSelfContainedScroll && (meta.category === "transition" || previewType === "transition");
 
   return { isSelfContainedScroll, isFullBleed, isText, isScroll, isGallery, isTransition };
+}
+
+const DEFAULT_BG = "#070708";
+
+export function getComponentBg(slug: string, meta?: ComponentDetail): string {
+  if (meta?.bgColor) return meta.bgColor;
+  return DEFAULT_BG;
 }

@@ -13,6 +13,7 @@ interface ShowcaseChromeProps {
   children: React.ReactNode;
   onToggleControls?: () => void;
   controlsOpen?: boolean;
+  bgColor?: string;
 }
 
 export function ShowcaseChrome({
@@ -20,6 +21,7 @@ export function ShowcaseChrome({
   children,
   onToggleControls,
   controlsOpen = false,
+  bgColor,
 }: ShowcaseChromeProps) {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [infoOpen, setInfoOpen] = useState(false);
@@ -65,7 +67,10 @@ export function ShowcaseChrome({
   };
 
   return (
-    <div className="relative w-full h-screen overflow-hidden bg-[#0d0d0f]">
+    <div
+      className="relative w-full h-screen overflow-hidden"
+      style={{ backgroundColor: bgColor || "#0d0d0f" }}
+    >
       {/* Top-Left Keycap Menu Button */}
       <div className="top-left-menu">
         <button

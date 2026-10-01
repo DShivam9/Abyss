@@ -41,7 +41,7 @@ export * from "./components/cinema-aisle";
 export * from "./components/cyclorama-matrix";
 export * from "./components/optic-grid";
 export * from "./components/polyptych-formation";
-export * from "./components/rolling-gallery";
+export * from "./components/paper-curve";
 
 
 

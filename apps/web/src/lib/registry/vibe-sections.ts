@@ -54,7 +54,7 @@ export const VIBE_SECTIONS: VibeSection[] = [
       "cinema-aisle",
       "cyclorama-matrix",
       "optic-grid",
-      "rolling-gallery",
+      "paper-curve",
     ],
   },
   {

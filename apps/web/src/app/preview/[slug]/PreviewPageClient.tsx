@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import { getComponent, getLayoutType } from "@/lib/registry";
+import { getComponent, getLayoutType, getComponentBg } from "@/lib/registry";
 import { ShaderShowcaseLayout } from "@/components/showcase/layouts/ShaderShowcaseLayout";
 import { ScrollShowcaseLayout } from "@/components/showcase/layouts/ScrollShowcaseLayout";
 import { GalleryShowcaseLayout } from "@/components/showcase/layouts/GalleryShowcaseLayout";
@@ -46,6 +46,7 @@ export default function PreviewPageClient({ slug }: PreviewPageClientProps) {
     : `/images/${meta.filename}`;
 
   const { isSelfContainedScroll, isText, isScroll, isGallery, isTransition } = getLayoutType(meta, slug);
+  const bgColor = getComponentBg(slug, meta);
 
   const renderComponent = () => {
     return <Component imageSrc={defaultImageSrc} {...controlValues} onControlChange={handleControlChange} />;
@@ -53,9 +54,11 @@ export default function PreviewPageClient({ slug }: PreviewPageClientProps) {
 
   const renderLayout = () => {
     if (isSelfContainedScroll) {
-      const bgClass = slug === "mosaic-loader" ? "bg-white" : "bg-[#070708]";
       return (
-        <div className={`relative w-full min-h-screen h-screen ${bgClass} overflow-hidden`}>
+        <div
+          className="relative w-full min-h-screen h-screen overflow-hidden"
+          style={{ backgroundColor: bgColor }}
+        >
           {renderComponent()}
         </div>
       );
@@ -63,7 +66,10 @@ export default function PreviewPageClient({ slug }: PreviewPageClientProps) {
 
     if (isText) {
       return (
-        <div className="relative w-full bg-[#070708] min-h-screen">
+        <div
+          className="relative w-full min-h-screen"
+          style={{ backgroundColor: bgColor }}
+        >
           {renderComponent()}
         </div>
       );
@@ -100,12 +106,12 @@ export default function PreviewPageClient({ slug }: PreviewPageClientProps) {
     );
   };
 
-  const isLightBg = slug === "cascade-gallery" || slug === "mosaic-loader";
-  const mainBgClass = slug === "mosaic-loader" ? "bg-white" : isLightBg ? "bg-[#f4f1ea]" : "bg-[#070708]";
-
   return (
     <PerformanceProvider>
-      <main className={`w-full min-h-screen ${mainBgClass} ${isScroll ? "" : "h-screen overflow-hidden"}`}>
+      <main
+        className={`w-full min-h-screen ${isScroll ? "" : "h-screen overflow-hidden"}`}
+        style={{ backgroundColor: bgColor }}
+      >
         <ComponentErrorBoundary fallbackSlug={slug}>
           {renderLayout()}
         </ComponentErrorBoundary>

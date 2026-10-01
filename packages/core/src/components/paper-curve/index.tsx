@@ -3,14 +3,15 @@
 import { useRef, useEffect } from "react";
 import * as THREE from "three";
 import Lenis from "lenis";
-import { RollingGalleryProps } from "./types";
+import { PaperCurveProps } from "./types";
 import {
   DEFAULT_SPREADS,
-  DEFAULT_BASE_CURVE,
-  DEFAULT_DISTANCE,
-  DEFAULT_VELOCITY_BOOST,
-  DEFAULT_SPAN_CAMBER,
-  DEFAULT_EXIT_ARC,
+  DEFAULT_CURVATURE,
+  DEFAULT_MOMENTUM_FLEX,
+  DEFAULT_DEPTH_PARALLAX,
+  DEFAULT_EXIT_CURL,
+  BAKED_CURVE_DEPTH,
+  BAKED_SPAN_CAMBER,
 } from "./constants";
 import { POST_VERTEX_SHADER, POST_FRAGMENT_SHADER } from "./shaders";
 import { useLatestRef } from "../../hooks";
@@ -27,28 +28,50 @@ interface CardMeshItem {
   left: number;
   width: number;
   height: number;
+  parallaxFactor: number;
+  videoElement?: HTMLVideoElement;
+  videoPlaying: boolean;
+  loadOpacity: number;
+  loaded: boolean;
 }
 
-export function RollingGallery({
-  baseCurve = DEFAULT_BASE_CURVE,
-  distance = DEFAULT_DISTANCE,
-  velocityBoost = DEFAULT_VELOCITY_BOOST,
-  spanCamber = DEFAULT_SPAN_CAMBER,
-  exitArc = DEFAULT_EXIT_ARC,
+export function PaperCurve({
+  curvature,
+  momentumFlex,
+  depthParallax,
+  exitCurl,
+  baseCurve,
+  distance,
+  velocityBoost,
+  spanCamber,
+  exitArc,
+  blurIntensity = 0.0,
+  parallaxScale,
+  title = "PAPER CURVE",
   spreads = DEFAULT_SPREADS,
   className = "",
   style,
   onLifecycleChange,
-}: RollingGalleryProps) {
+}: PaperCurveProps) {
   const rootRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const introLockupRef = useRef<HTMLDivElement>(null);
 
-  const baseCurveRef = useLatestRef(baseCurve);
-  const distanceRef = useLatestRef(distance);
-  const velocityBoostRef = useLatestRef(velocityBoost);
-  const spanCamberRef = useLatestRef(spanCamber);
-  const exitArcRef = useLatestRef(exitArc);
+  const activeCurvature = curvature ?? baseCurve ?? DEFAULT_CURVATURE;
+  const activeDistance = distance ?? BAKED_CURVE_DEPTH;
+  const activeMomentumFlex = momentumFlex ?? velocityBoost ?? DEFAULT_MOMENTUM_FLEX;
+  const activeSpanCamber = spanCamber ?? BAKED_SPAN_CAMBER;
+  const activeExitCurl = exitCurl ?? exitArc ?? DEFAULT_EXIT_CURL;
+  const activeDepthParallax = depthParallax ?? parallaxScale ?? DEFAULT_DEPTH_PARALLAX;
+
+  const baseCurveRef = useLatestRef(activeCurvature);
+  const distanceRef = useLatestRef(activeDistance);
+  const velocityBoostRef = useLatestRef(activeMomentumFlex);
+  const spanCamberRef = useLatestRef(activeSpanCamber);
+  const exitArcRef = useLatestRef(activeExitCurl);
+  const blurIntensityRef = useLatestRef(blurIntensity);
+  const parallaxScaleRef = useLatestRef(activeDepthParallax);
 
   useEffect(() => {
     if (typeof window === "undefined" || !rootRef.current || !canvasRef.current || !contentRef.current) {
@@ -104,6 +127,8 @@ export function RollingGallery({
         minFilter: THREE.LinearFilter,
         magFilter: THREE.LinearFilter,
         format: THREE.RGBAFormat,
+        wrapS: THREE.ClampToEdgeWrapping,
+        wrapT: THREE.ClampToEdgeWrapping,
       }
     );
 
@@ -116,9 +141,11 @@ export function RollingGallery({
         uDistance: { value: distanceRef.current },
         uSpanCamber: { value: spanCamberRef.current },
         uExitArc: { value: exitArcRef.current },
+        uBlurStrength: { value: 0.0 },
       },
       vertexShader: POST_VERTEX_SHADER,
       fragmentShader: POST_FRAGMENT_SHADER,
+      transparent: true,
     });
 
     const postQuadGeometry = new THREE.PlaneGeometry(2, 2);
@@ -130,17 +157,21 @@ export function RollingGallery({
     const textureLoader = new THREE.TextureLoader();
     const sharedPlaneGeometry = new THREE.PlaneGeometry(1, 1);
     const maxAnisotropy = renderer.capabilities.getMaxAnisotropy();
+    const createdVideos: HTMLVideoElement[] = [];
 
-    const cardItems: CardMeshItem[] = cardElements.map((el) => {
+    const cardItems: CardMeshItem[] = cardElements.map((el, index) => {
       const src = el.getAttribute("data-src") || "";
       const isVideo = el.getAttribute("data-type") === "video";
       const aspectAttr = parseFloat(el.getAttribute("data-aspect") || "0");
       const mediaElement = el.querySelector<HTMLElement>("img, video") || el;
 
       let texture: THREE.Texture;
+      let activeVideo: HTMLVideoElement | undefined;
+
       if (isVideo) {
         const domVideo = el.querySelector<HTMLVideoElement>("video");
         if (domVideo) {
+          activeVideo = domVideo;
           texture = new THREE.VideoTexture(domVideo);
           domVideo.play().catch(() => {});
         } else {
@@ -151,6 +182,8 @@ export function RollingGallery({
           vid.playsInline = true;
           vid.autoplay = true;
           vid.play().catch(() => {});
+          activeVideo = vid;
+          createdVideos.push(vid);
           texture = new THREE.VideoTexture(vid);
         }
       } else {
@@ -165,10 +198,20 @@ export function RollingGallery({
       const material = new THREE.MeshBasicMaterial({
         map: texture,
         transparent: true,
+        opacity: 0,
       });
 
       const mesh = new THREE.Mesh(sharedPlaneGeometry, material);
       scene.add(mesh);
+
+      const rawParallax = el.getAttribute("data-parallax");
+      let parallaxFactor = 0;
+      if (rawParallax !== null && rawParallax !== "") {
+        parallaxFactor = parseFloat(rawParallax) || 0;
+      } else {
+        const alternation = (index % 3 === 0 ? 0.28 : index % 2 === 0 ? -0.28 : 0.15);
+        parallaxFactor = alternation;
+      }
 
       return {
         element: el,
@@ -181,6 +224,11 @@ export function RollingGallery({
         left: 0,
         width: 0,
         height: 0,
+        parallaxFactor,
+        videoElement: activeVideo,
+        videoPlaying: false,
+        loadOpacity: 0,
+        loaded: false,
       };
     });
 
@@ -196,7 +244,7 @@ export function RollingGallery({
           const rightMedia = rightCard.querySelector("img, video") || rightCard;
           const rightRect = rightMedia.getBoundingClientRect();
           if (rightRect.height > 0) {
-            leftCard.style.marginTop = `${Math.round(rightRect.height - 12)}px`;
+            leftCard.style.marginTop = `${Math.round(rightRect.height)}px`;
           }
         }
       });
@@ -223,17 +271,22 @@ export function RollingGallery({
 
     // ─── 6. Fluid Aerodynamic Render Loop ───
     let fluidVelocity = 0;
+    let lastTime = 0;
     let animationFrameId: number;
 
     const renderLoop = (time: number) => {
       lenis.raf(time);
 
+      const dt = lastTime === 0 ? 0.016 : Math.min((time - lastTime) / 1000, 0.05);
+      lastTime = time;
+
       const rawVelocity = lenis.velocity || 0;
       const scrollY = lenis.scroll || 0;
 
-      // Second-order critically damped velocity flex
+      // DeltaTime-normalized velocity flex: identical damping across 60Hz/120Hz/144Hz
       const velDiff = rawVelocity - fluidVelocity;
-      fluidVelocity += velDiff * 0.085;
+      const dampRate = 1 - Math.pow(1 - 0.085, dt * 60);
+      fluidVelocity += velDiff * dampRate;
 
       const dynamicStrength =
         baseCurveRef.current + Math.abs(fluidVelocity) * velocityBoostRef.current;
@@ -246,12 +299,43 @@ export function RollingGallery({
         const currentTop = item.top - scrollY;
         const currentBottom = currentTop + item.height;
 
-        // Viewport frustum culling
+        // Viewport frustum culling + state-guarded offscreen video pause
         if (currentBottom < -120 || currentTop > vh + 120) {
           item.mesh.visible = false;
+          if (item.videoElement && item.videoPlaying) {
+            item.videoElement.pause();
+            item.videoPlaying = false;
+          }
           continue;
         }
         item.mesh.visible = true;
+        if (item.videoElement && !item.videoPlaying) {
+          item.videoElement.play().catch(() => {});
+          item.videoPlaying = true;
+        }
+
+        // Texture readiness tracking: 0 until loaded, smoothly ramps up to 1
+        if (!item.loaded) {
+          const isReady = item.videoElement
+            ? item.videoElement.readyState >= 2
+            : item.texture.image && (item.texture.image as HTMLImageElement).complete !== false;
+          if (isReady) {
+            item.loadOpacity = Math.min(item.loadOpacity + dt * 2.8, 1.0);
+            if (item.loadOpacity >= 1.0) {
+              item.loaded = true;
+            }
+          }
+        }
+
+        // Continuous viewport scroll fade-in (from bottom) & fade-out (at top exit)
+        // Hermite smoothstep (3t^2 - 2t^3) for organic feathering without linear seams
+        const rawEnter = Math.min(Math.max((vh - currentTop) / (vh * 0.22), 0), 1);
+        const enterProgress = rawEnter * rawEnter * (3 - 2 * rawEnter);
+        const rawExit = Math.min(Math.max(currentBottom / (vh * 0.22), 0), 1);
+        const exitProgress = rawExit * rawExit * (3 - 2 * rawExit);
+        const viewportScrollFade = enterProgress * exitProgress;
+
+        item.material.opacity = item.loadOpacity * viewportScrollFade;
 
         // Aspect-ratio preservation: prevent squishing / stretching
         let renderWidth = item.width;
@@ -263,9 +347,16 @@ export function RollingGallery({
           }
         }
 
+        // Viewport-relative progress (-1 at top, 0 at center, +1 at bottom)
+        const viewportCenterProgress = ((currentTop + item.height / 2) - vh / 2) / (vh / 2);
+        
+        // Dynamic multi-layer parallax offset (harmonized cohesive travel across all assets)
+        const BASE_PARALLAX_TRAVEL = 110;
+        const parallaxOffsetY = viewportCenterProgress * item.parallaxFactor * BASE_PARALLAX_TRAVEL * parallaxScaleRef.current;
+
         item.mesh.position.x = item.left + item.width / 2 - vw / 2;
-        item.mesh.position.y = -(currentTop + item.height / 2 - vh / 2);
-        item.mesh.position.z = 0;
+        item.mesh.position.y = -((currentTop + parallaxOffsetY) + item.height / 2 - vh / 2);
+        item.mesh.position.z = item.parallaxFactor * 40;
         item.mesh.scale.x = renderWidth;
         item.mesh.scale.y = renderHeight;
       }
@@ -281,6 +372,9 @@ export function RollingGallery({
       postMaterial.uniforms.uDistance.value = distanceRef.current;
       postMaterial.uniforms.uSpanCamber.value = spanCamberRef.current;
       postMaterial.uniforms.uExitArc.value = exitArcRef.current;
+      const rawBlur = fluidVelocity * blurIntensityRef.current;
+      const clampedBlur = Math.sign(rawBlur) * Math.min(Math.abs(rawBlur), 0.025);
+      postMaterial.uniforms.uBlurStrength.value = clampedBlur;
       renderer.render(postScene, postCamera);
 
       animationFrameId = requestAnimationFrame(renderLoop);
@@ -309,6 +403,19 @@ export function RollingGallery({
       cancelAnimationFrame(animationFrameId);
       window.removeEventListener("resize", handleResize);
       window.removeEventListener("load", updateCardBounds);
+
+      content.querySelectorAll("img, video").forEach((media) => {
+        media.removeEventListener("load", updateCardBounds);
+        media.removeEventListener("loadedmetadata", updateCardBounds);
+      });
+
+      // Pause and release detached video elements
+      createdVideos.forEach((vid) => {
+        vid.pause();
+        vid.removeAttribute("src");
+        vid.load();
+      });
+
       lenis.destroy();
 
       cardItems.forEach((item) => {
@@ -345,6 +452,8 @@ export function RollingGallery({
         return styles.chasmDialogue;
       case "corner-touch":
         return styles.cornerTouch;
+      case "tight-diptych":
+        return styles.tightDiptych;
       case "triptych-stagger":
         return styles.triptychStagger;
       default:
@@ -381,52 +490,65 @@ export function RollingGallery({
 
       {/* Editorial Content Runway */}
       <main ref={contentRef} className={styles.streamContainer}>
-        {spreads.map((spread) => (
-          <div
-            key={spread.id}
-            className={`${
-              spread.type === "single"
-                ? styles.spreadSingle
-                : spread.type === "triptych"
-                ? styles.spreadTriptych
-                : styles.spreadDuo
-            } ${getSpreadClass(spread.variant)}`}
-          >
-            {spread.items.map((item) => (
-              <div
-                key={item.id}
-                className={`${styles.card} ${getOffsetClass(item.offsetClass)}`}
-                data-src={item.src}
-                data-type={item.type}
-                data-aspect={item.aspectRatio}
-                style={item.maxWidth ? { maxWidth: `${item.maxWidth}px` } : undefined}
-              >
-                {item.type === "video" ? (
-                  <video
-                    src={item.src}
-                    muted
-                    loop
-                    playsInline
-                    autoPlay
-                    className={styles.media}
-                    style={{ aspectRatio: item.aspectRatio }}
-                  />
-                ) : (
-                  <img
-                    src={item.src}
-                    alt={item.alt}
-                    className={styles.media}
-                    style={{ aspectRatio: item.aspectRatio }}
-                    loading="lazy"
-                  />
-                )}
-              </div>
-            ))}
-          </div>
-        ))}
+        {/* Entrance Stage (Editorial Landing Section) */}
+        {title && (
+          <section className={styles.introStage}>
+            <div ref={introLockupRef} className={styles.introLockup}>
+              <h1 className={styles.introHeading}>{title}</h1>
+            </div>
+          </section>
+        )}
+
+        {/* Media Runway */}
+        <div className={styles.cardsRunway}>
+          {spreads.map((spread) => (
+            <div
+              key={spread.id}
+              className={`${
+                spread.type === "single"
+                  ? styles.spreadSingle
+                  : spread.type === "triptych"
+                  ? styles.spreadTriptych
+                  : styles.spreadDuo
+              } ${getSpreadClass(spread.variant)}`}
+            >
+              {spread.items.map((item) => (
+                <div
+                  key={item.id}
+                  className={`${styles.card} ${getOffsetClass(item.offsetClass)}`}
+                  data-src={item.src || ""}
+                  data-type={item.type}
+                  data-aspect={item.aspectRatio}
+                  data-parallax={item.parallax ?? ""}
+                  style={item.maxWidth ? { maxWidth: `${item.maxWidth}px` } : undefined}
+                >
+                  {item.type === "video" ? (
+                    <video
+                      src={item.src}
+                      muted
+                      loop
+                      playsInline
+                      autoPlay
+                      className={styles.media}
+                      style={{ aspectRatio: item.aspectRatio }}
+                    />
+                  ) : (
+                    <img
+                      src={item.src}
+                      alt={item.alt}
+                      className={styles.media}
+                      style={{ aspectRatio: item.aspectRatio }}
+                      loading="lazy"
+                    />
+                  )}
+                </div>
+              ))}
+            </div>
+          ))}
+        </div>
       </main>
     </div>
   );
 }
 
-export default RollingGallery;
+export default PaperCurve;

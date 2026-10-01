@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo } from "react";
 import { notFound } from "next/navigation";
-import { getComponent, getLayoutType } from "@/lib/registry";
+import { getComponent, getLayoutType, getComponentBg } from "@/lib/registry";
 import { ShowcaseChrome } from "@/components/showcase/ShowcaseChrome";
 import { ControlsDrawer } from "@/components/showcase/ControlsDrawer";
 import { ShaderShowcaseLayout } from "@/components/showcase/layouts/ShaderShowcaseLayout";
@@ -49,6 +49,7 @@ export default function ShowcasePageClient({ slug }: { slug: string }) {
     : "";
 
   const { isSelfContainedScroll, isFullBleed, isText, isScroll, isGallery, isTransition } = getLayoutType(meta, slug);
+  const bgColor = getComponentBg(slug, meta);
 
   const renderComponent = () => {
     return <Component imageSrc={defaultImageSrc} {...controlValues} onControlChange={handleControlChange} />;
@@ -57,7 +58,7 @@ export default function ShowcasePageClient({ slug }: { slug: string }) {
   const renderLayout = () => {
     if (slug === "polyptych-formation") {
       return (
-        <div className="relative w-full h-full bg-[#060608]">
+        <div className="relative w-full h-full" style={{ backgroundColor: bgColor }}>
           {renderComponent()}
         </div>
       );
@@ -65,7 +66,7 @@ export default function ShowcasePageClient({ slug }: { slug: string }) {
 
     if (isSelfContainedScroll) {
       return (
-        <div className="relative w-full min-h-screen h-screen bg-[#070708] overflow-hidden">
+        <div className="relative w-full min-h-screen h-screen overflow-hidden" style={{ backgroundColor: bgColor }}>
           {renderComponent()}
         </div>
       );
@@ -73,7 +74,7 @@ export default function ShowcasePageClient({ slug }: { slug: string }) {
 
     if (isText) {
       return (
-        <div className="relative w-full h-screen overflow-y-auto overflow-x-hidden bg-[#070708]">
+        <div className="relative w-full h-screen overflow-y-auto overflow-x-hidden" style={{ backgroundColor: bgColor }}>
           {renderComponent()}
         </div>
       );
@@ -113,6 +114,7 @@ export default function ShowcasePageClient({ slug }: { slug: string }) {
       <GrainOverlay />
       <ShowcaseChrome
         component={meta}
+        bgColor={bgColor}
         onToggleControls={() => setControlsOpen((prev) => !prev)}
         controlsOpen={controlsOpen}
       >

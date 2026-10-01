@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { COMPONENT_DETAILS } from "@/lib/registry/component-details";
+import { getComponentBg } from "@/lib/registry/layout-utils";
 import ShowcasePageClient from "./ShowcasePageClient";
 
 interface PageProps {
@@ -36,7 +37,7 @@ export default async function ShowcasePage({ params }: PageProps) {
   }
 
   return (
-    <Suspense fallback={<div className="min-h-screen bg-[#070708]" />}>
+    <Suspense fallback={<div className="min-h-screen" style={{ backgroundColor: getComponentBg(slug, comp) }} />}>
       <ShowcasePageClient slug={slug} />
     </Suspense>
   );

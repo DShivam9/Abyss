@@ -8,6 +8,7 @@ export const meta: ComponentDetail = {
   slug: "cascade-gallery",
   category: "3d",
   subtype: "gallery",
+  bgColor: "#f4f1ea",
   tags: ["Three.js", "Cascade Gallery", "Thermal Emulsion", "Optical Glass", "Editorial Conveyor", "Mechanical Clock", "3D WebGL", "GSAP 3D Choreography"],
   previewType: "gallery",
   overview: "Diagonal 3D conveyor gallery streaming editorial image cards along a continuous spatial rack. Cards tilt with domino inertia during scroll, lift vertically like tactile index tabs on hover, and transition into staged hero inspection with refractive glass shaders.",

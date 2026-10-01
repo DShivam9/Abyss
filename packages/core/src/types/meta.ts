@@ -29,6 +29,7 @@ export interface ComponentDetail {
   techStack?: string[];
   engineeringNotes?: string[];
   codeUsage?: string;
+  bgColor?: string;
 }
 
 

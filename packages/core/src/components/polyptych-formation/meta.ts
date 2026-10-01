@@ -8,6 +8,7 @@ export const meta: ComponentDetail = {
   slug: "polyptych-formation",
   category: "interaction",
   subtype: "galleries",
+  bgColor: "#060608",
   tags: ["Hydraulic Scrub", "Editorial Placard", "Reticle Shutter", "Flex Compression", "Counter-Parallax"],
   previewType: "gallery",
   overview: "A dual-stage scroll composition beginning with an architectural reticle shutter convergence and stepped typographic placard reveal, transitioning into a pinned hydraulic compression that pulls outer photographic panels inward with opposing internal counter-parallax.",

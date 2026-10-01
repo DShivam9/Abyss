@@ -8,6 +8,7 @@ export const meta: ComponentDetail = {
   slug: "mosaic-loader",
   category: "interaction",
   subtype: "loaders",
+  bgColor: "#fafaf9",
   tags: ["Mosaic Loader", "Preloader", "Odometer Drum", "Octagram Star", "Typography", "Constellation Grid"],
   previewType: "transition",
   overview: "Editorial loading sequence coordinating eighteen organic constellation image cards with high-speed quantum shuffling, a central mechanical vertical odometer drum, and an 8-point geometric octagram HUD. Features gravitational card implosion upon sequence completion, followed by an elegant curtain reveal into interactive editorial manifesto typography.",
