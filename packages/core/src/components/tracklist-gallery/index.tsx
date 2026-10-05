@@ -226,7 +226,9 @@ export const TracklistGallery: React.FC<TracklistGalleryProps> = ({
     }
 
     let yPos = targetYRef.current;
-    let animId: number;
+    let animId = 0;
+    let isVisible = true;
+    let isDisposed = false;
     let lastCenterIdx = activeCenterIndex;
     let snapTimeout: ReturnType<typeof setTimeout> | null = null;
 
@@ -279,6 +281,9 @@ export const TracklistGallery: React.FC<TracklistGalleryProps> = ({
 
     let lastLoopTime = performance.now();
     const updateLoop = () => {
+      if (isDisposed || !isVisible) return;
+      animId = requestAnimationFrame(updateLoop);
+
       const now = performance.now();
       const dt = Math.min((now - lastLoopTime) / 1000, 0.1);
       lastLoopTime = now;
@@ -305,19 +310,49 @@ export const TracklistGallery: React.FC<TracklistGalleryProps> = ({
           if (onLifecycleChangeRef.current) onLifecycleChangeRef.current("peak");
         }
       }
-
-      animId = requestAnimationFrame(updateLoop);
     };
+
+    let observer: IntersectionObserver | null = null;
+    if (typeof IntersectionObserver !== "undefined") {
+      observer = new IntersectionObserver(
+        (entries) => {
+          const entry = entries[0];
+          const visible = entry ? entry.isIntersecting : true;
+          if (visible !== isVisible) {
+            isVisible = visible;
+            if (isVisible && !isDisposed) {
+              lastLoopTime = performance.now();
+              if (!animId) {
+                animId = requestAnimationFrame(updateLoop);
+              }
+            } else if (!isVisible && animId) {
+              cancelAnimationFrame(animId);
+              animId = 0;
+            }
+          }
+        },
+        { threshold: 0 }
+      );
+      observer.observe(container);
+    }
 
     animId = requestAnimationFrame(updateLoop);
 
     return () => {
+      isDisposed = true;
+      if (observer) {
+        observer.disconnect();
+        observer = null;
+      }
+      if (animId) {
+        cancelAnimationFrame(animId);
+        animId = 0;
+      }
       if (snapTimeout) clearTimeout(snapTimeout);
       container.removeEventListener("wheel", handleWheel);
       container.removeEventListener("touchstart", handleTouchStart);
       container.removeEventListener("touchmove", handleTouchMove);
       container.removeEventListener("touchend", handleTouchEnd);
-      cancelAnimationFrame(animId);
     };
   }, [baseTracks, titleSize]);
 

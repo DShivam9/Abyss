@@ -12,6 +12,8 @@ import {
   easeInOutCubic,
   pickDistinctVideo,
 } from "./scene";
+import { dampedLerp } from "../../engine/motion";
+import { expDamp } from "../../engine/utils";
 import styles from "./styles.module.css";
 
 export function CinemaAisle({
@@ -115,7 +117,6 @@ export function CinemaAisle({
     let currentScroll = 0;
     let isDown = false;
     let startY = 0;
-    let wheelVelocity = 0;
 
     const onPointerMove = (e: PointerEvent) => {
       targetMouseX = (e.clientX / window.innerWidth) * 2 - 1;
@@ -126,7 +127,10 @@ export function CinemaAisle({
 
       if (isDown && !introActive) {
         const delta = e.clientY - startY;
-        targetScroll -= delta * 0.024 * speedRef.current;
+        const dragStep = delta * 0.024 * speedRef.current;
+        targetScroll -= dragStep;
+        currentScroll -= dragStep;
+        scrollVel = 0;
         startY = e.clientY;
       }
     };
@@ -136,9 +140,19 @@ export function CinemaAisle({
       pointerDirty = true;
     };
 
+    let scrollVel = 0;
+
     const onWheel = (e: WheelEvent) => {
+      e.preventDefault();
       if (introActive) return;
-      wheelVelocity += e.deltaY * 0.0025 * speedRef.current;
+
+      let dy = e.deltaY;
+      if (e.deltaMode === 1) dy *= 18;
+      else if (e.deltaMode === 2) dy *= 80;
+
+      const normalizedDelta = (Math.sign(dy) * Math.min(Math.abs(dy), 100) * 0.0022 + dy * 0.0008) * speedRef.current;
+      targetScroll += normalizedDelta;
+      scrollVel = scrollVel * 0.45 + normalizedDelta * 28.0;
     };
 
     const onPointerDown = (e: PointerEvent) => {
@@ -159,7 +173,7 @@ export function CinemaAisle({
 
     window.addEventListener("pointermove", onPointerMove);
     window.addEventListener("pointerleave", onPointerLeave);
-    window.addEventListener("wheel", onWheel, { passive: true });
+    container.addEventListener("wheel", onWheel, { passive: false });
     window.addEventListener("pointerdown", onPointerDown);
     window.addEventListener("pointerup", onPointerUp);
     window.addEventListener("resize", onResize);
@@ -171,17 +185,30 @@ export function CinemaAisle({
     let hoveredIndex = -1;
     let hoveredIsLeft = false;
 
-    const MAX_FPS = 120;
-    const MIN_FRAME_MS = 1000 / MAX_FPS;
     let lastRenderTimestamp = 0;
     let animId: number;
 
+    let isVisible = true;
+    const visibilityObserver = new IntersectionObserver(([entry]) => {
+      isVisible = entry ? entry.isIntersecting : true;
+      if (isVisible) {
+        lastRenderTimestamp = performance.now();
+        if (!animId && isMounted) {
+          animId = requestAnimationFrame(animate);
+        }
+      } else if (animId) {
+        cancelAnimationFrame(animId);
+        animId = 0;
+      }
+    });
+    visibilityObserver.observe(container);
+
     function animate(timestamp: number) {
+      if (!isVisible || !isMounted) return;
       animId = requestAnimationFrame(animate);
 
       if (!lastRenderTimestamp) lastRenderTimestamp = timestamp;
       const timeSinceLast = timestamp - lastRenderTimestamp;
-      if (timeSinceLast < MIN_FRAME_MS - 0.8) return;
       lastRenderTimestamp = timestamp;
 
       if (!appStartTime) appStartTime = timestamp;
@@ -194,7 +221,7 @@ export function CinemaAisle({
           introActive = false;
           targetScroll = 0;
           currentScroll = 0;
-          wheelVelocity = 0;
+          scrollVel = 0;
         }
       }
 
@@ -208,10 +235,13 @@ export function CinemaAisle({
         targetScroll += 0.0035 * speedRef.current * driftMultiplier * driftRef.current * dtRatio;
       }
 
-      targetScroll += wheelVelocity;
-      wheelVelocity *= Math.pow(0.84, dtRatio);
+      if (!introActive && !isDown) {
+        targetScroll += scrollVel * dtSec;
+        scrollVel *= Math.exp(-3.8 * dtSec);
+        if (Math.abs(scrollVel) < 0.0001) scrollVel = 0;
+      }
 
-      currentScroll += (targetScroll - currentScroll) * (1 - Math.pow(1 - 0.07, dtRatio));
+      currentScroll = expDamp(currentScroll, targetScroll, 4.8, dtSec);
       currentMouseX += (targetMouseX - currentMouseX) * (1 - Math.pow(1 - 0.055, dtRatio));
       currentMouseY += (targetMouseY - currentMouseY) * (1 - Math.pow(1 - 0.055, dtRatio));
 
@@ -219,7 +249,7 @@ export function CinemaAisle({
       floorGlassMaterial.uniforms.uScroll.value = currentScroll + introDashOffset;
       floorGlassMaterial.uniforms.uIntroEase.value = introActive ? surgeEase : 1.0;
 
-      const isMotionActive = Math.abs(wheelVelocity) > 0.0005 || Math.abs(targetScroll - currentScroll) > 0.001;
+      const isMotionActive = Math.abs(scrollVel) > 0.0005 || Math.abs(targetScroll - currentScroll) > 0.0005;
       if (pointerDirty || isMotionActive) {
         if (!isDown && mousePointer.x > -900) {
           raycaster.setFromCamera(mousePointer, camera);
@@ -227,14 +257,14 @@ export function CinemaAisle({
           if (hits.length > 0) {
             hoveredIndex = hits[0].object.userData.colIndex;
             hoveredIsLeft = hits[0].object.userData.isLeft;
-            document.body.style.cursor = "pointer";
+            if (container) container.style.cursor = "pointer";
           } else {
             hoveredIndex = -1;
-            document.body.style.cursor = "default";
+            if (container) container.style.cursor = "default";
           }
         } else {
           hoveredIndex = -1;
-          document.body.style.cursor = isDown ? "grabbing" : "default";
+          if (container) container.style.cursor = isDown ? "grabbing" : "default";
         }
         pointerDirty = false;
       }
@@ -253,10 +283,10 @@ export function CinemaAisle({
         const targetPopL = isHoverL ? 1.0 : 0.0;
         const targetPopR = isHoverR ? 1.0 : 0.0;
 
-        item.focusL += (targetFocusL - item.focusL) * 0.09;
-        item.focusR += (targetFocusR - item.focusR) * 0.09;
-        item.hoverPopL += (targetPopL - item.hoverPopL) * 0.10;
-        item.hoverPopR += (targetPopR - item.hoverPopR) * 0.10;
+        item.focusL = dampedLerp(item.focusL, targetFocusL, 0.09, dtSec);
+        item.focusR = dampedLerp(item.focusR, targetFocusR, 0.09, dtSec);
+        item.hoverPopL = dampedLerp(item.hoverPopL, targetPopL, 0.10, dtSec);
+        item.hoverPopR = dampedLerp(item.hoverPopR, targetPopR, 0.10, dtSec);
 
         (item.meshL.material as THREE.ShaderMaterial).uniforms.uFocus.value = item.focusL;
         (item.meshL_refl.material as THREE.ShaderMaterial).uniforms.uFocus.value = item.focusL;
@@ -373,15 +403,17 @@ export function CinemaAisle({
     // --- CLEANUP ---
     return () => {
       isMounted = false;
+      visibilityObserver.disconnect();
       cancelAnimationFrame(animId);
       if (titleTimer) clearTimeout(titleTimer);
 
       window.removeEventListener("pointermove", onPointerMove);
       window.removeEventListener("pointerleave", onPointerLeave);
-      window.removeEventListener("wheel", onWheel);
+      container.removeEventListener("wheel", onWheel);
       window.removeEventListener("pointerdown", onPointerDown);
       window.removeEventListener("pointerup", onPointerUp);
       window.removeEventListener("resize", onResize);
+      container.style.cursor = "";
 
       disposeCorridor(scene, renderer, videoElements, videoTextures, container);
       rendererRef.current = null;

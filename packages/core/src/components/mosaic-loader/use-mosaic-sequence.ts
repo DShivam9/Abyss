@@ -45,6 +45,7 @@ export function useMosaicSequence({
   imagesRef.current = images;
 
   const animIdRef = useRef<number | null>(null);
+  const observerRef = useRef<IntersectionObserver | null>(null);
   const isSequenceActiveRef = useRef<boolean>(true);
   const isImplodingTriggeredRef = useRef<boolean>(false);
   const timeoutIdsRef = useRef<ReturnType<typeof setTimeout>[]>([]);
@@ -164,7 +165,10 @@ export function useMosaicSequence({
     };
 
     let lastTickTime = performance.now();
+    let isVisible = true;
+
     const tick = (now: number) => {
+      if (!isVisible) return;
       const dt = Math.min((now - lastTickTime) / 1000, 0.1);
       lastTickTime = now;
       const mouseDamp = 1 - Math.pow(1 - 0.08, dt * 60);
@@ -282,6 +286,34 @@ export function useMosaicSequence({
       animIdRef.current = requestAnimationFrame(tick);
     };
 
+    if (observerRef.current) {
+      observerRef.current.disconnect();
+      observerRef.current = null;
+    }
+    const targetElement = preloaderStageRef.current?.parentElement || preloaderStageRef.current;
+    if (targetElement && typeof IntersectionObserver !== "undefined") {
+      observerRef.current = new IntersectionObserver(
+        (entries) => {
+          const entry = entries[0];
+          const visible = entry ? entry.isIntersecting : true;
+          if (visible !== isVisible) {
+            isVisible = visible;
+            if (isVisible && isSequenceActiveRef.current) {
+              lastTickTime = performance.now();
+              if (!animIdRef.current) {
+                animIdRef.current = requestAnimationFrame(tick);
+              }
+            } else if (!isVisible && animIdRef.current) {
+              cancelAnimationFrame(animIdRef.current);
+              animIdRef.current = null;
+            }
+          }
+        },
+        { threshold: 0 }
+      );
+      observerRef.current.observe(targetElement);
+    }
+
     animIdRef.current = requestAnimationFrame(tick);
   }, [
     setOdometer,
@@ -334,6 +366,10 @@ export function useMosaicSequence({
     return () => {
       isCancelled = true;
       window.removeEventListener("mousemove", onMouseMove);
+      if (observerRef.current) {
+        observerRef.current.disconnect();
+        observerRef.current = null;
+      }
       if (animIdRef.current) cancelAnimationFrame(animIdRef.current);
       timeoutIdsRef.current.forEach(clearTimeout);
       timeoutIdsRef.current = [];

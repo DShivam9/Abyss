@@ -393,5 +393,6 @@ export function createCursorFallScene(
     });
     textureMap.forEach((t) => t.dispose());
     renderer.dispose();
+    renderer.forceContextLoss();
   };
 }

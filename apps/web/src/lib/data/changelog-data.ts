@@ -28,6 +28,38 @@ export interface CommitEntry {
 
 export const CHANGELOG_DATA: CommitEntry[] = [
   {
+    id: "commit-41",
+    date: "2026-10-05",
+    displayDate: "Oct 5, 2026 • 21:15 IST",
+    tags: ["FIX", "MINOR"],
+    title: "Off-Screen Animation Sleep",
+    summary: "Components now pause animations when scrolled out of view and release graphics memory cleanly during page transitions.",
+    affectedSlugs: [
+      "3d-shatter-sphere",
+      "cascade-gallery",
+      "cinema-aisle",
+      "cyclorama-matrix",
+      "dual-wave",
+      "erosion-map",
+      "gimbal-stream",
+      "gravity-cursor",
+      "merlin-knights",
+      "mosaic-loader",
+      "paper-curve",
+      "parallax-bleed",
+      "parallax-column",
+      "ripple-scramble",
+      "theme-toggle-redesign",
+      "tracklist-gallery"
+    ],
+    items: [
+      "Animations sleep off-screen to save battery and GPU power",
+      "Motion resumes smoothly with no jumps when scrolling back",
+      "Clean graphics memory release prevents crashes during page navigation",
+      "Consistent motion timing across high-refresh displays",
+    ],
+  },
+  {
     id: "commit-40",
     date: "2026-10-01",
     displayDate: "Oct 1, 2026 • 15:30 IST",

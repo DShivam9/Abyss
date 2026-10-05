@@ -27,7 +27,6 @@ export function GimbalStream({
   const perfRef = useLatestRef(perf);
 
   const containerRef = useRef<HTMLDivElement>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
   const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
   const textContainerRef = useRef<HTMLDivElement>(null);
   const [isLoaded, setIsLoaded] = useState(false);
@@ -55,18 +54,29 @@ export function GimbalStream({
   }, [gridVariant]);
 
   useEffect(() => {
-    const canvas = canvasRef.current;
     const container = containerRef.current;
-    if (!canvas || !container) return;
+    if (!container) return;
+
+    const canvas = document.createElement("canvas");
+    canvas.className = styles.canvas;
+    canvas.style.opacity = isLoaded ? "1" : "0";
+    if (textContainerRef.current && container.contains(textContainerRef.current)) {
+      container.insertBefore(canvas, textContainerRef.current);
+    } else {
+      container.appendChild(canvas);
+    }
 
     let isDisposed = false;
     const width = container.clientWidth || window.innerWidth;
     const height = container.clientHeight || window.innerHeight;
 
-    // Fast fallback to ensure display within 350ms regardless of network stalls
-    const readyTimer = setTimeout(() => {
+    const setLoaded = () => {
+      canvas.style.opacity = "1";
       setIsLoaded(true);
-    }, 350);
+    };
+
+    // Fast fallback to ensure display within 350ms regardless of network stalls
+    const readyTimer = setTimeout(setLoaded, 350);
 
     const {
       scene,
@@ -87,7 +97,7 @@ export function GimbalStream({
       height,
       perfRef.current.tier,
       perfRef.current.dpr,
-      () => setIsLoaded(true)
+      setLoaded
     );
     rendererRef.current = renderer;
 
@@ -166,10 +176,11 @@ export function GimbalStream({
     const halfHeight = totalVoyageHeight * 0.5;
     let currentExplodeProg = 0.0;
     const currentWeights = new THREE.Vector3(1.0, 0.0, 0.0);
-    let animId: number;
+    let animId = 0;
+    let isVisible = true;
 
     const animate = (now: number) => {
-      if (isDisposed) return;
+      if (isDisposed || !isVisible) return;
       animId = requestAnimationFrame(animate);
 
       const delta = Math.min((now - lastNow) * 0.001, 0.1);
@@ -364,6 +375,30 @@ export function GimbalStream({
       }
     };
 
+    let observer: IntersectionObserver | null = null;
+    if (typeof IntersectionObserver !== "undefined") {
+      observer = new IntersectionObserver(
+        (entries) => {
+          const entry = entries[0];
+          const visible = entry ? entry.isIntersecting : true;
+          if (visible !== isVisible) {
+            isVisible = visible;
+            if (isVisible && !isDisposed) {
+              lastNow = performance.now();
+              if (!animId) {
+                animId = requestAnimationFrame(animate);
+              }
+            } else if (!isVisible && animId) {
+              cancelAnimationFrame(animId);
+              animId = 0;
+            }
+          }
+        },
+        { threshold: 0 }
+      );
+      observer.observe(container);
+    }
+
     animId = requestAnimationFrame(animate);
 
     const onResize = () => {
@@ -379,7 +414,14 @@ export function GimbalStream({
 
     return () => {
       isDisposed = true;
-      cancelAnimationFrame(animId);
+      if (observer) {
+        observer.disconnect();
+        observer = null;
+      }
+      if (animId) {
+        cancelAnimationFrame(animId);
+        animId = 0;
+      }
       window.removeEventListener("resize", onResize);
       clearTimeout(readyTimer);
       container.removeEventListener("wheel", onWheel);
@@ -390,6 +432,9 @@ export function GimbalStream({
 
       disposeGimbalScene(scene, renderer, sharedMaterials);
       rendererRef.current = null;
+      if (container.contains(canvas)) {
+        container.removeChild(canvas);
+      }
     };
   }, []);
 
@@ -399,11 +444,6 @@ export function GimbalStream({
       className={`${styles.container} ${className}`}
       style={style}
     >
-      <canvas
-        ref={canvasRef}
-        className={styles.canvas}
-        style={{ opacity: isLoaded ? 1 : 0 }}
-      />
 
       <div
         ref={textContainerRef}

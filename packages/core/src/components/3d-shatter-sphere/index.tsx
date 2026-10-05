@@ -26,7 +26,6 @@ export function ShatterSphere({
   onLifecycleChange,
 }: ShatterSphereProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
   const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
 
   const perf = usePerformance();
@@ -179,9 +178,12 @@ export function ShatterSphere({
 
   // Pure Three.js WebGL Scene Initialization & 60FPS Render Loop
   useEffect(() => {
-    const canvas = canvasRef.current;
     const container = containerRef.current;
-    if (!canvas || !container) return;
+    if (!container) return;
+
+    const canvas = document.createElement("canvas");
+    canvas.className = styles.canvas;
+    container.appendChild(canvas);
 
     const width = container.clientWidth || window.innerWidth;
     const height = container.clientHeight || window.innerHeight;
@@ -274,10 +276,24 @@ export function ShatterSphere({
     document.addEventListener("visibilitychange", handleVisibilityChange);
 
     // 7. 60FPS High-Performance WebGL Animation Loop
-    let animId: number;
+    let animId = 0;
     let lastTime = performance.now();
+    let isVisible = true;
+
+    const visibilityObserver = new IntersectionObserver(([entry]) => {
+      isVisible = entry ? entry.isIntersecting : true;
+      if (isVisible) {
+        lastTime = performance.now();
+        if (!animId) animId = requestAnimationFrame(animate);
+      } else if (animId) {
+        cancelAnimationFrame(animId);
+        animId = 0;
+      }
+    });
+    visibilityObserver.observe(container);
 
     const animate = (time: number) => {
+      if (!isVisible) return;
       const rawDt = (time - lastTime) / 1000;
       lastTime = time;
 
@@ -486,11 +502,16 @@ export function ShatterSphere({
     animId = requestAnimationFrame(animate);
 
     return () => {
+      visibilityObserver.disconnect();
       cancelAnimationFrame(animId);
       window.removeEventListener("resize", handleResize);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
       rendererRef.current = null;
       renderer.dispose();
+      renderer.forceContextLoss();
+      if (container.contains(canvas)) {
+        container.removeChild(canvas);
+      }
       defaultPlaneGeo.dispose();
       centerText.textGeo.dispose();
       centerText.textMat.dispose();
@@ -509,9 +530,7 @@ export function ShatterSphere({
       ref={containerRef}
       className={`${styles.wrapper} ${className}`}
       style={style}
-    >
-      <canvas ref={canvasRef} className={styles.canvas} />
-    </div>
+    />
   );
 }
 

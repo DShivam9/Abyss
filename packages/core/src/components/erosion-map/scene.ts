@@ -179,7 +179,7 @@ export interface ErosionSceneHandle {
 
 export function createErosionScene(
   visibleCanvas: HTMLCanvasElement,
-  _container: HTMLElement,
+  container: HTMLElement,
   initialConfig: ErosionSceneConfig,
   initialImages: HTMLImageElement[]
 ): ErosionSceneHandle {
@@ -222,6 +222,7 @@ export function createErosionScene(
   let animFrameId: number | null = null;
   let isAnimating = false;
   let isDestroyed = false;
+  let isVisible = true;
 
   const drawImageCover = (
     img: HTMLImageElement,
@@ -254,7 +255,7 @@ export function createErosionScene(
   };
 
   const drawFrame = (timestamp?: number) => {
-    if (isDestroyed || !maskCtx || !maskImgData || !maskData32 || !bufferCtx) return;
+    if (!isVisible || isDestroyed || !maskCtx || !maskImgData || !maskData32 || !bufferCtx) return;
 
     const now = timestamp || performance.now();
     const delta = Math.min(0.1, (now - lastTime) / 1000);
@@ -421,18 +422,44 @@ export function createErosionScene(
       ctx.restore();
     }
 
-    if (isAnimating) {
+    if (isAnimating && isVisible) {
       animFrameId = requestAnimationFrame(drawFrame);
     }
   };
 
   const wakeUp = () => {
-    if (!isAnimating && !isDestroyed) {
+    if (!isVisible || isDestroyed) return;
+    if (!isAnimating) {
       isAnimating = true;
       lastTime = performance.now();
       animFrameId = requestAnimationFrame(drawFrame);
     }
   };
+
+  let observer: IntersectionObserver | null = null;
+  if (typeof IntersectionObserver !== "undefined") {
+    observer = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0];
+        const visible = entry ? entry.isIntersecting : true;
+        if (visible !== isVisible) {
+          isVisible = visible;
+          if (isVisible) {
+            lastTime = performance.now();
+            wakeUp();
+          } else {
+            isAnimating = false;
+            if (animFrameId) {
+              cancelAnimationFrame(animFrameId);
+              animFrameId = null;
+            }
+          }
+        }
+      },
+      { threshold: 0 }
+    );
+    observer.observe(container);
+  }
 
   wakeUp();
 
@@ -461,8 +488,13 @@ export function createErosionScene(
     wakeUp,
     dispose: () => {
       isDestroyed = true;
+      if (observer) {
+        observer.disconnect();
+        observer = null;
+      }
       if (animFrameId) {
         cancelAnimationFrame(animFrameId);
+        animFrameId = null;
       }
       isAnimating = false;
     }

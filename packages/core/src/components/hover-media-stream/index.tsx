@@ -149,8 +149,10 @@ export const HoverMediaStream: React.FC<HoverMediaStreamProps> = ({
       });
     }
 
+    const cleanupFns: Array<() => void> = [];
+
     cachedRows.forEach((item) => {
-      item.row.addEventListener("mouseenter", () => {
+      const handleRowMouseEnter = () => {
         if (exitTimeout) {
           clearTimeout(exitTimeout);
           exitTimeout = null;
@@ -346,21 +348,34 @@ export const HoverMediaStream: React.FC<HoverMediaStreamProps> = ({
             }
           );
         }
-      });
+      };
 
-      item.row.addEventListener("mouseleave", () => {
+      const handleRowMouseLeave = () => {
         exitTimeout = setTimeout(() => {
           dismissAll();
         }, 40);
+      };
+
+      item.row.addEventListener("mouseenter", handleRowMouseEnter);
+      item.row.addEventListener("mouseleave", handleRowMouseLeave);
+      cleanupFns.push(() => {
+        item.row.removeEventListener("mouseenter", handleRowMouseEnter);
+        item.row.removeEventListener("mouseleave", handleRowMouseLeave);
       });
     });
 
-    container.addEventListener("mouseleave", () => {
+    const handleContainerMouseLeave = () => {
       dismissAll();
+    };
+
+    container.addEventListener("mouseleave", handleContainerMouseLeave);
+    cleanupFns.push(() => {
+      container.removeEventListener("mouseleave", handleContainerMouseLeave);
     });
 
     return () => {
       if (exitTimeout) clearTimeout(exitTimeout);
+      cleanupFns.forEach((fn) => fn());
     };
   }, [streamItems, onLifecycleChange]);
 

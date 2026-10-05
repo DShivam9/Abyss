@@ -31,7 +31,6 @@ export default function CycloramaMatrix({
   onCardClick
 }: CycloramaMatrixProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
   const fogVeilRef = useRef<HTMLDivElement>(null);
   const sceneHandleRef = useRef<CycloramaMatrixSceneHandle | null>(null);
 
@@ -60,9 +59,16 @@ export default function CycloramaMatrix({
   }, [radiusX, radiusY, baseCamZ, zoomCamZ, friction, onCardClickRef, perfRef]);
 
   useEffect(() => {
-    const canvas = canvasRef.current;
     const container = containerRef.current;
-    if (!canvas || !container) return;
+    if (!container) return;
+
+    const canvas = document.createElement("canvas");
+    canvas.className = styles.canvas;
+    if (fogVeilRef.current && container.contains(fogVeilRef.current)) {
+      container.insertBefore(canvas, fogVeilRef.current);
+    } else {
+      container.appendChild(canvas);
+    }
 
     const handle = createCycloramaMatrixScene({
       canvas,
@@ -85,6 +91,9 @@ export default function CycloramaMatrix({
 
     return () => {
       handle.dispose();
+      if (container.contains(canvas)) {
+        container.removeChild(canvas);
+      }
       sceneHandleRef.current = null;
     };
   }, [media, metadata]);
@@ -95,7 +104,6 @@ export default function CycloramaMatrix({
       className={`${styles.container} ${className}`.trim()}
       style={style}
     >
-      <canvas ref={canvasRef} className={styles.canvas} />
       <div ref={fogVeilRef} className={styles.fogVeil} />
     </div>
   );

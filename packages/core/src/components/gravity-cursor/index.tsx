@@ -185,12 +185,18 @@ export function GravityCursor({
 
   // Unified animation loop for motion release & dissolve
   useEffect(() => {
-    let animId: number;
+    let animId = 0;
+    let lastTime = performance.now();
+    let isVisible = true;
+    let isDisposed = false;
 
-    const renderLoop = () => {
+    const renderLoop = (now: number) => {
+      if (isDisposed || !isVisible) return;
       animId = requestAnimationFrame(renderLoop);
 
-      const now = performance.now();
+      const deltaMs = now - lastTime;
+      lastTime = now;
+      const dtSec = Math.min(0.1, deltaMs / 1000);
 
       // Check if mouse movement has stopped (> 260ms sweet spot pause)
       if (isMovingRef.current && now - lastMouseTimeRef.current > 260) {
@@ -207,13 +213,47 @@ export function GravityCursor({
         currentMode,
         gravity,
         viewportHeight,
+        dtSec,
       });
     };
+
+    let observer: IntersectionObserver | null = null;
+    const container = containerRef.current;
+    if (container && typeof IntersectionObserver !== "undefined") {
+      observer = new IntersectionObserver(
+        (entries) => {
+          const entry = entries[0];
+          const visible = entry ? entry.isIntersecting : true;
+          if (visible !== isVisible) {
+            isVisible = visible;
+            if (isVisible && !isDisposed) {
+              lastTime = performance.now();
+              if (!animId) {
+                animId = requestAnimationFrame(renderLoop);
+              }
+            } else if (!isVisible && animId) {
+              cancelAnimationFrame(animId);
+              animId = 0;
+            }
+          }
+        },
+        { threshold: 0 }
+      );
+      observer.observe(container);
+    }
 
     animId = requestAnimationFrame(renderLoop);
 
     return () => {
-      cancelAnimationFrame(animId);
+      isDisposed = true;
+      if (observer) {
+        observer.disconnect();
+        observer = null;
+      }
+      if (animId) {
+        cancelAnimationFrame(animId);
+        animId = 0;
+      }
     };
   }, [gravity, currentMode]);
 

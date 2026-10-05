@@ -44,7 +44,6 @@ export function useLampCord({
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    let animId: number;
     let isDestroyed = false;
     let w = container.clientWidth || 600;
     let h = container.clientHeight || 480;
@@ -159,8 +158,13 @@ export function useLampCord({
     window.addEventListener("pointercancel", onPointerUp);
 
     let lastLoopTime = performance.now();
+    let isVisible = true;
+    let animId = 0;
+
     const loop = () => {
-      if (isDestroyed) return;
+      if (isDestroyed || !isVisible) return;
+      animId = requestAnimationFrame(loop);
+
       const now = performance.now();
       const dt = Math.min((now - lastLoopTime) / 1000, 0.1);
       lastLoopTime = now;
@@ -329,15 +333,44 @@ export function useLampCord({
       }
 
       ctx.restore();
-
-      animId = requestAnimationFrame(loop);
     };
+
+    let observer: IntersectionObserver | null = null;
+    if (typeof IntersectionObserver !== "undefined") {
+      observer = new IntersectionObserver(
+        (entries) => {
+          const entry = entries[0];
+          const visible = entry ? entry.isIntersecting : true;
+          if (visible !== isVisible) {
+            isVisible = visible;
+            if (isVisible && !isDestroyed) {
+              lastLoopTime = performance.now();
+              if (!animId) {
+                animId = requestAnimationFrame(loop);
+              }
+            } else if (!isVisible && animId) {
+              cancelAnimationFrame(animId);
+              animId = 0;
+            }
+          }
+        },
+        { threshold: 0 }
+      );
+      observer.observe(container);
+    }
 
     loop();
 
     return () => {
       isDestroyed = true;
-      cancelAnimationFrame(animId);
+      if (observer) {
+        observer.disconnect();
+        observer = null;
+      }
+      if (animId) {
+        cancelAnimationFrame(animId);
+        animId = 0;
+      }
       window.removeEventListener("resize", resize);
       canvas.removeEventListener("pointerdown", onPointerDown);
       window.removeEventListener("pointermove", onPointerMove);

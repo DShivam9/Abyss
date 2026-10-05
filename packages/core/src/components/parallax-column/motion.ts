@@ -164,10 +164,15 @@ export function useParallaxMotion({
 
   // Unified Frame-Rate Independent Engine (60Hz, 120Hz, 144Hz, 240Hz ProMotion Sync)
   useEffect(() => {
-    let animationFrameId: number;
+    let animationFrameId = 0;
     let lastLoopTime = performance.now();
+    let isVisible = true;
+    let isDisposed = false;
 
     const loop = () => {
+      if (isDisposed || !isVisible) return;
+      animationFrameId = requestAnimationFrame(loop);
+
       const now = performance.now();
       const dt = Math.min((now - lastLoopTime) / 1000, 0.1);
       lastLoopTime = now;
@@ -331,13 +336,44 @@ export function useParallaxMotion({
           }
         });
       }
-
-      animationFrameId = requestAnimationFrame(loop);
     };
+
+    let observer: IntersectionObserver | null = null;
+    const container = containerRef.current;
+    if (container && typeof IntersectionObserver !== "undefined") {
+      observer = new IntersectionObserver(
+        (entries) => {
+          const entry = entries[0];
+          const visible = entry ? entry.isIntersecting : true;
+          if (visible !== isVisible) {
+            isVisible = visible;
+            if (isVisible && !isDisposed) {
+              lastLoopTime = performance.now();
+              if (!animationFrameId) {
+                animationFrameId = requestAnimationFrame(loop);
+              }
+            } else if (!isVisible && animationFrameId) {
+              cancelAnimationFrame(animationFrameId);
+              animationFrameId = 0;
+            }
+          }
+        },
+        { threshold: 0 }
+      );
+      observer.observe(container);
+    }
 
     animationFrameId = requestAnimationFrame(loop);
     return () => {
-      cancelAnimationFrame(animationFrameId);
+      isDisposed = true;
+      if (observer) {
+        observer.disconnect();
+        observer = null;
+      }
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+        animationFrameId = 0;
+      }
       if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
     };
   }, [
@@ -354,5 +390,6 @@ export function useParallaxMotion({
     rightImageRefs,
     motionVariantRef,
     parallaxIntensityRef,
+    containerRef,
   ]);
 }

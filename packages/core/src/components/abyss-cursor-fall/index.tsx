@@ -20,7 +20,6 @@ export const AbyssCursorFall: React.FC<AbyssCursorFallProps> = ({
   onLifecycleChange,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
 
   const rawPool = useMemo(() => (images.length > 0 ? images : DEFAULT_IMAGES), [images]);
   const activePool = useMemo(() => {
@@ -62,10 +61,13 @@ export const AbyssCursorFall: React.FC<AbyssCursorFallProps> = ({
   useGSAP(
     () => {
       const container = containerRef.current;
-      const canvas = canvasRef.current;
-      if (!container || !canvas) return;
+      if (!container) return;
 
-      return createCursorFallScene(
+      const canvas = document.createElement("canvas");
+      canvas.className = styles.canvas;
+      container.appendChild(canvas);
+
+      const cleanupScene = createCursorFallScene(
         container,
         canvas,
         rawPool,
@@ -73,6 +75,13 @@ export const AbyssCursorFall: React.FC<AbyssCursorFallProps> = ({
         activePoolRef,
         onLifecycleChange
       );
+
+      return () => {
+        cleanupScene();
+        if (container.contains(canvas)) {
+          container.removeChild(canvas);
+        }
+      };
     },
     { scope: containerRef, dependencies: [rawPool] }
   );
@@ -82,9 +91,7 @@ export const AbyssCursorFall: React.FC<AbyssCursorFallProps> = ({
       ref={containerRef}
       className={`${styles.container} ${className}`}
       style={style}
-    >
-      <canvas ref={canvasRef} className={styles.canvas} />
-    </div>
+    />
   );
 };
 

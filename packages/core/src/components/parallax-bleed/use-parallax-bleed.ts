@@ -93,8 +93,13 @@ export function useParallaxBleed({
   useEffect(() => {
     let lastTime = performance.now();
     let lastProgress = 0;
+    let isVisible = true;
+    let isDisposed = false;
 
     const renderLoop = (time: number) => {
+      if (isDisposed || !isVisible) return;
+      animationFrameRef.current = requestAnimationFrame(renderLoop);
+
       try {
         const dt = Math.min((time - lastTime) / 1000, 0.1);
         lastTime = time;
@@ -179,14 +184,45 @@ export function useParallaxBleed({
       } catch (err) {
         console.warn("[ParallaxBleed] Render loop warning:", err);
       }
-
-      animationFrameRef.current = requestAnimationFrame(renderLoop);
     };
+
+    let observer: IntersectionObserver | null = null;
+    const container = containerRef.current;
+    if (container && typeof IntersectionObserver !== "undefined") {
+      observer = new IntersectionObserver(
+        (entries) => {
+          const entry = entries[0];
+          const visible = entry ? entry.isIntersecting : true;
+          if (visible !== isVisible) {
+            isVisible = visible;
+            if (isVisible && !isDisposed) {
+              lastTime = performance.now();
+              if (!animationFrameRef.current) {
+                animationFrameRef.current = requestAnimationFrame(renderLoop);
+              }
+            } else if (!isVisible && animationFrameRef.current) {
+              cancelAnimationFrame(animationFrameRef.current);
+              animationFrameRef.current = null;
+            }
+          }
+        },
+        { threshold: 0 }
+      );
+      observer.observe(container);
+    }
 
     animationFrameRef.current = requestAnimationFrame(renderLoop);
 
     return () => {
-      if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
+      isDisposed = true;
+      if (observer) {
+        observer.disconnect();
+        observer = null;
+      }
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+        animationFrameRef.current = null;
+      }
     };
-  }, [sections, parallaxOffsetRatio, onLifecycleChange, sectionRefs, imageRefs, textRefs, dashRefs]);
+  }, [sections, parallaxOffsetRatio, onLifecycleChange, sectionRefs, imageRefs, textRefs, dashRefs, containerRef]);
 }

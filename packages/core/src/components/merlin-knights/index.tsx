@@ -12,7 +12,6 @@ export const MerlinKnights: React.FC<MerlinKnightsProps> = ({
   onLifecycleChange,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
   const [imgDimensions, setImgDimensions] = useState({ width: 500, height: 500 });
 
   // Interaction variables
@@ -61,8 +60,11 @@ export const MerlinKnights: React.FC<MerlinKnightsProps> = ({
 
   useEffect(() => {
     const container = containerRef.current;
-    const canvas = canvasRef.current;
-    if (!container || !canvas) return;
+    if (!container) return;
+
+    const canvas = document.createElement("canvas");
+    canvas.className = "absolute inset-0 block w-full h-full";
+    container.appendChild(canvas);
 
     let width = container.clientWidth || 500;
     let height = container.clientHeight || 500;
@@ -160,9 +162,12 @@ export const MerlinKnights: React.FC<MerlinKnightsProps> = ({
     resizeObserver.observe(container);
 
     const clock = new THREE.Clock();
-    let animationId: number;
+    let animationId = 0;
+    let isVisible = true;
+    let isDisposed = false;
 
     const animate = () => {
+      if (isDisposed || !isVisible) return;
       animationId = requestAnimationFrame(animate);
 
       const dt = clock.getDelta();
@@ -182,10 +187,42 @@ export const MerlinKnights: React.FC<MerlinKnightsProps> = ({
       }
     };
 
+    let observer: IntersectionObserver | null = null;
+    if (typeof IntersectionObserver !== "undefined") {
+      observer = new IntersectionObserver(
+        (entries) => {
+          const entry = entries[0];
+          const visible = entry ? entry.isIntersecting : true;
+          if (visible !== isVisible) {
+            isVisible = visible;
+            if (isVisible && !isDisposed) {
+              clock.getDelta(); // Flush paused elapsed delta
+              if (!animationId) {
+                animationId = requestAnimationFrame(animate);
+              }
+            } else if (!isVisible && animationId) {
+              cancelAnimationFrame(animationId);
+              animationId = 0;
+            }
+          }
+        },
+        { threshold: 0 }
+      );
+      observer.observe(container);
+    }
+
     animate();
 
     return () => {
-      cancelAnimationFrame(animationId);
+      isDisposed = true;
+      if (observer) {
+        observer.disconnect();
+        observer = null;
+      }
+      if (animationId) {
+        cancelAnimationFrame(animationId);
+        animationId = 0;
+      }
       resizeObserver.disconnect();
       materialRef.current = null;
 
@@ -193,6 +230,10 @@ export const MerlinKnights: React.FC<MerlinKnightsProps> = ({
       displayMesh.geometry.dispose();
       displayMaterial.dispose();
       renderer.dispose();
+      renderer.forceContextLoss();
+      if (container.contains(canvas)) {
+        container.removeChild(canvas);
+      }
       if (loadedTexture) loadedTexture.dispose();
     };
   }, [imageSrc, imgDimensions.width, imgDimensions.height, onLifecycleChange]);
@@ -210,9 +251,7 @@ export const MerlinKnights: React.FC<MerlinKnightsProps> = ({
         ...style,
       }}
       className={`relative overflow-visible select-none pointer-events-auto cursor-pointer ${className}`}
-    >
-      <canvas ref={canvasRef} className="absolute inset-0 block w-full h-full" />
-    </div>
+    />
   );
 };
 

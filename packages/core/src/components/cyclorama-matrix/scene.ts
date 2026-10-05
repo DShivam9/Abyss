@@ -385,10 +385,23 @@ export function createCycloramaMatrixScene(
   const INTRO_DELAY = 0.45;
   const INTRO_DURATION = 2.8;
   let introActive = true;
-  container.style.cursor = "default";
+  let isVisible = true;
+  const visibilityObserver = new IntersectionObserver(([entry]) => {
+    isVisible = entry ? entry.isIntersecting : true;
+    if (isVisible) {
+      lastFrame = performance.now();
+      if (!animId && !isDestroyed) {
+        animId = requestAnimationFrame(animate);
+      }
+    } else if (animId) {
+      cancelAnimationFrame(animId);
+      animId = 0;
+    }
+  });
+  visibilityObserver.observe(container);
 
   function animate() {
-    if (isDestroyed) return;
+    if (isDestroyed || !isVisible) return;
     animId = requestAnimationFrame(animate);
 
     const now = performance.now();
@@ -600,6 +613,7 @@ export function createCycloramaMatrixScene(
     },
     dispose() {
       isDestroyed = true;
+      visibilityObserver.disconnect();
       cancelAnimationFrame(animId);
 
       container.removeEventListener("pointerdown", resumeVideos);
@@ -632,6 +646,7 @@ export function createCycloramaMatrixScene(
       });
 
       renderer.dispose();
+      renderer.forceContextLoss();
     }
   };
 }

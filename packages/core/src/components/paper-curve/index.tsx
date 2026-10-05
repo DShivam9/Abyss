@@ -55,7 +55,6 @@ export function PaperCurve({
 }: PaperCurveProps) {
   const rootRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
   const introLockupRef = useRef<HTMLDivElement>(null);
 
   const activeCurvature = curvature ?? baseCurve ?? DEFAULT_CURVATURE;
@@ -74,7 +73,7 @@ export function PaperCurve({
   const parallaxScaleRef = useLatestRef(activeDepthParallax);
 
   useEffect(() => {
-    if (typeof window === "undefined" || !rootRef.current || !canvasRef.current || !contentRef.current) {
+    if (typeof window === "undefined" || !rootRef.current || !contentRef.current) {
       return;
     }
 
@@ -82,7 +81,9 @@ export function PaperCurve({
 
     const root = rootRef.current;
     const content = contentRef.current;
-    const canvas = canvasRef.current;
+    const canvas = document.createElement("canvas");
+    canvas.className = styles.canvas;
+    root.insertBefore(canvas, content);
 
     // ─── 1. Lenis Smooth Scroll Inertia ───
     const lenis = new Lenis({
@@ -272,9 +273,14 @@ export function PaperCurve({
     // ─── 6. Fluid Aerodynamic Render Loop ───
     let fluidVelocity = 0;
     let lastTime = 0;
-    let animationFrameId: number;
+    let animationFrameId = 0;
+    let isVisible = true;
+    let isDisposed = false;
 
     const renderLoop = (time: number) => {
+      if (isDisposed || !isVisible) return;
+      animationFrameId = requestAnimationFrame(renderLoop);
+
       lenis.raf(time);
 
       const dt = lastTime === 0 ? 0.016 : Math.min((time - lastTime) / 1000, 0.05);
@@ -376,9 +382,31 @@ export function PaperCurve({
       const clampedBlur = Math.sign(rawBlur) * Math.min(Math.abs(rawBlur), 0.025);
       postMaterial.uniforms.uBlurStrength.value = clampedBlur;
       renderer.render(postScene, postCamera);
-
-      animationFrameId = requestAnimationFrame(renderLoop);
     };
+
+    let observer: IntersectionObserver | null = null;
+    if (typeof IntersectionObserver !== "undefined") {
+      observer = new IntersectionObserver(
+        (entries) => {
+          const entry = entries[0];
+          const visible = entry ? entry.isIntersecting : true;
+          if (visible !== isVisible) {
+            isVisible = visible;
+            if (isVisible && !isDisposed) {
+              lastTime = performance.now();
+              if (!animationFrameId) {
+                animationFrameId = requestAnimationFrame(renderLoop);
+              }
+            } else if (!isVisible && animationFrameId) {
+              cancelAnimationFrame(animationFrameId);
+              animationFrameId = 0;
+            }
+          }
+        },
+        { threshold: 0 }
+      );
+      observer.observe(root);
+    }
 
     animationFrameId = requestAnimationFrame(renderLoop);
 
@@ -400,7 +428,15 @@ export function PaperCurve({
 
     // ─── 8. Lifecycle & Memory Cleanup ───
     return () => {
-      cancelAnimationFrame(animationFrameId);
+      isDisposed = true;
+      if (observer) {
+        observer.disconnect();
+        observer = null;
+      }
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+        animationFrameId = 0;
+      }
       window.removeEventListener("resize", handleResize);
       window.removeEventListener("load", updateCardBounds);
 
@@ -429,6 +465,10 @@ export function PaperCurve({
       postMaterial.dispose();
       renderTarget.dispose();
       renderer.dispose();
+      renderer.forceContextLoss();
+      if (root.contains(canvas)) {
+        root.removeChild(canvas);
+      }
     };
   }, []);
 
@@ -485,9 +525,6 @@ export function PaperCurve({
       className={`${styles.root} ${className}`}
       style={style}
     >
-      {/* Three.js WebGL Curvature Canvas */}
-      <canvas ref={canvasRef} className={styles.canvas} />
-
       {/* Editorial Content Runway */}
       <main ref={contentRef} className={styles.streamContainer}>
         {/* Entrance Stage (Editorial Landing Section) */}

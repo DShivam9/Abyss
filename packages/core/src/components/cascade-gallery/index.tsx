@@ -28,7 +28,6 @@ export function CascadeGallery({
   style
 }: CascadeGalleryProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
   const monthRef = useRef<HTMLSpanElement>(null);
   const dayYearRef = useRef<HTMLSpanElement>(null);
   const phraseLeftRef = useRef<HTMLDivElement>(null);
@@ -55,12 +54,15 @@ export function CascadeGallery({
   }, [perf.dpr]);
 
   useEffect(() => {
-    const canvas = canvasRef.current;
     const container = containerRef.current;
     const phraseLeftEl = phraseLeftRef.current;
     const phraseRightEl = phraseRightRef.current;
 
-    if (!canvas || !container) return;
+    if (!container) return;
+
+    const canvas = document.createElement("canvas");
+    canvas.className = styles.canvas;
+    container.appendChild(canvas);
 
     let isDisposed = false;
     let animationFrameId: number;
@@ -320,9 +322,24 @@ export function CascadeGallery({
 
     // --- 5. Render Loop ---
     let lastTime = performance.now();
+    let isVisible = true;
+
+    const visibilityObserver = new IntersectionObserver(([entry]) => {
+      isVisible = entry ? entry.isIntersecting : true;
+      if (isVisible) {
+        lastTime = performance.now();
+        if (!animationFrameId && !isDisposed) {
+          animationFrameId = requestAnimationFrame(animate);
+        }
+      } else if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+        animationFrameId = 0;
+      }
+    });
+    visibilityObserver.observe(container);
 
     const animate = () => {
-      if (isDisposed) return;
+      if (isDisposed || !isVisible) return;
       animationFrameId = requestAnimationFrame(animate);
 
       const now = performance.now();
@@ -484,6 +501,7 @@ export function CascadeGallery({
     // --- 7. Teardown ---
     return () => {
       isDisposed = true;
+      visibilityObserver.disconnect();
       cancelLoader();
       cancelAnimationFrame(animationFrameId);
       clearInterval(clockInterval);
@@ -497,6 +515,9 @@ export function CascadeGallery({
 
       disposeCascadeScene(cardGeo, proxyGeo, cards, renderer);
       rendererRef.current = null;
+      if (container.contains(canvas)) {
+        container.removeChild(canvas);
+      }
       container.style.cursor = "default";
     };
   }, [images]);
@@ -535,8 +556,6 @@ export function CascadeGallery({
           the spirit stays unyielding.
         </div>
       </div>
-
-      <canvas ref={canvasRef} className={styles.canvas} />
     </div>
   );
 }

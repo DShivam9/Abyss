@@ -157,4 +157,5 @@ export function disposeCascadeScene(
     if (c.mat) c.mat.dispose();
   });
   renderer.dispose();
+  renderer.forceContextLoss();
 }

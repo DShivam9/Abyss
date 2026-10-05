@@ -227,10 +227,29 @@ export const DualWave: React.FC<DualWaveProps> = ({
   // Animation ticker loop
   useEffect(() => {
     entranceStartTimeRef.current = performance.now();
-    let animationFrameId: number;
+    let animationFrameId = 0;
     let lastTime = performance.now();
+    let isVisible = true;
+
+    const container = containerRef.current;
+    const visibilityObserver = container
+      ? new IntersectionObserver(([entry]) => {
+          isVisible = entry ? entry.isIntersecting : true;
+          if (isVisible) {
+            lastTime = performance.now();
+            if (!animationFrameId) {
+              animationFrameId = requestAnimationFrame(tick);
+            }
+          } else if (animationFrameId) {
+            cancelAnimationFrame(animationFrameId);
+            animationFrameId = 0;
+          }
+        })
+      : null;
+    if (visibilityObserver && container) visibilityObserver.observe(container);
 
     const tick = (now: number) => {
+      if (!isVisible) return;
       const dt = Math.min(0.05, (now - lastTime) / 1000);
       lastTime = now;
 
@@ -427,7 +446,8 @@ export const DualWave: React.FC<DualWaveProps> = ({
 
     animationFrameId = requestAnimationFrame(tick);
     return () => {
-      cancelAnimationFrame(animationFrameId);
+      if (visibilityObserver) visibilityObserver.disconnect();
+      if (animationFrameId) cancelAnimationFrame(animationFrameId);
     };
   }, [displayItems, imageSrc]);
 

@@ -247,4 +247,5 @@ export function disposeGimbalScene(
   });
 
   renderer.dispose();
+  renderer.forceContextLoss();
 }

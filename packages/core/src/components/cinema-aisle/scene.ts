@@ -252,8 +252,6 @@ export function disposeCorridor(
   videoTextures: THREE.VideoTexture[],
   container: HTMLDivElement
 ): void {
-  document.body.style.cursor = "default";
-
   videoElements.forEach((vid) => {
     vid.pause();
     vid.removeAttribute("src");
@@ -277,6 +275,7 @@ export function disposeCorridor(
   });
 
   renderer.dispose();
+  renderer.forceContextLoss();
   if (renderer.domElement && container.contains(renderer.domElement)) {
     container.removeChild(renderer.domElement);
   }

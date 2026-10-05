@@ -6,6 +6,7 @@ export interface UpdatePhysicsParams {
   currentMode: "normal" | "zero-gravity";
   gravity: number;
   viewportHeight: number;
+  dtSec?: number;
 }
 
 export function createInitialPool(poolSize: number, initialImages: string[] = []): PhysicsBody[] {
@@ -120,25 +121,28 @@ export function updatePhysicsStep({
   imgRefs,
   currentMode,
   viewportHeight,
+  dtSec = 0.0166667,
 }: UpdatePhysicsParams): void {
+  const dtRatio = dtSec * 60;
+
   for (let i = 0; i < pool.length; i++) {
     const body = pool[i];
     if (!body.active) continue;
 
-    body.age += 1;
+    body.age += dtSec;
 
     if (body.state === "sliding") {
       // 1. Kinetic glide from mouse stroke
-      body.x += body.vx;
-      body.y += body.vy;
-      body.rotation += body.vSpin;
+      body.x += body.vx * dtRatio;
+      body.y += body.vy * dtRatio;
+      body.rotation += body.vSpin * dtRatio;
 
-      body.vx *= 0.94;
-      body.vy *= 0.94;
-      body.vSpin *= 0.92;
+      body.vx *= Math.pow(0.94, dtRatio);
+      body.vy *= Math.pow(0.94, dtRatio);
+      body.vSpin *= Math.pow(0.92, dtRatio);
 
       // Quick smooth scale settle to 1.0
-      body.enterProgress = Math.min(1, body.enterProgress + 0.08);
+      body.enterProgress = Math.min(1, body.enterProgress + 0.08 * dtRatio);
       const ease = 1 - Math.pow(1 - body.enterProgress, 3);
       body.scale = 0.94 + 0.06 * ease;
 
@@ -152,32 +156,32 @@ export function updatePhysicsStep({
       }
     } else if (body.state === "resting") {
       // 2. Resting in place: solid, calm, poised
-      // Idle dwell time before auto-descent: 90 frames (~1.5s)
-      if (body.age > 90) {
+      // Idle dwell time before auto-descent: 1.5 seconds (90 frames at 60fps)
+      if (body.age > 1.5) {
         body.state = "dropping";
         body.dropDelay = 0;
       }
     } else if (body.state === "dropping") {
       // 3. Shutter drop: waits for its turn, then gracefully glides down one by one
       if (body.dropDelay > 0) {
-        body.dropDelay -= 16.6;
+        body.dropDelay -= dtSec * 1000;
       } else {
         if (currentMode === "zero-gravity") {
           // Zero-g: stately, weightless upward drift
-          body.vy = Math.max(-12, body.vy - 0.28);
-          body.vx *= 0.96;
-          body.x += body.vx;
-          body.y += body.vy;
-          body.rotation += (body.targetRotation - body.rotation) * 0.03;
-          body.scale = Math.max(0.96, body.scale - 0.0004);
+          body.vy = Math.max(-12, body.vy - 0.28 * dtRatio);
+          body.vx *= Math.pow(0.96, dtRatio);
+          body.x += body.vx * dtRatio;
+          body.y += body.vy * dtRatio;
+          body.rotation += (body.targetRotation - body.rotation) * (1 - Math.pow(1 - 0.03, dtRatio));
+          body.scale = Math.max(0.96, body.scale - 0.0004 * dtRatio);
         } else {
           // Normal: crisp, weighted downward descent with satisfying terminal velocity
-          body.vy = Math.min(13.5, body.vy + 0.38);
-          body.vx *= 0.96;
-          body.x += body.vx;
-          body.y += body.vy;
-          body.rotation += (body.targetRotation - body.rotation) * 0.03;
-          body.scale = Math.max(0.96, body.scale - 0.0004);
+          body.vy = Math.min(13.5, body.vy + 0.38 * dtRatio);
+          body.vx *= Math.pow(0.96, dtRatio);
+          body.x += body.vx * dtRatio;
+          body.y += body.vy * dtRatio;
+          body.rotation += (body.targetRotation - body.rotation) * (1 - Math.pow(1 - 0.03, dtRatio));
+          body.scale = Math.max(0.96, body.scale - 0.0004 * dtRatio);
         }
       }
     }

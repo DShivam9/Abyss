@@ -34,6 +34,7 @@ export function useRippleCanvas({
   const nodesRef = useRef<CharNode[]>([]);
   const wavesRef = useRef<WaveInstance[]>([]);
   const animFrameRef = useRef<number | null>(null);
+  const isVisibleRef = useRef<boolean>(true);
 
   const perf = usePerformance();
   const perfRef = useRef(perf);
@@ -269,6 +270,7 @@ export function useRippleCanvas({
   // Continuous rAF animation ticker with Automatic 5.5s - 7.5s Idle Pulse Engine
   const tick = useCallback(
     (now: number) => {
+      if (!isVisibleRef.current) return;
       const isIdle = !perfRef.current.reducedMotion && (now - lastInteractionRef.current > 3500);
       const activeWaveCount = wavesRef.current.length;
 
@@ -350,17 +352,47 @@ export function useRippleCanvas({
       layoutTextOnCanvas();
     }
 
+    let observer: IntersectionObserver | null = null;
+    const container = containerRef.current;
+    if (container && typeof IntersectionObserver !== "undefined") {
+      observer = new IntersectionObserver(
+        (entries) => {
+          const entry = entries[0];
+          const visible = entry ? entry.isIntersecting : true;
+          if (visible !== isVisibleRef.current) {
+            isVisibleRef.current = visible;
+            if (visible) {
+              lastInteractionRef.current = performance.now();
+              lastAmbientPulseRef.current = performance.now();
+              if (!animFrameRef.current) {
+                animFrameRef.current = requestAnimationFrame(tick);
+              }
+            } else if (!visible && animFrameRef.current) {
+              cancelAnimationFrame(animFrameRef.current);
+              animFrameRef.current = null;
+            }
+          }
+        },
+        { threshold: 0 }
+      );
+      observer.observe(container);
+    }
+
     if (!animFrameRef.current) {
       animFrameRef.current = requestAnimationFrame(tick);
     }
 
     return () => {
+      if (observer) {
+        observer.disconnect();
+        observer = null;
+      }
       if (animFrameRef.current) {
         cancelAnimationFrame(animFrameRef.current);
         animFrameRef.current = null;
       }
     };
-  }, [variant, layoutTextOnCanvas, tick]);
+  }, [variant, layoutTextOnCanvas, tick, containerRef]);
 
   // Setup resize listeners
   useEffect(() => {
