@@ -1,0 +1,117 @@
+.wrapper {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  min-height: 100vh;
+  background-color: var(--bg-canvas, #faf9f7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  user-select: none;
+  --bg-canvas: #faf9f7;
+  --ink-swiss: #235840;
+  --border-subtle: rgba(35, 88, 64, 0.18);
+}
+
+.carouselContainer {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  cursor: grab;
+}
+
+.carouselContainer:active {
+  cursor: grabbing;
+}
+
+.track {
+  display: flex;
+  gap: 32px;
+  padding-left: 32px;
+  will-change: transform;
+  backface-visibility: hidden;
+}
+
+.card {
+  position: relative;
+  width: 440px;
+  height: 720px;
+  flex-shrink: 0;
+  overflow: hidden;
+  background: var(--bg-canvas, #faf9f7);
+  border-radius: 12px;
+  backface-visibility: hidden;
+  transform: translateZ(0);
+  contain: paint;
+  clip-path: inset(0 0.5px 0 0 round 12px);
+}
+
+.cardSvg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  background: var(--bg-canvas, #faf9f7);
+  border-radius: 12px;
+  overflow: hidden;
+  shape-rendering: geometricPrecision;
+}
+
+.parallaxLayer {
+  backface-visibility: hidden;
+}
+
+/* Minimal Centered Editorial Framing */
+.uiChrome {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  pointer-events: none;
+  user-select: none;
+  z-index: 50;
+  text-align: center;
+  color: #235840;
+  opacity: 0;
+  transition: opacity 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.uiChrome.visible,
+.uiChrome:global(.visible),
+.uiChrome[data-visible="true"] {
+  opacity: 1;
+}
+
+.uiTop {
+  top: clamp(24px, 4.5vh, 48px);
+}
+
+.uiBottom {
+  bottom: clamp(24px, 4.5vh, 48px);
+}
+
+.uiTitle {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: clamp(16px, 1.8vw, 20px);
+  letter-spacing: 0.32em;
+  text-indent: 0.32em;
+  text-transform: uppercase;
+  line-height: 1;
+  margin: 0;
+  color: #235840;
+}
+
+.uiCaption {
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-weight: 500;
+  font-size: clamp(10px, 1.1vw, 12px);
+  letter-spacing: 0.26em;
+  text-indent: 0.26em;
+  text-transform: uppercase;
+  line-height: 1;
+  margin: 0;
+  color: #235840;
+  opacity: 0.65;
+}

@@ -24,7 +24,7 @@ A few highlights from the collection:
 
 | Component | What It Does |
 |---|---|
-| `bas-relief-shadow` | High-fidelity digital bas-relief stone carving with multi-scale normal mapping, raymarched contact shadows, and cursor-driven incident specular lighting |
+| `gooey-loop` | Infinite editorial card reel where full-bleed photos show through bold letter cutouts that liquefy and drip on hover |
 | `gimbal-stream` | Infinite-scroll 3D gallery inside a ray-marched obsidian chamber with five gimbal-mounted card rings and liquid mercury centerpiece |
 | `cascade-gallery` | Editorial 3D diagonal conveyor gallery with thermal emulsion reveal, lateral tab pull, and a live mechanical chronometer |
 | `theme-toggle-redesign` | Two reimagined light/dark toggles: a 3D plunge dial with expanding screen wave, and a lamp pull cord with Verlet bead physics |

@@ -2,8 +2,6 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { DockNavbar } from "@/components/layout/DockNavbar";
-import { ProgressiveEdgeBlur } from "@/components/layout/ProgressiveEdgeBlur";
 import { CommandPalette } from "@/components/command-palette/CommandPalette";
 import { SEARCH_INDEX } from "@/lib/registry";
 import { NotFoundCanvas } from "./NotFoundCanvas";
@@ -12,11 +10,9 @@ import styles from "./not-found.module.css";
 export function NotFoundView() {
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
 
-  const navRef = useRef<HTMLDivElement>(null);
   const titleRef = useRef<HTMLHeadingElement>(null);
   const descRef = useRef<HTMLParagraphElement>(null);
   const actionsRef = useRef<HTMLDivElement>(null);
-  const anchorRef = useRef<HTMLDivElement>(null);
 
   // Lock document title on mount & Command palette keyboard shortcut (Cmd+K / Ctrl+K)
   useEffect(() => {
@@ -47,21 +43,11 @@ export function NotFoundView() {
       className="relative min-h-screen w-full flex flex-col items-center justify-center overflow-hidden"
       style={{ backgroundColor: "var(--bg, #0d0d0f)", color: "var(--text-primary, #ffffff)" }}
     >
-      {/* Floating Global Dock Navigation */}
-      <div ref={navRef} className={styles.navWrapper}>
-        <DockNavbar onOpenSearch={() => setCommandPaletteOpen(true)} />
-      </div>
-
-      {/* Liquid Caustic Top Edge Vignette */}
-      <ProgressiveEdgeBlur position="top" variant="liquid" height={210} zIndex={150} />
-
-      {/* WebGL Three.js Ambient Fluid + 3D Liquid Chrome Star */}
+      {/* WebGL Three.js Ambient Fluid Atmosphere */}
       <NotFoundCanvas
-        navRef={navRef}
         titleRef={titleRef}
         descRef={descRef}
         actionsRef={actionsRef}
-        anchorRef={anchorRef}
       />
 
       {/* Central Editorial Hero */}
@@ -115,12 +101,9 @@ export function NotFoundView() {
             <span className={styles.line} />
           </Link>
         </div>
-
-        {/* Spatial DOM Anchor for 3D Star Precision Alignment */}
-        <div ref={anchorRef} className={styles.logo3dAnchor} />
       </main>
 
-      {/* Interactive Global Command Palette */}
+      {/* Interactive Global Command Palette (Cmd+K) */}
       <CommandPalette
         isOpen={commandPaletteOpen}
         onClose={() => setCommandPaletteOpen(false)}

@@ -45,6 +45,19 @@ async function highlightCode(code, lang) {
 }
 
 const entries = fs.readdirSync(COMPONENTS_DIR, { withFileTypes: true });
+const activeSlugs = new Set(entries.filter((e) => e.isDirectory()).map((e) => e.name));
+
+// Clean up stale source files for removed components
+const existingSourceFiles = fs.readdirSync(OUTPUT_DIR);
+for (const file of existingSourceFiles) {
+  if (file === ".gitkeep" || !file.endsWith(".ts")) continue;
+  const slug = file.replace(/\.ts$/, "");
+  if (!activeSlugs.has(slug)) {
+    fs.unlinkSync(path.join(OUTPUT_DIR, file));
+    console.log(`[generate-source-map] Removed stale source file: ${file}`);
+  }
+}
+
 let generatedCount = 0;
 
 for (const entry of entries) {

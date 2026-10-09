@@ -13,15 +13,7 @@ export * from "./engine/motion";
 export * from "./engine/utils";
 export * from "./hooks";
 
-export * from "./components/molten-mercury";
-export * from "./components/gilding-transmutation";
-export * from "./components/chromepunk-beast";
-export * from "./components/japparii";
-export * from "./components/kinetic-portal";
-export * from "./components/merlin-knights";
 export * from "./components/static-image";
-export * from "./components/bronze-transmutation";
-export * from "./components/bas-relief-shadow";
 export * from "./components/accordion-wall";
 export * from "./components/parallax-column";
 export * from "./components/erosion-map";
@@ -42,14 +34,4 @@ export * from "./components/cyclorama-matrix";
 export * from "./components/optic-grid";
 export * from "./components/polyptych-formation";
 export * from "./components/paper-curve";
-
-
-
-
-
-
-
-
-
-
-
+export * from "./components/gooey-loop";

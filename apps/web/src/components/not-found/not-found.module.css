@@ -33,7 +33,7 @@
   text-align: center;
   max-width: 960px;
   padding: 0 24px;
-  transform: translateY(-45px);
+  transform: translateY(-10px);
 }
 
 /* Initial zero-FOUC state (GSAP handles 100% of the cinematic entrance) */

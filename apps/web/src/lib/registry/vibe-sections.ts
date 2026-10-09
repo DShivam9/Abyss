@@ -58,6 +58,15 @@ export const VIBE_SECTIONS: VibeSection[] = [
     ],
   },
   {
+    id: "infinite-carousels",
+    title: "Infinite Carousels",
+    headlineClass: "headline-s6", // radiant solar gold
+    count: 1,
+    slugs: [
+      "gooey-loop",
+    ],
+  },
+  {
     id: "loaders",
     title: "Loaders",
     headlineClass: "headline-s7", // electric emerald
@@ -73,23 +82,6 @@ export const VIBE_SECTIONS: VibeSection[] = [
     count: 1,
     slugs: [
       "theme-toggle-redesign",
-    ],
-  },
-  {
-    id: "brought-to-light",
-    title: "Brought to Light",
-    headlineClass: "headline-s1", // white
-    count: 9,
-    slugs: [
-      "bas-relief-shadow",
-      "bronze-transmutation",
-      "japparii",
-      "chromepunk-beast",
-      "merlin-knights",
-      "molten-mercury",
-      "kinetic-portal",
-      "gilding-transmutation",
-      "steel-intaglio",
     ],
   },
 ];

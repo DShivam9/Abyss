@@ -28,6 +28,35 @@ export interface CommitEntry {
 
 export const CHANGELOG_DATA: CommitEntry[] = [
   {
+    id: "commit-43",
+    date: "2026-10-09",
+    displayDate: "Oct 9, 2026 • 21:15 IST",
+    tags: ["MAJOR", "ADDITION"],
+    title: "Added Gooey Loop Component",
+    summary: "Added Gooey Loop, a horizontal card carousel where photos peek through letter cutouts that liquefy on hover.",
+    affectedSlugs: ["gooey-loop"],
+    items: [
+      "Continuous card loop with smooth wheel and drag interaction",
+      "Typographic cutouts revealing underlying imagery across each card",
+      "Interactive hover effect that liquefies cutout edges on cursor movement",
+      "Adjustable scroll speed and card parallax drift settings",
+    ],
+  },
+  {
+    id: "commit-42",
+    date: "2026-10-09",
+    displayDate: "Oct 9, 2026 • 20:30 IST",
+    tags: ["MINOR"],
+    title: "Refined Navigation and Page Layouts",
+    summary: "Streamlined the main landing page, updated top navigation, and removed edge blur across all pages.",
+    items: [
+      "Removed top blur vignette for crisper contrast across every page",
+      "Main landing page now features a centered title and search dock",
+      "Redesigned 404 page with clean layout and fast navigation links",
+      "Updated interactive button accents to match signature frost blue",
+    ],
+  },
+  {
     id: "commit-41",
     date: "2026-10-05",
     displayDate: "Oct 5, 2026 • 21:15 IST",
@@ -43,7 +72,6 @@ export const CHANGELOG_DATA: CommitEntry[] = [
       "erosion-map",
       "gimbal-stream",
       "gravity-cursor",
-      "merlin-knights",
       "mosaic-loader",
       "paper-curve",
       "parallax-bleed",

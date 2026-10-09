@@ -8,11 +8,10 @@ export const SELF_CONTAINED_SCROLL = new Set([
   "cinema-aisle",
   "cyclorama-matrix",
   "paper-curve",
+  "gooey-loop",
 ]);
 
-export const FULL_BLEED_SHADERS = new Set([
-  "bas-relief-shadow",
-]);
+export const FULL_BLEED_SHADERS = new Set<string>();
 
 export function getLayoutType(meta: ComponentDetail, slug: string) {
   const isSelfContainedScroll = SELF_CONTAINED_SCROLL.has(slug);

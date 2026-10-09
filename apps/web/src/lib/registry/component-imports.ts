@@ -4,15 +4,6 @@ import { AbyssComponentProps } from "@abyss-ui/core";
 
 // Dynamic imports mapping slug to component inside packages/core
 export const COMPONENT_IMPORTS: Record<string, React.ComponentType<AbyssComponentProps>> = {
-  "japparii": dynamic(() => import("../../../../../packages/core/src/components/japparii"), { ssr: false }),
-  "chromepunk-beast": dynamic(() => import("../../../../../packages/core/src/components/chromepunk-beast"), { ssr: false }),
-  "merlin-knights": dynamic(() => import("../../../../../packages/core/src/components/merlin-knights"), { ssr: false }),
-  "molten-mercury": dynamic(() => import("../../../../../packages/core/src/components/molten-mercury"), { ssr: false }),
-  "kinetic-portal": dynamic(() => import("../../../../../packages/core/src/components/kinetic-portal"), { ssr: false }),
-  "gilding-transmutation": dynamic(() => import("../../../../../packages/core/src/components/gilding-transmutation"), { ssr: false }),
-  "bronze-transmutation": dynamic(() => import("../../../../../packages/core/src/components/bronze-transmutation"), { ssr: false }),
-  "bas-relief-shadow": dynamic(() => import("../../../../../packages/core/src/components/bas-relief-shadow"), { ssr: false }),
-  "steel-intaglio": dynamic(() => import("../../../../../packages/core/src/components/steel-intaglio"), { ssr: false }),
   "accordion-wall": dynamic(() => import("../../../../../packages/core/src/components/accordion-wall"), { ssr: false }),
   "parallax-column": dynamic(() => import("../../../../../packages/core/src/components/parallax-column"), { ssr: false }),
   "erosion-map": dynamic(() => import("../../../../../packages/core/src/components/erosion-map"), { ssr: false }),
@@ -33,7 +24,5 @@ export const COMPONENT_IMPORTS: Record<string, React.ComponentType<AbyssComponen
   "optic-grid": dynamic(() => import("../../../../../packages/core/src/components/optic-grid"), { ssr: false }),
   "polyptych-formation": dynamic(() => import("../../../../../packages/core/src/components/polyptych-formation"), { ssr: false }),
   "paper-curve": dynamic(() => import("../../../../../packages/core/src/components/paper-curve"), { ssr: false }),
+  "gooey-loop": dynamic(() => import("../../../../../packages/core/src/components/gooey-loop"), { ssr: false }),
 };
-
-
-
