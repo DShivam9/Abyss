@@ -12,7 +12,7 @@
 
 Abyss is an open-source collection of interactive, animated React components built for creative web projects. It focuses on visual effects that are difficult to build from scratch: GPU shaders, scroll-driven animations, 3D viewports, cursor interactions, and image galleries with depth.
 
-The library currently contains **27 components**. Each component is self-contained, individually importable, and ships with a live preview, adjustable controls, and viewable source code on the website. Every interaction is designed with a focus on fluid 60fps performance and tactile physics-driven feedback.
+The library currently contains **21 components**. Each component is self-contained, individually importable, and ships with a live preview, adjustable controls, and viewable source code on the website. Every interaction is built with delta-time corrected animations for display-adaptive high-refresh-rate performance and tactile physics-driven feedback.
 
 Abyss is structured as a monorepo. The `apps/web` workspace is the website you see at [abssy.vercel.app](https://abssy.vercel.app/). The `packages/core` workspace holds every component.
 
@@ -42,7 +42,7 @@ Browse the full collection at [abssy.vercel.app/collection](https://abssy.vercel
 |---|---|
 | Framework | Next.js 15, React 19, TypeScript |
 | 3D Rendering | Three.js, React Three Fiber, Custom GLSL Shaders |
-| Animation | GSAP with ScrollTrigger |
+| Animation | GSAP with ScrollTrigger, Framer Motion |
 | Scrolling | Lenis |
 | Styling | Tailwind CSS, CSS Modules |
 | Package Manager | npm workspaces (monorepo) |
