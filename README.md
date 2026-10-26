@@ -51,7 +51,7 @@ Browse the full collection at [abssy.vercel.app/collection](https://abssy.vercel
 
 ## Setup
 
-```
+```bash
 npm install
 npm run dev
 ```
@@ -60,7 +60,7 @@ Requires Node.js 18+. The dev server runs at `localhost:3000`.
 
 To build for production:
 
-```
+```bash
 npm run build
 ```
 
