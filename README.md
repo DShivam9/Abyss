@@ -42,7 +42,7 @@ Browse the full collection at [abssy.vercel.app/collection](https://abssy.vercel
 |---|---|
 | Framework | Next.js 15, React 19, TypeScript |
 | 3D Rendering | Three.js, React Three Fiber, Custom GLSL Shaders |
-| Animation | GSAP with ScrollTrigger, Framer Motion |
+| Animation | GSAP with ScrollTrigger, Framer Motion, View Transitions |
 | Scrolling | Lenis |
 | Styling | Tailwind CSS, CSS Modules |
 | Package Manager | npm workspaces (monorepo) |
